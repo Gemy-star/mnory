@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+pillow = "*"
+django-crispy-forms = "*"
+crispy-bootstrap5 = "*"
+django-silk = "*"
+gunicorn = "*"
+mysqlclient = "*"
+python-dotenv = "*"
+django-constance = {extras = ["redis"], version = "*"}
+django-imagekit = "*"
+faker = "*"
+
+[dev-packages]
+django-silk = "*"
+
+[requires]
+python_version = "3.13"
+python_full_version = "3.13.3"

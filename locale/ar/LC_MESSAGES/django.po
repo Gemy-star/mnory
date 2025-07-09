@@ -1,0 +1,594 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-09 01:59+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: .\reverse\settings\common.py:128
+msgid "English"
+msgstr "الإنجليزية"
+
+#: .\reverse\settings\common.py:129
+msgid "Arabic"
+msgstr "العربية"
+
+#: .\templates\cart\cart_detail.html:9
+msgid "Shopping Cart"
+msgstr "سلة التسوق"
+
+#: .\templates\cart\cart_detail.html:32
+msgid "Your cart is empty"
+msgstr "السلة فارغة"
+
+#: .\templates\partials\_footer.html:17
+msgid "Quick Links"
+msgstr "روابط سريعة"
+
+#: .\templates\partials\_footer.html:19 .\templates\partials\_header.html:13
+msgid "Home"
+msgstr "الرئيسية"
+
+#: .\templates\partials\_footer.html:20
+msgid "Shop"
+msgstr "المتجر"
+
+#: .\templates\partials\_footer.html:21 .\templates\partials\_header.html:28
+msgid "Cart"
+msgstr "عربة التسوق"
+
+#: .\templates\partials\_footer.html:22
+msgid "My Account"
+msgstr "حسابي"
+
+#: .\templates\partials\_footer.html:23
+msgid "Contact Us"
+msgstr "اتصل بنا"
+
+#: .\templates\partials\_footer.html:24
+msgid "Terms of service"
+msgstr "شروط الخدمة"
+
+#: .\templates\partials\_footer.html:25
+msgid "Privacy & Policy"
+msgstr "سياسة الخصوصية"
+
+#: .\templates\partials\_footer.html:32
+msgid "Follow Us"
+msgstr "تابعنا"
+
+#: .\templates\partials\_footer.html:42
+#, fuzzy
+#| msgid "Reverse. All rights reserved."
+msgid "All rights reserved."
+msgstr "ريڤيرس. جميع الحقوق محفوظة."
+
+#: .\templates\partials\_header.html:7
+msgid "Toggle navigation"
+msgstr "تبديل التنقل"
+
+#: .\templates\partials\_header.html:17
+#: .\templates\shop\category_detail.html:16
+#: .\templates\shop\subcategory_detail.html:18
+msgid "Categories"
+msgstr "التصنيفات"
+
+#: .\templates\partials\_header.html:24 .\templates\shop\category_detail.html:5
+#: .\templates\shop\category_detail.html:19
+#: .\templates\shop\category_detail.html:146
+#: .\templates\shop\subcategory_detail.html:21
+msgid "All Products"
+msgstr "جميع المنتجات"
+
+#: .\templates\partials\_header.html:31
+msgid "Wishlist"
+msgstr "المفضلة"
+
+#: .\templates\partials\_header.html:34
+msgid "Account"
+msgstr "الحساب"
+
+#: .\templates\partials\_header.html:40
+msgid "Language"
+msgstr "اللغة"
+
+#: .\templates\shop\account.html:11
+msgid "Sign In"
+msgstr "تسجيل الدخول"
+
+#: .\templates\shop\account.html:14 .\templates\shop\account.html:33
+msgid "Register"
+msgstr "إنشاء حساب"
+
+#: .\templates\shop\account.html:24
+msgid "Login"
+msgstr "دخول"
+
+#: .\templates\shop\category_detail.html:5
+#: .\templates\shop\product_detail.html:5
+msgid "Reverse"
+msgstr "ريڤيرس"
+
+#: .\templates\shop\category_detail.html:14
+#: .\templates\shop\subcategory_detail.html:16
+msgid "Filters"
+msgstr "تصفية"
+
+#: .\templates\shop\category_detail.html:45
+#: .\templates\shop\subcategory_detail.html:47
+msgid "Fit Type"
+msgstr "نوع المقاس"
+
+#: .\templates\shop\category_detail.html:57
+#: .\templates\shop\subcategory_detail.html:59
+msgid "Brand"
+msgstr "العلامة التجارية"
+
+#: .\templates\shop\category_detail.html:69
+#: .\templates\shop\subcategory_detail.html:71
+msgid "Color"
+msgstr "اللون"
+
+#: .\templates\shop\category_detail.html:82
+#: .\templates\shop\subcategory_detail.html:84
+msgid "Size"
+msgstr "المقاس"
+
+#: .\templates\shop\category_detail.html:94
+#: .\templates\shop\subcategory_detail.html:96
+msgid "Price Range"
+msgstr "نطاق السعر"
+
+#: .\templates\shop\category_detail.html:96
+#: .\templates\shop\subcategory_detail.html:98
+msgid "Min"
+msgstr "الحد الأدنى"
+
+#: .\templates\shop\category_detail.html:97
+#: .\templates\shop\subcategory_detail.html:99
+msgid "Max"
+msgstr "الحد الأقصى"
+
+#: .\templates\shop\category_detail.html:99
+#: .\templates\shop\subcategory_detail.html:101
+msgid "Apply Price"
+msgstr "تطبيق السعر"
+
+#: .\templates\shop\category_detail.html:103
+#: .\templates\shop\subcategory_detail.html:105
+msgid "Sort By"
+msgstr "ترتيب حسب"
+
+#: .\templates\shop\category_detail.html:105
+#: .\templates\shop\subcategory_detail.html:107
+msgid "Name (A-Z)"
+msgstr "الاسم (أ-ي)"
+
+#: .\templates\shop\category_detail.html:106
+#: .\templates\shop\subcategory_detail.html:108
+msgid "Price (Low to High)"
+msgstr "السعر (من الأقل إلى الأعلى)"
+
+#: .\templates\shop\category_detail.html:107
+#: .\templates\shop\subcategory_detail.html:109
+msgid "Price (High to Low)"
+msgstr "السعر (من الأعلى إلى الأقل)"
+
+#: .\templates\shop\category_detail.html:108
+#: .\templates\shop\subcategory_detail.html:110
+msgid "Newest"
+msgstr "الأحدث"
+
+#: .\templates\shop\category_detail.html:109
+#: .\templates\shop\subcategory_detail.html:111
+msgid "Popular"
+msgstr "الأكثر شهرة"
+
+#: .\templates\shop\category_detail.html:114
+#: .\templates\shop\subcategory_detail.html:116
+msgid "Flags"
+msgstr "العلامات"
+
+#: .\templates\shop\category_detail.html:118
+#: .\templates\shop\partials\product_flags.html:7
+#: .\templates\shop\product_detail.html:57
+#: .\templates\shop\subcategory_detail.html:120
+msgid "Best Seller"
+msgstr "الأكثر مبيعاً"
+
+#: .\templates\shop\category_detail.html:124
+#: .\templates\shop\partials\product_flags.html:10
+#: .\templates\shop\product_detail.html:60
+#: .\templates\shop\subcategory_detail.html:126
+msgid "New Arrival"
+msgstr "وصل حديثاً"
+
+#: .\templates\shop\category_detail.html:130
+#: .\templates\shop\partials\product_flags.html:13
+#: .\templates\shop\product_detail.html:63
+#: .\templates\shop\subcategory_detail.html:132
+msgid "On Sale"
+msgstr "تخفيض"
+
+#: .\templates\shop\category_detail.html:142
+#: .\templates\shop\category_detail.html:144
+msgid "Products"
+msgstr "المنتجات"
+
+#: .\templates\shop\category_detail.html:158 .\templates\shop\home.html:58
+#: .\templates\shop\home.html:95 .\templates\shop\home.html:132
+#: .\templates\shop\home.html:169 .\templates\shop\product_detail.html:134
+msgid "No Image"
+msgstr "لا توجد صورة"
+
+#: .\templates\shop\category_detail.html:173 .\templates\shop\home.html:73
+#: .\templates\shop\home.html:110 .\templates\shop\home.html:147
+#: .\templates\shop\home.html:184 .\templates\shop\product_detail.html:149
+msgid "View Details"
+msgstr "عرض التفاصيل"
+
+#: .\templates\shop\category_detail.html:181
+msgid "No products found in this category or with the selected filters."
+msgstr "لم يتم العثور على منتجات في هذه الفئة أو باستخدام الفلاتر المحددة."
+
+#: .\templates\shop\category_detail.html:188
+msgid "Page navigation"
+msgstr "تصفح الصفحات"
+
+#: .\templates\shop\category_detail.html:192
+#: .\templates\shop\category_detail.html:195
+msgid "Previous"
+msgstr "السابق"
+
+#: .\templates\shop\category_detail.html:210
+#: .\templates\shop\category_detail.html:213
+msgid "Next"
+msgstr "التالي"
+
+#: .\templates\shop\home.html:5
+msgid "Home - Reverse"
+msgstr "الرئيسية - ريفيرس"
+
+#: .\templates\shop\home.html:11
+msgid "Discover Your Style"
+msgstr "اكتشف أسلوبك"
+
+#: .\templates\shop\home.html:12
+msgid "Explore our latest collections and find the perfect products for you."
+msgstr "استكشف أحدث مجموعاتنا وابحث عن المنتجات المثالية لك."
+
+#: .\templates\shop\home.html:14
+msgid "Shop Now"
+msgstr "تسوق الآن"
+
+#: .\templates\shop\home.html:23
+msgid "Shop By Category"
+msgstr "تسوق حسب الفئة"
+
+#: .\templates\shop\home.html:36
+msgid "View Products"
+msgstr "عرض المنتجات"
+
+#: .\templates\shop\home.html:43
+msgid "No categories available."
+msgstr "لا توجد فئات متاحة."
+
+#: .\templates\shop\home.html:49
+msgid "Featured Products"
+msgstr "منتجات مميزة"
+
+#: .\templates\shop\home.html:80
+msgid "No featured products available."
+msgstr "لا توجد منتجات مميزة متاحة."
+
+#: .\templates\shop\home.html:86
+msgid "New Arrivals"
+msgstr "وصل حديثاً"
+
+#: .\templates\shop\home.html:117
+msgid "No new arrivals available."
+msgstr "لا توجد منتجات جديدة متاحة."
+
+#: .\templates\shop\home.html:123
+msgid "Best Sellers"
+msgstr "الأكثر مبيعاً"
+
+#: .\templates\shop\home.html:154
+msgid "No best sellers available."
+msgstr "لا توجد منتجات مبيعاً متوفرة."
+
+#: .\templates\shop\home.html:160
+msgid "On Sale!"
+msgstr "تخفيضات!"
+
+#: .\templates\shop\home.html:191
+msgid "No products currently on sale."
+msgstr "لا توجد منتجات مخفضة حالياً."
+
+#: .\templates\shop\partials\product_flags.html:4
+msgid "Featured"
+msgstr "مميز"
+
+#: .\templates\shop\partials\product_flags.html:15
+msgid "Off"
+msgstr "خصم"
+
+#: .\templates\shop\policy.html:5 .\templates\shop\terms.html:5
+#, fuzzy
+#| msgid "Terms of service"
+msgid "Terms & Privacy"
+msgstr "شروط الخدمة"
+
+#: .\templates\shop\policy.html:9
+#, fuzzy
+#| msgid "Privacy & Policy"
+msgid "Privacy Policy"
+msgstr "سياسة الخصوصية"
+
+#: .\templates\shop\policy.html:12
+msgid "1. Information We Collect"
+msgstr "1. المعلومات التي نجمعها"
+
+#: .\templates\shop\policy.html:13
+msgid ""
+"We collect information you provide during registration, purchases, or "
+"customer service interactions, including your name, email, address, and "
+"payment details."
+msgstr ""
+"نقوم بجمع المعلومات التي تقدمها أثناء التسجيل أو الشراء أو التفاعل مع خدمة "
+"العملاء، بما في ذلك اسمك وبريدك الإلكتروني وعنوانك وتفاصيل الدفع الخاصة بك."
+
+#: .\templates\shop\policy.html:17
+msgid "2. How We Use Information"
+msgstr "2. كيفية استخدام المعلومات"
+
+#: .\templates\shop\policy.html:18
+msgid ""
+"Your data is used to process orders, improve your shopping experience, send "
+"updates, and protect against fraud."
+msgstr ""
+"تُستخدم بياناتك لمعالجة الطلبات، وتحسين تجربة التسوق، وإرسال التحديثات، "
+"والحماية من الاحتيال."
+
+#: .\templates\shop\policy.html:22
+msgid "3. Data Security"
+msgstr "3. أمان البيانات"
+
+#: .\templates\shop\policy.html:23
+msgid ""
+"We implement appropriate technical and organizational measures to protect "
+"your personal data."
+msgstr "نقوم بتنفيذ تدابير تقنية وتنظيمية مناسبة لحماية بياناتك الشخصية."
+
+#: .\templates\shop\policy.html:27
+msgid "4. Third-Party Sharing"
+msgstr "4. مشاركة البيانات مع أطراف ثالثة"
+
+#: .\templates\shop\policy.html:28
+msgid ""
+"We do not sell or rent your personal data. Some data may be shared with "
+"payment processors or shipping partners as necessary to complete your order."
+msgstr ""
+"لا نقوم ببيع أو تأجير بياناتك الشخصية. قد يتم مشاركة بعض البيانات مع مزودي "
+"خدمات الدفع أو شركاء الشحن حسب الحاجة لإتمام طلبك."
+
+#: .\templates\shop\policy.html:32
+msgid "5. Your Rights"
+msgstr "5. حقوقك"
+
+#: .\templates\shop\policy.html:33
+msgid ""
+"You have the right to access, correct, or delete your personal data. Contact "
+"us at privacy@reverse.com for assistance."
+msgstr ""
+"لديك الحق في الوصول إلى بياناتك الشخصية أو تصحيحها أو حذفها. تواصل معنا عبر "
+"privacy@reverse.com للحصول على المساعدة."
+
+#: .\templates\shop\policy.html:37
+msgid "6. Cookies"
+msgstr "6. ملفات تعريف الارتباط (الكوكيز)"
+
+#: .\templates\shop\policy.html:38
+msgid ""
+"We use cookies to personalize content, analyze traffic, and improve our "
+"services. By using the site, you consent to our cookie policy."
+msgstr ""
+"نستخدم ملفات تعريف الارتباط لتخصيص المحتوى، وتحليل حركة المرور، وتحسين "
+"خدماتنا. باستخدامك للموقع، فإنك توافق على سياسة الكوكيز الخاصة بنا."
+
+#: .\templates\shop\policy.html:42
+msgid "7. Contact Information"
+msgstr "7. معلومات التواصل"
+
+#: .\templates\shop\policy.html:43
+msgid ""
+"For questions or concerns regarding these policies, email us at "
+"support@reverse.com."
+msgstr ""
+"لأي أسئلة أو استفسارات بخصوص هذه السياسات، يرجى مراسلتنا عبر البريد "
+"الإلكتروني: support@reverse.com."
+
+#: .\templates\shop\policy.html:48 .\templates\shop\terms.html:42
+msgid "Back to Home"
+msgstr "العودة إلى الصفحة الرئيسية"
+
+#: .\templates\shop\product_detail.html:17
+#: .\templates\shop\product_detail.html:35
+msgid "Image"
+msgstr "صورة"
+
+#: .\templates\shop\product_detail.html:21
+msgid "No image available"
+msgstr "لا توجد صورة متاحة"
+
+#: .\templates\shop\product_detail.html:35
+msgid "Thumbnail of"
+msgstr "صورة مصغرة لـ"
+
+#: .\templates\shop\product_detail.html:69
+msgid "Fit"
+msgstr "الملاءمة"
+
+#: .\templates\shop\product_detail.html:75
+msgid "Available Colors:"
+msgstr "الألوان المتوفرة:"
+
+#: .\templates\shop\product_detail.html:89
+msgid "Select Size:"
+msgstr "اختر المقاس:"
+
+#: .\templates\shop\product_detail.html:99
+msgid "SKU"
+msgstr "رمز المنتج"
+
+#: .\templates\shop\product_detail.html:100
+msgid "Stock"
+msgstr "المخزون"
+
+#: .\templates\shop\product_detail.html:100
+msgid "in stock"
+msgstr "متوفر"
+
+#: .\templates\shop\product_detail.html:105
+msgid "Quantity:"
+msgstr "الكمية:"
+
+#: .\templates\shop\product_detail.html:112
+msgid "Close"
+msgstr "إغلاق"
+
+#: .\templates\shop\product_detail.html:116
+#: .\templates\shop\product_detail.html:160
+msgid "Add to Cart"
+msgstr "أضف إلى السلة"
+
+#: .\templates\shop\product_detail.html:117
+#: .\templates\shop\product_detail.html:172
+msgid "Add to Wishlist"
+msgstr "أضف إلى المفضلة"
+
+#: .\templates\shop\product_detail.html:125
+msgid "Related Products"
+msgstr "منتجات ذات صلة"
+
+#: .\templates\shop\product_detail.html:182
+msgid "No related products found."
+msgstr "لم يتم العثور على منتجات ذات صلة."
+
+#: .\templates\shop\terms.html:9
+msgid "Terms of Service"
+msgstr "شروط الخدمة"
+
+#: .\templates\shop\terms.html:12
+msgid "1. Introduction"
+msgstr "1. المقدمة"
+
+#: .\templates\shop\terms.html:13
+msgid ""
+"Welcome to Reverse. By using our platform, you agree to be bound by these "
+"Terms of Service. Please read them carefully."
+msgstr ""
+"مرحبًا بك في ريڤيرس. باستخدامك لمنصتنا، فإنك توافق على الالتزام بشروط الخدمة "
+"هذه. يرجى قراءتها بعناية."
+
+#: .\templates\shop\terms.html:17
+msgid "2. Use of Platform"
+msgstr "2. استخدام المنصة"
+
+#: .\templates\shop\terms.html:18
+msgid ""
+"You agree to use Reverse only for lawful purposes and in accordance with "
+"these Terms. You must not misuse the platform or interfere with its normal "
+"operation."
+msgstr ""
+"توافق على استخدام ريڤيرس لأغراض قانونية فقط ووفقًا لهذه الشروط. لا يجوز لك "
+"إساءة استخدام المنصة أو التدخل في تشغيلها الطبيعي."
+
+#: .\templates\shop\terms.html:22
+#, fuzzy
+#| msgid "Account"
+msgid "Accounts"
+msgstr "الحسابات"
+
+#: .\templates\shop\terms.html:23
+msgid ""
+"You are responsible for maintaining the confidentiality of your account "
+"information and for all activities that occur under your account."
+msgstr ""
+"أنت مسؤول عن الحفاظ على سرية معلومات حسابك وعن جميع الأنشطة التي تتم من "
+"خلاله."
+
+#: .\templates\shop\terms.html:27
+msgid "4. Product Information"
+msgstr "4. معلومات المنتجات"
+
+#: .\templates\shop\terms.html:28
+msgid ""
+"While we strive for accuracy, product descriptions and pricing may contain "
+"errors. We reserve the right to correct any inaccuracies."
+msgstr ""
+"بينما نسعى للدقة، قد تحتوي أوصاف المنتجات والأسعار على أخطاء. نحتفظ بحقنا في "
+"تصحيح أي أخطاء."
+
+#: .\templates\shop\terms.html:32
+msgid "5. Limitation of Liability"
+msgstr "5. تحديد المسؤولية"
+
+#: .\templates\shop\terms.html:33
+msgid ""
+"Reverse is not liable for any indirect, incidental, or consequential damages "
+"arising from your use of the platform."
+msgstr ""
+"ريڤيرس غير مسؤول عن أي أضرار غير مباشرة أو عرضية أو تبعية تنشأ عن استخدامك "
+"للمنصة."
+
+#: .\templates\shop\terms.html:37
+msgid "6. Changes to Terms"
+msgstr "6. تغييرات الشروط"
+
+#: .\templates\shop\terms.html:38
+msgid ""
+"We may update these Terms of Service from time to time. Continued use of the "
+"platform constitutes acceptance of the revised terms."
+msgstr ""
+"قد نقوم بتحديث شروط الخدمة من وقت لآخر. استمرارك في استخدام المنصة يعني "
+"قبولك بالشروط المعدلة."
+
+#: .\templates\wishlist\wishlist_detail.html:9
+#, fuzzy
+#| msgid "Wishlist"
+msgid "My Wishlist"
+msgstr "المفضلة"
+
+#: .\templates\wishlist\wishlist_detail.html:16
+msgid "Remove"
+msgstr "إزالة"
+
+#: .\templates\wishlist\wishlist_detail.html:22
+msgid "Your wishlist is empty"
+msgstr "قائمة المفضلة الخاصة بك فارغة"
+
+#, fuzzy
+#~| msgid "Account"
+#~ msgid "3.Accounts"
+#~ msgstr "3. الحسابات"
+
+#~ msgid ""
+#~ "Reverse is a modern e-commerce platform offering premium products and a "
+#~ "seamless shopping experience."
+#~ msgstr ""
+#~ "ريڤيرس هو منصة تجارة إلكترونية حديثة تقدم منتجات مميزة وتجربة تسوق سلسة."
