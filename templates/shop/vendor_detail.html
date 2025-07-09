@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block content %}
+<div class="container my-4">
+  <!-- Vendor Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-2">
+              {% if vendor.logo %}
+                <img src="{{ vendor.logo.url }}" alt="{{ vendor.store_name }}" class="img-fluid rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+              {% else %}
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 100px; height: 100px;">
+                  <i class="fas fa-store fa-2x"></i>
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-md-8">
+              <h1 class="h3 mb-1">{{ vendor.store_name }}</h1>
+              {% if vendor.is_premium %}
+                <span class="badge bg-warning text-dark mb-2">
+                  <i class="fas fa-crown"></i> {% trans "Premium Vendor" %}
+                </span>
+              {% endif %}
+              {% if vendor.store_description %}
+                <p class="text-muted mb-2">{{ vendor.store_description|truncatewords:30 }}</p>
+              {% endif %}
+              <div class="d-flex gap-3 text-sm">
+                <span><i class="fas fa-box"></i> {{ vendor_stats.total_products }} {% trans "Products" %}</span>
+                <span><i class="fas fa-tags"></i> {{ vendor_stats.categories_count }} {% trans "Categories" %}</span>
+                {% if vendor.country_of_operation %}
+                  <span><i class="fas fa-globe"></i> {{ vendor.country_of_operation }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-2 text-end">
+              {% if vendor.website %}
+                <a href="{{ vendor.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-external-link-alt"></i> {% trans "Visit Website" %}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <ul class="nav nav-tabs" id="vendorTabs">
+        <li class="nav-item">
+          <a class="nav-link active" data-bs-toggle="tab" href="#products-tab">
+            {% trans "Products" %} ({{ vendor_stats.total_products }})
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" href="#about-tab">{% trans "About Store" %}</a>
+        </li>
+      </ul>
+
+      <div class="tab-content mt-3">
+        <!-- Products Tab -->
+        <div class="tab-pane fade show active" id="products-tab">
+          <div class="row">
+            <!-- Filters Sidebar -->
+            <div class="col-md-3 mb-4">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0">{% trans "Filter Products" %}</h6>
+                </div>
+                <div class="card-body">
+                  <form method="GET" id="filterForm">
+                    <!-- Price Range -->
+                    {% if price_range.price__min and price_range.price__max %}
+                    <div class="mb-3">
+                      <label class="form-label">{% trans "Price Range" %}</label>
+                      <div class="row">
+                        <div class="col-6">
+                          <input type="number" name="price_min" class="form-control form-control-sm" 
+                                 placeholder="Min" value="{{ request.GET.price_min }}" 
+                                 min="{{ price_range.price__min }}" max="{{ price_range.price__max }}">
+                        </div>
+                        <div class="col-6">
+                          <input type="number" name="price_max" class="form-control form-control-sm" 
+                                 placeholder="Max" value="{{ request.GET.price_max }}" 
+                                 min="{{ price_range.price__min }}" max="{{ price_range.price__max }}">
+                        </div>
+                      </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Categories -->
+                    {% if categories %}
+                    <div class="mb-3">
+                      <label class="form-label">{% trans "Categories" %}</label>
+                      <select name="category" class="form-select form-select-sm">
+                        <option value="">{% trans "All Categories" %}</option>
+                        {% for category in categories %}
+                          <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    {% endif %}
+
+                    <!-- Brands -->
+                    {% if brands %}
+                    <div class="mb-3">
+                      <label class="form-label">{% trans "Brands" %}</label>
+                      <select name="brand" class="form-select form-select-sm">
+                        <option value="">{% trans "All Brands" %}</option>
+                        {% for brand in brands %}
+                          <option value="{{ brand.id }}" {% if request.GET.brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                            {{ brand.name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    {% endif %}
+
+                    <!-- Colors -->
+                    {% if colors %}
+                    <div class="mb-3">
+                      <label class="form-label">{% trans "Colors" %}</label>
+                      <div class="d-flex flex-wrap gap-1">
+                        {% for color in colors %}
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="colors" value="{{ color.id }}" 
+                                   id="color{{ color.id }}" {% if color.id|stringformat:"s" in request.GET.colors %}checked{% endif %}>
+                            <label class="form-check-label" for="color{{ color.id }}">
+                              <span class="color-swatch" style="background-color: {{ color.code }}; width: 20px; height: 20px; display: inline-block; border-radius: 50%; border: 1px solid #ddd;"></span>
+                              {{ color.name }}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Sizes -->
+                    {% if sizes %}
+                    <div class="mb-3">
+                      <label class="form-label">{% trans "Sizes" %}</label>
+                      <div class="d-flex flex-wrap gap-1">
+                        {% for size in sizes %}
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="sizes" value="{{ size.id }}" 
+                                   id="size{{ size.id }}" {% if size.id|stringformat:"s" in request.GET.sizes %}checked{% endif %}>
+                            <label class="form-check-label" for="size{{ size.id }}">
+                              {{ size.name }}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Filter Buttons -->
+                    <div class="d-grid gap-2">
+                      <button type="submit" class="btn btn-primary btn-sm">{% trans "Apply Filters" %}</button>
+                    <a href="{% url 'shop:vendor_detail' slug=vendor.slug %}" class="btn btn-outline-secondary btn-sm">{% trans "Clear Filters" %}</a>                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="col-md-9">
+              <!-- Sort Options -->
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">
+                  {% trans "Showing" %} {{ products.start_index }}-{{ products.end_index }} {% trans "of" %} {{ products.paginator.count }} {% trans "products" %}
+                </p>
+                <div class="dropdown">
+                  <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    {% trans "Sort by" %}
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="?sort=name">{% trans "Name A-Z" %}</a></li>
+                    <li><a class="dropdown-item" href="?sort=-name">{% trans "Name Z-A" %}</a></li>
+                    <li><a class="dropdown-item" href="?sort=price">{% trans "Price Low to High" %}</a></li>
+                    <li><a class="dropdown-item" href="?sort=-price">{% trans "Price High to Low" %}</a></li>
+                    <li><a class="dropdown-item" href="?sort=-created_at">{% trans "Newest First" %}</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Products -->
+              {% if products %}
+                <div class="row">
+                  {% for product in products %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                      <div class="card h-100">
+                        <div class="position-relative">
+                          {% with product.get_main_image as main_image %}
+                            {% if main_image %}
+                              <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                              <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                              </div>
+                            {% endif %}
+                          {% endwith %}
+                          
+                          <!-- Product Badges -->
+                          {% if product.is_on_sale %}
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                              -{{ product.get_discount_percentage }}%
+                            </span>
+                          {% endif %}
+                          {% if product.is_new_arrival %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">{% trans "New" %}</span>
+                          {% endif %}
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                          <h6 class="card-title">
+                            <a href="{{ product.get_absolute_url }}" class="text-decoration-none">{{ product.name }}</a>
+                          </h6>
+                          <p class="card-text text-muted small">{{ product.short_description|truncatewords:15 }}</p>
+                          
+                          <div class="mt-auto">
+                            <div class="d-flex align-items-center justify-content-between">
+                              <div class="price">
+                                {% if product.is_on_sale %}
+                                  <span class="text-danger fw-bold">${{ product.get_price }}</span>
+                                  <span class="text-muted text-decoration-line-through small">${{ product.price }}</span>
+                                {% else %}
+                                  <span class="fw-bold">${{ product.price }}</span>
+                                {% endif %}
+                              </div>
+                              <small class="text-muted">
+                                {% if product.is_in_stock %}
+                                  <i class="fas fa-check text-success"></i> {% trans "In Stock" %}
+                                {% else %}
+                                  <i class="fas fa-times text-danger"></i> {% trans "Out of Stock" %}
+                                {% endif %}
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if products.has_other_pages %}
+                  <nav aria-label="{% trans 'Page navigation' %}">
+                    <ul class="pagination justify-content-center">
+                      {% if products.has_previous %}
+                        <li class="page-item">
+                          <a class="page-link" href="?page={{ products.previous_page_number }}">{% trans "Previous" %}</a>
+                        </li>
+                      {% endif %}
+                      
+                      {% for num in products.paginator.page_range %}
+                        {% if products.number == num %}
+                          <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                          </li>
+                        {% else %}
+                          <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                          </li>
+                        {% endif %}
+                      {% endfor %}
+                      
+                      {% if products.has_next %}
+                        <li class="page-item">
+                          <a class="page-link" href="?page={{ products.next_page_number }}">{% trans "Next" %}</a>
+                        </li>
+                      {% endif %}
+                    </ul>
+                  </nav>
+                {% endif %}
+              {% else %}
+                <div class="text-center py-5">
+                  <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                  <h4 class="text-muted">{% trans "No products found" %}</h4>
+                  <p class="text-muted">{% trans "This vendor doesn't have any products matching your criteria." %}</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- About Tab -->
+        <div class="tab-pane fade" id="about-tab">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">{% trans "About" %} {{ vendor.store_name }}</h5>
+                  {% if vendor.store_description %}
+                    <p class="card-text">{{ vendor.store_description|linebreaks }}</p>
+                  {% else %}
+                    <p class="text-muted">{% trans "No description available for this store." %}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-body">
+                  <h6 class="card-title">{% trans "Store Information" %}</h6>
+                  <ul class="list-unstyled">
+                    <li class="mb-2">
+                      <strong>{% trans "Store Name:" %}</strong> {{ vendor.store_name }}
+                    </li>
+                    <li class="mb-2">
+                      <strong>{% trans "Profile Type:" %}</strong> 
+                      {% if vendor.is_premium %}
+                        <span class="badge bg-warning text-dark">{% trans "Premium" %}</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{% trans "Free" %}</span>
+                      {% endif %}
+                    </li>
+                    <li class="mb-2">
+                      <strong>{% trans "Total Products:" %}</strong> {{ vendor_stats.total_products }}
+                    </li>
+                    {% if vendor.country_of_operation %}
+                      <li class="mb-2">
+                        <strong>{% trans "Country:" %}</strong> {{ vendor.country_of_operation }}
+                      </li>
+                    {% endif %}
+                    {% if vendor.website %}
+                      <li class="mb-2">
+                        <strong>{% trans "Website:" %}</strong> 
+                        <a href="{{ vendor.website }}" target="_blank">{{ vendor.website }}</a>
+                      </li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-submit form when filters change
+  const filterForm = document.getElementById('filterForm');
+  const filterInputs = filterForm.querySelectorAll('select, input[type="checkbox"]');
+  
+  filterInputs.forEach(input => {
+    input.addEventListener('change', function() {
+      filterForm.submit();
+    });
+  });
+});
+</script>
+{% endblock content %}
