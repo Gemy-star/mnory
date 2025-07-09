@@ -550,7 +550,7 @@ msgid ""
 "Welcome to Mnory. By using our platform, you agree to be bound by these "
 "Terms of Service. Please read them carefully."
 msgstr ""
-"مرحبًا بك في ريڤيرس. باستخدامك لمنصتنا، فإنك توافق على الالتزام بشروط الخدمة "
+"مرحبًا بك في منورى. باستخدامك لمنصتنا، فإنك توافق على الالتزام بشروط الخدمة "
 "هذه. يرجى قراءتها بعناية."
 
 #: .\templates\shop\terms.html:17
@@ -568,7 +568,7 @@ msgid ""
 "Terms. You must not misuse the platform or interfere with its normal "
 "operation."
 msgstr ""
-"توافق على استخدام ريڤيرس لأغراض قانونية فقط ووفقًا لهذه الشروط. لا يجوز لك "
+"توافق على استخدام منورى لأغراض قانونية فقط ووفقًا لهذه الشروط. لا يجوز لك "
 "إساءة استخدام المنصة أو التدخل في تشغيلها الطبيعي."
 
 #: .\templates\shop\terms.html:22
