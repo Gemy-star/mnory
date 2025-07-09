@@ -115,30 +115,43 @@
     <div class="swiper-wrapper">
         {% for product in featured_products %}
             <div class="swiper-slide">
-                <div class="card product-card h-100">
-                    {% with main_image=product.get_main_image %}
-                        {% if main_image and main_image.image %}
-                            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                        {% else %}
-                            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
-                        {% endif %}
-                    {% endwith %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <div class="d-flex align-items-baseline mb-2">
-                            <span class="price">${{ product.get_price }}</span>
-                            {% if product.is_on_sale and product.sale_price %}
-                                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {% include "shop/partials/product_flags.html" with product=product %}
-                        </div>
-                        <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
-                            {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
+               <div class="card product-card h-100">
+    {% with main_image=product.get_main_image %}
+        {% if main_image and main_image.image %}
+            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+        {% else %}
+            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
+        {% endif %}
+    {% endwith %}
+    <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <div class="d-flex align-items-baseline mb-2">
+            <span class="price">${{ product.get_price }}</span>
+            {% if product.is_on_sale and product.sale_price %}
+                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {% include "shop/partials/product_flags.html" with product=product %}
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center"> {# Added a flex container for alignment #}
+            <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
+                {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+            
+            {# Link to View Vendor Profile #}
+            {% if product.vendor.vendorprofile %} {# Check if a vendor profile exists for the user #}
+            <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}" 
+               class="btn btn-outline-secondary btn-sm rounded-pill ms-2" {# Added ms-2 for margin #}
+               title="{% trans 'View Vendor Profile' %}">
+                <i class="fas fa-store"></i> {% trans "Vendor" %}
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
             </div>
         {% empty %}
             <div class="text-center text-muted">
@@ -166,30 +179,43 @@
     <div class="swiper-wrapper">
         {% for product in new_arrivals %}
             <div class="swiper-slide">
-                <div class="card product-card h-100">
-                    {% with main_image=product.get_main_image %}
-                        {% if main_image and main_image.image %}
-                            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                        {% else %}
-                            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
-                        {% endif %}
-                    {% endwith %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <div class="d-flex align-items-baseline mb-2">
-                            <span class="price">${{ product.get_price }}</span>
-                            {% if product.is_on_sale and product.sale_price %}
-                                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {% include "shop/partials/product_flags.html" with product=product %}
-                        </div>
-                        <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
-                            {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
+            <div class="card product-card h-100">
+    {% with main_image=product.get_main_image %}
+        {% if main_image and main_image.image %}
+            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+        {% else %}
+            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
+        {% endif %}
+    {% endwith %}
+    <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <div class="d-flex align-items-baseline mb-2">
+            <span class="price">${{ product.get_price }}</span>
+            {% if product.is_on_sale and product.sale_price %}
+                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {% include "shop/partials/product_flags.html" with product=product %}
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center"> {# Added a flex container for alignment #}
+            <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
+                {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+            
+            {# Link to View Vendor Profile #}
+            {% if product.vendor.vendorprofile %} {# Check if a vendor profile exists for the user #}
+            <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}" 
+               class="btn btn-outline-secondary btn-sm rounded-pill ms-2" {# Added ms-2 for margin #}
+               title="{% trans 'View Vendor Profile' %}">
+                <i class="fas fa-store"></i> {% trans "Vendor" %}
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
             </div>
         {% empty %}
             <div class="text-center text-muted">
@@ -217,30 +243,43 @@
     <div class="swiper-wrapper">
         {% for product in best_sellers %}
             <div class="swiper-slide">
-                <div class="card product-card h-100">
-                    {% with main_image=product.get_main_image %}
-                        {% if main_image and main_image.image %}
-                            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                        {% else %}
-                            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
-                        {% endif %}
-                    {% endwith %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <div class="d-flex align-items-baseline mb-2">
-                            <span class="price">${{ product.get_price }}</span>
-                            {% if product.is_on_sale and product.sale_price %}
-                                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {% include "shop/partials/product_flags.html" with product=product %}
-                        </div>
-                        <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
-                            {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
+             <div class="card product-card h-100">
+    {% with main_image=product.get_main_image %}
+        {% if main_image and main_image.image %}
+            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+        {% else %}
+            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
+        {% endif %}
+    {% endwith %}
+    <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <div class="d-flex align-items-baseline mb-2">
+            <span class="price">${{ product.get_price }}</span>
+            {% if product.is_on_sale and product.sale_price %}
+                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {% include "shop/partials/product_flags.html" with product=product %}
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center"> {# Added a flex container for alignment #}
+            <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
+                {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+            
+            {# Link to View Vendor Profile #}
+            {% if product.vendor.vendorprofile %} {# Check if a vendor profile exists for the user #}
+            <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}" 
+               class="btn btn-outline-secondary btn-sm rounded-pill ms-2" {# Added ms-2 for margin #}
+               title="{% trans 'View Vendor Profile' %}">
+                <i class="fas fa-store"></i> {% trans "Vendor" %}
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
             </div>
         {% empty %}
             <div class="text-center text-muted">
@@ -269,30 +308,43 @@
     <div class="swiper-wrapper">
         {% for product in sale_products %}
             <div class="swiper-slide">
-                <div class="card product-card h-100">
-                    {% with main_image=product.get_main_image %}
-                        {% if main_image and main_image.image %}
-                            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                        {% else %}
-                            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
-                        {% endif %}
-                    {% endwith %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <div class="d-flex align-items-baseline mb-2">
-                            <span class="price">${{ product.get_price }}</span>
-                            {% if product.is_on_sale and product.sale_price %}
-                                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {% include "shop/partials/product_flags.html" with product=product %}
-                        </div>
-                        <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
-                            {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
+           <div class="card product-card h-100">
+    {% with main_image=product.get_main_image %}
+        {% if main_image and main_image.image %}
+            <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+        {% else %}
+            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" class="card-img-top" alt="{% trans 'No Image' %}">
+        {% endif %}
+    {% endwith %}
+    <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <div class="d-flex align-items-baseline mb-2">
+            <span class="price">${{ product.get_price }}</span>
+            {% if product.is_on_sale and product.sale_price %}
+                <span class="old-price ms-2 text-muted text-decoration-line-through">${{ product.price }}</span>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {% include "shop/partials/product_flags.html" with product=product %}
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center"> {# Added a flex container for alignment #}
+            <a href="{{ product.get_absolute_url }}" class="btn btn-primary btn-sm rounded-pill">
+                {% trans "View Details" %} <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+            
+            {# Link to View Vendor Profile #}
+            {% if product.vendor.vendorprofile %} {# Check if a vendor profile exists for the user #}
+            <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}" 
+               class="btn btn-outline-secondary btn-sm rounded-pill ms-2" {# Added ms-2 for margin #}
+               title="{% trans 'View Vendor Profile' %}">
+                <i class="fas fa-store"></i> {% trans "Vendor" %}
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
             </div>
         {% empty %}
             <div class="text-center text-muted">

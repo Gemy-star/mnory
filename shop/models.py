@@ -50,6 +50,7 @@ class VendorProfile(models.Model):
         format='JPEG',
         options={'quality': 85}
     )
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
 
     def __str__(self):
         return f"Vendor Profile for {self.user.email}"
@@ -87,7 +88,24 @@ class VendorProfile(models.Model):
             self.save()
             return True
         return False
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.store_name)
+            # Ensure uniqueness in case slugify produces duplicates
+            original_slug = self.slug
+            counter = 1
+            while VendorProfile.objects.filter(slug=self.slug).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('shop:vendor_detail', kwargs={'slug': self.slug})
+
+    def __str__(self):
+        return self.store_name
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)

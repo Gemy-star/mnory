@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, get_object_or_404 , redirect
 from django.http import JsonResponse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Min, Max
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt # Use for simplicity, but in production use csrf_token in form/ajax
@@ -588,99 +588,103 @@ def remove_from_wishlist(request, item_id):
     item = get_object_or_404(WishlistItem, id=item_id, wishlist=wishlist)
     item.delete()
     return redirect('wishlist_detail')
+def vendor_detail(request, slug):
+    # 1. Get the VendorProfile instance
+    vendor_profile = get_object_or_404(VendorProfile, slug=slug)
 
+    # 2. Access the related MnoryUser instance from the VendorProfile
+    # As per your models.py, VendorProfile has a OneToOneField named 'user'
+    # which points to settings.AUTH_USER_MODEL (your MnoryUser).
+    vendor_user_instance = vendor_profile.user
 
-def vendor_detail(request, username):
-    """Vendor products view"""
-    vendor = get_object_or_404(MnoryUser, username=username, is_vendor=True, is_active=True)
+    # Get products for this vendor, filtered by the MnoryUser instance
+    products_queryset = Product.objects.filter(vendor=vendor_user_instance, is_active=True)
 
-    products = Product.objects.filter(
-        vendor=vendor,
-        is_active=True,
-        is_available=True
-    ).select_related('category', 'subcategory', 'brand')
+    # Apply filters
+    price_min = request.GET.get('price_min')
+    price_max = request.GET.get('price_max')
+    category_id = request.GET.get('category')
+    brand_id = request.GET.get('brand')
+    colors_ids = request.GET.getlist('colors') # request.GET.getlist returns a list of selected IDs
+    sizes_ids = request.GET.getlist('sizes')   # request.GET.getlist returns a list of selected IDs
+    sort_by = request.GET.get('sort', '-created_at') # Default sort to newest first
 
-    # Filters
-    subcategory_filter = request.GET.get('subcategory')
-    fit_type_filter = request.GET.get('fit_type')
-    brand_filter = request.GET.get('brand')
-    color_filter = request.GET.get('color')
-    size_filter = request.GET.get('size')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    sort_by = request.GET.get('sort', 'name')
+    # Apply price filters
+    if price_min:
+        products_queryset = products_queryset.filter(price__gte=price_min)
+    if price_max:
+        products_queryset = products_queryset.filter(price__lte=price_max)
 
-    if subcategory_filter:
-        products = products.filter(subcategory__slug=subcategory_filter)
+    # Apply category filter
+    if category_id:
+        products_queryset = products_queryset.filter(category_id=category_id)
 
-    if fit_type_filter:
-        products = products.filter(fit_type__slug=fit_type_filter)
+    # Apply brand filter
+    if brand_id:
+        products_queryset = products_queryset.filter(brand_id=brand_id)
 
-    if brand_filter:
-        products = products.filter(brand__slug=brand_filter)
+    # Apply colors filter (ManyToManyField through ProductColor)
+    if colors_ids:
+        # Filter products that have at least one of the selected colors through the ProductColor intermediate model
+        products_queryset = products_queryset.filter(productcolor__color__id__in=colors_ids).distinct()
 
-    if color_filter:
-        products = products.filter(colors__name__icontains=color_filter)
+    # Apply sizes filter (ManyToManyField through ProductSize)
+    if sizes_ids:
+        # Filter products that have at least one of the selected sizes through the ProductSize intermediate model
+        products_queryset = products_queryset.filter(productsize__size__id__in=sizes_ids).distinct()
 
-    if size_filter:
-        products = products.filter(sizes__name__icontains=size_filter)
-
-    if min_price:
-        products = products.filter(price__gte=min_price)
-
-    if max_price:
-        products = products.filter(price__lte=max_price)
-
-    # Sorting
-    if sort_by == 'price_low':
-        products = products.order_by('price')
-    elif sort_by == 'price_high':
-        products = products.order_by('-price')
-    elif sort_by == 'newest':
-        products = products.order_by('-created_at')
-    elif sort_by == 'popular':
-        products = products.order_by('-is_best_seller', '-created_at')
-    else:
-        products = products.order_by('name')
+    # Apply sorting
+    products_queryset = products_queryset.order_by(sort_by)
 
     # Pagination
-    paginator = Paginator(products, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    paginator = Paginator(products_queryset, 9) # Show 9 products per page
+    page = request.GET.get('page')
+    try:
+        products_page = paginator.page(page)
+    except PageNotAnInteger:
+        products_page = paginator.page(1)
+    except EmptyPage:
+        products_page = paginator.page(paginator.num_pages)
 
-    # Filters
-    fit_types = FitType.objects.filter(is_active=True)
-    brands = Brand.objects.filter(is_active=True)
-    colors = Color.objects.filter(is_active=True)
-    sizes = Size.objects.filter(is_active=True)
-    all_categories = Category.objects.filter(is_active=True)
 
-    # Price range
-    price_range = Product.objects.filter(
-        vendor=vendor,
-        is_active=True,
-        is_available=True
-    ).aggregate(Min('price'), Max('price'))
+    # Get filter options relevant to this vendor's active products
+    # CORRECTED based on your models.py:
+    # - Category and Brand use related_name='products' on Product model
+    # - Color and Size use through models ProductColor and ProductSize respectively.
+
+    # Filter Categories that have active products from this vendor
+    categories = Category.objects.filter(products__vendor=vendor_user_instance, products__is_active=True).distinct()
+    
+    # Filter Brands that have active products from this vendor
+    brands = Brand.objects.filter(products__vendor=vendor_user_instance, products__is_active=True).distinct()
+    
+    # Filter Colors that are associated with active products from this vendor via ProductColor
+    colors = Color.objects.filter(productcolor__product__vendor=vendor_user_instance, productcolor__product__is_active=True).distinct()
+    
+    # Filter Sizes that are associated with active products from this vendor via ProductSize
+    sizes = Size.objects.filter(productsize__product__vendor=vendor_user_instance, productsize__product__is_active=True).distinct()
+
+    # Get min/max price for the vendor's products (for filter range)
+    price_range = Product.objects.filter(vendor=vendor_user_instance, is_active=True).aggregate(Min('price'), Max('price'))
+    # Ensure price_range has a default if no products exist
+    min_price_val = price_range['price__min'] if price_range['price__min'] is not None else 0
+    max_price_val = price_range['price__max'] if price_range['price__max'] is not None else 0
+
+    # Vendor stats
+    vendor_stats = {
+        'total_products': Product.objects.filter(vendor=vendor_user_instance, is_active=True).count(),
+        # Count categories that have active products from this vendor
+        'categories_count': categories.count(), # We already filtered `categories` above
+    }
 
     context = {
-        'vendor': vendor,
-        'products': page_obj,
-        'fit_types': fit_types,
+        'vendor': vendor_profile, # Pass the VendorProfile instance to the template
+        'products': products_page,
+        'categories': categories,
         'brands': brands,
         'colors': colors,
         'sizes': sizes,
-        'price_range': price_range,
-        'categories': all_categories,
-        'current_filters': {
-            'subcategory': subcategory_filter,
-            'fit_type': fit_type_filter,
-            'brand': brand_filter,
-            'color': color_filter,
-            'size': size_filter,
-            'min_price': min_price,
-            'max_price': max_price,
-            'sort': sort_by,
-        }
+        'price_range': {'price__min': min_price_val, 'price__max': max_price_val}, # Pass adjusted price_range
+        'vendor_stats': vendor_stats,
     }
-
     return render(request, 'shop/vendor_detail.html', context)
