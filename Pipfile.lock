@@ -1,12 +1,12 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fb901486646b1f74d27fb3b5ebc0eba63dd8b6bbace6c24f521e9a2429c8e49e"
+            "sha256": "e9250cf3e6eb42014b7734d62de2d0a65c17fe10fa83b786a69fde0dcc38a5c8"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_full_version": "3.13.3",
-            "python_version": "3.13"
+            "python_full_version": "3.11.3",
+            "python_version": "3.11"
         },
         "sources": [
             {
@@ -79,14 +79,31 @@
             "index": "pypi",
             "version": "==5.0.0"
         },
-        "faker": {
+        "django-silk": {
             "hashes": [
-                "sha256:7f69d579588c23d5ce671f3fa872654ede0e67047820255f43a4aa1925b89780",
-                "sha256:cb81c09ebe06c32a10971d1bbdb264bb0e22b59af59548f011ac4809556ce533"
+                "sha256:2247870ac8080b6c6c5db17f2f1042d39d95e4a5fa061d661882777ec9adb672",
+                "sha256:caf720a06e24a6cf1acf825c1868b2a6ece8158b13725363f6d3a1a9994d0fa6"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==37.4.0"
+            "version": "==5.4.0"
+        },
+        "faker": {
+            "hashes": [
+                "sha256:8e281bbaea30e5658895b8bea21cc50d27aaf3a43db3f2694409ca5701c56b0a",
+                "sha256:b70ed1af57bfe988cbcd0afd95f4768c51eaf4e1ce8a30962e127ac5c139c93f"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==37.4.2"
+        },
+        "gprof2dot": {
+            "hashes": [
+                "sha256:0742e4c0b4409a5e8777e739388a11e1ed3750be86895655312ea7c20bd0090e",
+                "sha256:35743e2d2ca027bf48fa7cba37021aaf4a27beeae1ae8e05a50b55f1f921a6ce"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==2025.4.14"
         },
         "gunicorn": {
             "hashes": [
@@ -288,6 +305,7 @@
                 "sha256:60c35bd96201b10c6e7a78121bd0da51084733efa303cc19ead021ab179cef5e",
                 "sha256:a1228c384f8fa13eebc015196db7b3e08722c5058d4758d20cb287503a540d8f"
             ],
+            "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==5.2.4"
         },
