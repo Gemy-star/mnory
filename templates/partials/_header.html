@@ -1,45 +1,146 @@
 {% load i18n %}
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'shop:home' %}">
-            <i class="fas fa-store me-2"></i>Mnory
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="{% trans 'Toggle navigation' %}">
+{% with nav_id="nav1" %}
+<style>
+.navbar-{{ nav_id }} {
+    background-color: #0A1F44 !important; /* Dark Blue */
+    transition: background-color 0.3s ease;
+    z-index: 1030;
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+}
+
+.navbar-{{ nav_id }} .navbar-brand {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #F9FAFB !important; /* Light text on dark bg */
+    margin-right: auto;
+    padding: 0.2rem 0;
+}
+
+.navbar-{{ nav_id }} .nav-link,
+.navbar-{{ nav_id }} .nav-link i {
+    color: #F9FAFB !important;
+    font-size: 1rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+    position: relative;
+}
+
+.navbar-{{ nav_id }} .nav-link:hover,
+.navbar-{{ nav_id }} .nav-link:focus {
+    color: #2EC4B6 !important; /* Accent teal on hover */
+}
+
+.navbar-{{ nav_id }} .icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.navbar-{{ nav_id }} .icon-wrapper .badge {
+    position: absolute;
+    top: -0.4rem;
+    right: -0.5rem;
+    background-color: #FF6B35; /* Vibrant alert orange */
+    color: white;
+    font-size: 0.65rem;
+    font-weight: bold;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    line-height: 1.2rem;
+    padding: 0;
+    border-radius: 50%;
+    text-align: center;
+    box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.navbar-{{ nav_id }} .navbar-toggler {
+    padding: 0.2rem 0.4rem;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .navbar-{{ nav_id }} .dropdown-menu {
+        width: 100%;
+    }
+    .navbar-{{ nav_id }} .navbar-brand {
+        font-size: 2.1rem;
+    }
+    .navbar-{{ nav_id }} .nav-link {
+        padding: 0.5rem 1rem;
+    }
+}
+</style>
+
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-sm navbar-{{ nav_id }}">
+    <div class="container d-flex align-items-center">
+        <!-- Categories Dropdown -->
+        <div class="dropdown me-3">
+            <button class="btn text-white dropdown-toggle border-0 p-0" type="button"
+                    id="categoriesDropdown-{{ nav_id }}" data-bs-toggle="dropdown" aria-expanded="false"
+                    title="{% trans 'Categories' %}">
+                <i class="fas fa-bars fa-lg"></i>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="categoriesDropdown-{{ nav_id }}">
+                {% for cat in categories %}
+                    <li><a class="dropdown-item" href="{% url 'shop:category_detail' slug=cat.slug %}">{{ cat.name }}</a></li>
+                {% endfor %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'shop:home' %}">{% trans "All Products" %}</a></li>
+            </ul>
+        </div>
+
+        <!-- Logo -->
+        <a class="navbar-brand" href="{% url 'shop:home' %}">𝗠ИΘRҮ</a>
+
+        <!-- Toggler -->
+        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav-{{ nav_id }}" aria-controls="navbarNav-{{ nav_id }}"
+                aria-expanded="false" aria-label="{% trans 'Toggle navigation' %}">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'shop:home' %}">{% trans "Home" %}</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {% trans "Categories" %}
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        {% for cat in categories %}
-                            <li><a class="dropdown-item" href="{% url 'shop:category_detail' slug=cat.slug %}">{{ cat.name }}</a></li>
-                        {% endfor %}
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'shop:home' %}">{% trans "All Products" %}</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item position-relative">
-                    <a class="nav-link" href="{% url 'shop:cart_detail' %}"><i class="fas fa-shopping-cart"></i> {% trans "Cart" %} <span class="badge" id="cart-count">0</span></a>
-                </li>
-                <li class="nav-item position-relative">
-                    <a class="nav-link" href="{% url 'shop:wishlist_detail' %}"><i class="fas fa-heart"></i> {% trans "Wishlist" %} <span class="badge" id="wishlist-count">0</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'shop:account' %}"><i class="fas fa-user"></i> {% trans "Account" %}</a>
-                </li>
 
-                <!-- 🌍 Language Switcher Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        🌐 {% trans "Language" %}
+        <!-- Links -->
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav-{{ nav_id }}">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item d-none d-lg-block">
+                    <a class="nav-link active" href="{% url 'shop:home' %}" title="{% trans 'Home' %}">
+                        <i class="fas fa-home"></i>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'shop:cart_view' %}" title="{% trans 'Cart' %}">
+                        <span class="icon-wrapper">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge" id="cart-count-{{ nav_id }}" id="cart_count">
+                                {{ request.session.cart_count|default:"0" }}
+                            </span>
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'shop:wishlist_view' %}" title="{% trans 'Wishlist' %}">
+                        <span class="icon-wrapper">
+                            <i class="fas fa-heart"></i>
+                            <span class="badge" id="wishlist-count-{{ nav_id }}" id="wish_count">
+                                {{ request.session.wishlist_count|default:"0" }}
+                            </span>
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'shop:account' %}" title="{% trans 'Account' %}">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="languageDropdown-{{ nav_id }}"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false" title="{% trans 'Language' %}">
+                        <i class="fas fa-globe"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-{{ nav_id }}">
                         <li>
                             <form action="{% url 'set_language' %}" method="post" class="px-3">
                                 {% csrf_token %}
@@ -47,7 +148,6 @@
                                 <select name="language" class="form-select form-select-sm" onchange="this.form.submit()">
                                     <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
                                     <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>العربية</option>
-                                    <!-- Add more languages here if needed -->
                                 </select>
                             </form>
                         </li>
@@ -57,3 +157,4 @@
         </div>
     </div>
 </nav>
+{% endwith %}

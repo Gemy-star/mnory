@@ -1,187 +1,230 @@
-/* static/css/style.css */
-     body {
-            font-family: "IBM Plex Sans Arabic", sans-serif;
-            background-color: #f8f9fa;
-        }
-        .navbar-brand {
-            font-weight: 700;
-            color: #343a40;
-        }
-        .navbar-brand:hover {
-            color: #007bff;
-        }
-        .footer {
-            background-color: #343a40;
-            color: white;
-            padding: 20px 0;
-        }
-        .product-card {
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease-in-out;
-            background-color: #fff;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-        }
-        .product-card img {
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            height: 250px;
-            object-fit: cover;
-            width: 100%;
-        }
-        .product-card .card-body {
-            padding: 15px;
-        }
-        .product-card .card-title {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        .product-card .price {
-            font-size: 1.2em;
-            font-weight: 700;
-            color: #28a745; /* Green for current price */
-        }
-        .product-card .old-price {
-            font-size: 0.9em;
-            color: #dc3545; /* Red for old price */
-            text-decoration: line-through;
-            margin-left: 10px;
-        }
-        .badge-flag {
-            font-size: 0.75em;
-            padding: 0.3em 0.6em;
-            border-radius: 0.5rem;
-            margin-right: 5px;
-            font-weight: 500;
-        }
-        .badge-bestseller { background-color: #ffc107; color: #343a40; } /* Yellow */
-        .badge-new-arrival { background-color: #17a2b8; color: white; } /* Cyan */
-        .badge-on-sale { background-color: #dc3545; color: white; } /* Red */
-        .badge-featured { background-color: #6f42c1; color: white; } /* Purple */
+body {
+    font-family: "IBM Plex Sans Arabic", sans-serif;
+    background-color: #F9FAFB; /* Off-white */
+}
+.footer-color {
+    background-color: #0A1F44 !important;
+}
+.navbar-brand {
+    font-weight: 700;
+    color: #0A1F44; /* Dark blue */
+}
 
-        /* Swiper styles for product detail page */
-        .product-detail-swiper .swiper-slide img {
-            width: 100%;
-            height: 500px; /* Adjust as needed */
-            object-fit: contain; /* Keep aspect ratio, fit within container */
-            border-radius: 10px;
-        }
-        .product-detail-thumbs .swiper-slide img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: border-color 0.2s;
-        }
-        .product-detail-thumbs .swiper-slide-thumb-active img {
-            border-color: #007bff;
-        }
-        .swiper-button-next, .swiper-button-prev {
-            color: #007bff !important;
-        }
-        .swiper-pagination-bullet-active {
-            background: #007bff !important;
-        }
-        .filter-section {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .filter-section .form-check-label {
-            cursor: pointer;
-        }
-        .filter-section h5 {
-            margin-bottom: 15px;
-            font-weight: 600;
-            color: #343a40;
-        }
-        .category-list .list-group-item {
-            border: none;
-            padding: 8px 0;
-            font-weight: 500;
-            color: #495057;
-        }
-        .category-list .list-group-item:hover {
-            color: #007bff;
-            background-color: #e9ecef;
-            border-radius: 5px;
-        }
-        .category-list .list-group-item.active {
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-        }
-        .category-list .list-group-item i {
-            margin-right: 8px;
-        }
-        .size-buttons .btn {
-            margin: 5px;
-            border-radius: 8px;
-            font-size: 0.9em;
-            padding: 8px 15px;
-        }
-        .size-buttons .btn-outline-primary:hover {
-            background-color: #007bff;
-            color: white;
-        }
-        .size-buttons .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-/* Example: Adjusting container padding for smaller screens */
+.navbar-brand:hover {
+    color: #2EC4B6; /* Teal accent */
+}
+
+.footer {
+    background-color: #0A1F44;
+    color: white;
+    padding: 20px 0;
+}
+
+.product-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease-in-out;
+    background-color: #ffffff;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-card img {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    height: 250px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.product-card .card-body {
+    padding: 15px;
+}
+
+.product-card .card-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.product-card .price {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #FF6B35; /* Orange accent for current price */
+}
+
+.product-card .old-price {
+    font-size: 0.9em;
+    color: #dc3545;
+    text-decoration: line-through;
+    margin-left: 10px;
+}
+
+.badge-flag {
+    font-size: 0.75em;
+    padding: 0.3em 0.6em;
+    border-radius: 0.5rem;
+    margin-right: 5px;
+    font-weight: 500;
+}
+
+.badge-bestseller {
+    background-color: #FF6B35; /* Orange */
+    color: #ffffff;
+}
+.badge-new-arrival {
+    background-color: #2EC4B6; /* Teal */
+    color: white;
+}
+.badge-on-sale {
+    background-color: #dc3545;
+    color: white;
+}
+.badge-featured {
+    background-color: #6C8CD5; /* Soft secondary blue */
+    color: white;
+}
+
+.product-detail-swiper .swiper-slide img {
+    width: 100%;
+    height: 500px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.product-detail-thumbs .swiper-slide img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.product-detail-thumbs .swiper-slide-thumb-active img {
+    border-color: #0A1F44; /* Dark blue */
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    color: #0A1F44 !important; /* Dark blue */
+}
+
+.swiper-pagination-bullet-active {
+    background: #0A1F44 !important;
+}
+
+.filter-section {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-section .form-check-label {
+    cursor: pointer;
+}
+
+.filter-section h5 {
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #0A1F44; /* Dark blue */
+}
+
+.category-list .list-group-item {
+    border: none;
+    padding: 8px 0;
+    font-weight: 500;
+    color: #495057;
+}
+
+.category-list .list-group-item:hover {
+    color: #0A1F44;
+    background-color: #e9ecef;
+    border-radius: 5px;
+}
+
+.category-list .list-group-item.active {
+    background-color: #0A1F44;
+    color: white;
+    border-radius: 5px;
+}
+
+.category-list .list-group-item i {
+    margin-right: 8px;
+}
+
+.size-buttons .btn {
+    margin: 5px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    padding: 8px 15px;
+}
+
+.size-buttons .btn-outline-primary:hover {
+    background-color: #0A1F44;
+    color: white;
+}
+
+.size-buttons .btn-primary {
+    background-color: #0A1F44;
+    border-color: #0A1F44;
+}
+
 @media (max-width: 767.98px) {
     .container {
         padding-left: 15px;
         padding-right: 15px;
     }
     .product-detail-swiper .swiper-slide img {
-        height: 300px; /* Smaller height for mobile */
+        height: 300px;
     }
 }
 
-/* Further refinements for product cards */
 .product-card .card-body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
-.product-card .card-body .btn {
-    align-self: flex-start; /* Align button to the start */
-}
 
-/* Ensure filter section is sticky on larger screens if desired */
-/*
-@media (min-width: 992px) {
-    .filter-section {
-        position: sticky;
-        top: 20px;
-    }
+.product-card .card-body .btn {
+    align-self: flex-start;
 }
-*/
 
 .nav-item .badge {
     position: absolute;
-    top: 5px; /* Adjust as needed for vertical alignment */
-    right: 5px; /* Adjust as needed for horizontal alignment */
+    top: 5px;
+    right: 5px;
     padding: 0.35em 0.6em;
-    border-radius: 50%; /* Makes it round */
+    border-radius: 50%;
     font-size: 0.7em;
-    background-color: #dc3545; /* Red for emphasis, adjust color as desired */
+    background-color: #dc3545;
     color: white;
-    transform: translate(50%, -50%); /* Adjust position relative to its parent */
+    transform: translate(50%, -50%);
 }
 
 .intro {
-      background-image: url('../images/men.jpg');
-    background-size: cover;         /* Optional: scales image */
-    background-repeat: no-repeat;   /* Optional: prevents repeating */
-    background-position: center;    /* Optional: centers the image */
-    background-color: rgba(255, 255, 255, 0.5); /* semi-transparent background */
+    background-image: url('../images/men.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.product-card .product-image.hover-img {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    object-fit: cover;
+}
+
+.product-card:hover .product-image.hover-img {
+    opacity: 1;
+}
+
+.product-card .product-image.default-img {
+    transition: opacity 0.3s ease;
 }

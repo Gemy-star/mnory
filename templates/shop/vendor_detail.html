@@ -7,40 +7,46 @@
   <!-- Vendor Header -->
   <div class="row mb-4">
     <div class="col-12">
-      <div class="card">
+      <div class="card shadow-sm border-0">
         <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-md-2">
+          <div class="row align-items-center g-3">
+            <div class="col-md-2 text-center">
               {% if vendor.logo %}
-                <img src="{{ vendor.logo.url }}" alt="{{ vendor.store_name }}" class="img-fluid rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                <img src="{{ vendor.logo.url }}" alt="{{ vendor.store_name }}" class="img-fluid rounded-circle shadow" style="width: 100px; height: 100px; object-fit: cover;">
               {% else %}
-                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 100px; height: 100px;">
-                  <i class="fas fa-store fa-2x"></i>
+                <div class="bg-light border rounded-circle d-flex align-items-center justify-content-center text-secondary" style="width: 100px; height: 100px;">
+                  <i class="fa-solid fa-store fa-2x"></i>
                 </div>
               {% endif %}
             </div>
             <div class="col-md-8">
-              <h1 class="h3 mb-1">{{ vendor.store_name }}</h1>
+              <h1 class="h4 fw-semibold mb-1">{{ vendor.store_name }}</h1>
               {% if vendor.is_premium %}
                 <span class="badge bg-warning text-dark mb-2">
-                  <i class="fas fa-crown"></i> {% trans "Premium Vendor" %}
+                  <i class="fa-solid fa-crown me-1"></i> {% trans "Premium Vendor" %}
                 </span>
               {% endif %}
               {% if vendor.store_description %}
-                <p class="text-muted mb-2">{{ vendor.store_description|truncatewords:30 }}</p>
+                <p class="text-muted small">{{ vendor.store_description|truncatewords:30 }}</p>
               {% endif %}
-              <div class="d-flex gap-3 text-sm">
-                <span><i class="fas fa-box"></i> {{ vendor_stats.total_products }} {% trans "Products" %}</span>
-                <span><i class="fas fa-tags"></i> {{ vendor_stats.categories_count }} {% trans "Categories" %}</span>
+              <ul class="list-inline text-muted small">
+                <li class="list-inline-item me-3">
+                  <i class="fa-solid fa-box"></i> {{ vendor_stats.total_products }} {% trans "Products" %}
+                </li>
+                <li class="list-inline-item me-3">
+                  <i class="fa-solid fa-tags"></i> {{ vendor_stats.categories_count }} {% trans "Categories" %}
+                </li>
                 {% if vendor.country_of_operation %}
-                  <span><i class="fas fa-globe"></i> {{ vendor.country_of_operation }}</span>
+                  <li class="list-inline-item">
+                    <i class="fa-solid fa-globe"></i> {{ vendor.country_of_operation }}
+                  </li>
                 {% endif %}
-              </div>
+              </ul>
             </div>
             <div class="col-md-2 text-end">
               {% if vendor.website %}
-                <a href="{{ vendor.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                  <i class="fas fa-external-link-alt"></i> {% trans "Visit Website" %}
+                <a href="{{ vendor.website }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> {% trans "Visit Website" %}
                 </a>
               {% endif %}
             </div>
@@ -50,16 +56,19 @@
     </div>
   </div>
 
+  <!-- Tabs -->
   <div class="row">
     <div class="col-12">
-      <ul class="nav nav-tabs" id="vendorTabs">
+      <ul class="nav nav-tabs border-0">
         <li class="nav-item">
-          <a class="nav-link active" data-bs-toggle="tab" href="#products-tab">
-            {% trans "Products" %} ({{ vendor_stats.total_products }})
+          <a class="nav-link active fw-semibold" data-bs-toggle="tab" href="#products-tab">
+            <i class="fa-solid fa-box-open me-1"></i> {% trans "Products" %} ({{ vendor_stats.total_products }})
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="tab" href="#about-tab">{% trans "About Store" %}</a>
+          <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#about-tab">
+            <i class="fa-solid fa-circle-info me-1"></i> {% trans "About Store" %}
+          </a>
         </li>
       </ul>
 
@@ -67,225 +76,196 @@
         <!-- Products Tab -->
         <div class="tab-pane fade show active" id="products-tab">
           <div class="row">
-            <!-- Filters Sidebar -->
-            <div class="col-md-3 mb-4">
-              <div class="card">
-                <div class="card-header">
-                  <h6 class="mb-0">{% trans "Filter Products" %}</h6>
-                </div>
-                <div class="card-body">
-                  <form method="GET" id="filterForm">
-                    <!-- Price Range -->
-                    {% if price_range.price__min and price_range.price__max %}
-                    <div class="mb-3">
-                      <label class="form-label">{% trans "Price Range" %}</label>
-                      <div class="row">
-                        <div class="col-6">
-                          <input type="number" name="price_min" class="form-control form-control-sm" 
-                                 placeholder="Min" value="{{ request.GET.price_min }}" 
-                                 min="{{ price_range.price__min }}" max="{{ price_range.price__max }}">
-                        </div>
-                        <div class="col-6">
-                          <input type="number" name="price_max" class="form-control form-control-sm" 
-                                 placeholder="Max" value="{{ request.GET.price_max }}" 
-                                 min="{{ price_range.price__min }}" max="{{ price_range.price__max }}">
-                        </div>
-                      </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Categories -->
-                    {% if categories %}
-                    <div class="mb-3">
-                      <label class="form-label">{% trans "Categories" %}</label>
-                      <select name="category" class="form-select form-select-sm">
-                        <option value="">{% trans "All Categories" %}</option>
-                        {% for category in categories %}
-                          <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
-                            {{ category.name }}
-                          </option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                    {% endif %}
-
-                    <!-- Brands -->
-                    {% if brands %}
-                    <div class="mb-3">
-                      <label class="form-label">{% trans "Brands" %}</label>
-                      <select name="brand" class="form-select form-select-sm">
-                        <option value="">{% trans "All Brands" %}</option>
-                        {% for brand in brands %}
-                          <option value="{{ brand.id }}" {% if request.GET.brand == brand.id|stringformat:"s" %}selected{% endif %}>
-                            {{ brand.name }}
-                          </option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                    {% endif %}
-
-                    <!-- Colors -->
-                    {% if colors %}
-                    <div class="mb-3">
-                      <label class="form-label">{% trans "Colors" %}</label>
-                      <div class="d-flex flex-wrap gap-1">
-                        {% for color in colors %}
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="colors" value="{{ color.id }}" 
-                                   id="color{{ color.id }}" {% if color.id|stringformat:"s" in request.GET.colors %}checked{% endif %}>
-                            <label class="form-check-label" for="color{{ color.id }}">
-                              <span class="color-swatch" style="background-color: {{ color.code }}; width: 20px; height: 20px; display: inline-block; border-radius: 50%; border: 1px solid #ddd;"></span>
-                              {{ color.name }}
-                            </label>
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 mb-4 pt-4 pt-lg-2">
+              <div class="position-sticky" style="top: 90px; z-index: 10;">
+                <div class="accordion" id="filterAccordion">
+                  <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFilters">
+                      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
+                        <i class="fa-solid fa-filter me-2"></i>{% trans "Filters" %}
+                      </button>
+                    </h2>
+                    <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilters" data-bs-parent="#filterAccordion">
+                      <div class="accordion-body">
+                        <!-- Categories -->
+                        <div class="mb-4">
+                          <h6>{% trans "Categories" %}</h6>
+                          <div class="list-group list-group-flush category-list">
+                            <a href="{% url 'shop:home' %}" class="list-group-item {% if not category %}active{% endif %}">
+                              <i class="fa-solid fa-th-large me-1"></i> {% trans "All Products" %}
+                            </a>
+                            {% for cat in categories %}
+                              <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="list-group-item {% if category and category.slug == cat.slug %}active{% endif %}">
+                                <i class="fa-solid fa-folder me-1"></i> {{ cat.name }}
+                              </a>
+                              {% if category and category.slug == cat.slug %}
+                                {% for subcat in subcategories %}
+                                  <a href="{% url 'shop:subcategory_detail' category_slug=cat.slug slug=subcat.slug %}" class="list-group-item ps-4 {% if current_filters.subcategory == subcat.slug %}active{% endif %}">
+                                    <i class="fa-solid fa-angle-right me-1"></i> {{ subcat.name }}
+                                  </a>
+                                {% endfor %}
+                              {% endif %}
+                            {% endfor %}
                           </div>
-                        {% endfor %}
-                      </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Sizes -->
-                    {% if sizes %}
-                    <div class="mb-3">
-                      <label class="form-label">{% trans "Sizes" %}</label>
-                      <div class="d-flex flex-wrap gap-1">
-                        {% for size in sizes %}
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="sizes" value="{{ size.id }}" 
-                                   id="size{{ size.id }}" {% if size.id|stringformat:"s" in request.GET.sizes %}checked{% endif %}>
-                            <label class="form-check-label" for="size{{ size.id }}">
-                              {{ size.name }}
-                            </label>
-                          </div>
-                        {% endfor %}
-                      </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Filter Buttons -->
-                    <div class="d-grid gap-2">
-                      <button type="submit" class="btn btn-primary btn-sm">{% trans "Apply Filters" %}</button>
-                    <a href="{% url 'shop:vendor_detail' slug=vendor.slug %}" class="btn btn-outline-secondary btn-sm">{% trans "Clear Filters" %}</a>                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-
-            <!-- Products Grid -->
-            <div class="col-md-9">
-              <!-- Sort Options -->
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="text-muted mb-0">
-                  {% trans "Showing" %} {{ products.start_index }}-{{ products.end_index }} {% trans "of" %} {{ products.paginator.count }} {% trans "products" %}
-                </p>
-                <div class="dropdown">
-                  <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    {% trans "Sort by" %}
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="?sort=name">{% trans "Name A-Z" %}</a></li>
-                    <li><a class="dropdown-item" href="?sort=-name">{% trans "Name Z-A" %}</a></li>
-                    <li><a class="dropdown-item" href="?sort=price">{% trans "Price Low to High" %}</a></li>
-                    <li><a class="dropdown-item" href="?sort=-price">{% trans "Price High to Low" %}</a></li>
-                    <li><a class="dropdown-item" href="?sort=-created_at">{% trans "Newest First" %}</a></li>
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Products -->
-              {% if products %}
-                <div class="row">
-                  {% for product in products %}
-                    <div class="col-lg-4 col-md-6 mb-4">
-                      <div class="card h-100">
-                        <div class="position-relative">
-                          {% with product.get_main_image as main_image %}
-                            {% if main_image %}
-                              <img src="{{ main_image.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
-                            {% else %}
-                              <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                <i class="fas fa-image fa-3x text-muted"></i>
-                              </div>
-                            {% endif %}
-                          {% endwith %}
-                          
-                          <!-- Product Badges -->
-                          {% if product.is_on_sale %}
-                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">
-                              -{{ product.get_discount_percentage }}%
-                            </span>
-                          {% endif %}
-                          {% if product.is_new_arrival %}
-                            <span class="badge bg-success position-absolute top-0 end-0 m-2">{% trans "New" %}</span>
-                          {% endif %}
                         </div>
-                        
-                        <div class="card-body d-flex flex-column">
-                          <h6 class="card-title">
-                            <a href="{{ product.get_absolute_url }}" class="text-decoration-none">{{ product.name }}</a>
-                          </h6>
-                          <p class="card-text text-muted small">{{ product.short_description|truncatewords:15 }}</p>
-                          
-                          <div class="mt-auto">
-                            <div class="d-flex align-items-center justify-content-between">
-                              <div class="price">
-                                {% if product.is_on_sale %}
-                                  <span class="text-danger fw-bold">${{ product.get_price }}</span>
-                                  <span class="text-muted text-decoration-line-through small">${{ product.price }}</span>
-                                {% else %}
-                                  <span class="fw-bold">${{ product.price }}</span>
-                                {% endif %}
+
+                        <!-- Filter Form -->
+                        <form id="filterForm">
+                          <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
+                          <input type="hidden" name="subcategory_slug" value="{{ current_filters.subcategory|default:'' }}">
+
+                          <!-- Fit Type -->
+                          <div class="mb-3">
+                            <h6>{% trans "Fit Type" %}</h6>
+                            {% for fit_type in fit_types %}
+                              <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" name="fit_type" value="{{ fit_type.slug }}" id="fitType{{ fit_type.slug }}" {% if fit_type.slug == current_filters.fit_type %}checked{% endif %}>
+                                <label class="form-check-label" for="fitType{{ fit_type.slug }}">{{ fit_type.name }}</label>
                               </div>
-                              <small class="text-muted">
-                                {% if product.is_in_stock %}
-                                  <i class="fas fa-check text-success"></i> {% trans "In Stock" %}
-                                {% else %}
-                                  <i class="fas fa-times text-danger"></i> {% trans "Out of Stock" %}
-                                {% endif %}
-                              </small>
+                            {% endfor %}
+                          </div>
+
+                          <!-- Brand -->
+                          <div class="mb-3">
+                            <h6>{% trans "Brand" %}</h6>
+                            {% for brand in brands %}
+                              <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" name="brand" value="{{ brand.slug }}" id="brand{{ brand.slug }}" {% if brand.slug == current_filters.brand %}checked{% endif %}>
+                                <label class="form-check-label" for="brand{{ brand.slug }}">{{ brand.name }}</label>
+                              </div>
+                            {% endfor %}
+                          </div>
+
+                          <!-- Color -->
+                          <div class="mb-3">
+                            <h6>{% trans "Color" %}</h6>
+                            {% for color in colors %}
+                              <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" name="color" value="{{ color.name }}" id="color{{ color.name }}" {% if color.name == current_filters.color %}checked{% endif %}>
+                                <label class="form-check-label" for="color{{ color.name }}">
+                                  <span style="display: inline-block; width: 15px; height: 15px; background-color: {{ color.hex_code }}; border: 1px solid #ccc; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                                  {{ color.name }}
+                                </label>
+                              </div>
+                            {% endfor %}
+                          </div>
+
+                          <!-- Size -->
+                          <div class="mb-3">
+                            <h6>{% trans "Size" %}</h6>
+                            {% for size in sizes %}
+                              <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" name="size" value="{{ size.name }}" id="size{{ size.name }}" {% if size.name == current_filters.size %}checked{% endif %}>
+                                <label class="form-check-label" for="size{{ size.name }}">{{ size.name }} ({{ size.get_size_type_display }})</label>
+                              </div>
+                            {% endfor %}
+                          </div>
+
+                          <!-- Price -->
+                          <div class="mb-3">
+                            <h6>{% trans "Price Range" %}</h6>
+                            <div class="d-flex mb-2">
+                              <input type="number" class="form-control me-2" name="min_price" placeholder="{% trans 'Min' %}" value="{{ current_filters.min_price|default:'' }}">
+                              <input type="number" class="form-control" name="max_price" placeholder="{% trans 'Max' %}" value="{{ current_filters.max_price|default:'' }}">
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary w-100">{% trans "Apply Price" %}</button>
+                          </div>
+
+                          <!-- Sort -->
+                          <div class="mb-3">
+                            <h6>{% trans "Sort By" %}</h6>
+                            <select class="form-select" name="sort">
+                              <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
+                              <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>{% trans "Price (Low to High)" %}</option>
+                              <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>{% trans "Price (High to Low)" %}</option>
+                              <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
+                              <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>{% trans "Popular" %}</option>
+                            </select>
+                          </div>
+
+                          <!-- Flags -->
+                          <div class="mb-3">
+                            <h6>{% trans "Flags" %}</h6>
+                            <div class="form-check">
+                              <input class="form-check-input filter-checkbox" type="checkbox" name="is_best_seller" value="true" id="isBestseller" {% if current_filters.is_best_seller %}checked{% endif %}>
+                              <label class="form-check-label" for="isBestseller"><i class="fa-solid fa-star text-warning me-1"></i> {% trans "Best Seller" %}</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input filter-checkbox" type="checkbox" name="is_new_arrival" value="true" id="isNewArrival" {% if current_filters.is_new_arrival %}checked{% endif %}>
+                              <label class="form-check-label" for="isNewArrival"><i class="fa-solid fa-tag text-info me-1"></i> {% trans "New Arrival" %}</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input filter-checkbox" type="checkbox" name="is_on_sale" value="true" id="onSale" {% if current_filters.is_on_sale %}checked{% endif %}>
+                              <label class="form-check-label" for="onSale"><i class="fa-solid fa-fire text-danger me-1"></i> {% trans "On Sale" %}</label>
                             </div>
                           </div>
-                        </div>
+                        </form>
                       </div>
                     </div>
-                  {% endfor %}
+                  </div>
                 </div>
+              </div>
 
-                <!-- Pagination -->
-                {% if products.has_other_pages %}
-                  <nav aria-label="{% trans 'Page navigation' %}">
-                    <ul class="pagination justify-content-center">
-                      {% if products.has_previous %}
-                        <li class="page-item">
-                          <a class="page-link" href="?page={{ products.previous_page_number }}">{% trans "Previous" %}</a>
-                        </li>
-                      {% endif %}
-                      
-                      {% for num in products.paginator.page_range %}
-                        {% if products.number == num %}
-                          <li class="page-item active">
-                            <span class="page-link">{{ num }}</span>
-                          </li>
-                        {% else %}
-                          <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                          </li>
-                        {% endif %}
-                      {% endfor %}
-                      
-                      {% if products.has_next %}
-                        <li class="page-item">
-                          <a class="page-link" href="?page={{ products.next_page_number }}">{% trans "Next" %}</a>
-                        </li>
-                      {% endif %}
-                    </ul>
-                  </nav>
+            <!-- Product Listings -->
+            <div class="col-lg-9">
+              <h2 class="h5 mb-4">
+                <i class="fa-solid fa-shirt me-1 text-primary"></i>
+                {% if subcategory %}
+                  {{ subcategory.name }} {% trans "Products" %}
+                {% elif category %}
+                  {{ category.name }} {% trans "Products" %}
+                {% else %}
+                  {% trans "All Products" %}
                 {% endif %}
-              {% else %}
-                <div class="text-center py-5">
-                  <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                  <h4 class="text-muted">{% trans "No products found" %}</h4>
-                  <p class="text-muted">{% trans "This vendor doesn't have any products matching your criteria." %}</p>
-                </div>
+              </h2>
+
+              <div id="product-list-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for product in products %}
+                  <div class="col">
+                    {% include "partials/_product.html" with product=product section="category" %}
+                  </div>
+                {% empty %}
+                  <div class="col-12">
+                    <div class="alert alert-info">
+                      {% trans "No products found in this category or with the selected filters." %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+
+              {% if products.has_other_pages %}
+                <nav aria-label="{% trans 'Page navigation' %}" class="mt-4">
+                  <ul class="pagination pagination-sm justify-content-center">
+                    {% if products.has_previous %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                          <i class="fa-solid fa-angle-left"></i> {% trans "Previous" %}
+                        </a>
+                      </li>
+                    {% else %}
+                      <li class="page-item disabled"><span class="page-link"><i class="fa-solid fa-angle-left"></i> {% trans "Previous" %}</span></li>
+                    {% endif %}
+
+                    {% for i in products.paginator.page_range %}
+                      {% if products.number == i %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                      {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
+                      {% endif %}
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                          {% trans "Next" %} <i class="fa-solid fa-angle-right"></i>
+                        </a>
+                      </li>
+                    {% else %}
+                      <li class="page-item disabled"><span class="page-link">{% trans "Next" %} <i class="fa-solid fa-angle-right"></i></span></li>
+                    {% endif %}
+                  </ul>
+                </nav>
               {% endif %}
             </div>
           </div>
@@ -295,7 +275,7 @@
         <div class="tab-pane fade" id="about-tab">
           <div class="row">
             <div class="col-md-8">
-              <div class="card">
+              <div class="card shadow-sm">
                 <div class="card-body">
                   <h5 class="card-title">{% trans "About" %} {{ vendor.store_name }}</h5>
                   {% if vendor.store_description %}
@@ -307,32 +287,32 @@
               </div>
             </div>
             <div class="col-md-4">
-              <div class="card">
+              <div class="card shadow-sm">
                 <div class="card-body">
                   <h6 class="card-title">{% trans "Store Information" %}</h6>
                   <ul class="list-unstyled">
                     <li class="mb-2">
-                      <strong>{% trans "Store Name:" %}</strong> {{ vendor.store_name }}
+                      <strong><i class="fa-solid fa-store me-1"></i> {% trans "Store Name:" %}</strong> {{ vendor.store_name }}
                     </li>
                     <li class="mb-2">
-                      <strong>{% trans "Profile Type:" %}</strong> 
+                      <strong><i class="fa-solid fa-id-badge me-1"></i> {% trans "Profile Type:" %}</strong>
                       {% if vendor.is_premium %}
-                        <span class="badge bg-warning text-dark">{% trans "Premium" %}</span>
+                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-crown me-1"></i> {% trans "Premium" %}</span>
                       {% else %}
                         <span class="badge bg-secondary">{% trans "Free" %}</span>
                       {% endif %}
                     </li>
                     <li class="mb-2">
-                      <strong>{% trans "Total Products:" %}</strong> {{ vendor_stats.total_products }}
+                      <strong><i class="fa-solid fa-box-open me-1"></i> {% trans "Total Products:" %}</strong> {{ vendor_stats.total_products }}
                     </li>
                     {% if vendor.country_of_operation %}
                       <li class="mb-2">
-                        <strong>{% trans "Country:" %}</strong> {{ vendor.country_of_operation }}
+                        <strong><i class="fa-solid fa-globe me-1"></i> {% trans "Country:" %}</strong> {{ vendor.country_of_operation }}
                       </li>
                     {% endif %}
                     {% if vendor.website %}
                       <li class="mb-2">
-                        <strong>{% trans "Website:" %}</strong> 
+                        <strong><i class="fa-solid fa-link me-1"></i> {% trans "Website:" %}</strong>
                         <a href="{{ vendor.website }}" target="_blank">{{ vendor.website }}</a>
                       </li>
                     {% endif %}
@@ -342,6 +322,7 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -349,10 +330,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Auto-submit form when filters change
   const filterForm = document.getElementById('filterForm');
   const filterInputs = filterForm.querySelectorAll('select, input[type="checkbox"]');
-  
   filterInputs.forEach(input => {
     input.addEventListener('change', function() {
       filterForm.submit();
@@ -360,4 +339,4 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-{% endblock content %}
+{% endblock %}

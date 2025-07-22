@@ -1,48 +1,175 @@
 {% load i18n static %}
-<footer class="footer mt-auto py-4 bg-dark border-top border-secondary text-light">
-  <div class="container text-center text-md-start">
-    <div class="row">
-      <!-- Intro Section -->
-      <div class="col-md-4 mb-3">
-<img src="{% static 'images/logo-white.png' %}" 
-     class="img-fluid mb-2" 
-     alt="{{ config.COMPANY_NAME }} logo" 
-     style="max-width: 120px; height: auto;">
-             <p class="text-white-50">{{ config.COMPANY_DESCRIPTION }}</p>
-        <p class="text-white-50">
-          <i class="fas fa-envelope me-2"></i> {{ config.EMAIL_ADDRESS }}<br>
-          <i class="fab fa-whatsapp me-2"></i> <a href="https://wa.me/{{ config.WHATSAPP_NUMBER|cut:'+' }}" class="text-white-50 text-decoration-none">{{ config.WHATSAPP_NUMBER }}</a>
-        </p>
-      </div>
+<style>
+  footer.footer {
+    background-color: #0A1F44; /* Dark Blue */
+    color: #F9FAFB;
+    font-family: 'Segoe UI', sans-serif;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  }
 
-      <!-- Quick Links -->
-      <div class="col-md-4 mb-3">
-        <h5 class="text-uppercase fw-bold">{% trans "Quick Links" %}</h5>
-        <ul class="list-unstyled">
-          <li><a href="{% url 'shop:home' %}" class="text-white-50 text-decoration-none">{% trans "Home" %}</a></li>
-          <li><a href="{% url 'shop:category_detail' slug='all' %}" class="text-white-50 text-decoration-none">{% trans "Shop" %}</a></li>
-          <li><a href="" class="text-white-50 text-decoration-none">{% trans "Cart" %}</a></li>
-          <li><a href="" class="text-white-50 text-decoration-none">{% trans "My Account" %}</a></li>
-          <li><a href="" class="text-white-50 text-decoration-none">{% trans "Contact Us" %}</a></li>
-          <li><a href="{% url 'shop:terms' %}" class="text-white-50 text-decoration-none">{% trans "Terms of service" %}</a></li>
-          <li><a href="{% url 'shop:policy' %}" class="text-white-50 text-decoration-none">{% trans "Privacy & Policy" %}</a></li>
+  .logo {
+    font-size: 2.1rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #F9FAFB !important;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
 
-        </ul>
+  footer h6,
+  footer p,
+  footer a,
+  footer li {
+    color: #F9FAFB;
+    font-size: 0.95rem;
+  }
+
+  footer a {
+    transition: color 0.3s ease, background-color 0.3s ease;
+  }
+
+  footer a:hover {
+    background-color: var(--bs-secondary);
+    color: white !important;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+  }
+
+  .footer hr {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .social-icons a {
+    font-size: 1.3rem;
+    color: #F9FAFB;
+    transition: all 0.3s ease;
+  }
+
+  .social-icons a:hover {
+    color: var(--bs-secondary);
+    transform: translateY(-2px);
+  }
+
+  .payment-icons img {
+    height: 30px;
+    margin-right: 10px;
+  }
+
+  .btn-scroll-top {
+    border: none;
+    padding: 0.75rem 0.85rem;
+    background-color: #0A1F44;
+    color: #F9FAFB;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-scroll-top:hover {
+    background-color: var(--bs-secondary);
+    color: white;
+  }
+
+  @media (max-width: 576px) {
+    .logo {
+      font-size: 1.8rem;
+    }
+
+    footer h6 {
+      font-size: 1rem;
+    }
+
+    footer p, footer li, footer a {
+      font-size: 0.9rem;
+    }
+
+    .social-icons {
+      justify-content: center;
+    }
+  }
+</style>
+
+<footer class="footer mt-auto py-5 position-relative">
+  <div class="container">
+    <div class="row text-center text-md-start">
+      <!-- Brand / About -->
+      <div class="col-md-3 mb-4">
+        <a class="logo" href="{% url 'shop:home' %}">𝗠ИΘRҮ</a>
+        <p class="small">{{ config.COMPANY_DESCRIPTION }}</p>
       </div>
 
       <!-- Social Media -->
-      <div class="col-md-4 mb-3">
-        <h5 class="text-uppercase fw-bold">{% trans "Follow Us" %}</h5>
-        <a href="{{ config.FACEBOOK_URL }}" class="me-2 text-white-50" target="_blank"><i class="fab fa-facebook fa-lg"></i></a>
-        <a href="{{ config.TWITTER_URL }}" class="me-2 text-white-50" target="_blank"><i class="fab fa-twitter fa-lg"></i></a>
-        <a href="{{ config.INSTAGRAM_URL }}" class="me-2 text-white-50" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
-        <a href="{{ config.LINKEDIN_URL }}" class="me-2 text-white-50" target="_blank"><i class="fab fa-linkedin fa-lg"></i></a>
+      <div class="col-md-3 mb-4">
+        <h6 class="text-uppercase fw-bold mb-3">{% trans "LET’S CONNECT" %}</h6>
+        <p>{% trans "Follow us on our Social Media Channels." %}</p>
+        <div class="d-flex gap-3 social-icons">
+          <a href="{{ config.FACEBOOK_URL }}" target="_blank" aria-label="Facebook" rel="noopener">
+            <i class="fa-brands fa-facebook-f"></i>
+          </a>
+          <a href="{{ config.INSTAGRAM_URL }}" target="_blank" aria-label="Instagram" rel="noopener">
+            <i class="fa-brands fa-instagram"></i>
+          </a>
+          <a href="{{ config.TIKTOK_URL }}" target="_blank" aria-label="TikTok" rel="noopener">
+            <i class="fa-brands fa-tiktok"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-md-3 mb-4">
+        <h6 class="text-uppercase fw-bold mb-3">{% trans "Quick links" %}</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="{% url 'shop:terms' %}" class="text-decoration-none">
+              <i class="fa-solid fa-gavel me-2"></i>{% trans "Terms & Conditions" %}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="col-md-3 mb-4">
+        <h6 class="text-uppercase fw-bold mb-3">{% trans "Contact Us" %}</h6>
+        <p class="mb-0">
+          <i class="fa-solid fa-phone me-2"></i>
+          <a href="tel:{{ config.WHATSAPP_NUMBER }}" class="text-decoration-none">{{ config.WHATSAPP_NUMBER }}</a>
+        </p>
       </div>
     </div>
 
-    <hr class="border-secondary">
-    <div class="text-center mt-3">
-      <span class="text-white-50">&copy; {% now "Y" %} {{ config.COMPANY_NAME }}. {% trans "All rights reserved." %}</span>
+    <hr class="my-4">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <!-- Payment Icons -->
+      <div class="payment-icons mb-3 mb-md-0">
+        <img src="{% static 'img/payments/PayMob.png' %}" alt="PayMob" onerror="this.style.display='none'">
+        <img src="{% static 'img/payments/mastercard.png' %}" alt="Mastercard" onerror="this.style.display='none'">
+      </div>
+
+      <!-- Copyright -->
+      <div class="text-white-50 small">
+        &copy; {% now "Y" %} 𝗠ИΘRҮ EG. All rights reserved.
+      </div>
     </div>
+
+    <!-- Scroll to Top -->
+    <a href="#" id="scrollTopBtn" class="btn btn-scroll-top position-fixed bottom-0 end-0 m-4" aria-label="Scroll to top">
+      <i class="fa-solid fa-arrow-up"></i>
+    </a>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('scrollTopBtn');
+      if (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+    });
+  </script>
 </footer>

@@ -1,0 +1,78 @@
+{% load i18n %}
+<style>
+  :root {
+    --whatsapp-green: #25D366;
+    --dark-blue: #0A1F44;
+    --light-bg: #ffffff;
+  }
+
+  #whatsappBtn {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-bg);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 9999;
+    position: fixed;
+    bottom: env(safe-area-inset-bottom, 20px);
+    left: 20px;
+    text-decoration: none !important;
+  }
+
+  #whatsappBtn:hover {
+    background-color: var(--dark-blue);
+    transform: scale(1.05);
+  }
+
+  #whatsappIcon {
+    font-size: 28px;
+    color: var(--whatsapp-green);
+    transition: color 0.3s ease;
+  }
+
+  #whatsappBtn:hover #whatsappIcon {
+    color: white !important;
+  }
+
+  #whatsappBtn:focus,
+  #whatsappBtn:active {
+    outline: none !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+
+  /* Optional pulse animation */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+
+  #whatsappBtn.animate-pulse {
+    animation: pulse 2.5s infinite;
+  }
+</style>
+
+<a href="https://wa.me/{{ config.WHATSAPP_NUMBER|cut:'+' }}"
+   id="whatsappBtn"
+   class="animate-pulse"
+   target="_blank"
+   aria-label="{% trans 'Chat with us on WhatsApp' %}"
+   data-bs-toggle="tooltip"
+   data-bs-placement="right"
+   title="{% trans 'Chat with us on WhatsApp' %}">
+  <i class="fab fa-whatsapp" id="whatsappIcon"></i>
+</a>
+
+<script>
+  // Enable Bootstrap tooltip for WhatsApp button
+  document.addEventListener("DOMContentLoaded", function () {
+    const tooltipTrigger = document.querySelector('#whatsappBtn');
+    if (tooltipTrigger) {
+      new bootstrap.Tooltip(tooltipTrigger);
+    }
+  });
+</script>

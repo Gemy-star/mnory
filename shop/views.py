@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, get_object_or_404 , redirect
 from django.http import JsonResponse
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 from django.db.models import Q, Min, Max
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt # Use for simplicity, but in production use csrf_token in form/ajax
@@ -11,134 +11,9 @@ from django.contrib.auth import authenticate, login
 from .forms import RegisterForm, LoginForm
 from .models import (
     Category, SubCategory, FitType, Brand, Color, Size,
-    Product, ProductVariant, Cart, CartItem, Wishlist, WishlistItem,MnoryUser , VendorProfile , HomeSlider
+    Product, ProductVariant, Cart, CartItem, Wishlist, WishlistItem , HomeSlider
 )
 from django.views.decorators.http import require_POST
-
-
-def get_filtered_products(request, base_queryset):
-    filters = {
-        'subcategory': request.GET.get('subcategory_slug'),
-        'vendor': request.GET.get('vendor'),
-        'fit_type': request.GET.get('fit_type'),
-        'brand': request.GET.get('brand'),
-        'color': request.GET.get('color'),
-        'size': request.GET.get('size'),
-        'min_price': request.GET.get('min_price'),
-        'max_price': request.GET.get('max_price'),
-        'sort': request.GET.get('sort'),
-        'is_best_seller': request.GET.get('is_best_seller'),
-        'is_new_arrival': request.GET.get('is_new_arrival'),
-        'is_on_sale': request.GET.get('is_on_sale'),
-    }
-
-    queryset = base_queryset
-
-    if filters['subcategory']:
-        queryset = queryset.filter(subcategory__slug=filters['subcategory'])
-
-    if filters['vendor']:
-        queryset = queryset.filter(vendor__id=filters['vendor'])
-
-    if filters['fit_type']:
-        queryset = queryset.filter(fit_type__slug=filters['fit_type'])
-
-    if filters['brand']:
-        queryset = queryset.filter(brand__slug=filters['brand'])
-
-    if filters['color']:
-        queryset = queryset.filter(variants__color__name=filters['color']).distinct()
-
-    if filters['size']:
-        queryset = queryset.filter(variants__size__name=filters['size']).distinct()
-
-    if filters['min_price']:
-        try:
-            queryset = queryset.filter(price__gte=float(filters['min_price']))
-        except ValueError:
-            pass
-
-    if filters['max_price']:
-        try:
-            queryset = queryset.filter(price__lte=float(filters['max_price']))
-        except ValueError:
-            pass
-
-    if filters['is_best_seller'] in ['1', 'true']:
-        queryset = queryset.filter(is_best_seller=True)
-
-    if filters['is_new_arrival'] in ['1', 'true']:
-        queryset = queryset.filter(is_new_arrival=True)
-
-    if filters['is_on_sale'] in ['1', 'true']:
-        queryset = queryset.filter(is_on_sale=True)
-
-    # Sorting
-    if filters['sort'] == 'price_low':
-        queryset = queryset.order_by('price')
-    elif filters['sort'] == 'price_high':
-        queryset = queryset.order_by('-price')
-    elif filters['sort'] == 'newest':
-        queryset = queryset.order_by('-created_at')
-    elif filters['sort'] == 'popular':
-        queryset = queryset.order_by('-popularity')  # Ensure this field exists
-    else:
-        queryset = queryset.order_by('name')
-
-    return queryset, filters
-
-
-def category_detail(request, slug):
-    category = None
-    subcategory = None
-    subcategories = []
-    base_queryset = Product.objects.filter(is_active=True, is_available=True)
-
-    # Detect if it's a subcategory
-    try:
-        subcategory = SubCategory.objects.select_related('category').get(slug=slug, is_active=True)
-        category = subcategory.category
-        base_queryset = base_queryset.filter(subcategory=subcategory)
-    except SubCategory.DoesNotExist:
-        category = get_object_or_404(Category, slug=slug, is_active=True)
-        base_queryset = base_queryset.filter(category=category)
-        subcategories = category.subcategories.filter(is_active=True)
-
-    # Filter products via helper
-    filtered_queryset, filters = get_filtered_products(request, base_queryset)
-
-    # Pagination
-    paginator = Paginator(filtered_queryset, 12)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    # Sidebar options
-    fit_types = FitType.objects.filter(is_active=True)
-    brands = Brand.objects.filter(is_active=True)
-    colors = Color.objects.filter(is_active=True)
-    sizes = Size.objects.filter(is_active=True)
-    vendors = VendorProfile.objects.filter(is_approved=True, user__is_active=True)
-    categories = Category.objects.filter(is_active=True)
-
-    # Price range
-    price_range = base_queryset.aggregate(Min('price'), Max('price'))
-
-    context = {
-        'category': category,
-        'subcategory': subcategory,
-        'subcategories': subcategories,
-        'products': page_obj,
-        'fit_types': fit_types,
-        'brands': brands,
-        'colors': colors,
-        'sizes': sizes,
-        'vendors': vendors,
-        'categories': categories,
-        'price_range': price_range,
-        'current_filters': filters,
-    }
-
-    return render(request, 'shop/category_detail.html', context)
 
 
 def home(request):
@@ -160,7 +35,7 @@ def home(request):
         is_active=True,
         is_available=True
     ).select_related('category', 'subcategory', 'brand')[:8]
-
+    all_products = Product.objects.all().order_by('-pk').select_related('category', 'subcategory', 'brand')[:8]
     sale_products = Product.objects.filter(
         is_on_sale=True,
         is_active=True,
@@ -177,49 +52,65 @@ def home(request):
         'sale_products': sale_products,
         'categories': categories,
         'sliders': sliders,
+        'all_products':all_products
     }
 
     return render(request, 'shop/home.html', context)
 
+def category_detail(request, slug):
+    """Category detail view - supports 'all' to show all products"""
+    category = None
+    subcategories = []
 
+    if slug != 'all':
+        category = get_object_or_404(Category, slug=slug, is_active=True)
+        subcategories = category.subcategories.filter(is_active=True)
+        products = Product.objects.filter(
+            category=category,
+            is_active=True,
+            is_available=True
+        )
+    else:
+        products = Product.objects.filter(
+            is_active=True,
+            is_available=True
+        )
 
-def subcategory_detail(request, category_slug, slug):
-    """Display subcategory detail page with filtering, sorting, and pagination."""
-
-    category = get_object_or_404(Category, slug=category_slug, is_active=True)
-    subcategory = get_object_or_404(SubCategory, slug=slug, category=category, is_active=True)
-
-    # Initial product queryset
-    products = Product.objects.filter(
-        subcategory=subcategory,
-        is_active=True,
-        is_available=True
-    ).select_related('category', 'subcategory', 'brand').prefetch_related('colors', 'sizes')
+    # Prefetch related objects
+    products = products.select_related('category', 'subcategory', 'brand')
 
     # Filters
-    filters = {
-        'subcategory__slug': request.GET.get('subcategory'),
-        'fit_type__slug': request.GET.get('fit_type'),
-        'brand__slug': request.GET.get('brand'),
-        'colors__name__icontains': request.GET.get('color'),
-        'sizes__name__icontains': request.GET.get('size'),
-    }
-
-    # Apply non-empty filters
-    for field, value in filters.items():
-        if value:
-            products = products.filter(**{field: value})
-
-    # Price filters
+    subcategory_filter = request.GET.get('subcategory')
+    fit_type_filter = request.GET.get('fit_type')
+    brand_filter = request.GET.get('brand')
+    color_filter = request.GET.get('color')
+    size_filter = request.GET.get('size')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
+    sort_by = request.GET.get('sort', 'name')
+
+    if subcategory_filter:
+        products = products.filter(subcategory__slug=subcategory_filter)
+
+    if fit_type_filter:
+        products = products.filter(fit_type__slug=fit_type_filter)
+
+    if brand_filter:
+        products = products.filter(brand__slug=brand_filter)
+
+    if color_filter:
+        products = products.filter(colors__name__icontains=color_filter)
+
+    if size_filter:
+        products = products.filter(sizes__name__icontains=size_filter)
+
     if min_price:
         products = products.filter(price__gte=min_price)
+
     if max_price:
         products = products.filter(price__lte=max_price)
 
     # Sorting
-    sort_by = request.GET.get('sort', 'name')
     if sort_by == 'price_low':
         products = products.order_by('price')
     elif sort_by == 'price_high':
@@ -236,19 +127,119 @@ def subcategory_detail(request, category_slug, slug):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Filter option sets
+    # Filter options
     fit_types = FitType.objects.filter(is_active=True)
     brands = Brand.objects.filter(is_active=True)
     colors = Color.objects.filter(is_active=True)
     sizes = Size.objects.filter(is_active=True)
+
+    # Price range
+    price_range = Product.objects.filter(
+        is_active=True,
+        is_available=True,
+        category=category if category else None
+    ).aggregate(Min('price'), Max('price'))
+
+    # All categories for navbar
     all_categories = Category.objects.filter(is_active=True)
 
-    # Price range for this subcategory
+    context = {
+        'category': category,
+        'subcategories': subcategories,
+        'products': page_obj,
+        'fit_types': fit_types,
+        'brands': brands,
+        'colors': colors,
+        'sizes': sizes,
+        'price_range': price_range,
+        'categories': all_categories,
+        'current_filters': {
+            'subcategory': subcategory_filter,
+            'fit_type': fit_type_filter,
+            'brand': brand_filter,
+            'color': color_filter,
+            'size': size_filter,
+            'min_price': min_price,
+            'max_price': max_price,
+            'sort': sort_by,
+        }
+    }
+
+    return render(request, 'shop/category_detail.html', context)
+
+def subcategory_detail(request, category_slug, slug):
+    """Subcategory detail view"""
+    category = get_object_or_404(Category, slug=category_slug, is_active=True)
+    subcategory = get_object_or_404(SubCategory, slug=slug, category=category, is_active=True)
+
+    products = Product.objects.filter(
+        subcategory=subcategory,
+        is_active=True,
+        is_available=True
+    ).select_related('category', 'subcategory', 'brand')
+
+    # Apply same filtering logic as category_detail
+    # Filters
+    subcategory_filter = request.GET.get('subcategory')
+    fit_type_filter = request.GET.get('fit_type')
+    brand_filter = request.GET.get('brand')
+    color_filter = request.GET.get('color')
+    size_filter = request.GET.get('size')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    sort_by = request.GET.get('sort', 'name')
+
+    if subcategory_filter:
+        products = products.filter(subcategory__slug=subcategory_filter)
+
+    if fit_type_filter:
+        products = products.filter(fit_type__slug=fit_type_filter)
+
+    if brand_filter:
+        products = products.filter(brand__slug=brand_filter)
+
+    if color_filter:
+        products = products.filter(colors__name__icontains=color_filter)
+
+    if size_filter:
+        products = products.filter(sizes__name__icontains=size_filter)
+
+    if min_price:
+        products = products.filter(price__gte=min_price)
+
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    # Sorting
+    if sort_by == 'price_low':
+        products = products.order_by('price')
+    elif sort_by == 'price_high':
+        products = products.order_by('-price')
+    elif sort_by == 'newest':
+        products = products.order_by('-created_at')
+    elif sort_by == 'popular':
+        products = products.order_by('-is_best_seller', '-created_at')
+    else:
+        products = products.order_by('name')
+
+    # Pagination
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Get filter options (might need to fetch all categories, fit types etc. if not passed from parent)
+    fit_types = FitType.objects.filter(is_active=True)
+    brands = Brand.objects.filter(is_active=True)
+    colors = Color.objects.filter(is_active=True)
+    sizes = Size.objects.filter(is_active=True)
+    all_categories = Category.objects.filter(is_active=True) # For sidebar navigation
+
+    # Price range
     price_range = Product.objects.filter(
         subcategory=subcategory,
         is_active=True,
         is_available=True
-    ).aggregate(min_price=Min('price'), max_price=Max('price'))
+    ).aggregate(Min('price'), Max('price'))
 
     context = {
         'category': category,
@@ -259,16 +250,16 @@ def subcategory_detail(request, category_slug, slug):
         'colors': colors,
         'sizes': sizes,
         'price_range': price_range,
-        'categories': all_categories,
-        'subcategories': category.subcategories.filter(is_active=True),
+        'categories': all_categories, # Pass categories for base.html dropdown
+        'subcategories': category.subcategories.filter(is_active=True), # Pass subcategories for sidebar
         'current_filters': {
-            'subcategory': request.GET.get('subcategory', ''),
-            'fit_type': request.GET.get('fit_type', ''),
-            'brand': request.GET.get('brand', ''),
-            'color': request.GET.get('color', ''),
-            'size': request.GET.get('size', ''),
-            'min_price': min_price or '',
-            'max_price': max_price or '',
+            'subcategory': subcategory_filter,
+            'fit_type': fit_type_filter,
+            'brand': brand_filter,
+            'color': color_filter,
+            'size': size_filter,
+            'min_price': min_price,
+            'max_price': max_price,
             'sort': sort_by,
         }
     }
@@ -588,6 +579,7 @@ def remove_from_wishlist(request, item_id):
     item = get_object_or_404(WishlistItem, id=item_id, wishlist=wishlist)
     item.delete()
     return redirect('wishlist_detail')
+
 def vendor_detail(request, slug):
     # 1. Get the VendorProfile instance
     vendor_profile = get_object_or_404(VendorProfile, slug=slug)

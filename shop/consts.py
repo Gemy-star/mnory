@@ -3,8 +3,8 @@ from enum import Enum
 class DefaultSuperUser:
     """Default superuser info"""
 
-    EMAIL = "noreply.admin@mnory.com"
-    NAME = "mnory"
+    EMAIL = "noreply.admin@reverse-eg.com"
+    NAME = "reverse"
     PASSWORD = "admin123456"  # nosec
 
 

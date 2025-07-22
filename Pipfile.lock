@@ -80,6 +80,18 @@
             "version": "==5.0.0"
         },
         "django-silk": {
+<<<<<<< HEAD
+=======
+            "hashes": [
+                "sha256:2247870ac8080b6c6c5db17f2f1042d39d95e4a5fa061d661882777ec9adb672",
+                "sha256:caf720a06e24a6cf1acf825c1868b2a6ece8158b13725363f6d3a1a9994d0fa6"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==5.4.0"
+        },
+        "faker": {
+>>>>>>> fc12d1a (add style)
             "hashes": [
                 "sha256:2247870ac8080b6c6c5db17f2f1042d39d95e4a5fa061d661882777ec9adb672",
                 "sha256:caf720a06e24a6cf1acf825c1868b2a6ece8158b13725363f6d3a1a9994d0fa6"
@@ -96,6 +108,14 @@
             "index": "pypi",
             "markers": "python_version >= '3.9'",
             "version": "==37.4.2"
+        },
+        "gprof2dot": {
+            "hashes": [
+                "sha256:0742e4c0b4409a5e8777e739388a11e1ed3750be86895655312ea7c20bd0090e",
+                "sha256:35743e2d2ca027bf48fa7cba37021aaf4a27beeae1ae8e05a50b55f1f921a6ce"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==2025.4.14"
         },
         "gprof2dot": {
             "hashes": [
