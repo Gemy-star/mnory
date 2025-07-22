@@ -31,8 +31,8 @@
 
 {% block content %}
 {% include 'shop/partials/hero_slider.html' %}
-
-<div class="container my-5">
+<section class="section pt-4">
+<div class="container my-4 pt-4 pt-lg-4">
 {% if config.ENABLE_ALL_FLAG %}
 <div class="section-header">
     <h2>{% trans "All Products" %}</h2>
@@ -142,6 +142,7 @@
 {% endif %}
 
 </div>
+    </section>
 {% endblock %}
 
 {% block js %}
