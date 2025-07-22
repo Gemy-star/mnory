@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate, login
 from .forms import RegisterForm, LoginForm
 from .models import (
     Category, SubCategory, FitType, Brand, Color, Size,
-    Product, ProductVariant, Cart, CartItem, Wishlist, WishlistItem , HomeSlider
+    Product, ProductVariant, Cart, CartItem, Wishlist, WishlistItem, HomeSlider, VendorProfile
 )
 from django.views.decorators.http import require_POST
 
