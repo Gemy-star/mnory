@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, get_object_or_404 , redirect
 from django.http import JsonResponse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q, Min, Max
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt # Use for simplicity, but in production use csrf_token in form/ajax
