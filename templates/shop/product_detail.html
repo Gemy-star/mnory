@@ -2,154 +2,192 @@
 {% load static %}
 {% load i18n %}
 {% block title %}{{ product.name }} - {% trans "Mnory" %}{% endblock %}
+
 {% block content %}
 <div class="container my-5 pt-5">
-<div class="row pt-4">
-<!-- Product Images (Swiper Carousel) -->
-<div class="col-md-6 mb-4">
-    <div class="swiper product-detail-swiper mb-3">
-        <div class="swiper-wrapper">
-            {% for image in product_images %}
-                <div class="swiper-slide">
-                    <img src="{{ image.image.url }}" alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}" class="img-fluid">
+    <div class="row pt-4">
+        <!-- Product Images (Swiper Carousel) -->
+        <div class="col-md-6 mb-4">
+            <div class="swiper product-detail-swiper mb-3">
+                <div class="swiper-wrapper">
+                    {% for image in product_images %}
+                        <div class="swiper-slide">
+                            <img src="{{ image.image.url }}" alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}" class="img-fluid">
+                        </div>
+                    {% empty %}
+                        <div class="swiper-slide">
+                            <img src="https://placehold.co/600x500/e0e0e0/555555?text=No+Image" alt="{% trans 'No image available' %}" class="img-fluid">
+                        </div>
+                    {% endfor %}
                 </div>
-            {% empty %}
-                <div class="swiper-slide">
-                    <img src="https://placehold.co/600x500/e0e0e0/555555?text=No+Image" alt="{% trans 'No image available' %}" class="img-fluid">
-                </div>
-            {% endfor %}
-        </div>
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-    </div>
-    <!-- Thumbnail Swiper -->
-    <div class="swiper product-detail-thumbs mt-2">
-        <div class="swiper-wrapper">
-            {% for image in product_images %}
-                <div class="swiper-slide">
-                    <img src="{{ image.image.url }}" alt="{% trans "Thumbnail of" %} {{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}" class="img-fluid">
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
 
-<!-- Product Details -->
-<div class="col-md-6">
-    <!-- Product Details -->
-<div class="col-md-6">
-    <h1 class="mb-3">{{ product.name }}</h1>
-    <p class="lead">{{ product.short_description }}</p>
-    <p>{{ product.description }}</p>
-    <div class="d-flex align-items-baseline mb-3">
-        <span class="price fs-3 me-2" id="display-price">{{ product.get_price }} {% trans 'EGP' %}</span>
-        
-    </div>
-    <div class="mb-3">
-        {% include "shop/partials/product_flags.html" with product=product is_showed=False %}
-    </div>
-    {% if available_colors %}
-    <div class="mb-4">
-        <h6 class="text-dark">{% trans "Available Colors:" %}</h6>
-        <div class="d-flex flex-wrap color-buttons gap-2">
-            {% for color in available_colors %}
-                <button type="button"
-                        class="btn btn-light border rounded-pill text-body px-3 py-2 d-flex align-items-center shadow-sm color-select"
-                        style="font-weight: 500;"
-                        data-color-id="{{ color.id }}"
-                        data-color-name="{{ color.name }}">
-                    <span style="display: inline-block;
-                                 width: 16px;
-                                 height: 16px;
-                                 background-color: {{ color.hex_code }};
-                                 border: 1px solid #aaa;
-                                 border-radius: 50%;
-                                 margin-right: 8px;"></span>
-                    {{ color.name }}
+            <!-- Thumbnail Swiper -->
+            <div class="swiper product-detail-thumbs mt-2">
+                <div class="swiper-wrapper">
+                    {% for image in product_images %}
+                        <div class="swiper-slide">
+                            <img src="{{ image.image.url }}" alt="{% trans "Thumbnail of" %} {{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}" class="img-fluid">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            <p class="lead">{{ product.short_description }}</p>
+            <p>{{ product.description }}</p>
+
+            <div class="d-flex align-items-baseline mb-3">
+                <span class="price fs-3 me-2" id="display-price">{{ product.get_price }} {% trans 'EGP' %}</span>
+            </div>
+
+            <div class="mb-3">
+                {% include "shop/partials/product_flags.html" with product=product is_showed=False %}
+            </div>
+
+            {% if available_colors %}
+            <div class="mb-4">
+                <h6 class="text-dark">{% trans "Available Colors:" %}</h6>
+                <div class="d-flex flex-wrap color-buttons gap-2">
+                    {% for color in available_colors %}
+                        <button type="button"
+                                class="btn btn-light border rounded-pill text-body px-3 py-2 d-flex align-items-center shadow-sm color-select"
+                                style="font-weight: 500;"
+                                data-color-id="{{ color.id }}"
+                                data-color-name="{{ color.name }}">
+                            <span style="display: inline-block;
+                                         width: 16px;
+                                         height: 16px;
+                                         background-color: {{ color.hex_code }};
+                                         border: 1px solid #aaa;
+                                         border-radius: 50%;
+                                         margin-right: 8px;"></span>
+                            {{ color.name }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if available_sizes %}
+            <div class="mb-4">
+                <h6 class="text-dark">{% trans "Select Size:" %}</h6>
+                <div class="size-buttons d-flex flex-wrap gap-2">
+                    {% for size in available_sizes %}
+                        <button type="button"
+                                class="btn btn-light border rounded-pill text-body px-4 py-2 shadow-sm size-select"
+                                style="font-weight: 500;"
+                                data-size-id="{{ size.id }}"
+                                data-size-name="{{ size.name }}">
+                            <i class="fas fa-ruler me-1 text-muted small"></i> {{ size.name }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Collapsible Size Chart -->
+            <div class="mb-4">
+                <button class="btn btn-light border rounded-pill text-body px-4 py-2 shadow-sm"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#sizeChartCollapse"
+                        aria-expanded="false"
+                        aria-controls="sizeChartCollapse"
+                        style="font-weight: 500;">
+                    <i class="fas fa-plus me-2"></i> {% trans "Size Chart" %}
                 </button>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    {% if available_sizes %}
-    <div class="mb-4">
-        <h6 class="text-dark">{% trans "Select Size:" %}</h6>
-        <div class="size-buttons d-flex flex-wrap gap-2">
-            {% for size in available_sizes %}
-                <button type="button"
-                        class="btn btn-light border rounded-pill text-body px-4 py-2 shadow-sm size-select"
-                        style="font-weight: 500;"
-                        data-size-id="{{ size.id }}"
-                        data-size-name="{{ size.name }}">
-                    <i class="fas fa-ruler me-1 text-muted small"></i> {{ size.name }}
+                <div class="collapse mt-3" id="sizeChartCollapse">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle text-center small mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{% trans "Size" %}</th>
+                                    <th>{% trans "Chest/Bust (in)" %}</th>
+                                    <th>{% trans "Chest/Bust (cm)" %}</th>
+                                    <th>{% trans "Waist (in)" %}</th>
+                                    <th>{% trans "Waist (cm)" %}</th>
+                                    <th>{% trans "Hips (in)" %}</th>
+                                    <th>{% trans "Hips (cm)" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>XS</td><td>32–34</td><td>81–86</td><td>26–27</td><td>66–69</td><td>33–34</td><td>84–86</td></tr>
+                                <tr><td>S</td><td>35–37</td><td>89–94</td><td>28–29</td><td>71–74</td><td>35–37</td><td>89–94</td></tr>
+                                <tr><td>M</td><td>38–40</td><td>97–102</td><td>30–32</td><td>76–81</td><td>38–40</td><td>97–102</td></tr>
+                                <tr><td>L</td><td>41–43</td><td>104–109</td><td>33–35</td><td>84–89</td><td>41–43</td><td>104–109</td></tr>
+                                <tr><td>XL</td><td>44–46</td><td>112–117</td><td>36–38</td><td>91–97</td><td>44–46</td><td>112–117</td></tr>
+                                <tr><td>XXL</td><td>47–49</td><td>119–124</td><td>39–41</td><td>99–104</td><td>47–49</td><td>119–124</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <h6>{% trans "Quantity:" %}</h6>
+                <div class="d-inline-flex align-items-center border rounded px-2">
+                    <button id="decrease-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span id="quantity-display" class="mx-2 fw-bold" style="min-width: 24px; text-align: center;">1</span>
+                    <button id="increase-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <input type="hidden" id="quantity-input" value="1" min="1">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-dark rounded-pill py-2 px-3 fw-bold fs-6 flex-grow-1" id="add-to-cart-btn" {% if not product.is_in_stock %}disabled{% endif %}>
+                    <i class="fas fa-cart-plus me-2"></i> {% trans "Add to Cart" %}
                 </button>
-            {% endfor %}
+                <button class="btn btn-outline-danger rounded-pill px-3" id="add-to-wishlist-btn" data-product-id="{{ product.id }}" title="{% trans 'Add to Wishlist' %}">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
         </div>
     </div>
-    <!-- Collapsible Size Chart -->
- <!-- Collapsible Size Chart -->
-<div class="mb-4">
-    <button
-      class ="btn btn-light border rounded-pill text-body px-4 py-2 shadow-sm size-select"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#sizeChartCollapse"
-      aria-expanded="false"
-      aria-controls="sizeChartCollapse"
-      class="d-flex align-items-center p-0"
-      style="color: #000; background: transparent; border: none; font-weight: 500; font-size: 1rem; cursor: pointer;"
-    >
-        <i class="fas fa-plus me-2"></i> {% trans "Size Chart" %}
-    </button>
-    <div class="collapse mt-3" id="sizeChartCollapse">
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle text-center small mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>{% trans "Size" %}</th>
-                        <th>{% trans "Chest/Bust (in)" %}</th>
-                        <th>{% trans "Chest/Bust (cm)" %}</th>
-                        <th>{% trans "Waist (in)" %}</th>
-                        <th>{% trans "Waist (cm)" %}</th>
-                        <th>{% trans "Hips (in)" %}</th>
-                        <th>{% trans "Hips (cm)" %}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>XS</td><td>32–34</td><td>81–86</td><td>26–27</td><td>66–69</td><td>33–34</td><td>84–86</td></tr>
-                    <tr><td>S</td><td>35–37</td><td>89–94</td><td>28–29</td><td>71–74</td><td>35–37</td><td>89–94</td></tr>
-                    <tr><td>M</td><td>38–40</td><td>97–102</td><td>30–32</td><td>76–81</td><td>38–40</td><td>97–102</td></tr>
-                    <tr><td>L</td><td>41–43</td><td>104–109</td><td>33–35</td><td>84–89</td><td>41–43</td><td>104–109</td></tr>
-                    <tr><td>XL</td><td>44–46</td><td>112–117</td><td>36–38</td><td>91–97</td><td>44–46</td><td>112–117</td></tr>
-                    <tr><td>XXL</td><td>47–49</td><td>119–124</td><td>39–41</td><td>99–104</td><td>47–49</td><td>119–124</td></tr>
-                </tbody>
-            </table>
-        </div>
+
+    <hr class="my-5">
+
+    <h3 class="mb-4">{% trans "Related Products" %}</h3>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
+        {% for related_product in related_products %}
+            <div class="col">
+                <div class="product-card text-center position-relative h-100">
+                    {% with main_image=related_product.get_main_image %}
+                        {% if main_image and main_image.image %}
+                            <div class="position-relative">
+                                <a href="{{ related_product.get_absolute_url }}">
+                                    <img src="{{ main_image.image.url }}" alt="{{ related_product.name }}">
+                                </a>
+                                <div class="product-icons">
+                                    <a href="#" class="wishlist-btn" title="{% trans 'Add to Wishlist' %}"><i class="fas fa-heart"></i></a>
+                                    <a href="#" class="cart-btn" title="{% trans 'Add to Cart' %}"><i class="fas fa-shopping-cart"></i></a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" alt="{% trans 'No Image' %}">
+                        {% endif %}
+                    {% endwith %}
+                    <div class="product-name">{{ related_product.name }}</div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-muted">{% trans "No related products found." %}</p>
+            </div>
+        {% endfor %}
     </div>
-</div>
-    {% endif %}
-    <div class="mb-3">
-        <h6>{% trans "Quantity:" %}</h6>
-        <div class="d-inline-flex align-items-center border rounded px-2">
-            <button id="decrease-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
-                <i class="fas fa-minus"></i>
-            </button>
-            <span id="quantity-display" class="mx-2 fw-bold" style="min-width: 24px; text-align: center;">1</span>
-            <button id="increase-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
-                <i class="fas fa-plus"></i>
-            </button>
-        </div>
-        <input type="hidden" id="quantity-input" value="1" min="1">
-    </div>
-    <div class="d-flex gap-2">
-        <button class="btn btn-outline-dark rounded-pill py-2 px-3 fw-bold fs-6 flex-grow-1" id="add-to-cart-btn" {% if not product.is_in_stock %}disabled{% endif %}>
-            <i class="fas fa-cart-plus me-2"></i> {% trans "Add to Cart" %}
-        </button>
-        <button class="btn btn-outline-danger rounded-pill px-3" id="add-to-wishlist-btn" data-product-id="{{ product.id }}" title="{% trans 'Add to Wishlist' %}">
-            <i class="fas fa-heart"></i>
-        </button>
-    </div>
+
+    <!-- Toast Notification -->
     <div id="toast-popup" class="toast align-items-center text-white border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body" id="toast-message"></div>
@@ -157,48 +195,7 @@
         </div>
     </div>
 </div>
-</div>
 
-
-<hr class="my-5">
-<h3 class="mb-4">{% trans "Related Products" %}</h3>
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
-    {% for related_product in related_products %}
-        <div class="col">
-            <div class="product-card text-center position-relative h-100">
-                {% with main_image=related_product.get_main_image %}
-                    {% if main_image and main_image.image %}
-                        <div class="position-relative">
-                            <a href="{{ related_product.get_absolute_url }}">
-                                <img src="{{ main_image.image.url }}" alt="{{ related_product.name }}">
-                            </a>
-                            <div class="product-icons">
-                                <a href="#" class="wishlist-btn" title="{% trans 'Add to Wishlist' %}"><i class="fas fa-heart"></i></a>
-                                <a href="#" class="cart-btn" title="{% trans 'Add to Cart' %}"><i class="fas fa-shopping-cart"></i></a>
-                            </div>
-                        </div>
-                    {% else %}
-                        <img src="https://placehold.co/400x250/e0e0e0/555555?text=No+Image" alt="{% trans 'No Image' %}">
-                    {% endif %}
-                {% endwith %}
-                <div class="product-name">{{ related_product.name }}</div>
-            </div>
-        </div>
-    {% empty %}
-        <div class="col-12">
-            <p class="text-muted">{% trans "No related products found." %}</p>
-        </div>
-    {% endfor %}
-</div>
-
-<div id="toast-popup" class="toast align-items-center text-white border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-        <div class="toast-body" id="toast-message"></div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-</div>
-    </div>
-</div>
 <style>
 .product-card {
     border: none;
@@ -258,7 +255,7 @@
     color: white;
 }
 
-/* ✅ Toast Notification on top of everything */
+/* Toast Notification on top of everything */
 #toast-popup {
     z-index: 9999 !important;
     position: fixed !important;
@@ -267,7 +264,6 @@
 }
 </style>
 {% endblock %}
-
 
 {% block js %}
 <script>
@@ -373,6 +369,7 @@ const productThumbsSwiper = new Swiper('.product-detail-thumbs', {
         1024: { slidesPerView: 7 },
     }
 });
+
 const productMainSwiper = new Swiper('.product-detail-swiper', {
     spaceBetween: 10,
     navigation: {
