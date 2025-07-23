@@ -7,18 +7,55 @@
         --white: #F9FAFB;
     }
 
+    /*
+     * Main slider image styling:
+     * - Removed max-height for full flexibility on larger screens.
+     * - object-fit: cover ensures image fills the space without distortion.
+     * - filter: brightness for subtle effect.
+     */
     .slider-image {
-        max-height: 700px;
+        width: 100%; /* Ensure image always takes full width of its container */
+        height: auto; /* Allow height to adjust naturally based on aspect ratio */
         object-fit: cover;
-        filter: brightness(0.92); /* reduced shadow */
+        filter: brightness(0.92);
+        display: block; /* Remove any extra spacing below images */
     }
 
+    /*
+     * For responsiveness on smaller screens:
+     * - Instead of fixed height, use a viewport height (vh) or
+     * consider a padding-bottom trick for true aspect ratio control.
+     * - 50vh is a good starting point for mobile, allowing it to adapt.
+     */
     @media (max-width: 768px) {
         .slider-image {
-            height: 50vh;
-            max-height: 300px;
+            height: 50vh; /* Use viewport height for a flexible mobile height */
+            /* max-height: 300px; is now redundant if using vh effectively,
+               but keep if you want an absolute upper limit on mobile.
+               I'll comment it out for a more "removed fixed height" approach. */
+            /* max-height: 300px; */
         }
     }
+
+    /* Aspect Ratio Box (Alternative for strict aspect ratio)
+    * If you wanted to strictly maintain an aspect ratio (e.g., 16:9)
+    * for all slider images regardless of screen size, you'd use this:
+    .swiper-slide {
+        position: relative;
+        padding-bottom: 56.25%; // For a 16:9 aspect ratio (9/16 = 0.5625)
+        height: 0; // Essential for the padding-bottom trick
+        overflow: hidden;
+    }
+    .slider-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.92);
+    }
+    */
 
     .btn-hero-transparent {
         background-color: var(--dark-blue);
@@ -30,8 +67,8 @@
     }
 
     .btn-hero-transparent:hover {
-        background-color: var(--accent-color);
-        border-color: var(--accent-color);
+        background-color: #000000;
+        border-color: #000000;
         color: white;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
     }
@@ -39,11 +76,15 @@
     .hero-heading {
         color: white !important;
         text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.25);
+        /* Use fluid typography for responsive font sizes */
+        font-size: clamp(2rem, 5vw, 4rem); /* min, viewport-based, max */
     }
 
     .hero-subtext {
         color: var(--white) !important;
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        /* Use fluid typography for responsive font sizes */
+        font-size: clamp(1rem, 2.5vw, 1.5rem); /* min, viewport-based, max */
     }
 
     .hero-swiper {
@@ -56,12 +97,12 @@
 
     @media (max-width: 768px) {
         .hero-heading {
-            font-size: 1.3rem !important;
+            font-size: 1.8rem !important; /* Slightly larger base for mobile */
             text-align: left;
         }
 
         .hero-subtext {
-            font-size: 0.85rem !important;
+            font-size: 0.95rem !important; /* Slightly larger base for mobile */
             text-align: left;
             max-width: 95%;
             line-height: 1.4;
@@ -91,10 +132,9 @@
         <div class="swiper-slide position-relative">
             <img src="{{ slider.image_resized.url }}" alt="{{ slider.alt_text }}" class="img-fluid w-100 slider-image">
 
-            <!-- Overlay content -->
             <div class="container position-absolute top-50 start-50 translate-middle text-center text-md-start px-3 px-md-5" style="z-index: 2;">
-                <h1 class="fw-bold display-6 display-md-4 display-lg-3 hero-heading">{{ slider.heading }}</h1>
-                <p class="fs-5 fs-md-4 col-lg-6 mx-auto mx-md-0 hero-subtext">{{ slider.subheading }}</p>
+                <h1 class="fw-bold hero-heading">{{ slider.heading }}</h1>
+                <p class="hero-subtext col-lg-6 mx-auto mx-md-0">{{ slider.subheading }}</p>
                 <div class="hero-button-wrapper">
                     <a href="{{ slider.button_url_name }}" class="btn btn-hero-transparent btn-lg rounded-pill mt-3">
                         {{ slider.button_text }} <i class="fas fa-arrow-right ms-2"></i>
@@ -102,18 +142,15 @@
                 </div>
             </div>
 
-            <!-- Dark blue overlay -->
             <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;"></div>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Pagination Dots -->
     <div class="swiper-pagination mt-3"></div>
 </div>
 
 {% else %}
-<!-- Default Hero Section -->
 <div class="p-5 mb-4 bg-light rounded-3 shadow-sm intro" style="margin-top: 60px;">
     <div class="container-fluid py-5 text-start">
         <h1 class="display-5 fw-bold">{% trans "Discover Your Style" %}</h1>
