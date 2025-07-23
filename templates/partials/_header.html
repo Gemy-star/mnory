@@ -23,12 +23,12 @@
         right: 0;
         z-index: 1050;
         height: fit-content;
-        transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Add transition for smooth hide/show */
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out;
     }
 
     .promo-banner.hidden {
-        transform: translateY(-100%); /* Move up to hide */
-        opacity: 0; /* Fade out */
+        transform: translateY(-100%);
+        opacity: 0;
     }
 
     .promo-banner .container {
@@ -62,6 +62,11 @@
         right: 0;
     }
 
+    .navbar-{{ nav_id }}.home-transparent {
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
+
     .navbar-{{ nav_id }}.scrolled {
         background-color: rgba(10, 31, 68, 0.95) !important;
         box-shadow: 0 2px 12px var(--shadow-dark);
@@ -72,6 +77,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        /* Crucial for mobile search behavior */
+        flex-wrap: nowrap; /* Default to no wrap for main navbar elements */
     }
 
     .categories-btn {
@@ -97,17 +104,17 @@
     }
 
     .navbar-{{ nav_id }} .navbar-brand {
-        font-family: 'Times New Roman', serif; /* Symbolic font */
+        font-family: 'Times New Roman', serif;
         font-size: 2.5rem;
-        font-weight: 900; /* Bold for symbolic weight */
-        letter-spacing: 0.1em; /* Subtle spacing */
+        font-weight: 900;
+        letter-spacing: 0.1em;
         color: var(--text-color-light) !important;
         margin: 0;
         text-decoration: none;
-        position: static; /* No absolute positioning on desktop */
+        position: static;
         transform: none;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Subtle shadow for depth */
-        user-select: none; /* Prevent text selection */
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        user-select: none;
     }
 
     .navbar-{{ nav_id }} .navbar-brand:hover {
@@ -117,14 +124,14 @@
     /* General Search Container and Input Styling */
     .search-container {
         position: relative;
-        display: flex; /* Use flex for aligning input and clear button */
+        display: flex;
         align-items: center;
-        gap: 5px; /* Space between input and clear button */
+        gap: 5px;
     }
 
     .search-input {
         width: 100%;
-        padding: 12px 50px 12px 20px; /* Adjust padding for search icon */
+        padding: 12px 50px 12px 20px;
         border: 2px solid #e9ecef;
         border-radius: var(--border-radius-pill);
         font-size: 0.95rem;
@@ -147,7 +154,7 @@
         right: 5px;
         top: 50%;
         transform: translateY(-50%);
-        background: var(--primary-color); /* Darker button */
+        background: var(--primary-color);
         color: var(--text-color-light);
         border: none;
         width: 40px;
@@ -166,7 +173,7 @@
 
     .search-clear-btn {
         position: absolute;
-        right: 50px; /* Position to the left of search-btn */
+        right: 50px;
         top: 50%;
         transform: translateY(-50%);
         background: none;
@@ -174,11 +181,11 @@
         color: #999;
         font-size: 1rem;
         cursor: pointer;
-        display: none; /* Hidden by default */
+        display: none;
         padding: 5px;
         border-radius: 50%;
         transition: color 0.2s ease;
-        z-index: 2; /* Ensure it's above input */
+        z-index: 2;
     }
 
     .search-clear-btn:hover {
@@ -211,24 +218,24 @@
     /* Enhanced Badge Styling */
     .nav-icon .badge {
         position: absolute;
-        top: -10px; /* Adjusted to be higher above the icon */
-        right: -10px; /* Adjusted to be more centered above the icon */
+        top: -10px;
+        right: -10px;
         background: #000000;
         color: var(--text-color-light);
-        font-size: 0.65rem; /* Slightly smaller font */
+        font-size: 0.65rem;
         font-weight: bold;
-        min-width: 20px; /* Larger minimum width */
-        height: 20px; /* Larger height */
-        line-height: 20px; /* Center text vertically */
+        min-width: 20px;
+        height: 20px;
+        line-height: 20px;
         border-radius: 50%;
         text-align: center;
-        border: 2px solid var(--primary-color); /* Border matches navbar background for contrast */
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Subtle shadow */
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         transition: all 0.2s ease;
     }
 
     .nav-icon:hover .badge {
-        transform: scale(1.1); /* Pop effect on hover */
+        transform: scale(1.1);
     }
 
 
@@ -259,12 +266,11 @@
         padding: 8px;
         margin-top: 8px;
         background-color: #ffffff;
-        min-width: 220px; /* Slightly wider */
-        transform-origin: top left; /* For potential animation effects */
-        animation: fadeInScale 0.2s ease-out; /* Simple fade-in animation */
-        /* Enhanced height to fit screen */
-        max-height: calc(100vh - 150px); /* Adjust 150px based on your header/footer height */
-        overflow-y: auto; /* Add scroll for overflowing content */
+        min-width: 220px;
+        transform-origin: top left;
+        animation: fadeInScale 0.2s ease-out;
+        max-height: calc(100vh - 150px);
+        overflow-y: auto;
     }
 
     @keyframes fadeInScale {
@@ -274,27 +280,27 @@
 
     .dropdown-item {
         padding: 12px 16px;
-        border-radius: 6px; /* Slightly smaller radius for items */
+        border-radius: 6px;
         transition: all 0.2s ease;
         color: var(--text-color-dark);
         font-weight: 500;
         display: flex;
         align-items: center;
-        gap: 12px; /* Increased space between icon and text */
-        text-decoration: none; /* Remove underline */
+        gap: 12px;
+        text-decoration: none;
     }
 
     .dropdown-item i {
         color: var(--primary-color);
         font-size: 1rem;
-        width: 1.2em; /* Ensure consistent icon width */
+        width: 1.2em;
         text-align: center;
     }
 
     .dropdown-item:hover {
         background-color: var(--primary-color);
         color: var(--text-color-light);
-        transform: translateX(3px); /* Subtle slide effect on hover */
+        transform: translateX(3px);
     }
     .dropdown-item:hover i {
         color: #000000;
@@ -308,48 +314,48 @@
     /* Material Design Search Input */
     .search-container.material-design {
         position: relative;
-        padding-top: 20px; /* Space for the floating label */
+        padding-top: 20px;
     }
 
     .search-container.material-design .search-input {
         background-color: transparent;
         border: none;
-        border-bottom: 2px solid #ccc; /* Underline effect */
-        border-radius: 0; /* Remove pill shape */
-        padding: 8px 50px 8px 0; /* Adjust padding for label and icon */
+        border-bottom: 2px solid #ccc;
+        border-radius: 0;
+        padding: 8px 50px 8px 0;
         font-size: 1rem;
-        height: auto; /* Allow height to adjust for content */
-        min-height: auto; /* Reset min-height */
+        height: auto;
+        min-height: auto;
         box-shadow: none;
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .search-container.material-design .search-input:focus {
-        outline: none; /* Remove default outline */
-        border-color: #000000; /* Highlight color on focus */
-        box-shadow: 0 1px 0 0 #000000; /* Underline focus effect */
+        outline: none;
+        border-color: #000000;
+        box-shadow: 0 1px 0 0 #000000;
         background-color: transparent;
     }
 
     .search-label {
         position: absolute;
         left: 0;
-        top: 30px; /* Position below padding-top of container */
+        top: 30px;
         color: #999;
-        pointer-events: none; /* Make label unclickable */
+        pointer-events: none;
         transition: all 0.2s ease-out;
         font-size: 0.95rem;
     }
 
     .search-input:focus + .search-label,
     .search-input:not(:placeholder-shown) + .search-label {
-        top: 0; /* Move up when focused or has text */
-        font-size: 0.75rem; /* Shrink font */
-        color: #000000; /* Change color */
+        top: 0;
+        font-size: 0.75rem;
+        color: #000000;
     }
 
     .search-container.material-design .search-btn {
-        right: 0; /* Adjust search button position */
+        right: 0;
         background: none;
         color: var(--primary-color);
         width: 35px;
@@ -362,7 +368,7 @@
     }
 
     .search-container.material-design .search-clear-btn {
-        right: 40px; /* Position clear button next to search button */
+        right: 40px;
         color: #bbb;
     }
     .search-container.material-design .search-clear-btn:hover {
@@ -373,44 +379,43 @@
     /* Desktop Specific Layout */
     @media (min-width: 769px) {
         body {
-            padding-top: var(--total-fixed-header-height); /* This will be calculated by JS */
+            padding-top: var(--total-fixed-header-height);
         }
         .navbar-{{ nav_id }} .container {
             justify-content: flex-start;
             gap: 40px;
         }
         .navbar-{{ nav_id }} .navbar-brand {
-            order: 1; /* Categories, Brand, Search, Icons */
+            order: 1;
         }
         .search-container {
             flex: 1;
             max-width: 500px;
-            margin-left: auto; /* Push to the right on desktop */
-            gap: 5px; /* Space between input and clear button */
+            margin-left: auto;
+            gap: 5px;
         }
         #searchContainerDesktop {
-            order: 2; /* After brand */
-            flex-grow: 1; /* Allow search to grow */
-            margin-left: 40px; /* Separate from brand */
-            max-width: 600px; /* Increase max width for desktop search */
+            order: 2;
+            flex-grow: 1;
+            margin-left: 40px;
+            max-width: 600px;
         }
         .nav-icons {
-            order: 3; /* After search */
-            margin-left: auto; /* Push icons to the far right */
+            order: 3;
+            margin-left: auto;
         }
         .search-toggle-btn {
             display: none !important;
         }
-        /* Ensure desktop search and icons are always visible */
         #searchContainerDesktop, #mainNavIconsDesktop {
-            display: flex !important; /* Use flex for search container to align elements */
+            display: flex !important;
         }
         #searchContainerMobileToggled, #mainNavIconsMobileAlwaysVisible {
             display: none !important;
         }
         .search-clear-btn {
-            display: block; /* Always visible on desktop for usability */
-            right: 50px; /* Position next to search button */
+            display: block;
+            right: 50px;
         }
     }
 
@@ -465,7 +470,7 @@
         }
 
         .navbar-{{ nav_id }} .container {
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Allow wrapping when search is active */
             justify-content: space-between;
             align-items: center;
         }
@@ -512,12 +517,12 @@
         }
 
         #mainNavIconsMobileAlwaysVisible {
-            display: flex !important;
-            order: 4;
-            flex-basis: 100%;
-            justify-content: space-around;
-            margin-top: 10px;
-            gap: 0;
+            display: flex !important; /* Keep icons visible */
+            order: 4; /* Place after search toggle button row */
+            flex-basis: auto; /* Don't force full width */
+            justify-content: flex-end; /* Align icons to the right */
+            margin-top: 0; /* No extra margin here */
+            gap: 10px; /* Space between icons */
         }
         .nav-icon, .language-btn {
             font-size: 0.85rem;
@@ -530,14 +535,15 @@
         }
 
         #searchContainerMobileToggled {
-            display: none;
-            order: 5;
-            flex-basis: 100%;
-            margin-top: 10px;
+            display: none; /* Hidden by default */
+            order: 5; /* Forces it to the next line */
+            flex-basis: 100%; /* Take full width when active */
+            margin-top: 10px; /* Space from the row above */
             box-sizing: border-box;
+            transition: all 0.3s ease-out; /* Smooth transition for display */
         }
         #searchContainerMobileToggled.active {
-            display: flex;
+            display: flex; /* Show when active */
         }
         #searchContainerMobileToggled .search-clear-btn {
             display: block;
@@ -546,7 +552,6 @@
             transform: translateY(-50%);
         }
 
-        /* Ensure desktop search and icons are hidden on mobile */
         #searchContainerDesktop, #mainNavIconsDesktop {
             display: none !important;
         }
@@ -563,7 +568,7 @@
 </div>
 
 {% with nav_id="nav1" %}
-<nav class="navbar navbar-expand-lg navbar-{{ nav_id }} pt-lg-2" id="mainNavbar">
+<nav class="navbar navbar-expand-lg navbar-{{ nav_id }} pt-lg-2 {% if current_url_name == 'home' and not request.GET.search %}home-transparent{% endif %}" id="mainNavbar">
     <div class="container d-flex align-items-center">
         <div class="dropdown">
             <button class="categories-btn dropdown-toggle" type="button"
@@ -722,33 +727,45 @@
         const promoBanner = document.getElementById('promoBanner');
         const body = document.body;
 
+        // Determine if the 'home-transparent' class is initially present from Django context
+        const isHomeTransparentInitial = navbar.classList.contains('home-transparent');
+
         function adjustHeaderPositions() {
             const promoBannerHeight = promoBanner ? promoBanner.offsetHeight : 0;
             const scrollY = window.scrollY;
+            let totalFixedHeaderHeight = 0;
 
-            // Hide promo banner when scrolled down
             if (scrollY > 0) {
+                // Scrolled down: Promo banner hides, Navbar sticks to top
                 promoBanner.classList.add('hidden');
-                navbar.style.top = '0px'; // Navbar sticks to top
-                // Set padding-top on the body to account for only the navbar height
-                // We need to get the *rendered* height of the navbar when it's at the top
-                body.style.paddingTop = navbar.offsetHeight + 'px';
+                navbar.style.top = '0px';
+                totalFixedHeaderHeight = navbar.offsetHeight;
+
+                // Navbar becomes opaque/scrolled once it's fixed to the top
+                navbar.classList.add('scrolled');
+
             } else {
+                // At the very top of the page: Promo banner visible, Navbar below it
                 promoBanner.classList.remove('hidden');
-                navbar.style.top = promoBannerHeight + 'px'; // Navbar sits below banner
-                // Set padding-top on the body to account for both fixed elements
-                body.style.paddingTop = promoBannerHeight + navbar.offsetHeight + 'px';
+                navbar.style.top = promoBannerHeight + 'px';
+                totalFixedHeaderHeight = promoBannerHeight + navbar.offsetHeight;
+
+                // Navbar is transparent/not scrolled only when at the very top AND it's the home page
+                if (isHomeTransparentInitial) {
+                    navbar.classList.remove('scrolled');
+                } else {
+                    // If not home page, or if it has search parameters, it always stays 'scrolled'
+                    navbar.classList.add('scrolled');
+                }
             }
 
-            // Handle navbar "scrolled" state (background/shadow change)
-            if (scrollY > promoBannerHeight) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            body.style.paddingTop = totalFixedHeaderHeight + 'px';
         }
 
+        // Initial adjustment on load
         adjustHeaderPositions();
+
+        // Attach event listeners
         window.addEventListener('scroll', adjustHeaderPositions);
         window.addEventListener('resize', adjustHeaderPositions);
     });
@@ -757,7 +774,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         const mobileSearchToggle = document.getElementById('mobileSearchToggle');
         const searchContainerMobileToggled = document.getElementById('searchContainerMobileToggled');
-        const navbarContainer = document.querySelector('#mainNavbar .container');
+        // No need to manipulate navbarContainer.style.flexWrap directly in JS
+        // The CSS order property handles the layout.
 
         // Desktop Search Elements
         const searchInputDesktop = document.getElementById('searchInputDesktop');
@@ -786,6 +804,7 @@
                 inputElement.focus();
             });
 
+            // Set initial state for clear button based on input content
             if (inputElement.value.length > 0) {
                 clearButtonElement.style.display = 'block';
             } else {
@@ -834,30 +853,34 @@
             mobileSearchToggle.addEventListener('click', function() {
                 const isActive = searchContainerMobileToggled.classList.contains('active');
 
+                // Toggle visibility of the mobile search container
                 searchContainerMobileToggled.classList.toggle('active');
 
-                if (isActive) {
-                    navbarContainer.style.flexWrap = 'nowrap';
-                    searchInputMobile.value = '';
-                    if (searchClearBtnMobile) searchClearBtnMobile.style.display = 'none';
-                } else {
-                    navbarContainer.style.flexWrap = 'wrap';
+                if (!isActive) { // If it's becoming active
                     searchInputMobile.focus();
+                    // No need to change flex-wrap, CSS order and flex-basis handles it
+                } else { // If it's becoming inactive
+                    searchInputMobile.value = ''; // Clear search input
+                    if (searchClearBtnMobile) searchClearBtnMobile.style.display = 'none';
+                    // No need to change flex-wrap
                 }
             });
         }
 
-        function checkMobileVisibility() {
+        // Handle resize to hide mobile search if screen gets larger
+        function checkMobileVisibilityAndResetSearch() {
             if (window.innerWidth > 768) {
-                if (searchContainerMobileToggled) {
+                if (searchContainerMobileToggled && searchContainerMobileToggled.classList.contains('active')) {
                     searchContainerMobileToggled.classList.remove('active');
-                    navbarContainer.style.flexWrap = 'nowrap';
+                    searchInputMobile.value = '';
+                    if (searchClearBtnMobile) searchClearBtnMobile.style.display = 'none';
                 }
             }
         }
 
-        checkMobileVisibility();
-        window.addEventListener('resize', checkMobileVisibility);
+        // Initial check and attach resize listener
+        checkMobileVisibilityAndResetSearch();
+        window.addEventListener('resize', checkMobileVisibilityAndResetSearch);
 
     });
 </script>

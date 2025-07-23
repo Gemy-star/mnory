@@ -1,8 +1,14 @@
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
 
-from shop.models import ProductVariant, Cart, CartItem, Wishlist, Product, WishlistItem
+from shop.models import ProductVariant, Cart, CartItem, Wishlist, Product, WishlistItem , MnoryUser, VendorProfile
+from django.db.models.signals import post_save
 
+@receiver(post_save, sender=MnoryUser)
+def create_vendor_profile(sender, instance, created, **kwargs):
+    if created and instance.is_vendor:
+        # This is where the problematic creation happens
+        VendorProfile.objects.create(user=instance)
 
 @receiver(user_logged_in)
 def merge_session_cart_wishlist(sender, user, request, **kwargs):
