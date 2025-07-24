@@ -34,7 +34,7 @@
 <section class="section pt-4">
 <div class="container my-4">
 
-{% include 'shop/partials/_categories.html' %}
+{% include 'shop/partials/_categories.html' with cat_name="body" categories=categories %}
 {% if config.ENABLE_ALL_FLAG %}
 <div class="section-header">
     <h2>{% trans "All Products" %}</h2>

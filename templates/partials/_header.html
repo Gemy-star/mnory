@@ -1,5 +1,6 @@
 {% load static i18n %}
 <style>
+    /* Paste the updated CSS from above here */
     {% with nav_id="nav1" %}
     :root {
         --primary-color: #000000;
@@ -38,20 +39,323 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap;
+        flex-wrap: wrap; /* Allows items to wrap to the next line if space is limited */
     }
 
     .promo-item {
         display: flex;
         align-items: center;
         gap: 8px;
-        flex: 1;
+        flex: 1; /* Allows promo items to grow and shrink */
         justify-content: center;
     }
 
     .promo-item i,
     .promo-item span {
         color: var(--text-color-light);
+    }
+
+    .promo-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Space between the new promo items */
+        margin-left: auto; /* Push to the right */
+    }
+
+    .promo-actions .promo-item {
+        font-size: 0.9rem; /* Slightly larger font for these promo items */
+        gap: 5px;
+    }
+
+    .promo-actions .promo-item i,
+    .promo-actions .promo-item span {
+        color: var(--text-color-light); /* Ensure consistent color */
+    }
+
+    /* Specific styling for language dropdown in promo */
+    .promo-actions .language-dropdown .language-btn {
+        background: none; /* No background */
+        border: none; /* No border */
+        padding: 0; /* No padding */
+        font-size: 0.9rem; /* Match promo text size */
+        color: var(--text-color-light);
+        backdrop-filter: none; /* Remove blur */
+        box-shadow: none;
+    }
+
+    .promo-actions .language-dropdown .language-btn:hover {
+        background: none;
+        border: none;
+        transform: none;
+        box-shadow: none;
+        color: rgba(255, 255, 255, 0.8); /* Slight hover effect */
+    }
+
+    /* Remove default nav-icons margin if user is moved */
+    .navbar-{{ nav_id }} .nav-icons {
+        margin-left: 0;
+    }
+
+    /* Hide original desktop search input and toggle button */
+    #searchContainerDesktop,
+    .search-toggle-btn {
+        display: none !important;
+    }
+
+    /* New search button in navbar */
+    .navbar-{{ nav_id }} .search-modal-trigger {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 1.3rem;
+        padding: 8px;
+        border-radius: var(--border-radius-base);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        margin-left: 20px; /* Space from other elements */
+    }
+
+    .navbar-{{ nav_id }} .search-modal-trigger:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Search Modal Styles */
+    .search-modal .modal-content {
+        background: rgba(0, 0, 0, 0.9); /* Darker, more prominent background for search */
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        border: none;
+        color: var(--text-color-light);
+    }
+
+    .search-modal .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 15px 20px;
+    }
+
+    .search-modal .modal-title {
+        color: var(--text-color-light);
+        font-weight: 600;
+    }
+
+    .search-modal .btn-close {
+        filter: invert(1); /* Invert color for dark background */
+        opacity: 0.7;
+    }
+    .search-modal .btn-close:hover {
+        opacity: 1;
+    }
+
+    .search-modal .modal-body {
+        padding: 20px;
+    }
+
+    .search-modal .search-input {
+        width: 100%;
+        padding: 12px 50px 12px 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: var(--border-radius-pill);
+        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        resize: none;
+        min-height: 55px;
+    }
+
+    .search-modal .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .search-modal .search-input:focus {
+        border-color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .search-modal .search-btn {
+        position: absolute;
+        right: 30px; /* Adjust based on modal padding */
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--accent-color); /* Use accent for primary button */
+        color: var(--primary-color);
+        border: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .search-modal .search-btn:hover {
+        background: var(--primary-color);
+        color: var(--text-color-light);
+        transform: translateY(-50%) scale(1.05);
+    }
+
+    .search-modal .search-clear-btn {
+        right: 80px; /* Adjust for space between clear and search button */
+        color: rgba(255, 255, 255, 0.6);
+    }
+    .search-modal .search-clear-btn:hover {
+        color: var(--text-color-light);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .promo-banner {
+            font-size: 0.65rem; /* Slightly smaller font for mobile promo */
+            padding: 5px 0; /* Reduced padding for mobile */
+        }
+
+        .promo-banner .container {
+            flex-direction: row; /* **FIXED: Ensure row direction for mobile** */
+            justify-content: space-around; /* Distribute items evenly */
+            gap: 3px; /* **FIXED: Set gap to 3px as requested** */
+            flex-wrap: wrap; /* Ensure items wrap if screen is very small */
+        }
+
+        .promo-item {
+            flex: 0 0 auto; /* Allow items to shrink but not grow excessively */
+            width: auto; /* Allow content to dictate width */
+            justify-content: center;
+            padding: 2px 5px; /* Add slight padding for touch targets */
+            gap: 3px; /* Ensure gap for individual items too */
+        }
+
+        .promo-item span {
+            font-size: 0.65rem; /* Match promo banner font size or slightly smaller */
+        }
+
+        .promo-actions {
+            width: 100%; /* Take full width for promo actions on mobile */
+            justify-content: space-around; /* Distribute items evenly */
+            margin-left: 0;
+            margin-top: 5px; /* Add some top margin for separation */
+            gap: 5px; /* Gap for promo actions themselves */
+        }
+        .promo-actions .promo-item {
+            font-size: 0.8rem;
+            gap: 3px; /* Consistency in gap */
+        }
+
+        /* Adjust navbar order for mobile to make search button more prominent */
+        .navbar-{{ nav_id }} .navbar-brand {
+            order: 2;
+            text-align: center; /* Center brand for mobile */
+            flex-grow: 1; /* Allow brand to take available space */
+        }
+        .navbar-{{ nav_id }} .categories-btn {
+            order: 1;
+            padding: 8px 10px; /* Adjust padding for mobile button */
+            flex-shrink: 0; /* Prevent shrinking too much */
+        }
+        .navbar-{{ nav_id }} .search-modal-trigger {
+            order: 3;
+            margin-left: auto; /* Push to right */
+            flex-shrink: 0;
+            padding: 8px; /* Consistent padding */
+        }
+        /* Ensure search-toggle-btn is visible on mobile and styled correctly */
+        .search-toggle-btn {
+            display: flex !important; /* Make sure it's visible */
+            order: 3; /* Ensure it's in the right order */
+            margin-left: auto; /* Pushes it to the right */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.3rem;
+            padding: 8px;
+            border-radius: var(--border-radius-base);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .search-toggle-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .navbar-{{ nav_id }} #mainNavIconsMobileAlwaysVisible {
+            order: 4;
+            flex-basis: 100%; /* Take full width */
+            justify-content: space-around; /* Distribute icons evenly */
+            margin-top: 10px; /* Add some space from the top row */
+            display: flex !important; /* Ensure it's always visible on mobile */
+            gap: 10px; /* Gap between icons */
+        }
+        .nav-icon, .language-btn {
+            font-size: 0.9rem; /* Slightly larger icons for better touch */
+            padding: 8px; /* More padding for touch targets */
+            flex: 1; /* Allow icons to share space */
+            text-align: center; /* Center content within icon */
+        }
+
+        /* Specific mobile search container behavior */
+        #searchContainerMobileToggled {
+            display: none; /* Hidden by default, shown by JS */
+            order: 5;
+            flex-basis: 100%;
+            margin-top: 15px;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #searchContainerMobileToggled.active {
+            display: flex; /* Display when active */
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #searchContainerMobileToggled .search-clear-btn {
+            display: block; /* Show clear button on mobile search */
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Hide desktop elements on mobile */
+        #searchContainerDesktop,
+        #mainNavIconsDesktop {
+            display: none !important;
+        }
+
+        .promo-actions .language-dropdown .language-btn {
+            font-size: 0.8rem; /* Smaller font for language in promo for mobile */
+            padding: 0;
+        }
     }
 
     .navbar-{{ nav_id }} {
@@ -168,13 +472,13 @@
     }
 
     @keyframes fadeInScale {
-        from { 
-            opacity: 0; 
-            transform: scale(0.95) translateY(-10px); 
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(-10px);
         }
-        to { 
-            opacity: 1; 
-            transform: scale(1) translateY(0); 
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
         }
     }
 
@@ -537,22 +841,23 @@
             flex-grow: 1;
             margin-left: 40px;
             max-width: 600px;
+            display: flex !important; /* Ensure desktop search is visible */
         }
         .nav-icons {
             order: 3;
             margin-left: auto;
         }
         .search-toggle-btn {
-            display: none !important;
+            display: none !important; /* Hide mobile search toggle on desktop */
         }
-        #searchContainerDesktop, #mainNavIconsDesktop {
-            display: flex !important;
+        #mainNavIconsDesktop {
+            display: flex !important; /* Ensure desktop nav icons are visible */
         }
         #searchContainerMobileToggled, #mainNavIconsMobileAlwaysVisible {
-            display: none !important;
+            display: none !important; /* Hide mobile specific elements on desktop */
         }
         .search-clear-btn {
-            display: block;
+            display: block; /* Show clear button on desktop */
             right: 50px;
         }
     }
@@ -576,144 +881,6 @@
 
         .nav-icons {
             gap: 15px;
-        }
-    }
-
-    /* Mobile specific styles */
-    @media (max-width: 768px) {
-        body {
-            padding-top: var(--total-fixed-header-height);
-        }
-
-        .promo-banner {
-            font-size: 0.65rem;
-            padding: 5px 0;
-        }
-
-        .promo-banner .container {
-            flex-direction: row;
-            justify-content: space-around;
-            gap: 5px;
-        }
-        
-        .promo-item {
-            flex: none;
-            gap: 3px;
-        }
-        
-        .promo-item span {
-            font-size: 0.6rem;
-        }
-
-        .navbar-{{ nav_id }} {
-            padding: 8px 15px;
-        }
-
-        .navbar-{{ nav_id }} .container {
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .categories-btn {
-            order: 1;
-            padding: 8px 10px;
-            flex-shrink: 0;
-        }
-        
-        .categories-btn .d-md-inline {
-            display: none !important;
-        }
-
-        .navbar-{{ nav_id }} .navbar-brand {
-            font-size: 1.6rem;
-            position: static;
-            transform: none;
-            order: 2;
-            flex-grow: 1;
-            text-align: center;
-            margin: 0 10px;
-        }
-
-        .search-toggle-btn {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1.3rem;
-            padding: 8px;
-            border-radius: var(--border-radius-base);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            order: 3;
-            margin-left: auto;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .search-toggle-btn:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        #mainNavIconsMobileAlwaysVisible {
-            display: flex !important;
-            order: 4;
-            flex-basis: auto;
-            justify-content: flex-end;
-            margin-top: 0;
-            gap: 10px;
-        }
-        
-        .nav-icon, .language-btn {
-            font-size: 0.85rem;
-            padding: 5px;
-        }
-
-        .nav-icon:hover, .language-btn:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        #searchContainerMobileToggled {
-            display: none;
-            order: 5;
-            flex-basis: 100%;
-            margin-top: 15px;
-            box-sizing: border-box;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        #searchContainerMobileToggled.active {
-            display: flex;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        #searchContainerMobileToggled .search-clear-btn {
-            display: block;
-            right: 50px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        #searchContainerDesktop, #mainNavIconsDesktop {
-            display: none !important;
         }
     }
 
@@ -798,41 +965,55 @@
 </style>
 
 <div class="promo-banner" id="promoBanner">
-    <div class="container">
-        <div class="promo-item"><i class="fa-solid fa-user-plus"></i> <span>{% trans "Sign up & Save" %}</span></div>
+    <div class="container d-flex flex-row"> {# Added flex-row here for direct application, but media query will override for mobile #}
+        <div class="promo-item"> {# Removed col-md-3 as flexbox will handle distribution #}
+            <div class="dropdown language-dropdown">
+                <a style="text-decoration: none;cursor: pointer; " class="dropdown-toggle" type="button"
+                        id="languageDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-globe"></i>
+                    <span class="d-none d-md-inline">{% trans "Language" %}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-promo">
+                    <li>
+                        <form class="px-2">
+                            <select class="form-select form-select-sm" name="language">
+                                <option value="en">{% trans "English" %}</option>
+                                <option value="ar">{% trans "Arabic" %}</option>
+                                <option value="de">{% trans "German" %}</option>
+                            </select>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div class="promo-item"><i class="fa-solid fa-truck-fast"></i> <span>{% trans "Free Shipping" %}</span></div>
         <div class="promo-item"><i class="fa-solid fa-arrow-rotate-left"></i> <span>{% trans "Free Returns" %}</span></div>
+
+        {# Moved user icon and language dropdown here #}
+        <div class="promo-item"> {# Removed col-md-3 #}
+            <a style="text-decoration: none;cursor: pointer;" href="#" class="promo-item" title="{% trans 'Account' %}">
+                <i class="fa-solid fa-user"></i> <span>{% trans "My Account" %}</span>
+            </a>
+        </div>
     </div>
 </div>
 
 {% with nav_id="nav1" %}
 <nav class="navbar navbar-expand-lg navbar-{{ nav_id }} pt-lg-2 {% if current_url_name == 'home' and not request.GET.search %}home-transparent{% endif %}" id="mainNavbar">
-    <div class="container d-flex align-items-center">
+    <div class="container d-flex align-items-center justify-content-around">
         {# Categories Button to trigger modal #}
         <button class="categories-btn" type="button" data-bs-toggle="modal" data-bs-target="#categoryIconModal">
             <i class="fa-solid fa-tshirt"></i>
             <span class="d-none d-md-inline">{% trans "Categories" %}</span>
         </button>
-        
+
         <a class="navbar-brand" href="{% url 'shop:home' %}">
             <img src="{% static 'images/logo.png' %}" class="logo-mnory"/>
         </a>
 
-        {# Desktop Search and Icons #}
-        <div class="search-container d-none d-md-flex d-lg-flex" id="searchContainerDesktop">
-            <textarea class="search-input" placeholder="{% trans 'Search products...' %}" rows="1" id="searchInputDesktop"></textarea>
-            <button class="search-clear-btn" type="button" aria-label="Clear search">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <button class="search-btn" type="submit">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-        </div>
 
-        <div class="nav-icons d-none d-md-flex d-lg-flex" id="mainNavIconsDesktop">
-            <a href="#" class="nav-icon" title="{% trans 'Account' %}">
-                <i class="fa-solid fa-user"></i>
-            </a>
+        {# Main Nav Icons (Cart, Wishlist) - now only these two are left in the main nav #}
+        <div class="nav-icons" id="mainNavIconsDesktop"> {# Removed d-none d-md-flex d-lg-flex here as they are controlled by JS or media queries if needed #}
             <a href="#" class="nav-icon" title="{% trans 'Cart' %}">
                 <i class="fa-solid fa-shopping-cart"></i>
                 <span class="badge" id="cart-count-{{ nav_id }}">0</span>
@@ -841,73 +1022,41 @@
                 <i class="fa-solid fa-heart"></i>
                 <span class="badge" id="wishlist-count-{{ nav_id }}">0</span>
             </a>
-
-            <div class="dropdown language-dropdown">
-                <button class="language-btn dropdown-toggle" type="button"
-                        id="languageDropdown-{{ nav_id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-globe"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-{{ nav_id }}">
-                    <li>
-                        <form class="px-2">
-                            <select class="form-select form-select-sm" name="language">
-                                <option value="en">{% trans "English" %}</option>
-                                <option value="ar">{% trans "Arabic" %}</option>
-                                <option value="de">{% trans "German" %}</option>
-                            </select>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        {# Mobile Search Toggle Button #}
-        <button class="search-toggle-btn d-lg-none" type="button" id="mobileSearchToggle">
+        {# New search trigger button for modal #}
+        <button class="search-modal-trigger" type="button" id="searchModalTrigger" title="{% trans 'Search' %}">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
 
-        {# Mobile Nav Icons - Always visible #}
-        <div class="nav-icons d-lg-none" id="mainNavIconsMobileAlwaysVisible">
-            <a href="#" class="nav-icon" title="{% trans 'Account' %}">
-                <i class="fa-solid fa-user"></i>
-            </a>
+        </div>
+
+        {# Mobile Nav Icons - Keep if separate mobile layout is truly needed, otherwise can merge with desktop icons and rely on CSS media queries #}
+        {# For this example, I'm simplifying by assuming mainNavIconsDesktop will handle responsiveness with CSS #}
+        {# The original #mai #}
+        {# This section was truncated, assuming it contained mobile-specific nav icons or search toggle #}
+        {# Adding a placeholder for what was likely the mobile search toggle and nav icons container #}
+        <button class="search-toggle-btn d-md-none" type="button" id="mobileSearchToggle" title="{% trans 'Search' %}">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+        <div class="nav-icons d-md-none" id="mainNavIconsMobileAlwaysVisible">
             <a href="#" class="nav-icon" title="{% trans 'Cart' %}">
                 <i class="fa-solid fa-shopping-cart"></i>
-                <span class="badge" id="cart-count-{{ nav_id }}-mobile">0</span>
+                <span class="badge" id="cart-count-mobile-{{ nav_id }}">0</span>
             </a>
             <a href="#" class="nav-icon" title="{% trans 'Wishlist' %}">
                 <i class="fa-solid fa-heart"></i>
-                <span class="badge" id="wishlist-count-{{ nav_id }}-mobile">0</span>
+                <span class="badge" id="wishlist-count-mobile-{{ nav_id }}">0</span>
             </a>
-            <div class="dropdown language-dropdown">
-                <button class="language-btn dropdown-toggle" type="button"
-                        id="languageDropdown-{{ nav_id }}-mobile" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-globe"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-{{ nav_id }}-mobile">
-                    <li>
-                        <form class="px-2">
-                            <select class="form-select form-select-sm" name="language">
-                                <option value="en">{% trans "English" %}</option>
-                                <option value="ar">{% trans "Arabic" %}</option>
-                                <option value="de">{% trans "German" %}</option>
-                            </select>
-                        </form>
-                    </li>
-                </ul>
-            </div>
         </div>
 
-        {# Mobile Search Container - Toggled visibility #}
-        <div class="search-container d-lg-none" id="searchContainerMobileToggled">
-            <textarea class="search-input" placeholder="{% trans 'Search products...' %}" rows="1" id="searchInputMobile"></textarea>
-            <button class="search-clear-btn" type="button" aria-label="Clear search">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <button class="search-btn" type="submit">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
+        {# Mobile Search Container - hidden by default, shown by JS toggle #}
+        <div class="search-container material-design" id="searchContainerMobileToggled">
+            <input type="text" class="search-input" placeholder=" " aria-label="{% trans 'Search' %}" id="mobileSearchInput">
+            <label for="mobileSearchInput" class="search-label">{% trans "Search..." %}</label>
+            <button class="search-btn" type="button"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="search-clear-btn" type="button" aria-label="Clear search"><i class="fa-solid fa-times"></i></button>
         </div>
+
     </div>
 </nav>
 
@@ -918,37 +1067,102 @@
                 <h5 class="modal-title" id="categoryIconModalLabel">{% trans "Browse Categories" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body-unique-categories">
+    <div class="container-unique-categories">
+        <div class="category-swiper-controls-unique">
+            <button class="btn btn-outline-secondary btn-sm me-2 category-swiper-prev-unique">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm category-swiper-next-unique">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="swiper category-swiper-container-unique mb-5">
+        <div class="swiper-wrapper">
             {% for cat in categories %}
-            <div class="swiper-slide">
-                <div class="category-nav-small text-center shadow-sm rounded-3"> {# Changed to custom class and removed Bootstrap card classes #}
-                    {% if cat.image %}
-                        <img src="{{ cat.image.url }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}"> {# Added rounded-circle for image #}
-                    {% else %}
-                        <img src="https://placehold.co/100x100/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}"> {# Adjusted placeholder size and added text slice #}
-                    {% endif %}
-                    <h6 class="card-title text-truncate">{{ cat.name }}</h6> {# Changed to h6 and added text-truncate #}
-                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link"></a> {# Added stretched-link for clickable entire card #}
+                <div class="swiper-slide">
+                    <div class="category-card-small-unique text-center shadow-sm rounded-3">
+                        {% if cat.image %}
+                            <img src="{{ cat.image.url }}" class="category-img-square-unique rounded-circle mb-2" alt="{{ cat.name }}">
+                        {% else %}
+                            <img src="https://placehold.co/100x100/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="category-img-square-unique rounded-circle mb-2" alt="{{ cat.name }}">
+                        {% endif %}
+                        <h6 class="card-title-unique text-truncate">{{ cat.name }}</h6>
+                        <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link-unique"></a>
+                    </div>
                 </div>
-            </div>
-        {% empty %}
-            {# If no categories, we still need a swiper-slide for Swiper to initialize properly, though often you might hide the whole section #}
-            <div class="swiper-slide text-center text-muted">
-                {% trans "No categories available." %}
-            </div>
-        {% endfor %}
-                {% if categories|length > 0 %}
-                    <a class="category-icon-item all-categories" href="#">
-                        <i class="fa-solid fa-grip-horizontal"></i>
-                    </a>
-                {% endif %}
+            {% empty %}
+                <div class="swiper-slide text-center text-muted">
+                    {% comment %} Make sure 'trans' tag is loaded if using Django's i18n {% endcomment %}
+                    {% load i18n %}
+                    {% trans "No categories available." %}
+                </div>
+            {% endfor %}
+        </div>
+        {# If you need pagination or scrollbar, add them here with unique classes #}
+        {# <div class="swiper-pagination-unique"></div> #}
+        {# <div class="swiper-scrollbar-unique"></div> #}
+    </div>
+</div>
             </div>
         </div>
     </div>
 </div>
 {% endwith %}
 <script>
+    // Paste the updated JavaScript from above here
     // Function to update cart count
+    // Make sure this script runs after the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const uniqueCategorySwiper = new Swiper('.category-swiper-container-unique', {
+        // Optional parameters
+        loop: true, // Example: enables continuous loop mode
+
+        // If you added pagination
+        // pagination: {
+        //     el: '.swiper-pagination-unique',
+        //     clickable: true,
+        // },
+
+        // Navigation arrows
+        navigation: {
+            nextEl: '.category-swiper-next-unique',
+            prevEl: '.category-swiper-prev-unique',
+        },
+
+        // And if you need a scrollbar
+        // scrollbar: {
+        //     el: '.swiper-scrollbar-unique',
+        //     draggable: true,
+        // },
+
+        // Breakpoints for responsive design
+        breakpoints: {
+            // when window width is >= 320px
+            320: {
+                slidesPerView: 2,
+                spaceBetween: 20
+            },
+            // when window width is >= 640px
+            640: {
+                slidesPerView: 3,
+                spaceBetween: 30
+            },
+            // when window width is >= 768px
+            768: {
+                slidesPerView: 4,
+                spaceBetween: 40
+            },
+            // when window width is >= 1024px
+            1024: {
+                slidesPerView: 5,
+                spaceBetween: 50
+            }
+        }
+    });
+});
     function updateCartCount(count) {
         document.getElementById('cart-count-nav1').textContent = count;
         const mobileCartCount = document.getElementById('cart-count-nav1-mobile');
@@ -989,513 +1203,73 @@
             if (scrollY > 10) { // Add small threshold for smoother transition
                 // Scrolled down: Promo banner hides, Navbar sticks to top with glass effect
                 promoBanner.classList.add('hidden');
-                navbar.style.top = '0px';
-                totalFixedHeaderHeight = navbar.offsetHeight;
-
-                // Apply glassmorphism effect
-                navbar.classList.add('scrolled');
-
+                if (isHomeTransparentInitial) {
+                    navbar.classList.add('scrolled');
+                    navbar.classList.remove('home-transparent');
+                }
+                navbar.style.top = `0px`;
             } else {
-                // At the very top of the page: Promo banner visible, Navbar below it
+                // Scrolled to top: Promo banner shows, Navbar positions below it
                 promoBanner.classList.remove('hidden');
-                navbar.style.top = promoBannerHeight + 'px';
-                totalFixedHeaderHeight = promoBannerHeight + navbar.offsetHeight;
-
-                // Navbar is transparent only when at the very top AND it's the home page
                 if (isHomeTransparentInitial) {
                     navbar.classList.remove('scrolled');
-                } else {
-                    // If not home page, or if it has search parameters, it always stays 'scrolled'
-                    navbar.classList.add('scrolled');
+                    navbar.classList.add('home-transparent');
                 }
+                navbar.style.top = `${promoBannerHeight}px`;
             }
 
-            body.style.paddingTop = totalFixedHeaderHeight + 'px';
+            // Calculate total fixed header height for body padding
+            totalFixedHeaderHeight = navbar.offsetHeight + (promoBanner.classList.contains('hidden') ? 0 : promoBannerHeight);
+            body.style.paddingTop = `${totalFixedHeaderHeight}px`;
         }
 
         // Initial adjustment on load
         adjustHeaderPositions();
 
-        // Smooth scroll event with throttling for better performance
-        let ticking = false;
-        function updateNavbar() {
-            adjustHeaderPositions();
-            ticking = false;
-        }
+        // Adjustments on scroll
+        window.addEventListener('scroll', adjustHeaderPositions);
 
-        window.addEventListener('scroll', function() {
-            if (!ticking) {
-                requestAnimationFrame(updateNavbar);
-                ticking = true;
-            }
-        });
-
+        // Adjustments on resize
         window.addEventListener('resize', adjustHeaderPositions);
-    });
 
-    // Enhanced Mobile Search Toggle Logic & Search Box Enhancements
-    document.addEventListener('DOMContentLoaded', function() {
-        const mobileSearchToggle = document.getElementById('mobileSearchToggle');
-        const searchContainerMobileToggled = document.getElementById('searchContainerMobileToggled');
 
-        // Desktop Search Elements
-        const searchInputDesktop = document.getElementById('searchInputDesktop');
-        const searchClearBtnDesktop = document.querySelector('#searchContainerDesktop .search-clear-btn');
+        // Search Modal Logic
+        const searchModal = new bootstrap.Modal(document.getElementById('searchModal'));
+        const searchModalTrigger = document.getElementById('searchModalTrigger');
+        const searchInputModal = document.getElementById('searchInputModal');
+        const searchClearBtnModal = document.getElementById('searchClearBtnModal');
 
-        // Mobile Search Elements
-        const searchInputMobile = document.getElementById('searchInputMobile');
-        const searchClearBtnMobile = document.querySelector('#searchContainerMobileToggled .search-clear-btn');
-
-        // Enhanced Search Clear Button Logic
-        function setupSearchClear(inputElement, clearButtonElement) {
-            if (!inputElement || !clearButtonElement) return;
-
-            inputElement.addEventListener('input', function() {
-                if (this.value.length > 0) {
-                    clearButtonElement.style.display = 'block';
-                    clearButtonElement.style.opacity = '1';
-                } else {
-                    clearButtonElement.style.display = 'none';
-                    clearButtonElement.style.opacity = '0';
-                }
-            });
-
-            clearButtonElement.addEventListener('click', function() {
-                inputElement.value = '';
-                clearButtonElement.style.display = 'none';
-                clearButtonElement.style.opacity = '0';
-                inputElement.focus();
-                
-                // Add small animation effect
-                inputElement.style.transform = 'scale(1.02)';
-                setTimeout(() => {
-                    inputElement.style.transform = 'scale(1)';
-                }, 150);
-            });
-
-            // Set initial state for clear button based on input content
-            if (inputElement.value.length > 0) {
-                clearButtonElement.style.display = 'block';
-                clearButtonElement.style.opacity = '1';
-            } else {
-                clearButtonElement.style.display = 'none';
-                clearButtonElement.style.opacity = '0';
-            }
-        }
-
-        setupSearchClear(searchInputDesktop, searchClearBtnDesktop);
-        setupSearchClear(searchInputMobile, searchClearBtnMobile);
-
-        // Enhanced Material Design Label Logic
-        function addMaterialDesignLabel(containerElement, inputElement, placeholderText) {
-            if (!containerElement || !inputElement) return;
-
-            containerElement.classList.add('material-design');
-
-            const label = document.createElement('label');
-            label.htmlFor = inputElement.id;
-            label.className = 'search-label';
-            label.textContent = placeholderText;
-            containerElement.insertBefore(label, inputElement);
-
-            inputElement.removeAttribute('placeholder');
-        }
-
-        if (searchInputDesktop && searchInputDesktop.placeholder) {
-            addMaterialDesignLabel(
-                document.getElementById('searchContainerDesktop'),
-                searchInputDesktop,
-                searchInputDesktop.placeholder
-            );
-        }
-
-        if (searchInputMobile && searchInputMobile.placeholder) {
-            addMaterialDesignLabel(
-                searchContainerMobileToggled,
-                searchInputMobile,
-                searchInputMobile.placeholder
-            );
-        }
-
-        // Enhanced Mobile Search Toggle Logic
-        if (mobileSearchToggle) {
-            mobileSearchToggle.addEventListener('click', function() {
-                const isActive = searchContainerMobileToggled.classList.contains('active');
-
-                // Toggle visibility of the mobile search container with animation
-                searchContainerMobileToggled.classList.toggle('active');
-
-                // Add visual feedback to toggle button
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-
-                if (!isActive) { // If it's becoming active
-                    setTimeout(() => {
-                        searchInputMobile.focus();
-                    }, 300); // Wait for animation to complete
-                } else { // If it's becoming inactive
-                    searchInputMobile.value = ''; // Clear search input
-                    if (searchClearBtnMobile) {
-                        searchClearBtnMobile.style.display = 'none';
-                        searchClearBtnMobile.style.opacity = '0';
-                    }
-                }
+        if (searchModalTrigger) {
+            searchModalTrigger.addEventListener('click', function() {
+                searchModal.show();
+                setTimeout(() => searchInputModal.focus(), 500); // Focus after modal transition
             });
         }
 
-        // Handle resize to hide mobile search if screen gets larger
-        function checkMobileVisibilityAndResetSearch() {
-            if (window.innerWidth > 768) {
-                if (searchContainerMobileToggled && searchContainerMobileToggled.classList.contains('active')) {
-                    searchContainerMobileToggled.classList.remove('active');
-                    searchInputMobile.value = '';
-                    if (searchClearBtnMobile) {
-                        searchClearBtnMobile.style.display = 'none';
-                        searchClearBtnMobile.style.opacity = '0';
-                    }
-                }
-            }
+        if (searchInputModal) {
+            searchInputModal.addEventListener('input', function() {
+                searchClearBtnModal.style.display = this.value.length > 0 ? 'block' : 'none';
+            });
         }
 
-        // Initial check and attach resize listener
-        checkMobileVisibilityAndResetSearch();
-        window.addEventListener('resize', checkMobileVisibilityAndResetSearch);
-
-        // Add smooth transitions to all interactive elements
-        const interactiveElements = document.querySelectorAll('.nav-icon, .categories-btn, .search-btn, .language-btn');
-        interactiveElements.forEach(element => {
-            element.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
+        if (searchClearBtnModal) {
+            searchClearBtnModal.addEventListener('click', function() {
+                searchInputModal.value = '';
+                this.style.display = 'none';
+                searchInputModal.focus();
             });
-            
-            element.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+        }
+
+        // Handle language selection
+        document.querySelectorAll('.language-dropdown select[name="language"]').forEach(selectElement => {
+            selectElement.addEventListener('change', function() {
+                // In a real Django setup, you'd likely submit a form or make an AJAX call
+                // to change the language and reload the page or update content.
+                // For demonstration, we'll just log the selected language.
+                console.log("Language changed to:", this.value);
+                // Example: Redirect to a URL that sets the language (Django's set_language view)
+                // this.closest('form').submit(); // If it's a form
             });
         });
-
-        // Enhanced Navigation JavaScript
-// File: static/js/enhanced-nav.js
-
-// Function to update cart count
-function updateCartCount(count) {
-    document.getElementById('cart-count-nav1').textContent = count;
-    const mobileCartCount = document.getElementById('cart-count-nav1-mobile');
-    if (mobileCartCount) {
-        mobileCartCount.textContent = count;
-    }
-}
-
-// Function to update wishlist count
-function updateWishlistCount(count) {
-    document.getElementById('wishlist-count-nav1').textContent = count;
-    const mobileWishlistCount = document.getElementById('wishlist-count-nav1-mobile');
-    if (mobileWishlistCount) {
-        mobileWishlistCount.textContent = count;
-    }
-}
-
-// Simulate updating counts after some time (remove this in production)
-setTimeout(() => {
-    updateCartCount(3);
-    updateWishlistCount(5);
-}, 2000);
-
-// Enhanced navbar scroll behavior with glassmorphism effect
-document.addEventListener('DOMContentLoaded', function() {
-    const navbar = document.getElementById('mainNavbar');
-    const promoBanner = document.getElementById('promoBanner');
-    const body = document.body;
-
-    // Determine if the 'home-transparent' class is initially present from Django context
-    const isHomeTransparentInitial = navbar.classList.contains('home-transparent');
-
-    function adjustHeaderPositions() {
-        const promoBannerHeight = promoBanner ? promoBanner.offsetHeight : 0;
-        const scrollY = window.scrollY;
-        let totalFixedHeaderHeight = 0;
-
-        if (scrollY > 10) { // Add small threshold for smoother transition
-            // Scrolled down: Promo banner hides, Navbar sticks to top with glass effect
-            promoBanner.classList.add('hidden');
-            navbar.style.top = '0px';
-            totalFixedHeaderHeight = navbar.offsetHeight;
-
-            // Apply glassmorphism effect
-            navbar.classList.add('scrolled');
-
-        } else {
-            // At the very top of the page: Promo banner visible, Navbar below it
-            promoBanner.classList.remove('hidden');
-            navbar.style.top = promoBannerHeight + 'px';
-            totalFixedHeaderHeight = promoBannerHeight + navbar.offsetHeight;
-
-            // Navbar is transparent only when at the very top AND it's the home page
-            if (isHomeTransparentInitial) {
-                navbar.classList.remove('scrolled');
-            } else {
-                // If not home page, or if it has search parameters, it always stays 'scrolled'
-                navbar.classList.add('scrolled');
-            }
-        }
-
-        body.style.paddingTop = totalFixedHeaderHeight + 'px';
-    }
-
-    // Initial adjustment on load
-    adjustHeaderPositions();
-
-    // Smooth scroll event with throttling for better performance
-    let ticking = false;
-    function updateNavbar() {
-        adjustHeaderPositions();
-        ticking = false;
-    }
-
-    window.addEventListener('scroll', function() {
-        if (!ticking) {
-            requestAnimationFrame(updateNavbar);
-            ticking = true;
-        }
-    });
-
-    window.addEventListener('resize', adjustHeaderPositions);
-});
-
-// Enhanced Mobile Search Toggle Logic & Search Box Enhancements
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileSearchToggle = document.getElementById('mobileSearchToggle');
-    const searchContainerMobileToggled = document.getElementById('searchContainerMobileToggled');
-
-    // Desktop Search Elements
-    const searchInputDesktop = document.getElementById('searchInputDesktop');
-    const searchClearBtnDesktop = document.querySelector('#searchContainerDesktop .search-clear-btn');
-
-    // Mobile Search Elements
-    const searchInputMobile = document.getElementById('searchInputMobile');
-    const searchClearBtnMobile = document.querySelector('#searchContainerMobileToggled .search-clear-btn');
-
-    // Enhanced Search Clear Button Logic
-    function setupSearchClear(inputElement, clearButtonElement) {
-        if (!inputElement || !clearButtonElement) return;
-
-        inputElement.addEventListener('input', function() {
-            if (this.value.length > 0) {
-                clearButtonElement.style.display = 'block';
-                clearButtonElement.style.opacity = '1';
-            } else {
-                clearButtonElement.style.display = 'none';
-                clearButtonElement.style.opacity = '0';
-            }
-        });
-
-        clearButtonElement.addEventListener('click', function() {
-            inputElement.value = '';
-            clearButtonElement.style.display = 'none';
-            clearButtonElement.style.opacity = '0';
-            inputElement.focus();
-            
-            // Add small animation effect
-            inputElement.style.transform = 'scale(1.02)';
-            setTimeout(() => {
-                inputElement.style.transform = 'scale(1)';
-            }, 150);
-        });
-
-        // Set initial state for clear button based on input content
-        if (inputElement.value.length > 0) {
-            clearButtonElement.style.display = 'block';
-            clearButtonElement.style.opacity = '1';
-        } else {
-            clearButtonElement.style.display = 'none';
-            clearButtonElement.style.opacity = '0';
-        }
-    }
-
-    setupSearchClear(searchInputDesktop, searchClearBtnDesktop);
-    setupSearchClear(searchInputMobile, searchClearBtnMobile);
-
-    // Enhanced Material Design Label Logic
-    function addMaterialDesignLabel(containerElement, inputElement, placeholderText) {
-        if (!containerElement || !inputElement) return;
-
-        containerElement.classList.add('material-design');
-
-        const label = document.createElement('label');
-        label.htmlFor = inputElement.id;
-        label.className = 'search-label';
-        label.textContent = placeholderText;
-        containerElement.insertBefore(label, inputElement);
-
-        inputElement.removeAttribute('placeholder');
-    }
-
-    if (searchInputDesktop && searchInputDesktop.placeholder) {
-        addMaterialDesignLabel(
-            document.getElementById('searchContainerDesktop'),
-            searchInputDesktop,
-            searchInputDesktop.placeholder
-        );
-    }
-
-    if (searchInputMobile && searchInputMobile.placeholder) {
-        addMaterialDesignLabel(
-            searchContainerMobileToggled,
-            searchInputMobile,
-            searchInputMobile.placeholder
-        );
-    }
-
-    // Enhanced Mobile Search Toggle Logic
-    if (mobileSearchToggle) {
-        mobileSearchToggle.addEventListener('click', function() {
-            const isActive = searchContainerMobileToggled.classList.contains('active');
-
-            // Toggle visibility of the mobile search container with animation
-            searchContainerMobileToggled.classList.toggle('active');
-
-            // Add visual feedback to toggle button
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 150);
-
-            if (!isActive) { // If it's becoming active
-                setTimeout(() => {
-                    searchInputMobile.focus();
-                }, 300); // Wait for animation to complete
-            } else { // If it's becoming inactive
-                searchInputMobile.value = ''; // Clear search input
-                if (searchClearBtnMobile) {
-                    searchClearBtnMobile.style.display = 'none';
-                    searchClearBtnMobile.style.opacity = '0';
-                }
-            }
-        });
-    }
-
-    // Handle resize to hide mobile search if screen gets larger
-    function checkMobileVisibilityAndResetSearch() {
-        if (window.innerWidth > 768) {
-            if (searchContainerMobileToggled && searchContainerMobileToggled.classList.contains('active')) {
-                searchContainerMobileToggled.classList.remove('active');
-                searchInputMobile.value = '';
-                if (searchClearBtnMobile) {
-                    searchClearBtnMobile.style.display = 'none';
-                    searchClearBtnMobile.style.opacity = '0';
-                }
-            }
-        }
-    }
-
-    // Initial check and attach resize listener
-    checkMobileVisibilityAndResetSearch();
-    window.addEventListener('resize', checkMobileVisibilityAndResetSearch);
-
-    // Add smooth transitions to all interactive elements
-    const interactiveElements = document.querySelectorAll('.nav-icon, .categories-btn, .search-btn, .language-btn');
-    interactiveElements.forEach(element => {
-        element.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-        });
-        
-        element.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-
-    // Enhanced dropdown animations
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            const dropdown = this.nextElementSibling;
-            if (dropdown && dropdown.classList.contains('dropdown-menu')) {
-                // Add stagger animation to dropdown items
-                const items = dropdown.querySelectorAll('.dropdown-item');
-                items.forEach((item, index) => {
-                    item.style.animationDelay = `${index * 0.05}s`;
-                });
-            }
-        });
-    });
-
-    // Add parallax effect to navbar brand on scroll
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const brand = document.querySelector('.navbar-brand');
-        if (brand) {
-            const speed = scrolled * 0.5;
-            brand.style.transform = `translateY(${speed}px)`;
-        }
-    });
-});
-
-// Category dropdown enhanced interactions
-document.addEventListener('DOMContentLoaded', function() {
-    const categoryItems = document.querySelectorAll('.dropdown-item');
-    
-    categoryItems.forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            const icon = this.querySelector('i');
-            if (icon) {
-                icon.style.transform = 'scale(1.2) rotate(10deg)';
-            }
-        });
-        
-        item.addEventListener('mouseleave', function() {
-            const icon = this.querySelector('i');
-            if (icon) {
-                icon.style.transform = 'scale(1) rotate(0deg)';
-            }
-        });
-    });
-});
-
-// Add loading animation for search functionality
-function addSearchLoadingEffect(searchBtn) {
-    searchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    
-    setTimeout(() => {
-        searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
-    }, 1500);
-}
-
-// Enhanced badge animations
-document.addEventListener('DOMContentLoaded', function() {
-    function animateBadge(badgeId) {
-        const badge = document.getElementById(badgeId);
-        if (badge) {
-            badge.style.transform = 'scale(1.3)';
-            badge.style.background = 'linear-gradient(135deg, #000000, #e0e0e0)';
-            
-            setTimeout(() => {
-                badge.style.transform = 'scale(1)';
-                badge.style.background = 'linear-gradient(135deg, #000000, #e0e0e0)';
-            }, 300);
-        }
-    }
-
-    // Example usage when cart/wishlist counts update
-    window.updateCartCount = function(count) {
-        document.getElementById('cart-count-nav1').textContent = count;
-        const mobileCartCount = document.getElementById('cart-count-nav1-mobile');
-        if (mobileCartCount) {
-            mobileCartCount.textContent = count;
-        }
-        animateBadge('cart-count-nav1');
-        animateBadge('cart-count-nav1-mobile');
-    };
-
-    window.updateWishlistCount = function(count) {
-        document.getElementById('wishlist-count-nav1').textContent = count;
-        const mobileWishlistCount = document.getElementById('wishlist-count-nav1-mobile');
-        if (mobileWishlistCount) {
-            mobileWishlistCount.textContent = count;
-        }
-        animateBadge('wishlist-count-nav1');
-        animateBadge('wishlist-count-nav1-mobile');
-    };
-});
     });
 </script>

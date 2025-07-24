@@ -2,16 +2,16 @@
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="mb-0">{% trans "Shop By Category" %}</h2>
     <div class="category-swiper-controls">
-        <button class="btn btn-outline-secondary btn-sm me-2 category-swiper-prev-{{cat_name}}">
+        <button class="btn btn-outline-secondary btn-sm me-2 category-swiper-prev">
             <i class="fas fa-chevron-left"></i>
         </button>
-        <button class="btn btn-outline-secondary btn-sm category-swiper-next-{{cat_name}}">
+        <button class="btn btn-outline-secondary btn-sm category-swiper-next">
             <i class="fas fa-chevron-right"></i>
         </button>
     </div>
 </div>
 
-<div class="swiper category-swiper-unique-{{cat_name}} mb-5">
+<div class="swiper category-swiper-unique mb-5">
     <div class="swiper-wrapper">
         {% for cat in categories %}
             <div class="swiper-slide">
@@ -87,17 +87,15 @@
 </style>
 
 <script>
-    // Ensure the cat_name is rendered as a string in JavaScript
-    var cat = "{{ cat_name }}"; 
     document.addEventListener('DOMContentLoaded', function() {
-        const categorySwiper = new Swiper(`.category-swiper-unique-${cat}`, {
+        const categorySwiper = new Swiper('.category-swiper-unique', {
             loop: false,
             slidesPerView: 2,
             spaceBetween: 10, // Reduced space for smaller cards
 
             navigation: {
-                nextEl: `.category-swiper-next-${cat}`,
-                prevEl: `.category-swiper-prev-${cat}`,
+                nextEl: '.category-swiper-next',
+                prevEl: '.category-swiper-prev',
             },
 
             breakpoints: {
