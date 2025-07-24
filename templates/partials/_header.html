@@ -2,17 +2,20 @@
 <style>
     {% with nav_id="nav1" %}
     :root {
-        --primary-color: #0A1F44;
-        --accent-color: #000000;
+        --primary-color: #000000;
+        --accent-color: #e0e0e0;
         --text-color-light: white;
         --text-color-dark: #333;
-        --shadow-light: rgba(0,0,0,0.08);
+        --shadow-light: #e0e0e0;
         --shadow-dark: rgba(0,0,0,0.15);
         --border-radius-base: 8px;
         --border-radius-pill: 25px;
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
     }
+
     .promo-banner {
-        background: linear-gradient(135deg, var(--primary-color), #000000);
+        background: linear-gradient(135deg, var(--primary-color), #e0e0e0);
         color: var(--text-color-light);
         padding: 8px 0;
         font-size: 0.85rem;
@@ -54,7 +57,7 @@
     .navbar-{{ nav_id }} {
         background-color: transparent !important;
         box-shadow: none;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1040;
         padding: 12px 0;
         position: fixed;
@@ -65,11 +68,15 @@
     .navbar-{{ nav_id }}.home-transparent {
         background-color: transparent !important;
         box-shadow: none !important;
+        backdrop-filter: none;
     }
 
     .navbar-{{ nav_id }}.scrolled {
-        background-color: rgba(10, 31, 68, 0.95) !important;
-        box-shadow: 0 2px 12px var(--shadow-dark);
+        background: #000000 !important;
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid #000000;
+        box-shadow: 0 8px 32px #e0e0e0;
     }
 
     .navbar-{{ nav_id }} .container {
@@ -77,30 +84,188 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        /* Crucial for mobile search behavior */
-        flex-wrap: nowrap; /* Default to no wrap for main navbar elements */
+        flex-wrap: nowrap;
     }
 
+    /* Enhanced Categories Button with Clothing Icon */
     .categories-btn {
-        background: none;
-        border: none;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        border: 1px solid rgba(255, 255, 255, 0.2);
         color: var(--text-color-light);
         font-size: 1.1rem;
-        padding: 8px 12px;
+        padding: 10px 15px;
         border-radius: var(--border-radius-base);
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .categories-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .categories-btn:hover::before {
+        left: 100%;
     }
 
     .categories-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #000000;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+        border-color: rgba(255, 255, 255, 0.3);
+        color: var(--text-color-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
     .categories-btn i {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
+        transition: transform 0.3s ease;
+    }
+
+    .categories-btn:hover i {
+        transform: rotate(10deg) scale(1.1);
+    }
+
+    /* Original Dropdown Menu (No longer used for categories, but kept if other dropdowns exist) */
+    .dropdown-menu {
+        border: none;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 12px;
+        margin-top: 12px;
+        min-width: 280px;
+        transform-origin: top left;
+        animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-height: calc(100vh - 150px);
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .dropdown-menu::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 20px;
+        width: 16px;
+        height: 16px;
+        background: rgba(255, 255, 255, 0.95);
+        transform: rotate(45deg);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes fadeInScale {
+        from { 
+            opacity: 0; 
+            transform: scale(0.95) translateY(-10px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+        }
+    }
+
+    .dropdown-item {
+        padding: 14px 18px;
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text-color-dark);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 2px;
+    }
+
+    .dropdown-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+        border-radius: 0 2px 2px 0;
+    }
+
+    .dropdown-item:hover::before {
+        transform: scaleY(1);
+    }
+
+    .dropdown-item i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        width: 1.5em;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-item:hover {
+        background: linear-gradient(135deg, var(--primary-color), #1a365d);
+        color: var(--text-color-light);
+        transform: translateX(8px);
+        box-shadow: 0 8px 25px rgba(10, 31, 68, 0.2);
+    }
+
+    .dropdown-item:hover i {
+        color: var(--text-color-light);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .dropdown-divider {
+        margin: 12px 0;
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+        position: relative;
+    }
+
+    .dropdown-divider::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 6px;
+        height: 6px;
+        background: var(--primary-color);
+        border-radius: 50%;
+    }
+
+    /* Special styling for "All Categories" item */
+    .dropdown-item.all-categories {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border: 2px dashed #dee2e6;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    .dropdown-item.all-categories:hover {
+        background: linear-gradient(135deg, var(--accent-color), #333);
+        border-color: var(--accent-color);
     }
 
     .navbar-{{ nav_id }} .navbar-brand {
@@ -113,15 +278,17 @@
         text-decoration: none;
         position: static;
         transform: none;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         user-select: none;
+        transition: all 0.3s ease;
     }
 
     .navbar-{{ nav_id }} .navbar-brand:hover {
-        color: #000000 !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        transform: scale(1.05);
     }
 
-    /* General Search Container and Input Styling */
+    /* Search Container Styles */
     .search-container {
         position: relative;
         display: flex;
@@ -132,21 +299,28 @@
     .search-input {
         width: 100%;
         padding: 12px 50px 12px 20px;
-        border: 2px solid #e9ecef;
+        border: 2px solid rgba(255, 255, 255, 0.2);
         border-radius: var(--border-radius-pill);
         font-size: 0.95rem;
-        transition: all 0.2s ease;
-        background-color: #f8f9fa;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        color: white;
         resize: vertical;
         min-height: 48px;
         box-sizing: border-box;
     }
 
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
     .search-input:focus {
         outline: none;
-        border-color: #000000;
-        background-color: white;
-        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        transform: scale(1.02);
     }
 
     .search-btn {
@@ -163,12 +337,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         cursor: pointer;
     }
 
     .search-btn:hover {
-        background: #000000;
+        background: var(--accent-color);
+        transform: translateY(-50%) scale(1.1);
     }
 
     .search-clear-btn {
@@ -178,20 +353,20 @@
         transform: translateY(-50%);
         background: none;
         border: none;
-        color: #999;
+        color: rgba(255, 255, 255, 0.6);
         font-size: 1rem;
         cursor: pointer;
         display: none;
         padding: 5px;
         border-radius: 50%;
-        transition: color 0.2s ease;
+        transition: all 0.3s ease;
         z-index: 2;
     }
 
     .search-clear-btn:hover {
-        color: var(--text-color-dark);
+        color: var(--text-color-light);
+        background: rgba(255, 255, 255, 0.1);
     }
-
 
     .nav-icons {
         display: flex;
@@ -207,108 +382,68 @@
         position: relative;
         padding: 8px;
         border-radius: var(--border-radius-base);
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
     }
 
     .nav-icon:hover {
-        color: #000000;
-        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-color-light);
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
-    /* Enhanced Badge Styling */
     .nav-icon .badge {
         position: absolute;
-        top: -10px;
-        right: -10px;
-        background: #000000;
+        top: -8px;
+        right: -8px;
+        background: linear-gradient(135deg, #000000, #e0e0e0);
         color: var(--text-color-light);
         font-size: 0.65rem;
         font-weight: bold;
-        min-width: 20px;
-        height: 20px;
-        line-height: 20px;
+        min-width: 24px;
+        height: 24px;
+        line-height: 22px;
         border-radius: 50%;
         text-align: center;
-        border: 2px solid var(--primary-color);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
 
     .nav-icon:hover .badge {
-        transform: scale(1.1);
+        transform: scale(1.2);
+        animation: none;
     }
-
 
     .language-dropdown {
         position: relative;
     }
 
     .language-btn {
-        background: none;
-        border: none;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         color: var(--text-color-light);
         font-size: 1.3rem;
         padding: 8px;
         border-radius: var(--border-radius-base);
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .language-btn:hover {
-        color: #000000;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Categories Dropdown Menu Styling */
-    .dropdown-menu {
-        border: none;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        border-radius: var(--border-radius-base);
-        padding: 8px;
-        margin-top: 8px;
-        background-color: #ffffff;
-        min-width: 220px;
-        transform-origin: top left;
-        animation: fadeInScale 0.2s ease-out;
-        max-height: calc(100vh - 150px);
-        overflow-y: auto;
-    }
-
-    @keyframes fadeInScale {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
-    }
-
-    .dropdown-item {
-        padding: 12px 16px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        color: var(--text-color-dark);
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        text-decoration: none;
-    }
-
-    .dropdown-item i {
-        color: var(--primary-color);
-        font-size: 1rem;
-        width: 1.2em;
-        text-align: center;
-    }
-
-    .dropdown-item:hover {
-        background-color: var(--primary-color);
         color: var(--text-color-light);
-        transform: translateX(3px);
-    }
-    .dropdown-item:hover i {
-        color: #000000;
-    }
-
-    .dropdown-divider {
-        margin: 8px 0;
-        border-color: #eee;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
     /* Material Design Search Input */
@@ -320,7 +455,7 @@
     .search-container.material-design .search-input {
         background-color: transparent;
         border: none;
-        border-bottom: 2px solid #ccc;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 0;
         padding: 8px 50px 8px 0;
         font-size: 1rem;
@@ -332,18 +467,19 @@
 
     .search-container.material-design .search-input:focus {
         outline: none;
-        border-color: #000000;
-        box-shadow: 0 1px 0 0 #000000;
+        border-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.8);
         background-color: transparent;
+        transform: none;
     }
 
     .search-label {
         position: absolute;
         left: 0;
         top: 30px;
-        color: #999;
+        color: rgba(255, 255, 255, 0.7);
         pointer-events: none;
-        transition: all 0.2s ease-out;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 0.95rem;
     }
 
@@ -351,30 +487,32 @@
     .search-input:not(:placeholder-shown) + .search-label {
         top: 0;
         font-size: 0.75rem;
-        color: #000000;
+        color: rgba(255, 255, 255, 0.9);
     }
 
     .search-container.material-design .search-btn {
         right: 0;
         background: none;
-        color: var(--primary-color);
+        color: rgba(255, 255, 255, 0.8);
         width: 35px;
         height: 35px;
     }
 
     .search-container.material-design .search-btn:hover {
-        color: #000000;
-        background: none;
+        color: var(--text-color-light);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-50%) scale(1.1);
     }
 
     .search-container.material-design .search-clear-btn {
         right: 40px;
-        color: #bbb;
-    }
-    .search-container.material-design .search-clear-btn:hover {
-        color: var(--text-color-dark);
+        color: rgba(255, 255, 255, 0.6);
     }
 
+    .search-container.material-design .search-clear-btn:hover {
+        color: var(--text-color-light);
+        background: rgba(255, 255, 255, 0.1);
+    }
 
     /* Desktop Specific Layout */
     @media (min-width: 769px) {
@@ -457,10 +595,12 @@
             justify-content: space-around;
             gap: 5px;
         }
+        
         .promo-item {
             flex: none;
             gap: 3px;
         }
+        
         .promo-item span {
             font-size: 0.6rem;
         }
@@ -470,16 +610,17 @@
         }
 
         .navbar-{{ nav_id }} .container {
-            flex-wrap: wrap; /* Allow wrapping when search is active */
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
         }
 
         .categories-btn {
             order: 1;
-            padding: 5px 8px;
+            padding: 8px 10px;
             flex-shrink: 0;
         }
+        
         .categories-btn .d-md-inline {
             display: none !important;
         }
@@ -495,13 +636,14 @@
         }
 
         .search-toggle-btn {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             font-size: 1.3rem;
             padding: 8px;
             border-radius: var(--border-radius-base);
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -512,39 +654,57 @@
         }
 
         .search-toggle-btn:hover {
-            color: #000000;
-            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         #mainNavIconsMobileAlwaysVisible {
-            display: flex !important; /* Keep icons visible */
-            order: 4; /* Place after search toggle button row */
-            flex-basis: auto; /* Don't force full width */
-            justify-content: flex-end; /* Align icons to the right */
-            margin-top: 0; /* No extra margin here */
-            gap: 10px; /* Space between icons */
+            display: flex !important;
+            order: 4;
+            flex-basis: auto;
+            justify-content: flex-end;
+            margin-top: 0;
+            gap: 10px;
         }
+        
         .nav-icon, .language-btn {
             font-size: 0.85rem;
             padding: 5px;
         }
 
         .nav-icon:hover, .language-btn:hover {
-            color: black;
-            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
         }
 
         #searchContainerMobileToggled {
-            display: none; /* Hidden by default */
-            order: 5; /* Forces it to the next line */
-            flex-basis: 100%; /* Take full width when active */
-            margin-top: 10px; /* Space from the row above */
+            display: none;
+            order: 5;
+            flex-basis: 100%;
+            margin-top: 15px;
             box-sizing: border-box;
-            transition: all 0.3s ease-out; /* Smooth transition for display */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         #searchContainerMobileToggled.active {
-            display: flex; /* Show when active */
+            display: flex;
+            animation: slideDown 0.3s ease-out;
         }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         #searchContainerMobileToggled .search-clear-btn {
             display: block;
             right: 50px;
@@ -555,6 +715,84 @@
         #searchContainerDesktop, #mainNavIconsDesktop {
             display: none !important;
         }
+    }
+
+    /* Modal specific styles */
+    .category-modal .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        border: none;
+    }
+
+    .category-modal .modal-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 15px 20px;
+    }
+
+    .category-modal .modal-title {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    /* Fix btn-close color based on modal background */
+    .category-modal .btn-close {
+        /* You might want a different filter or color directly if the modal background is light */
+        color: var(--text-color-dark); /* Or a specific dark color like #333 */
+        opacity: 0.7; /* Make it slightly transparent */
+    }
+    .category-modal .btn-close:hover {
+        opacity: 1;
+        color: var(--primary-color); /* Or a distinct hover color */
+    }
+
+
+    .category-modal .modal-body {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Adjust icon size */
+        gap: 20px;
+        justify-items: center;
+        align-items: center;
+    }
+
+    .category-icon-item {
+        display: flex;
+        flex-direction: column; /* To keep icon and potential future text stacked if needed */
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-color-dark);
+        transition: all 0.3s ease;
+        padding: 10px 5px; /* Add some padding around the icon clickable area */
+        border-radius: var(--border-radius-base);
+        background: transparent; /* Ensure transparent background for the item container */
+    }
+
+    .category-icon-item:hover {
+        background: linear-gradient(135deg, var(--primary-color), #1a365d);
+        color: var(--text-color-light);
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(10, 31, 68, 0.2);
+    }
+
+    .category-icon-item i {
+        font-size: 2.5rem; /* Make icons larger */
+        color: var(--primary-color);
+        margin-bottom: 0; /* No margin if no text */
+        transition: all 0.3s ease;
+        background: transparent; /* CRUCIAL: Remove background from icon itself */
+        padding: 0; /* Remove padding */
+        border-radius: 0; /* Remove border-radius */
+        box-shadow: none; /* Remove box-shadow */
+    }
+
+    .category-icon-item:hover i {
+        color: var(--text-color-light);
+        transform: scale(1.1);
     }
     {% endwith %}
 </style>
@@ -570,38 +808,17 @@
 {% with nav_id="nav1" %}
 <nav class="navbar navbar-expand-lg navbar-{{ nav_id }} pt-lg-2 {% if current_url_name == 'home' and not request.GET.search %}home-transparent{% endif %}" id="mainNavbar">
     <div class="container d-flex align-items-center">
-        <div class="dropdown">
-            <button class="categories-btn dropdown-toggle" type="button"
-                    id="categoriesDropdown-{{ nav_id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-grip-lines"></i>
-                <span class="d-none d-md-inline">{% trans "Categories" %}</span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="categoriesDropdown-{{ nav_id }}">
-                {% for cat in categories %}
-                    <li><a class="dropdown-item" href="{% url 'shop:category_detail' slug=cat.slug %}">
-                        <i class="{{ cat.icon_class|default:'fa-solid fa-tag' }}"></i>
-                        {{ cat.name }}
-                    </a></li>
-                {% empty %}
-                    <li><a class="dropdown-item text-muted" href="#">
-                        <i class="fa-solid fa-ban"></i>
-                        {% trans "No categories available" %}
-                    </a></li>
-                {% endfor %}
-                {% if categories|length > 0 %}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-muted" href="#">
-                        <i class="fa-solid fa-grip-horizontal"></i> {% trans "All Categories" %}
-                    </a></li>
-                {% endif %}
-            </ul>
-        </div>
-
-        <a class="navbar-brand" href="#">
-            <span style="font-weight: 900; letter-spacing: -0.05em;">𝓜𝓝𝓞𝓡𝓨</span>
+        {# Categories Button to trigger modal #}
+        <button class="categories-btn" type="button" data-bs-toggle="modal" data-bs-target="#categoryIconModal">
+            <i class="fa-solid fa-tshirt"></i>
+            <span class="d-none d-md-inline">{% trans "Categories" %}</span>
+        </button>
+        
+        <a class="navbar-brand" href="{% url 'shop:home' %}">
+            <img src="{% static 'images/logo.png' %}" class="logo-mnory"/>
         </a>
 
-        {# Desktop Search and Icons (unchanged - hidden on mobile via CSS) #}
+        {# Desktop Search and Icons #}
         <div class="search-container d-none d-md-flex d-lg-flex" id="searchContainerDesktop">
             <textarea class="search-input" placeholder="{% trans 'Search products...' %}" rows="1" id="searchInputDesktop"></textarea>
             <button class="search-clear-btn" type="button" aria-label="Clear search">
@@ -644,12 +861,12 @@
             </div>
         </div>
 
-        {# Mobile Search Toggle Button (visible on mobile via CSS) #}
+        {# Mobile Search Toggle Button #}
         <button class="search-toggle-btn d-lg-none" type="button" id="mobileSearchToggle">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
 
-        {# Mobile Nav Icons - Always visible (visible on mobile via CSS, hidden on desktop) #}
+        {# Mobile Nav Icons - Always visible #}
         <div class="nav-icons d-lg-none" id="mainNavIconsMobileAlwaysVisible">
             <a href="#" class="nav-icon" title="{% trans 'Account' %}">
                 <i class="fa-solid fa-user"></i>
@@ -681,7 +898,7 @@
             </div>
         </div>
 
-        {# Mobile Search Container - Toggled visibility (visible on mobile via CSS, hidden on desktop) #}
+        {# Mobile Search Container - Toggled visibility #}
         <div class="search-container d-lg-none" id="searchContainerMobileToggled">
             <textarea class="search-input" placeholder="{% trans 'Search products...' %}" rows="1" id="searchInputMobile"></textarea>
             <button class="search-clear-btn" type="button" aria-label="Clear search">
@@ -693,8 +910,43 @@
         </div>
     </div>
 </nav>
-{% endwith %}
 
+<div class="modal fade category-modal" id="categoryIconModal" tabindex="-1" aria-labelledby="categoryIconModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryIconModalLabel">{% trans "Browse Categories" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            {% for cat in categories %}
+            <div class="swiper-slide">
+                <div class="category-nav-small text-center shadow-sm rounded-3"> {# Changed to custom class and removed Bootstrap card classes #}
+                    {% if cat.image %}
+                        <img src="{{ cat.image.url }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}"> {# Added rounded-circle for image #}
+                    {% else %}
+                        <img src="https://placehold.co/100x100/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}"> {# Adjusted placeholder size and added text slice #}
+                    {% endif %}
+                    <h6 class="card-title text-truncate">{{ cat.name }}</h6> {# Changed to h6 and added text-truncate #}
+                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link"></a> {# Added stretched-link for clickable entire card #}
+                </div>
+            </div>
+        {% empty %}
+            {# If no categories, we still need a swiper-slide for Swiper to initialize properly, though often you might hide the whole section #}
+            <div class="swiper-slide text-center text-muted">
+                {% trans "No categories available." %}
+            </div>
+        {% endfor %}
+                {% if categories|length > 0 %}
+                    <a class="category-icon-item all-categories" href="#">
+                        <i class="fa-solid fa-grip-horizontal"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}
 <script>
     // Function to update cart count
     function updateCartCount(count) {
@@ -720,8 +972,7 @@
         updateWishlistCount(5);
     }, 2000);
 
-
-    // JavaScript to handle navbar transparency on scroll and positioning
+    // Enhanced navbar scroll behavior with glassmorphism effect
     document.addEventListener('DOMContentLoaded', function() {
         const navbar = document.getElementById('mainNavbar');
         const promoBanner = document.getElementById('promoBanner');
@@ -735,13 +986,13 @@
             const scrollY = window.scrollY;
             let totalFixedHeaderHeight = 0;
 
-            if (scrollY > 0) {
-                // Scrolled down: Promo banner hides, Navbar sticks to top
+            if (scrollY > 10) { // Add small threshold for smoother transition
+                // Scrolled down: Promo banner hides, Navbar sticks to top with glass effect
                 promoBanner.classList.add('hidden');
                 navbar.style.top = '0px';
                 totalFixedHeaderHeight = navbar.offsetHeight;
 
-                // Navbar becomes opaque/scrolled once it's fixed to the top
+                // Apply glassmorphism effect
                 navbar.classList.add('scrolled');
 
             } else {
@@ -750,7 +1001,7 @@
                 navbar.style.top = promoBannerHeight + 'px';
                 totalFixedHeaderHeight = promoBannerHeight + navbar.offsetHeight;
 
-                // Navbar is transparent/not scrolled only when at the very top AND it's the home page
+                // Navbar is transparent only when at the very top AND it's the home page
                 if (isHomeTransparentInitial) {
                     navbar.classList.remove('scrolled');
                 } else {
@@ -765,17 +1016,27 @@
         // Initial adjustment on load
         adjustHeaderPositions();
 
-        // Attach event listeners
-        window.addEventListener('scroll', adjustHeaderPositions);
+        // Smooth scroll event with throttling for better performance
+        let ticking = false;
+        function updateNavbar() {
+            adjustHeaderPositions();
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(updateNavbar);
+                ticking = true;
+            }
+        });
+
         window.addEventListener('resize', adjustHeaderPositions);
     });
 
-    // Mobile Search Toggle Logic & Search Box Enhancements
+    // Enhanced Mobile Search Toggle Logic & Search Box Enhancements
     document.addEventListener('DOMContentLoaded', function() {
         const mobileSearchToggle = document.getElementById('mobileSearchToggle');
         const searchContainerMobileToggled = document.getElementById('searchContainerMobileToggled');
-        // No need to manipulate navbarContainer.style.flexWrap directly in JS
-        // The CSS order property handles the layout.
 
         // Desktop Search Elements
         const searchInputDesktop = document.getElementById('searchInputDesktop');
@@ -785,38 +1046,47 @@
         const searchInputMobile = document.getElementById('searchInputMobile');
         const searchClearBtnMobile = document.querySelector('#searchContainerMobileToggled .search-clear-btn');
 
-
-        // --- Search Clear Button Logic ---
+        // Enhanced Search Clear Button Logic
         function setupSearchClear(inputElement, clearButtonElement) {
             if (!inputElement || !clearButtonElement) return;
 
             inputElement.addEventListener('input', function() {
                 if (this.value.length > 0) {
                     clearButtonElement.style.display = 'block';
+                    clearButtonElement.style.opacity = '1';
                 } else {
                     clearButtonElement.style.display = 'none';
+                    clearButtonElement.style.opacity = '0';
                 }
             });
 
             clearButtonElement.addEventListener('click', function() {
                 inputElement.value = '';
                 clearButtonElement.style.display = 'none';
+                clearButtonElement.style.opacity = '0';
                 inputElement.focus();
+                
+                // Add small animation effect
+                inputElement.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    inputElement.style.transform = 'scale(1)';
+                }, 150);
             });
 
             // Set initial state for clear button based on input content
             if (inputElement.value.length > 0) {
                 clearButtonElement.style.display = 'block';
+                clearButtonElement.style.opacity = '1';
             } else {
                 clearButtonElement.style.display = 'none';
+                clearButtonElement.style.opacity = '0';
             }
         }
 
         setupSearchClear(searchInputDesktop, searchClearBtnDesktop);
         setupSearchClear(searchInputMobile, searchClearBtnMobile);
 
-
-        // --- Material Design Label Logic ---
+        // Enhanced Material Design Label Logic
         function addMaterialDesignLabel(containerElement, inputElement, placeholderText) {
             if (!containerElement || !inputElement) return;
 
@@ -847,22 +1117,30 @@
             );
         }
 
-
-        // --- Mobile Search Toggle Logic ---
+        // Enhanced Mobile Search Toggle Logic
         if (mobileSearchToggle) {
             mobileSearchToggle.addEventListener('click', function() {
                 const isActive = searchContainerMobileToggled.classList.contains('active');
 
-                // Toggle visibility of the mobile search container
+                // Toggle visibility of the mobile search container with animation
                 searchContainerMobileToggled.classList.toggle('active');
 
+                // Add visual feedback to toggle button
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+
                 if (!isActive) { // If it's becoming active
-                    searchInputMobile.focus();
-                    // No need to change flex-wrap, CSS order and flex-basis handles it
+                    setTimeout(() => {
+                        searchInputMobile.focus();
+                    }, 300); // Wait for animation to complete
                 } else { // If it's becoming inactive
                     searchInputMobile.value = ''; // Clear search input
-                    if (searchClearBtnMobile) searchClearBtnMobile.style.display = 'none';
-                    // No need to change flex-wrap
+                    if (searchClearBtnMobile) {
+                        searchClearBtnMobile.style.display = 'none';
+                        searchClearBtnMobile.style.opacity = '0';
+                    }
                 }
             });
         }
@@ -873,7 +1151,10 @@
                 if (searchContainerMobileToggled && searchContainerMobileToggled.classList.contains('active')) {
                     searchContainerMobileToggled.classList.remove('active');
                     searchInputMobile.value = '';
-                    if (searchClearBtnMobile) searchClearBtnMobile.style.display = 'none';
+                    if (searchClearBtnMobile) {
+                        searchClearBtnMobile.style.display = 'none';
+                        searchClearBtnMobile.style.opacity = '0';
+                    }
                 }
             }
         }
@@ -882,5 +1163,339 @@
         checkMobileVisibilityAndResetSearch();
         window.addEventListener('resize', checkMobileVisibilityAndResetSearch);
 
+        // Add smooth transitions to all interactive elements
+        const interactiveElements = document.querySelectorAll('.nav-icon, .categories-btn, .search-btn, .language-btn');
+        interactiveElements.forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Enhanced Navigation JavaScript
+// File: static/js/enhanced-nav.js
+
+// Function to update cart count
+function updateCartCount(count) {
+    document.getElementById('cart-count-nav1').textContent = count;
+    const mobileCartCount = document.getElementById('cart-count-nav1-mobile');
+    if (mobileCartCount) {
+        mobileCartCount.textContent = count;
+    }
+}
+
+// Function to update wishlist count
+function updateWishlistCount(count) {
+    document.getElementById('wishlist-count-nav1').textContent = count;
+    const mobileWishlistCount = document.getElementById('wishlist-count-nav1-mobile');
+    if (mobileWishlistCount) {
+        mobileWishlistCount.textContent = count;
+    }
+}
+
+// Simulate updating counts after some time (remove this in production)
+setTimeout(() => {
+    updateCartCount(3);
+    updateWishlistCount(5);
+}, 2000);
+
+// Enhanced navbar scroll behavior with glassmorphism effect
+document.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.getElementById('mainNavbar');
+    const promoBanner = document.getElementById('promoBanner');
+    const body = document.body;
+
+    // Determine if the 'home-transparent' class is initially present from Django context
+    const isHomeTransparentInitial = navbar.classList.contains('home-transparent');
+
+    function adjustHeaderPositions() {
+        const promoBannerHeight = promoBanner ? promoBanner.offsetHeight : 0;
+        const scrollY = window.scrollY;
+        let totalFixedHeaderHeight = 0;
+
+        if (scrollY > 10) { // Add small threshold for smoother transition
+            // Scrolled down: Promo banner hides, Navbar sticks to top with glass effect
+            promoBanner.classList.add('hidden');
+            navbar.style.top = '0px';
+            totalFixedHeaderHeight = navbar.offsetHeight;
+
+            // Apply glassmorphism effect
+            navbar.classList.add('scrolled');
+
+        } else {
+            // At the very top of the page: Promo banner visible, Navbar below it
+            promoBanner.classList.remove('hidden');
+            navbar.style.top = promoBannerHeight + 'px';
+            totalFixedHeaderHeight = promoBannerHeight + navbar.offsetHeight;
+
+            // Navbar is transparent only when at the very top AND it's the home page
+            if (isHomeTransparentInitial) {
+                navbar.classList.remove('scrolled');
+            } else {
+                // If not home page, or if it has search parameters, it always stays 'scrolled'
+                navbar.classList.add('scrolled');
+            }
+        }
+
+        body.style.paddingTop = totalFixedHeaderHeight + 'px';
+    }
+
+    // Initial adjustment on load
+    adjustHeaderPositions();
+
+    // Smooth scroll event with throttling for better performance
+    let ticking = false;
+    function updateNavbar() {
+        adjustHeaderPositions();
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            requestAnimationFrame(updateNavbar);
+            ticking = true;
+        }
+    });
+
+    window.addEventListener('resize', adjustHeaderPositions);
+});
+
+// Enhanced Mobile Search Toggle Logic & Search Box Enhancements
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+    const searchContainerMobileToggled = document.getElementById('searchContainerMobileToggled');
+
+    // Desktop Search Elements
+    const searchInputDesktop = document.getElementById('searchInputDesktop');
+    const searchClearBtnDesktop = document.querySelector('#searchContainerDesktop .search-clear-btn');
+
+    // Mobile Search Elements
+    const searchInputMobile = document.getElementById('searchInputMobile');
+    const searchClearBtnMobile = document.querySelector('#searchContainerMobileToggled .search-clear-btn');
+
+    // Enhanced Search Clear Button Logic
+    function setupSearchClear(inputElement, clearButtonElement) {
+        if (!inputElement || !clearButtonElement) return;
+
+        inputElement.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                clearButtonElement.style.display = 'block';
+                clearButtonElement.style.opacity = '1';
+            } else {
+                clearButtonElement.style.display = 'none';
+                clearButtonElement.style.opacity = '0';
+            }
+        });
+
+        clearButtonElement.addEventListener('click', function() {
+            inputElement.value = '';
+            clearButtonElement.style.display = 'none';
+            clearButtonElement.style.opacity = '0';
+            inputElement.focus();
+            
+            // Add small animation effect
+            inputElement.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                inputElement.style.transform = 'scale(1)';
+            }, 150);
+        });
+
+        // Set initial state for clear button based on input content
+        if (inputElement.value.length > 0) {
+            clearButtonElement.style.display = 'block';
+            clearButtonElement.style.opacity = '1';
+        } else {
+            clearButtonElement.style.display = 'none';
+            clearButtonElement.style.opacity = '0';
+        }
+    }
+
+    setupSearchClear(searchInputDesktop, searchClearBtnDesktop);
+    setupSearchClear(searchInputMobile, searchClearBtnMobile);
+
+    // Enhanced Material Design Label Logic
+    function addMaterialDesignLabel(containerElement, inputElement, placeholderText) {
+        if (!containerElement || !inputElement) return;
+
+        containerElement.classList.add('material-design');
+
+        const label = document.createElement('label');
+        label.htmlFor = inputElement.id;
+        label.className = 'search-label';
+        label.textContent = placeholderText;
+        containerElement.insertBefore(label, inputElement);
+
+        inputElement.removeAttribute('placeholder');
+    }
+
+    if (searchInputDesktop && searchInputDesktop.placeholder) {
+        addMaterialDesignLabel(
+            document.getElementById('searchContainerDesktop'),
+            searchInputDesktop,
+            searchInputDesktop.placeholder
+        );
+    }
+
+    if (searchInputMobile && searchInputMobile.placeholder) {
+        addMaterialDesignLabel(
+            searchContainerMobileToggled,
+            searchInputMobile,
+            searchInputMobile.placeholder
+        );
+    }
+
+    // Enhanced Mobile Search Toggle Logic
+    if (mobileSearchToggle) {
+        mobileSearchToggle.addEventListener('click', function() {
+            const isActive = searchContainerMobileToggled.classList.contains('active');
+
+            // Toggle visibility of the mobile search container with animation
+            searchContainerMobileToggled.classList.toggle('active');
+
+            // Add visual feedback to toggle button
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+
+            if (!isActive) { // If it's becoming active
+                setTimeout(() => {
+                    searchInputMobile.focus();
+                }, 300); // Wait for animation to complete
+            } else { // If it's becoming inactive
+                searchInputMobile.value = ''; // Clear search input
+                if (searchClearBtnMobile) {
+                    searchClearBtnMobile.style.display = 'none';
+                    searchClearBtnMobile.style.opacity = '0';
+                }
+            }
+        });
+    }
+
+    // Handle resize to hide mobile search if screen gets larger
+    function checkMobileVisibilityAndResetSearch() {
+        if (window.innerWidth > 768) {
+            if (searchContainerMobileToggled && searchContainerMobileToggled.classList.contains('active')) {
+                searchContainerMobileToggled.classList.remove('active');
+                searchInputMobile.value = '';
+                if (searchClearBtnMobile) {
+                    searchClearBtnMobile.style.display = 'none';
+                    searchClearBtnMobile.style.opacity = '0';
+                }
+            }
+        }
+    }
+
+    // Initial check and attach resize listener
+    checkMobileVisibilityAndResetSearch();
+    window.addEventListener('resize', checkMobileVisibilityAndResetSearch);
+
+    // Add smooth transitions to all interactive elements
+    const interactiveElements = document.querySelectorAll('.nav-icon, .categories-btn, .search-btn, .language-btn');
+    interactiveElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Enhanced dropdown animations
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const dropdown = this.nextElementSibling;
+            if (dropdown && dropdown.classList.contains('dropdown-menu')) {
+                // Add stagger animation to dropdown items
+                const items = dropdown.querySelectorAll('.dropdown-item');
+                items.forEach((item, index) => {
+                    item.style.animationDelay = `${index * 0.05}s`;
+                });
+            }
+        });
+    });
+
+    // Add parallax effect to navbar brand on scroll
+    window.addEventListener('scroll', function() {
+        const scrolled = window.pageYOffset;
+        const brand = document.querySelector('.navbar-brand');
+        if (brand) {
+            const speed = scrolled * 0.5;
+            brand.style.transform = `translateY(${speed}px)`;
+        }
+    });
+});
+
+// Category dropdown enhanced interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryItems = document.querySelectorAll('.dropdown-item');
+    
+    categoryItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.style.transform = 'scale(1.2) rotate(10deg)';
+            }
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.style.transform = 'scale(1) rotate(0deg)';
+            }
+        });
+    });
+});
+
+// Add loading animation for search functionality
+function addSearchLoadingEffect(searchBtn) {
+    searchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    
+    setTimeout(() => {
+        searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
+    }, 1500);
+}
+
+// Enhanced badge animations
+document.addEventListener('DOMContentLoaded', function() {
+    function animateBadge(badgeId) {
+        const badge = document.getElementById(badgeId);
+        if (badge) {
+            badge.style.transform = 'scale(1.3)';
+            badge.style.background = 'linear-gradient(135deg, #000000, #e0e0e0)';
+            
+            setTimeout(() => {
+                badge.style.transform = 'scale(1)';
+                badge.style.background = 'linear-gradient(135deg, #000000, #e0e0e0)';
+            }, 300);
+        }
+    }
+
+    // Example usage when cart/wishlist counts update
+    window.updateCartCount = function(count) {
+        document.getElementById('cart-count-nav1').textContent = count;
+        const mobileCartCount = document.getElementById('cart-count-nav1-mobile');
+        if (mobileCartCount) {
+            mobileCartCount.textContent = count;
+        }
+        animateBadge('cart-count-nav1');
+        animateBadge('cart-count-nav1-mobile');
+    };
+
+    window.updateWishlistCount = function(count) {
+        document.getElementById('wishlist-count-nav1').textContent = count;
+        const mobileWishlistCount = document.getElementById('wishlist-count-nav1-mobile');
+        if (mobileWishlistCount) {
+            mobileWishlistCount.textContent = count;
+        }
+        animateBadge('wishlist-count-nav1');
+        animateBadge('wishlist-count-nav1-mobile');
+    };
+});
     });
 </script>

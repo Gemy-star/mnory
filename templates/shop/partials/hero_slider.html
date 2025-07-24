@@ -2,8 +2,8 @@
 {% if sliders %}
 <style>
     :root {
-        --dark-blue: #0A1F44;
-        --accent-color: #2EC4B6;
+        --dark-blue: #000000;
+        --accent-color: #e0e0e0;
         --white: #F9FAFB;
     }
 
@@ -136,7 +136,7 @@
                 <h1 class="fw-bold hero-heading">{{ slider.heading }}</h1>
                 <p class="hero-subtext col-lg-6 mx-auto mx-md-0">{{ slider.subheading }}</p>
                 <div class="hero-button-wrapper">
-                    <a href="{{ slider.button_url_name }}" class="btn btn-hero-transparent btn-lg rounded-pill mt-3">
+                    <a href="{{ slider.button_url_name }}" class="btn btn-dark btn-lg rounded-pill mt-3">
                         {{ slider.button_text }} <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>

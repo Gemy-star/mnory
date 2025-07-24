@@ -1,7 +1,7 @@
 {% load i18n static %}
 <style>
   footer.footer {
-    background-color: #0A1F44; /* Dark Blue */
+    background-color: #000000; /* Dark Blue */
     color: #F9FAFB;
     font-family: 'Segoe UI', sans-serif;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
@@ -61,7 +61,7 @@
   .btn-scroll-top {
     border: none;
     padding: 0.75rem 0.85rem;
-    background-color: #0A1F44;
+    background-color: #000000;
     color: #F9FAFB;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     border-radius: 50%;
@@ -97,8 +97,10 @@
     <div class="row text-center text-md-start">
       <!-- Brand / About -->
       <div class="col-md-3 mb-4">
-        <a class="logo" href="{% url 'shop:home' %}">𝓜𝓝𝓞𝓡𝓨 </a>
-        <p class="small">{{ config.COMPANY_DESCRIPTION }}</p>
+        <a class="logo" href="{% url 'shop:home' %}">
+        <img src="{% static 'images/logo-solgan.png' %}" class="logo-mnory" style="width: 190px !important"/>
+        </a>
+{#        <p class="small">{{ config.COMPANY_DESCRIPTION }}</p>#}
       </div>
 
       <!-- Social Media -->
