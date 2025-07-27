@@ -28,13 +28,13 @@
 
 {% block content %}
 {% include 'shop/partials/hero_slider.html' %}
-<section class="section pt-4">
-<div class="container my-4">
+<section class="section">
+<div class="container">
 
 {% include 'shop/partials/_categories.html' with cat_name="body" categories=categories %}
 
 {% if config.ENABLE_ALL_FLAG %}
-<div class="section-header pt-2">
+<div class="section-header">
     <h2>{% trans "All Products" %}</h2>
     <div class="swiper-controls">
         <button class="btn btn-outline-secondary btn-sm all-products-prev"><i class="fas fa-chevron-left"></i></button>
@@ -143,7 +143,7 @@
 
 </div>
 </section>
-<div class="row">
+<section class="section">
   {% include 'shop/partials/_home_categories.html' %}
 </div>
 {% endblock %}
