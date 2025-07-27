@@ -272,6 +272,12 @@ class Command(BaseCommand):
                     alt_text=f"{product.name} image {j+1}",
                     is_main=(j == 0)  
                 )
+                ProductImage.objects.create(
+                    product=product,
+                    image=f"products/hover.jpg", 
+                    alt_text=f"{product.name} image {j+1}",
+                    is_hover=(j == 0)  
+                )
 
             # Add colors to product through ProductColor
             selected_colors = random.sample(colors, k=min(random.randint(1, 4), len(colors)))
