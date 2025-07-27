@@ -9,6 +9,7 @@ class Command(BaseCommand):
     help = 'Create dummy HomeSlider entries using existing media/slider images.'
 
     def handle(self, *args, **kwargs):
+        HomeSlider.objects.all().delete()
         dummy_data = [
             {
                 'heading': 'Summer Collection',

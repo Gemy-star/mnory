@@ -1,100 +1,129 @@
 {% load i18n %}
 {% if sliders %}
 <style>
-:root {
-    --dark-blue: #000000;
-    --accent-color: #e0e0e0;
-    --white: #F9FAFB;
-}
+    :root {
+        --dark-blue: #000000;
+        --accent-color: #e0e0e0;
+        --white: #F9FAFB;
+    }
 
-.slider-image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    filter: brightness(0.92);
-    display: block;
-}
-
-@media (max-width: 768px) {
+    /*
+     * Main slider image styling:
+     * - Removed max-height for full flexibility on larger screens.
+     * - object-fit: cover ensures image fills the space without distortion.
+     * - filter: brightness for subtle effect.
+     */
     .slider-image {
-        height: 50vh;
+        width: 100%; /* Ensure image always takes full width of its container */
+        height: auto; /* Allow height to adjust naturally based on aspect ratio */
+        object-fit: cover;
+        filter: brightness(0.92);
+        display: block; /* Remove any extra spacing below images */
     }
-}
 
-.swiper-slide {
-    position: relative;
-    padding-bottom: 56.25%; // 16:9 ratio
-    height: 0;
-    overflow: hidden;
-}
-.slider-image {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-}
-
-.btn-hero-transparent {
-    background-color: var(--dark-blue);
-    color: var(--white);
-    border: 2px solid var(--dark-blue);
-    transition: all 0.3s ease;
-    font-size: 1rem;
-    padding: 0.5rem 1.2rem;
-}
-.btn-hero-transparent:hover {
-    background-color: #000;
-    border-color: #000;
-    color: white;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-}
-
-.hero-heading {
-    color: white !important;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.25);
-    font-size: clamp(2rem, 5vw, 4rem);
-}
-
-.hero-subtext {
-    color: var(--white) !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    font-size: clamp(1rem, 2.5vw, 1.5rem);
-}
-
-.hero-swiper {
-    margin-top: 0 !important;
-}
-
-.hero-overlay {
-    background: linear-gradient(to bottom right, rgba(10, 31, 68, 0.4), rgba(0, 0, 0, 0.4));
-}
-
-/* Mobile adjustments: make text smaller to fit screens */
-@media (max-width: 768px) {
-    .hero-heading {
-        font-size: 1.5rem !important; /* smaller for mobile */
-        text-align: left;
+    /*
+     * For responsiveness on smaller screens:
+     * - Instead of fixed height, use a viewport height (vh) or
+     * consider a padding-bottom trick for true aspect ratio control.
+     * - 50vh is a good starting point for mobile, allowing it to adapt.
+     */
+    @media (max-width: 768px) {
+        .slider-image {
+            height: 50vh; /* Use viewport height for a flexible mobile height */
+            /* max-height: 300px; is now redundant if using vh effectively,
+               but keep if you want an absolute upper limit on mobile.
+               I'll comment it out for a more "removed fixed height" approach. */
+            /* max-height: 300px; */
+        }
     }
-    .hero-subtext {
-        font-size: 0.8rem !important; /* smaller for mobile */
-        text-align: left;
-        max-width: 95%;
-        line-height: 1.4;
+
+    /* Aspect Ratio Box (Alternative for strict aspect ratio)
+    * If you wanted to strictly maintain an aspect ratio (e.g., 16:9)
+    * for all slider images regardless of screen size, you'd use this:
+    .swiper-slide {
+        position: relative;
+        padding-bottom: 56.25%; // For a 16:9 aspect ratio (9/16 = 0.5625)
+        height: 0; // Essential for the padding-bottom trick
+        overflow: hidden;
     }
+    .slider-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.92);
+    }
+    */
+
     .btn-hero-transparent {
-        font-size: 0.85rem;
-        padding: 0.4rem 0.9rem;
+        background-color: var(--dark-blue);
+        color: var(--white);
+        border: 2px solid var(--dark-blue);
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        padding: 0.5rem 1.2rem;
     }
-    .hero-button-wrapper {
-        text-align: left !important;
-    }
-}
 
-/* Remove top padding/margin from body if needed */
-body {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-}
+    .btn-hero-transparent:hover {
+        background-color: #000000;
+        border-color: #000000;
+        color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .hero-heading {
+        color: white !important;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.25);
+        /* Use fluid typography for responsive font sizes */
+        font-size: clamp(2rem, 5vw, 4rem); /* min, viewport-based, max */
+    }
+
+    .hero-subtext {
+        color: var(--white) !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        /* Use fluid typography for responsive font sizes */
+        font-size: clamp(1rem, 2.5vw, 1.5rem); /* min, viewport-based, max */
+    }
+
+    .hero-swiper {
+        margin-top: 0 !important; /* remove gap from navbar */
+    }
+
+    .hero-overlay {
+        background: linear-gradient(to bottom right, rgba(10, 31, 68, 0.4), rgba(0, 0, 0, 0.4)); /* softer overlay */
+    }
+
+    @media (max-width: 768px) {
+        .hero-heading {
+            font-size: 1.8rem !important; /* Slightly larger base for mobile */
+            text-align: left;
+        }
+
+        .hero-subtext {
+            font-size: 0.95rem !important; /* Slightly larger base for mobile */
+            text-align: left;
+            max-width: 95%;
+            line-height: 1.4;
+        }
+
+        .btn-hero-transparent {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.9rem;
+        }
+
+        .hero-button-wrapper {
+            text-align: left !important;
+        }
+    }
+
+    /* Optional: Remove top spacing from body if any */
+    body {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+
 </style>
 
 <div class="swiper hero-swiper mb-5">
@@ -117,6 +146,7 @@ body {
         </div>
         {% endfor %}
     </div>
+
     <div class="swiper-pagination mt-3"></div>
 </div>
 
