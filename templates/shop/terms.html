@@ -2,156 +2,47 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Terms & Privacy" %} - MИOЯY{% endblock %}
-
+{% block title %} {% trans "Terms & Privacy" %} - Reverse {% endblock %}
 {% block content %}
-<style>
-  :root {
-    --dark-blue: #0A1F44;
-    --accent-blue: #1B3B7C;
-    --light-bg: #F9FAFB;
-    --text-color: #333;
-  }
+<div class="container my-4">
+    <div class="row ">
+        <h1 class="mb-4 text-center"><i class="fas fa-gavel me-2"></i>{% trans "Terms of Service" %}</h1>
 
-  body {
-    background-color: var(--light-bg);
-    color: var(--text-color);
-  }
+        <section class="mb-5">
+            <h3>{% trans "1. Introduction" %}</h3>
+            <p>{% trans "Welcome to Reverse. By using our platform, you agree to be bound by these Terms of Service. Please read them carefully." %}</p>
+        </section>
 
-  .terms-container {
-    background: #fff;
-    border-radius: 0.75rem;
-    padding: 2rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  }
+        <section class="mb-5">
+            <h3>{% trans "2. Use of Platform" %}</h3>
+            <p>{% trans "You agree to use Reverse only for lawful purposes and in accordance with these Terms. You must not misuse the platform or interfere with its normal operation." %}</p>
+        </section>
 
-  .terms-header {
-    color: var(--dark-blue);
-    font-weight: 700;
-  }
+        <section class="mb-5">
+            <h3>3. {% trans "Accounts" %}</h3>
+            <p>{% trans "You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account." %}</p>
+        </section>
 
-  .terms-icon {
-    color: var(--dark-blue);
-  }
+        <section class="mb-5">
+            <h3>{% trans "4. Product Information" %}</h3>
+            <p>{% trans "While we strive for accuracy, product descriptions and pricing may contain errors. We reserve the right to correct any inaccuracies." %}</p>
+        </section>
 
-  /* Animated circle-style number list */
-  ol.terms-list {
-    counter-reset: term;
-    list-style: none;
-    padding-left: 0;
-  }
+        <section class="mb-5">
+            <h3>{% trans "5. Limitation of Liability" %}</h3>
+            <p>{% trans "Reverse is not liable for any indirect, incidental, or consequential damages arising from your use of the platform." %}</p>
+        </section>
 
-  ol.terms-list > li {
-    counter-increment: term;
-    margin-bottom: 2.5rem;
-    position: relative;
-    padding-left: 4rem;
-    animation: fadeInUp 0.6s ease forwards;
-    opacity: 0;
-  }
-
-  ol.terms-list > li:nth-child(1) { animation-delay: 0.1s; }
-  ol.terms-list > li:nth-child(2) { animation-delay: 0.2s; }
-  ol.terms-list > li:nth-child(3) { animation-delay: 0.3s; }
-  ol.terms-list > li:nth-child(4) { animation-delay: 0.4s; }
-  ol.terms-list > li:nth-child(5) { animation-delay: 0.5s; }
-  ol.terms-list > li:nth-child(6) { animation-delay: 0.6s; }
-
-  ol.terms-list > li::before {
-    content: counter(term);
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 50%;
-    background-color: var(--dark-blue);
-    color: #fff;
-    font-weight: bold;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(10, 31, 68, 0.25);
-    transition: transform 0.3s ease;
-  }
-
-  ol.terms-list > li:hover::before {
-    transform: scale(1.1);
-  }
-
-  .terms-list h3 {
-    color: var(--accent-blue);
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-
-  .terms-list p {
-    font-size: 1.05rem;
-    line-height: 1.8;
-    color: #555;
-  }
-
-  .btn-primary {
-    background-color: var(--dark-blue);
-    border-color: var(--dark-blue);
-  }
-
-  .btn-primary:hover {
-    background-color: var(--accent-blue);
-    border-color: var(--accent-blue);
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-</style>
-
-<div class="container my-5">
-  <div class="terms-container">
-    <h1 class="mb-4 text-center terms-header">
-      <i class="fas fa-gavel me-2 terms-icon"></i>{% trans "Terms of Service" %}
-    </h1>
-
-    <ol class="terms-list">
-      <li>
-        <h3>{% trans "Introduction" %}</h3>
-        <p>{% trans "Welcome to Mnory. By using our platform, you agree to be bound by these Terms of Service. Please read them carefully." %}</p>
-      </li>
-      <li>
-        <h3>{% trans "Use of Platform" %}</h3>
-        <p>{% trans "You agree to use Mnory only for lawful purposes and in accordance with these Terms. You must not misuse the platform or interfere with its normal operation." %}</p>
-      </li>
-      <li>
-        <h3>{% trans "Accounts" %}</h3>
-        <p>{% trans "You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account." %}</p>
-      </li>
-      <li>
-        <h3>{% trans "Product Information" %}</h3>
-        <p>{% trans "While we strive for accuracy, product descriptions and pricing may contain errors. We reserve the right to correct any inaccuracies." %}</p>
-      </li>
-      <li>
-        <h3>{% trans "Limitation of Liability" %}</h3>
-        <p>{% trans "Mnory is not liable for any indirect, incidental, or consequential damages arising from your use of the platform." %}</p>
-      </li>
-      <li>
-        <h3>{% trans "Changes to Terms" %}</h3>
-        <p>{% trans "We may update these Terms of Service from time to time. Continued use of the platform constitutes acceptance of the revised terms." %}</p>
-      </li>
-    </ol>
-
-    <div class="text-center mt-5">
-      <a href="{% url 'shop:home' %}" class="btn btn-primary">
-        <i class="fas fa-home me-1"></i> {% trans "Back to Home" %}
-      </a>
+        <section class="mb-5">
+            <h3>{% trans "6. Changes to Terms" %}</h3>
+            <p>{% trans "We may update these Terms of Service from time to time. Continued use of the platform constitutes acceptance of the revised terms." %}</p>
+        </section>
+        <div class="text-center mt-5">
+            <a href="{% url 'shop:home' %}" class="btn btn-primary">
+                <i class="fas fa-home me-1"></i>{% trans "Back to Home" %}
+            </a>
+        </div>
     </div>
-  </div>
-</div>
-{% endblock %}
+    </div>
+
+{% endblock content %}

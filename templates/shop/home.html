@@ -2,12 +2,10 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Home - Mnory" %}{% endblock %}
-
 {% block css %}
 <style>
     .swiper-slide {
-        width: 250px;
+        padding-bottom: unset !important;
     }
 
     .section-header {
@@ -25,7 +23,6 @@
         display: flex;
         gap: 0.5rem;
     }
-
 </style>
 {% endblock %}
 
@@ -35,6 +32,7 @@
 <div class="container my-4">
 
 {% include 'shop/partials/_categories.html' with cat_name="body" categories=categories %}
+
 {% if config.ENABLE_ALL_FLAG %}
 <div class="section-header">
     <h2>{% trans "All Products" %}</h2>
@@ -55,7 +53,8 @@
     </div>
 </div>
 {% endif %}
-    <!-- New Arrivals -->
+
+<!-- New Arrivals -->
 {% if config.ENABLE_NEW_ARRIVAL_FLAG %}
 <div class="section-header">
     <h2>{% trans "New Arrivals" %}</h2>
@@ -76,75 +75,75 @@
     </div>
 </div>
 {% endif %}
+
+<!-- Featured Products -->
 {% if config.ENABLE_FEATURED_FLAG %}
-    <!-- Featured Products -->
-    <div class="section-header">
-        <h2>{% trans "Featured Products" %}</h2>
-        <div class="swiper-controls">
-            <button class="btn btn-outline-secondary btn-sm featured-prev"><i class="fas fa-chevron-left"></i></button>
-            <button class="btn btn-outline-secondary btn-sm featured-next"><i class="fas fa-chevron-right"></i></button>
-        </div>
+<div class="section-header">
+    <h2>{% trans "Featured Products" %}</h2>
+    <div class="swiper-controls">
+        <button class="btn btn-outline-secondary btn-sm featured-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn btn-outline-secondary btn-sm featured-next"><i class="fas fa-chevron-right"></i></button>
     </div>
-    <div class="swiper featured-swiper mb-5">
-        <div class="swiper-wrapper">
-            {% for product in featured_products %}
-            <div class="swiper-slide">
+</div>
+<div class="swiper featured-swiper mb-5">
+    <div class="swiper-wrapper">
+        {% for product in featured_products %}
+        <div class="swiper-slide">
           {% include "partials/_product.html" with product=product section="featured_products" %}
-
-            </div>
-            {% empty %}
-            <div class="text-muted">{% trans "No products available." %}</div>
-            {% endfor %}
         </div>
+        {% empty %}
+        <div class="text-muted">{% trans "No products available." %}</div>
+        {% endfor %}
     </div>
+</div>
 {% endif %}
+
+<!-- Best Sellers -->
 {% if config.ENABLE_BEST_SELLER_FLAG %}
-
-    <!-- Best Sellers -->
-    <div class="section-header">
-        <h2>{% trans "Best Sellers" %}</h2>
-        <div class="swiper-controls">
-            <button class="btn btn-outline-secondary btn-sm bestseller-prev"><i class="fas fa-chevron-left"></i></button>
-            <button class="btn btn-outline-secondary btn-sm bestseller-next"><i class="fas fa-chevron-right"></i></button>
-        </div>
+<div class="section-header">
+    <h2>{% trans "Best Sellers" %}</h2>
+    <div class="swiper-controls">
+        <button class="btn btn-outline-secondary btn-sm bestseller-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn btn-outline-secondary btn-sm bestseller-next"><i class="fas fa-chevron-right"></i></button>
     </div>
-    <div class="swiper bestseller-swiper mb-5">
-        <div class="swiper-wrapper">
-            {% for product in best_sellers %}
-            <div class="swiper-slide">
+</div>
+<div class="swiper bestseller-swiper mb-5">
+    <div class="swiper-wrapper">
+        {% for product in best_sellers %}
+        <div class="swiper-slide">
           {% include "partials/_product.html" with product=product section="best_sellers" %}
-            </div>
-            {% empty %}
-            <div class="text-muted">{% trans "No products available." %}</div>
-            {% endfor %}
         </div>
+        {% empty %}
+        <div class="text-muted">{% trans "No products available." %}</div>
+        {% endfor %}
     </div>
+</div>
 {% endif %}
-{% if config.ENABLE_SALE_FLAG %}
 
-    <!-- On Sale -->
-    <div class="section-header">
-        <h2>{% trans "On Sale!" %}</h2>
-        <div class="swiper-controls">
-            <button class="btn btn-outline-secondary btn-sm onsale-prev"><i class="fas fa-chevron-left"></i></button>
-            <button class="btn btn-outline-secondary btn-sm onsale-next"><i class="fas fa-chevron-right"></i></button>
-        </div>
+<!-- On Sale -->
+{% if config.ENABLE_SALE_FLAG %}
+<div class="section-header">
+    <h2>{% trans "On Sale!" %}</h2>
+    <div class="swiper-controls">
+        <button class="btn btn-outline-secondary btn-sm onsale-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn btn-outline-secondary btn-sm onsale-next"><i class="fas fa-chevron-right"></i></button>
     </div>
-    <div class="swiper onsale-swiper mb-5">
-        <div class="swiper-wrapper">
-            {% for product in sale_products %}
-            <div class="swiper-slide">
+</div>
+<div class="swiper onsale-swiper mb-5">
+    <div class="swiper-wrapper">
+        {% for product in sale_products %}
+        <div class="swiper-slide">
           {% include "partials/_product.html" with product=product section="sale_products" %}
-            </div>
-            {% empty %}
-            <div class="text-muted">{% trans "No products available." %}</div>
-            {% endfor %}
         </div>
+        {% empty %}
+        <div class="text-muted">{% trans "No products available." %}</div>
+        {% endfor %}
     </div>
+</div>
 {% endif %}
 
 </div>
-    </section>
+</section>
 {% endblock %}
 
 {% block js %}
@@ -153,6 +152,7 @@
         new Swiper(`.${className}`, {
             slidesPerView: 2,
             spaceBetween: 16,
+            autoHeight: true, // <-- Enable auto height for content fit
             breakpoints: {
                 576: { slidesPerView: 2 },
                 768: { slidesPerView: 3 },
@@ -171,8 +171,6 @@
         setupSwiper('bestseller-swiper', 'bestseller-next', 'bestseller-prev');
         setupSwiper('onsale-swiper', 'onsale-next', 'onsale-prev');
         setupSwiper('all-products-swiper', 'all-products-next', 'all-products-prev');
-
     });
 </script>
-
 {% endblock %}

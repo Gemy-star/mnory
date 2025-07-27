@@ -1,4 +1,5 @@
 {% load i18n %}
+{% if categories %}
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="mb-0">{% trans "Shop By Category" %}</h2>
     <div class="category-swiper-controls">
@@ -15,18 +16,17 @@
     <div class="swiper-wrapper">
         {% for cat in categories %}
             <div class="swiper-slide">
-                <div class="category-card-small text-center shadow-sm rounded-3"> {# Changed to custom class and removed Bootstrap card classes #}
+                <div class="category-card-small text-center shadow-sm rounded-3">
                     {% if cat.image %}
-                        <img src="{{ cat.image.url }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}"> {# Added rounded-circle for image #}
+                        <img src="{{ cat.image.url }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}">
                     {% else %}
-                        <img src="https://placehold.co/100x100/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}"> {# Adjusted placeholder size and added text slice #}
+                        <img src="https://placehold.co/100x100/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="category-img-square rounded-circle mb-2" alt="{{ cat.name }}">
                     {% endif %}
-                    <h6 class="card-title text-truncate">{{ cat.name }}</h6> {# Changed to h6 and added text-truncate #}
-                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link"></a> {# Added stretched-link for clickable entire card #}
+                    <h6 class="card-title text-truncate">{{ cat.name }}</h6>
+                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link"></a>
                 </div>
             </div>
         {% empty %}
-            {# If no categories, we still need a swiper-slide for Swiper to initialize properly, though often you might hide the whole section #}
             <div class="swiper-slide text-center text-muted">
                 {% trans "No categories available." %}
             </div>
@@ -35,91 +35,100 @@
 </div>
 
 <style>
-    /* Styling for the main image to be square */
-    .category-img-square {
-        width: 100px; /* Fixed width for a small square image */
-        height: 100px; /* Fixed height for a small square image */
-        object-fit: cover;
-        display: block; /* Ensures margin auto works for centering */
-        margin-left: auto;
-        margin-right: auto;
-        border: none !important; /* Ensure no borders */
-    }
+/* Fix image size and centering */
+.category-img-square {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
 
-    /* Styling for the custom small category card */
-    .category-card-small {
-        background-color: var(--bs-card-bg, #fff); /* Inherit Bootstrap card background */
-        border: none !important; /* Hide all borders */
-        border-radius: var(--bs-card-border-radius, 0.375rem); /* Maintain Bootstrap rounded corners */
-        padding: 1rem; /* Add some internal padding */
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Center content horizontally */
-        justify-content: center; /* Center content vertically */
-        min-height: 180px; /* Adjust min-height as needed for overall card size */
-        position: relative; /* Needed for stretched-link */
-        transition: transform 0.2s ease-in-out; /* Smooth hover effect */
-    }
+/* Style for the small category card */
+.category-card-small {
+    background-color: var(--bs-card-bg, #fff);
+    border: none !important;
+    border-radius: var(--bs-card-border-radius, 0.375rem);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    position: relative;
+    transition: transform 0.2s ease-in-out;
+}
+.category-card-small:hover {
+    transform: translateY(-3px);
+}
 
-    .category-card-small:hover {
-        transform: translateY(-5px); /* Lift effect on hover */
-    }
+/* Style for the title */
+.card-title {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--bs-body-color, #212529);
+}
 
-    .category-card-small .card-title {
-        margin-top: 0.5rem; /* Space between image and title */
-        font-size: 0.95rem; /* Slightly smaller font for title */
-        font-weight: 600;
-        color: var(--bs-body-color, #212529); /* Default text color */
-    }
+/* Hide button inside card, entire card is clickable */
+.category-card-small .btn {
+    display: none;
+}
 
-    /* Hide the "View Products" button, as the entire card will be clickable */
-    .category-card-small .btn {
-        display: none;
-    }
-
-    /* Adjust placeholder text for smaller size */
-    .category-img-square[src*="placehold.co"] {
-        font-size: 2rem; /* Make placeholder text larger to be visible */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+/* Placeholder text styling for images from placeholder URL */
+.category-img-square[src*="placehold.co"] {
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const categorySwiper = new Swiper('.category-swiper-unique', {
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to set swiper height equal to card height
+    function setSwiperHeight() {
+        const swiperContainer = document.querySelector('.category-swiper-unique');
+        const card = document.querySelector('.category-card-small');
+        if (swiperContainer && card) {
+            const cardHeight = card.offsetHeight;
+            swiperContainer.style.height = cardHeight + 'px';
+        }
+    }
+
+    // Run after images load to get accurate height
+    window.addEventListener('load', function() {
+        setSwiperHeight();
+        // Initialize Swiper after setting height
+        initializeSwiper();
+    });
+
+    // Optional: update height on window resize
+    window.addEventListener('resize', function() {
+        setSwiperHeight();
+    });
+
+    function initializeSwiper() {
+        new Swiper('.category-swiper-unique', {
             loop: false,
             slidesPerView: 2,
-            spaceBetween: 10, // Reduced space for smaller cards
-
+            spaceBetween: 10,
             navigation: {
                 nextEl: '.category-swiper-next',
                 prevEl: '.category-swiper-prev',
             },
-
             breakpoints: {
-                576: {
-                    slidesPerView: 3, // More slides on small screens
-                    spaceBetween: 15
-                },
-                768: {
-                    slidesPerView: 4,
-                    spaceBetween: 15
-                },
-                992: {
-                    slidesPerView: 6, // More slides on larger screens
-                    spaceBetween: 20
-                },
-                1200: {
-                    slidesPerView: 7,
-                    spaceBetween: 20
-                },
-                1400: { // Even larger screens
-                    slidesPerView: 8,
-                    spaceBetween: 20
-                }
+                576: { slidesPerView: 3, spaceBetween: 15 },
+                768: { slidesPerView: 4, spaceBetween: 15 },
+                992: { slidesPerView: 6, spaceBetween: 20 },
+                1200: { slidesPerView: 7, spaceBetween: 20 },
+                1400: { slidesPerView: 8, spaceBetween: 20 },
             },
         });
-    });
+    }
+});
 </script>
+{% endif %}

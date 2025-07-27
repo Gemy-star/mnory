@@ -6,19 +6,22 @@ name = "pypi"
 [packages]
 django = "*"
 pillow = "*"
-django-crispy-forms = "*"
-crispy-bootstrap5 = "*"
 django-silk = "*"
 gunicorn = "*"
 mysqlclient = "*"
-python-dotenv = "*"
 django-constance = {extras = ["redis"], version = "*"}
 django-imagekit = "*"
-faker = "*"
+django-colorfield = "*"
+django-mathfilters = "*"
+django-ckeditor = "*"
+django-countries = "*"
+django-crispy-forms = "*"
+crispy-bootstrap5 = "*"
+python-dotenv = "*"
 
 [dev-packages]
 django-silk = "*"
 
 [requires]
-python_version = "3.11"
-python_full_version = "3.11.3"
+python_version = "3.13"
+python_full_version = "3.13.3"

@@ -45,6 +45,10 @@ INSTALLED_APPS = [
     'constance',
     'constance.backends.database',
     'imagekit',
+    'colorfield',
+    'mathfilters',
+    'ckeditor',
+    'django_countries',
 ]
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

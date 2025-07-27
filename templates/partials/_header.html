@@ -379,8 +379,6 @@
         background: #000000 !important;
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-bottom: 1px solid #000000;
-        box-shadow: 0 8px 32px #e0e0e0;
     }
 
     .navbar-{{ nav_id }} .container {
@@ -1008,7 +1006,7 @@
         </button>
 
         <a class="navbar-brand" href="{% url 'shop:home' %}">
-            <img src="{% static 'images/logo.png' %}" class="logo-mnory"/>
+            <img loading="lazy" src="{% static 'images/logo.png' %}" class="logo-mnory"/>
         </a>
 
 
@@ -1119,25 +1117,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const uniqueCategorySwiper = new Swiper('.category-swiper-container-unique', {
         // Optional parameters
         loop: true, // Example: enables continuous loop mode
-
-        // If you added pagination
-        // pagination: {
-        //     el: '.swiper-pagination-unique',
-        //     clickable: true,
-        // },
-
-        // Navigation arrows
         navigation: {
             nextEl: '.category-swiper-next-unique',
             prevEl: '.category-swiper-prev-unique',
         },
-
-        // And if you need a scrollbar
-        // scrollbar: {
-        //     el: '.swiper-scrollbar-unique',
-        //     draggable: true,
-        // },
-
         // Breakpoints for responsive design
         breakpoints: {
             // when window width is >= 320px
@@ -1171,20 +1154,45 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to update wishlist count
-    function updateWishlistCount(count) {
-        document.getElementById('wishlist-count-nav1').textContent = count;
-        const mobileWishlistCount = document.getElementById('wishlist-count-nav1-mobile');
-        if (mobileWishlistCount) {
-            mobileWishlistCount.textContent = count;
-        }
+function updateNavbarAppearance() {
+    const navbar = document.getElementById('mainNavbar');
+    const promoBanner = document.getElementById('promoBanner');
+
+    // Replace 'home' with your actual URL name variable if needed
+    const currentUrlName = '{{ current_url_name }}'; // Django template variable
+
+    if (currentUrlName === 'home') {
+        // Make transparent
+        navbar.classList.add('home-transparent');
+        navbar.classList.remove('scrolled');
+        if (promoBanner) promoBanner.classList.remove('hidden');
+    } else {
+        // Make it black
+        navbar.classList.remove('home-transparent');
+        navbar.classList.add('scrolled');
+        if (promoBanner) promoBanner.classList.add('hidden');
     }
+}
+        // Update global counts
+function updateGlobalCounts() {
+    fetch("{% url 'shop:get_cart_and_wishlist_counts' %}", {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const cartCountEl = document.getElementById('cart_count');
+        const wishCountEl = document.getElementById('wishlist_count');
+        if (cartCountEl && data.cart_count !== undefined) cartCountEl.textContent = data.cart_count;
+        if (wishCountEl && data.wishlist_count !== undefined) wishCountEl.textContent = data.wishlist_count;
+    })
+    .catch(console.error);
+}
+// Call this function on DOM load
+document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
+document.addEventListener('DOMContentLoaded', updateGlobalCounts);
 
     // Simulate updating counts after some time
-    setTimeout(() => {
-        updateCartCount(3);
-        updateWishlistCount(5);
-    }, 2000);
 
     // Enhanced navbar scroll behavior with glassmorphism effect
     document.addEventListener('DOMContentLoaded', function() {
