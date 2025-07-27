@@ -3,17 +3,18 @@
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 class="mb-0 fw-bold">{% trans "Season Collection" %}</h2>
-    <a href="{% url 'shop:category_detail' slug='all' %}" class="btn btn-outline-dark fw-semibold">
-        {% trans "View all categories" %}<i class="fas fa-gem me-2"></i> 
-    </a>
+    <div class="swiper-controls">
+        {# Changed button classes to specifically target this swiper #}
+        <button class="btn btn-outline-secondary btn-sm category-swiper-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn btn-outline-secondary btn-sm category-swiper-next"><i class="fas fa-chevron-right"></i></button>
+    </div>
 </div>
 
-<div class="swiper category-swiper-unique mb-0"> {# Changed mb-5 to mb-0 here #}
+<div class="swiper category-swiper-unique mb-0">
     <div class="swiper-wrapper">
         {% for cat in categories %}
         <div class="swiper-slide text-center">
             <div class="season-category-card position-relative mx-auto">
-                {# Removed d-flex justify-content-center from category-circle as it's not needed for img #}
                 <div class="category-circle position-relative mb-3">
                     {% if cat.image %}
                         <img src="{{ cat.image.url }}" class="rounded-circle w-100 h-100 object-fit-cover" alt="{{ cat.name }}">
@@ -21,18 +22,24 @@
                         {# Fallback image for categories without an image #}
                         <img src="https://placehold.co/120x120/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="rounded-circle w-100 h-100 object-fit-cover" alt="{{ cat.name }}">
                     {% endif %}
-                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link">
-                        {# The arrow-icon div is completely removed from HTML as it's not in the image #}
-                    </a>
+                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link"></a>
                 </div>
-                {# text-center class for category-label is correctly applied #}
                 <div class="category-label fw-semibold text-center">{{ cat.name }}</div>
             </div>
         </div>
         {% endfor %}
+        {# "All" category slide #}
+        <div class="swiper-slide text-center">
+            <div class="season-category-card position-relative mx-auto">
+                <div class="category-circle position-relative mb-3">
+                    <img src='https://placehold.co/120x120/e0e0e0/555555?text={{ "All"|slice:":1" }}' class="rounded-circle w-100 h-100 object-fit-cover" alt="All categories">
+                    <a href="{% url 'shop:category_list' %}" class="stretched-link"></a> {# Assuming shop:category_list is for all categories #}
+                </div>
+                <div class="category-label fw-semibold text-center">{% trans 'All' %}</div>
+            </div>
+        </div>
     </div>
-
-</div> {# This closing div was misplaced, now it correctly closes .swiper-unique #}
+</div>
 
 <style>
 /* Custom styles to match the provided image */
@@ -47,7 +54,6 @@
     overflow: hidden;
     border-radius: 50%;
     position: relative;
-    /* Removed box-shadow to match the image */
 }
 
 .category-circle img {
@@ -61,28 +67,14 @@
     transform: scale(1.05);
 }
 
-/* Hidden in the image, so we'll ensure the arrow-icon is not displayed */
-.arrow-icon {
-    display: none; /* This ensures if it somehow renders, it's hidden */
-}
-
-/* Responsive text sizes using fluid typography or media queries */
 .category-label {
-    /* Responsive font size */
     font-size: clamp(1rem, 4vw, 1.4rem); /* Min 1rem, preferred 4vw, Max 1.4rem */
     margin-top: 0.5rem; /* Adjust spacing */
     margin-bottom: 0.2rem;
     color: #333; /* Darker text for labels */
-    /* text-align is correctly handled by Bootstrap's text-center class on the div */
 }
 
-.category-count {
-    /* Responsive font size */
-    font-size: clamp(0.75rem, 2.5vw, 0.875rem); /* Min 0.75rem, preferred 2.5vw, Max 0.875rem */
-    color: #6c757d; /* Standard muted color */
-}
-
-/* Swiper specific overrides for navigation buttons */
+/* Swiper specific overrides for navigation buttons if default ones are not wanted */
 .category-swiper-unique .swiper-button-next,
 .category-swiper-unique .swiper-button-prev {
     display: none !important; /* Hides any default Swiper navigation arrows */
@@ -94,14 +86,6 @@
     content: '' !important;
 }
 
-/* Adjust the view all categories link arrow */
-.btn.btn-outline-dark i { /* Targeting the icon inside the specific button */
-    font-size: 0.75em; /* Smaller arrow to match image */
-    vertical-align: middle; /* Align with text */
-    margin-left: 0.25rem; /* Add a bit of space */
-}
-
-/* Adding basic transition for the Bootstrap button if not already defined by Bootstrap itself */
 .btn {
     transition: all 0.2s ease-in-out;
 }
@@ -109,11 +93,10 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    new Swiper('.category-swiper-unique', {
+    const categorySwiper = new Swiper('.category-swiper-unique', {
         loop: false,
         slidesPerView: 2,
         spaceBetween: 10,
-        // Navigation object is removed as the buttons are not intended to be present
         breakpoints: {
             576: { slidesPerView: 3, spaceBetween: 15 },
             768: { slidesPerView: 4, spaceBetween: 15 },
@@ -121,7 +104,22 @@ document.addEventListener('DOMContentLoaded', function () {
             1200: { slidesPerView: 7, spaceBetween: 20 },
             1400: { slidesPerView: 8, spaceBetween: 20 },
         },
+        // Enable navigation and specify custom buttons
+        navigation: {
+            nextEl: '.category-swiper-next',
+            prevEl: '.category-swiper-prev',
+        },
     });
+
+    // Optional: Add event listeners for custom buttons if not using `navigation.nextEl/prevEl` directly
+    // This part is generally not needed if `navigation.nextEl/prevEl` is correctly configured,
+    // but useful for debugging or complex custom setups.
+    // document.querySelector('.category-swiper-prev').addEventListener('click', () => {
+    //     categorySwiper.slidePrev();
+    // });
+    // document.querySelector('.category-swiper-next').addEventListener('click', () => {
+    //     categorySwiper.slideNext();
+    // });
 });
 </script>
 {% endif %}

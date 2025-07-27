@@ -17,6 +17,9 @@
                         <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="pill-btn">{{ cat.name }}</a>
                     </div>
                     {% endfor %}
+                     <div class="swiper-slide">
+                        <a href="{% url 'shop:category_detail' slug='all' %}" class="pill-btn">{% trans 'All' %}</a>
+                    </div>
                 </div>
             </div>
         </div>
