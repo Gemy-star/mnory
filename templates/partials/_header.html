@@ -16,7 +16,7 @@
     }
 
     .promo-banner {
-        background: linear-gradient(135deg, var(--primary-color), #e0e0e0);
+        background: linear-gradient(135deg, #e0e0e0, #000, #007aff);
         color: var(--text-color-light);
         padding: 8px 0;
         font-size: 0.85rem;
@@ -280,7 +280,7 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            font-size: 1.3rem;
+            font-size: 1rem;
             padding: 8px;
             border-radius: var(--border-radius-base);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -292,7 +292,7 @@
 
         .search-toggle-btn:hover {
             color: white;
-            background: rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #000000, #e0e0e0);
             border-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -302,7 +302,6 @@
             order: 4;
             flex-basis: 100%; /* Take full width */
             justify-content: space-around; /* Distribute icons evenly */
-            margin-top: 10px; /* Add some space from the top row */
             display: flex !important; /* Ensure it's always visible on mobile */
             gap: 10px; /* Gap between icons */
         }
@@ -673,13 +672,13 @@
     .nav-icons {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 15px;
         margin-left: 20px;
     }
 
     .nav-icon {
         color: var(--text-color-light);
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         text-decoration: none;
         position: relative;
         padding: 8px;
@@ -687,6 +686,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
+        width: fit-content;
     }
 
     .nav-icon:hover {
@@ -694,16 +694,17 @@
         background: rgba(255, 255, 255, 0.2);
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        font-size: 1.3rem;
     }
 
     .nav-icon .badge {
         position: absolute;
         top: -8px;
         right: -8px;
-        background: linear-gradient(135deg, #000000, #e0e0e0);
+        background: #007aff;
         color: var(--text-color-light);
-        font-size: 0.65rem;
-        font-weight: bold;
+        font-size: 0.75rem;
+        font-weight: 800;
         min-width: 24px;
         height: 24px;
         line-height: 22px;
@@ -723,8 +724,39 @@
     .nav-icon:hover .badge {
         transform: scale(1.2);
         animation: none;
-    }
+        background: linear-gradient(135deg, #000000, #e0e0e0);
 
+    }
+ @media (max-width: 480px) {
+    .nav-icon {
+        color: var(--text-color-light);
+        font-size: 0.9rem;
+        text-decoration: none;
+        position: relative;
+        padding: 8px;
+        border-radius: var(--border-radius-base);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+       .nav-icon .badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #007aff;
+        color: var(--text-color-light);
+        font-size: 0.65rem;
+        font-weight: 800;
+        min-width: 24px;
+        height: 24px;
+        line-height: 22px;
+        border-radius: 50%;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        animation: pulse 2s infinite;
+    }
+    }
     .language-dropdown {
         position: relative;
     }
