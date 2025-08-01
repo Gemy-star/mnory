@@ -35,7 +35,7 @@
                         </div>
                         <h3 class="card-title mb-3">{% trans "Become a Vendor" %}</h3>
                         <p class="card-description mb-4">{% trans "Join our marketplace and start selling your sustainable products to customers worldwide" %}</p>
-                        <a href="#" class="registration-btn vendor-btn">
+                        <a href="{% url 'shop:register_vendor' %}" class="registration-btn vendor-btn">
                             {% trans "Register as Vendor" %}
                             <i class="fas fa-arrow-right ms-2"></i>
                         </a>
@@ -50,7 +50,7 @@
                         </div>
                         <h3 class="card-title mb-3">{% trans "Join as Customer" %}</h3>
                         <p class="card-description mb-4">{% trans "Discover amazing sustainable products and enjoy exclusive offers from our verified vendors" %}</p>
-                        <a href="#" class="registration-btn customer-btn">
+                        <a href="{% url 'shop:register_customer' %}" class="registration-btn customer-btn">
                             {% trans "Register as Customer" %}
                             <i class="fas fa-arrow-right ms-2"></i>
                         </a>

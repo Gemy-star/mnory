@@ -1,0 +1,61 @@
+{# templates/accounts/vendor_register.html #}
+{% extends "base.html" %}
+{% load crispy_forms_tags i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="section py-5 mnory-bg"> {# Added bg-dark to the section for a full dark background #}
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="fw-bold text-white">{{ title }}</h2> {# Changed text to white for contrast #}
+        <p class="text-white">{% trans "Complete the form below to register as a vendor." %}</p>
+      </div>
+    </div>
+
+    <div class="row gy-4">
+      <div class="col-md-7">
+        <div class="card shadow-lg border border-secondary text-black"> {# Changed shadow, border, and background/text color #}
+          <div class="card-header border-bottom border-secondary"> {# Added card header for a distinct top part #}
+            <h4 class="mb-0 fw-bold">{% trans "Vendor Registration Form" %}</h4>
+          </div>
+          <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data" action="{{ form_action }}" novalidate>
+              {% csrf_token %}
+              {# Assuming crispy_forms renders well with dark themes, otherwise custom styling might be needed for form inputs #}
+              {{ form|crispy }}
+
+              <div class="d-grid col-3 mt-4">
+                <button type="submit" class="btn btn-dark btn-sm"> {# Changed button to light for contrast #}
+                  {{ submit_label }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-5">
+        <div class="card border border-secondary text-black h-100"> {# Changed border, background, and text color #}
+          <div class="card-header border-bottom border-secondary"> {# Added card header for a distinct top part #}
+            <h4 class="mb-0 fw-bold">{% trans "Why Join Us?" %}</h4>
+          </div>
+          <div class="card-body p-4">
+            <h5 class="fw-bold text-dark mb-3">
+              {% trans "Benefits of becoming a vendor" %}
+            </h5>
+            <ul class="list-unstyled lh-lg">
+              <li><i class="fa-solid fa-tag text-success me-2"></i> {% trans "List your products for free." %}</li>
+              <li><i class="fa-solid fa-chart-line text-info me-2"></i> {% trans "Access analytics and sales reports." %}</li> {# Changed text-primary to text-info for slightly different highlight #}
+              <li><i class="fa-solid fa-wallet text-warning me-2"></i> {% trans "Withdraw earnings to your wallet." %}</li>
+              <li><i class="fa-solid fa-box-open text-muted me-2"></i> {% trans "Manage inventory and orders easily." %}</li> {# Changed text-secondary to text-muted for softer appearance #}
+              <li><i class="fa-solid fa-users-viewfinder text-danger me-2"></i> {% trans "Reach more customers across regions." %}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

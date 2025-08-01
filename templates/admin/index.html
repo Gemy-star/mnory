@@ -1,0 +1,179 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+    {{ media }}
+{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block nav-sidebar %}
+{% if request.is_vendor and vendor_stats %}
+    <div class="module" id="vendor-stats">
+        <h2>Vendor Dashboard</h2>
+        <div class="vendor-info">
+            <h3>{{ vendor_stats.store_name|default:"Your Store" }}</h3>
+            {% if vendor_stats.needs_profile %}
+                <p class="alert alert-warning">
+                    <a href="{% url 'admin:shop_vendorprofile_add' %}">Complete your vendor profile</a>
+                </p>
+            {% else %}
+                <ul>
+                    <li><strong>Products:</strong> {{ vendor_stats.product_count }}</li>
+                    <li><strong>Wallet Balance:</strong> ${{ vendor_stats.wallet_balance }}</li>
+                    <li><strong>Status:</strong> 
+                        {% if vendor_stats.is_approved %}
+                            <span class="status-approved">Approved</span>
+                        {% else %}
+                            <span class="status-pending">Pending Approval</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% elif request.is_customer and customer_stats %}
+    <div class="module" id="customer-stats">
+        <h2>Customer Dashboard</h2>
+        <div class="customer-info">
+            <ul>
+                <li><strong>Total Orders:</strong> {{ customer_stats.total_orders }}</li>
+                <li><strong>Wishlist Items:</strong> {{ customer_stats.wishlist_items }}</li>
+            </ul>
+            {% if customer_stats.recent_orders %}
+                <h4>Recent Orders</h4>
+                <ul class="recent-orders">
+                    {% for order in customer_stats.recent_orders %}
+                        <li>
+                            <a href="{% url 'admin:shop_order_change' order.pk %}">
+                                {{ order.order_number }} - ${{ order.grand_total }}
+                            </a>
+                            <span class="order-date">({{ order.created_at|date:"M d, Y" }})</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    {% if request.is_vendor %}
+        <div class="dashboard-welcome">
+            <h1>Welcome to Vendor Dashboard</h1>
+            <p>Manage your products, view orders, and track your sales performance.</p>
+        </div>
+    {% elif request.is_customer %}
+        <div class="dashboard-welcome">
+            <h1>Welcome to Customer Dashboard</h1>
+            <p>View your orders, manage your wishlist, and update your profile.</p>
+        </div>
+    {% elif request.is_admin %}
+        <div class="dashboard-welcome">
+            <h1>Welcome to Admin Dashboard</h1>
+            <p>Full access to manage the entire shop system.</p>
+        </div>
+    {% endif %}
+
+    {% if app_list %}
+        {% for app in app_list %}
+            <div class="app-{{ app.app_label }} module">
+                <table>
+                    <caption>
+                        <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+                    </caption>
+                    {% for model in app.models %}
+                        <tr class="model-{{ model.object_name|lower }}">
+                            {% if model.admin_url %}
+                                <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+                            {% else %}
+                                <th scope="row">{{ model.name }}</th>
+                            {% endif %}
+
+                            {% if model.add_url %}
+                                <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+
+                            {% if model.admin_url %}
+                                {% if model.view_only %}
+                                    <td><a href="{{ model.admin_url }}" class="viewlink">{% trans 'View' %}</a></td>
+                                {% else %}
+                                    <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+                                {% endif %}
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>{% trans "You don't have permission to view or edit anything." %}</p>
+    {% endif %}
+</div>
+
+<style>
+    .dashboard-welcome {
+        background: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .vendor-info, .customer-info {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+    
+    .status-approved {
+        color: #28a745;
+        font-weight: bold;
+    }
+    
+    .status-pending {
+        color: #ffc107;
+        font-weight: bold;
+    }
+    
+    .recent-orders {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .recent-orders li {
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .order-date {
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .alert {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+    
+    .alert-warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+    }
+</style>
+{% endblock %}

@@ -65,7 +65,12 @@
     transform: translateY(-2px); /* Lift effect */
     color: #fff; /* Keep text white */
 }
-
+.bg-light {
+    background-color: #e0e0e0 !important;
+}
+.mnory-bg{
+        background: linear-gradient(135deg, #e0e0e0, #000, #007aff) !important;
+}
 /* Style for active page item */
 .page-item.active .page-link {
     background: #fff; /* Solid white background for active button */

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'mathfilters',
     'ckeditor',
     'django_countries',
+    # 'widget_tweaks',
 ]
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
@@ -58,9 +59,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.locale.LocaleMiddleware', 
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'shop.middleware.AdminAccessMiddleware',
+    'shop.middleware.UserTypeContextMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -143,13 +146,12 @@ STATICFILES_DIRS = [
 
 # Media files (User-uploaded content, like product images)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media' # Store uploaded media files in the 'media' directory at project root
+MEDIA_ROOT = os.path.join(BASE_DIR , "media") # Store uploaded media files in the 'media' directory at project root
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 CONSTANCE_CONFIG = {
     # Company Info
@@ -188,6 +190,9 @@ CONSTANCE_CONFIG = {
     'ENABLE_FEATURED_FLAG': (True, 'Enable "Featured" flag display for products'),
     'ENABLE_SALE_FLAG': (True, 'Enable "On Sale" flag display for products'),
     'ENABLE_ALL_FLAG': (True, 'Enable "All" flag display for products'),
+     'ENABLE_USER_LOG': (False, 'Enable User System -- not completed yet --'),
+    'SHIPPING_RATE_CAIRO': (60.00, 'Flat shipping rate for orders inside Cairo.', float),
+    'SHIPPING_RATE_OUTSIDE_CAIRO': (100.00, 'Flat shipping rate for orders outside Cairo.', float)
 }
 
 
@@ -203,18 +208,42 @@ CONSTANCE_CONFIG_FIELDSETS = {
         'INSTAGRAM_URL',
         'TIKTOK_URL'
     ),
+    'Shipping': (
+        'SHIPPING_RATE_CAIRO',
+        'SHIPPING_RATE_OUTSIDE_CAIRO',
+    ),
     'Product Flag Toggles': (
         'ENABLE_BEST_SELLER_FLAG',
         'ENABLE_NEW_ARRIVAL_FLAG',
         'ENABLE_FEATURED_FLAG',
         'ENABLE_SALE_FLAG',
         'ENABLE_ALL_FLAG',
+        'ENABLE_USER_LOG',
     ),
 }
 
 
 
-# Where to redirect users who are not logged in
-LOGIN_URL = reverse_lazy('shop:account')
-# Where to redirect users after successful login
-LOGIN_REDIRECT_URL = reverse_lazy('shop:home')
+LOGIN_URL = reverse_lazy('shop:login')
+LOGIN_REDIRECT_URL = reverse_lazy('admin:index')
+# 100 MB = 100 * 1024 * 1024 bytes
+DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
+
+# Admin Site Configuration
+ADMIN_MEDIA_PREFIX = '/static/admin/'
+
+# Security Settings for Admin
+SECURE_ADMIN_LOGIN = True  # Require HTTPS for admin login in production
+
+# Session Configuration
+SESSION_COOKIE_AGE = 3600 * 8  # 8 hours
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+ADMIN_USER_TYPES = ['admin']
+VENDOR_USER_TYPES = ['vendor']
+CUSTOMER_USER_TYPES = ['customer', 'client']
+# Admin Configuration
+ADMIN_SITE_HEADER = "Mnory Shop Administration"
+ADMIN_SITE_TITLE = "Mnory Admin"
+ADMIN_INDEX_TITLE = "Welcome to Mnory Administration"

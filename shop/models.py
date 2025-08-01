@@ -1,12 +1,10 @@
 # shop/models.py
-from shop.managers import MnoryUserManager
-# shop/models.py
 
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils.text import slugify
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
 from decimal import Decimal
 from django.conf import settings  # Import settings to get AUTH_USER_MODEL
 from django.contrib.auth.models import AbstractUser
@@ -14,25 +12,91 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
 from django.utils.translation import gettext_lazy as _
 from colorfield.fields import ColorField
-import uuid  
-from django_countries.fields import CountryField
+import uuid
 from ckeditor.fields import RichTextField
 
 class MnoryUser(AbstractUser):
-    username = None
-    email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=15, blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    is_customer = models.BooleanField(default=True)
-    is_vendor = models.BooleanField(default=False)
+    # Define choices for user types
+    USER_TYPE_CHOICES = (
+        ('admin', 'Admin'),
+        ('vendor', 'Vendor'),
+        ('customer', 'Customer'),
+        ('company', 'Company'),
+        ('freelancer', 'Freelancer'),
+        ('affiliate', 'Affiliate'),
+    )
 
+    # Make username nullable if you plan to use email as the USERNAME_FIELD
+    # If you intend to keep username as the primary login field, do NOT make it nullable.
+    # However, given your forms, using email for login seems to be the intent.
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        unique=True,
+        blank=True, # Make it blank and null
+        null=True,  # Make it blank and null
+        help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
+        error_messages={
+            "unique": _("A user with that username already exists."),
+        },
+    )
+
+    email = models.EmailField(_("email address"), unique=True) # Ensure email is unique and required
+
+    phone_number = models.CharField(
+        max_length=15,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text="User's phone number, must be unique if provided."
+    )
+
+    # Single field to define the user's primary type
+    user_type = models.CharField(
+        max_length=10,
+        choices=USER_TYPE_CHOICES,
+        default='customer',  # Set a sensible default for new users
+        help_text="Defines the primary role or type of the user."
+    )
+
+    # Set email as the USERNAME_FIELD for authentication
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    # Remove 'email' from REQUIRED_FIELDS because it's now the USERNAME_FIELD
+    REQUIRED_FIELDS = [] # Add any other fields you want to be required during createsuperuser
 
-    objects = MnoryUserManager()
+    class Meta:
+        verbose_name = "Mnory User"
+        verbose_name_plural = "Mnory Users"
 
     def __str__(self):
-        return self.email
+        # Display email and user type for better identification
+        return f"{self.email} ({self.get_user_type_display()})"
+
+    # Helper methods to check user type (optional, but convenient)
+    @property
+    def is_admin_user(self):
+        return self.user_type == 'admin'
+
+    @property
+    def is_vendor_user(self):
+        return self.user_type == 'vendor'
+
+    @property
+    def is_customer_user(self):
+        return self.user_type == 'customer'
+
+    @property
+    def is_company_user(self):
+        return self.user_type == 'company'
+
+    @property
+    def is_freelancer_user(self):
+        return self.user_type == 'freelancer'
+
+    @property
+    def is_affiliate_user(self):
+        return self.user_type == 'affiliate'
+
 
 
 class Category(models.Model):
@@ -181,17 +245,12 @@ class Product(models.Model):
     subcategory = models.ForeignKey('SubCategory', related_name='products', on_delete=models.CASCADE) # Use string if not imported
     fit_type = models.ForeignKey('FitType', related_name='products', on_delete=models.SET_NULL, null=True, blank=True) # Use string if not imported
     brand = models.ForeignKey('Brand', related_name='products', on_delete=models.SET_NULL, null=True, blank=True) # Use string if not imported
+    vendor = models.ForeignKey('VendorProfile', related_name='products', on_delete=models.SET_NULL, null=True, blank=True) # Use string if not imported
 
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
                                      validators=[MinValueValidator(Decimal('0.01'))])
-    vendor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='products',
-        on_delete=models.CASCADE,
-        limit_choices_to={'is_vendor': True},
-        null=True,
-    )
+
     # Flags
     is_best_seller = models.BooleanField(default=False)
     is_new_arrival = models.BooleanField(default=False)
@@ -419,7 +478,6 @@ class ProductVariant(models.Model):
         if not self.sku:
             self.sku = f"{self.product.slug}-{self.color.name.lower()}-{self.size.name.lower()}".replace(' ', '-')
         super().save(*args, **kwargs)
-
 # --- Cart Models ---
 class Cart(models.Model):
     session_key = models.CharField(max_length=40, null=True, blank=True, unique=True)  # For anonymous users
@@ -442,7 +500,7 @@ class Cart(models.Model):
 
     def __str__(self):
         if self.user:
-            return f"Cart of {self.user.email}"
+            return f"Cart of {self.user.username}"
         return f"Anonymous Cart ({self.session_key})"
 
     @property
@@ -491,7 +549,7 @@ class Wishlist(models.Model):
         verbose_name_plural = "Wishlists"
 
     def __str__(self):
-        return f"Wishlist of {self.user.email}"
+        return f"Wishlist of {self.user.username}"
 
 
 class WishlistItem(models.Model):
@@ -506,7 +564,7 @@ class WishlistItem(models.Model):
         verbose_name_plural = "Wishlist Items"
 
     def __str__(self):
-        return f"{self.product.name} in {self.wishlist.user.email}'s Wishlist"
+        return f"{self.product.name} in {self.wishlist.user.username}'s Wishlist"
 
 
 class HomeSlider(models.Model):
@@ -629,26 +687,57 @@ class OrderItem(models.Model):
     def get_total_price(self):
         return self.quantity * self.price_at_purchase
 
-
 class ShippingAddress(models.Model):
-    order = models.OneToOneField(Order, related_name='shipping_address', on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=255)
-    address_line1 = models.CharField(max_length=255)
-    address_line2 = models.CharField(max_length=255, blank=True, null=True)
-    city = models.CharField(max_length=100)
-    state_province_region = models.CharField(max_length=100, blank=True, null=True)
-    postal_code = models.CharField(max_length=20, blank=True, null=True)
-    country = CountryField(blank_label='(select country)')
-    phone_number = models.CharField(max_length=20)
+    """Stores shipping address details, optionally linked to an order or user."""
+    CITY_CHOICE = (
+        ('OUTSIDE_CAIRO', _('Outside Cairo')),
+        ('INSIDE_CAIRO', _('Inside Cairo')),
+    )
 
-    is_default = models.BooleanField(default=False)  # For users to save multiple addresses
+    order = models.OneToOneField(
+        'Order',  # Use string if Order is defined later or import it
+        related_name='shipping_address',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name=_("Order")
+    )
+    user = models.ForeignKey(
+        'MnoryUser',  # Use string if MnoryUser is defined later or import it
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='shipping_addresses',
+        verbose_name=_("User")
+    )
+    full_name = models.CharField(max_length=255, verbose_name=_("Full Name"))
+    email = models.EmailField(null=True,blank=True, verbose_name=_("Email"))
+    address_line1 = models.TextField(verbose_name=_("Address Line 1"))
+    address_line2 = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Address Line 2"))
+    city = models.CharField(max_length=100, verbose_name=_("City"))
+    phone_number = models.CharField(max_length=20, verbose_name=_("Phone Number"))
+    is_default = models.BooleanField(default=False, verbose_name=_("Is Default Address"))
 
     class Meta:
-        verbose_name = "Shipping Address"
-        verbose_name_plural = "Shipping Addresses"
+        verbose_name = _("Shipping Address")
+        verbose_name_plural = _("Shipping Addresses")
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user'],
+                condition=models.Q(is_default=True),
+                name='unique_default_address_per_user'
+            )
+        ]
 
     def __str__(self):
-        return f"Shipping Address for Order {self.order.order_number}"
+        return f"Shipping Address for {self.full_name}, {self.city}"
+
+    def save(self, *args, **kwargs):
+        if self.is_default and self.user:
+            # Unset other default addresses for this user
+            ShippingAddress.objects.filter(user=self.user, is_default=True).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+
 
 
 class Payment(models.Model):
@@ -677,7 +766,6 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for Order {self.order.order_number} - {self.payment_method}"
-
 
 class VendorProfile(models.Model):
     """Vendor (Merchant) profile linked to User."""

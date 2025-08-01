@@ -13,13 +13,13 @@ from .forms import RegisterForm, LoginForm, ShippingAddressForm, PaymentForm
 from .models import (
     Category, SubCategory, FitType, Brand, Color, Size,
     Product, ProductVariant, Cart, CartItem, Wishlist, WishlistItem, HomeSlider,
-    Order, OrderItem, ShippingAddress, Payment, MnoryUser , VendorProfile,
+    Order, OrderItem, ShippingAddress, Payment, MnoryUser, VendorProfile
 )
 from decimal import Decimal
 import uuid
 import logging
 from django.utils.translation import gettext as _
-
+from constance import config
 # Set up logger
 logger = logging.getLogger(__name__)
 
@@ -283,12 +283,12 @@ def product_detail(request, slug):
     available_colors = Color.objects.filter(
         productvariant__in=variants,
         is_active=True
-    ).distinct().order_by('name')
+    ).distinct().order_by('name') # Keep this if you want colors sorted alphabetically by name
 
     available_sizes = Size.objects.filter(
         productvariant__in=variants,
         is_active=True
-    ).distinct().order_by('name')
+    ).distinct() # REMOVE .order_by('name') to use Size model's Meta.ordering
 
     product_images = product.images.all().order_by('order')
 
@@ -305,15 +305,13 @@ def product_detail(request, slug):
         'related_products': related_products,
         'variants': variants,
         'available_colors': available_colors,
-        'available_sizes': available_sizes,
+        'available_sizes': available_sizes, # This will now be ordered by size_type, then 'order', then 'name'
         'product_images': product_images,
         'categories': categories,
         'is_in_wishlist': is_in_wishlist,
     }
 
     return render(request, 'shop/product_detail.html', context)
-
-
 # --- Search & API Endpoints ---
 @require_http_methods(["GET"])
 def search_products(request):
@@ -430,90 +428,6 @@ def get_cart_and_wishlist_counts(request):
     })
 
 
-
-# --- Account & Authentication ---
-def account_view(request):
-    """Handles user login and registration."""
-    login_form = LoginForm(request, data=request.POST or None)
-    register_form = RegisterForm(request.POST or None)
-
-    if request.method == 'POST':
-        if 'login' in request.POST:
-            if login_form.is_valid():
-                user = authenticate(
-                    request,
-                    username=login_form.cleaned_data['username'],
-                    password=login_form.cleaned_data['password']
-                )
-                if user:
-                    login(request, user)
-                    messages.success(request, _(f"Welcome back, {user.username}!"))
-                    # Merge anonymous cart if it exists
-                    session_key = request.session.session_key
-                    if session_key:
-                        try:
-                            # Use select_for_update to lock carts during merge
-                            with transaction.atomic():
-                                anon_cart = Cart.objects.select_for_update().get(session_key=session_key)
-                                user_cart, _ = Cart.objects.select_for_update().get_or_create(user=user)
-
-                                for item in anon_cart.items.all():
-                                    existing_item, created = CartItem.objects.get_or_create(
-                                        cart=user_cart,
-                                        product_variant=item.product_variant,
-                                        defaults={'quantity': item.quantity}
-                                    )
-                                    if not created:
-                                        existing_item.quantity += item.quantity
-                                        # Ensure quantity doesn't exceed stock if merging
-                                        if existing_item.quantity > existing_item.product_variant.stock_quantity:
-                                            existing_item.quantity = existing_item.product_variant.stock_quantity
-                                            messages.warning(request,
-                                                             _(f"Reduced quantity for {existing_item.product_variant.product.name} due to stock limits during merge."))
-                                        existing_item.save()
-                                    item.delete()  # Delete original anonymous cart item
-
-                                anon_cart.delete()  # Delete anonymous cart after all items are merged/moved
-                                user_cart.update_totals()  # Recalculate totals for the user's cart
-
-                            request.session.pop('cart_count', None)  # Clear session cart count
-                            request.session['cart_count'] = user_cart.total_items  # Update with merged count
-                        except Cart.DoesNotExist:
-                            pass  # No anonymous cart to merge
-                        except Exception as e:
-                            print(f"Error merging carts: {e}")
-                            messages.error(request,
-                                           _("An error occurred while merging your cart. Please check your cart."))
-
-                    return redirect('shop:home')
-                else:
-                    messages.error(request, _("Invalid username or password."))
-            else:
-                messages.error(request, _("Please correct the errors in the login form."))
-
-        elif 'register' in request.POST:
-            if register_form.is_valid():
-                user = register_form.save()
-                login(request, user)  # Automatically log in the new user
-                messages.success(request, _(f"Account created successfully! Welcome, {user.username}!"))
-                return redirect('shop:home')
-            else:
-                messages.error(request, _("Please correct the errors in the registration form."))
-
-    return render(request, 'shop/account.html', {
-        'login_form': login_form,
-        'register_form': register_form
-    })
-
-
-@login_required
-def user_logout(request):
-    """Logs out the current user."""
-    logout(request)
-    messages.info(request, _("You have been logged out."))
-    request.session.pop('cart_count', None)  # Clear cart count on logout
-    request.session.pop('wishlist_count', None)  # Clear wishlist count on logout
-    return redirect('shop:home')
 
 
 # --- Wishlist Views ---
@@ -785,7 +699,9 @@ def remove_from_cart(request):
 def cart_view(request):
     cart_items_data = []
     total_cart_price = Decimal('0.00')
+    shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)
     cart = None
+
     if request.user.is_authenticated:
         try:
             cart = Cart.objects.get(user=request.user)
@@ -798,22 +714,22 @@ def cart_view(request):
                 cart = Cart.objects.get(session_key=session_key)
             except Cart.DoesNotExist:
                 pass
+
     if cart:
         cart_items = cart.items.select_related(
             'product_variant__product', 'product_variant__color', 'product_variant__size'
         ).order_by('pk')
+
         for item in cart_items:
             current_stock = item.product_variant.stock_quantity if item.product_variant else 0
-            display_quantity = min(item.quantity, current_stock)
             if item.quantity > current_stock:
                 item.quantity = current_stock
                 item.save()
-                # Assuming messages is imported and used
-                # messages.warning(request, f"Quantity for {item.product_variant.product.name} was adjusted to {current_stock} due to limited stock.")
+
             if current_stock == 0:
                 item.delete()
-                # messages.error(request, f"{item.product_variant.product.name} removed from cart as it is out of stock.")
                 continue
+
             item_total = item.get_total_price()
             total_cart_price += item_total
             cart_items_data.append({
@@ -823,18 +739,22 @@ def cart_view(request):
                 'total': item_total,
                 'stock_available': current_stock
             })
+
         cart.update_totals()
         total_cart_price = cart.total_price_field
         request.session['cart_count'] = cart.total_items_field
     else:
         request.session['cart_count'] = 0
 
+    grand_total = total_cart_price + shipping_fee
+
     return render(request, 'shop/cart_view.html', {
         'items': cart_items_data,
         'total': total_cart_price,
+        'shipping_fee': shipping_fee,
+        'grand_total': grand_total,
         'cart': cart
     })
-
 @require_POST
 def update_cart_quantity(request):
     try:
@@ -944,9 +864,7 @@ def checkout_view(request):
     user_shipping_addresses = ShippingAddress.objects.none()
 
     if request.user.is_authenticated:
-        # Fetch orders related to the user
         user_orders = Order.objects.filter(user=request.user)
-        # Fetch shipping addresses linked to these orders
         user_shipping_addresses = ShippingAddress.objects.filter(order__in=user_orders)
         if user_shipping_addresses.exists():
             default_address = user_shipping_addresses.filter(is_default=True).first() or user_shipping_addresses.order_by('-id').first()
@@ -956,15 +874,14 @@ def checkout_view(request):
                     'address_line1': default_address.address_line1,
                     'address_line2': default_address.address_line2,
                     'city': default_address.city,
-                    'state_province_region': default_address.state_province_region,
-                    'postal_code': default_address.postal_code,
-                    'country': default_address.country,
+                    'email': default_address.email,
                     'phone_number': default_address.phone_number,
                 }
 
     shipping_form = ShippingAddressForm(request.POST or None, initial=initial_shipping_data)
     payment_form = PaymentForm(request.POST or None)
 
+    shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)  # <-- Add this
     if request.method == 'POST':
         selected_address_id = request.POST.get('selected_address')
         if selected_address_id == 'new' or not user_shipping_addresses.exists():
@@ -994,8 +911,11 @@ def checkout_view(request):
         'shipping_form': shipping_form,
         'payment_form': payment_form,
         'user_shipping_addresses': user_shipping_addresses,
+        'shipping_fee': shipping_fee,  # <-- Pass to template
+        'grand_total': cart.total_price_field + shipping_fee  # <-- Optional precomputed total
     }
     return render(request, 'shop/checkout.html', context)
+
 @transaction.atomic
 def process_order(request, cart, shipping_form=None, payment_form=None, existing_address=None):
     try:
@@ -1007,20 +927,20 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
             messages.error(request, _("Payment information is required."))
             return redirect('shop:checkout')
 
-        # Create order first (without shipping address)
+        # Create order
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
             full_name=shipping_form.cleaned_data['full_name'] if shipping_form else existing_address.full_name,
-            email=request.user.email if request.user.is_authenticated else '',  # Adjust as needed
+            email=request.user.email if request.user.is_authenticated else '',  # Optional
             phone_number=shipping_form.cleaned_data['phone_number'] if shipping_form else existing_address.phone_number,
             subtotal=Decimal('0.00'),
-            shipping_cost=Decimal('0.00'),  # Adjust if you calculate shipping cost
+            shipping_cost=Decimal(config.SHIPPING_RATE_CAIRO),  # Using your config
             grand_total=Decimal('0.00'),
             status='pending',
             payment_status='pending',
         )
 
-        # Create or use existing shipping address, assign order, then save
+        # Save shipping address
         if existing_address:
             shipping_address = existing_address
             shipping_address.order = order
@@ -1028,15 +948,14 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
         else:
             shipping_address = shipping_form.save(commit=False)
             if hasattr(shipping_address, 'user') and request.user.is_authenticated:
-                shipping_address.user = request.user  # If you have user field in ShippingAddress
+                shipping_address.user = request.user
             shipping_address.order = order
             shipping_address.save()
 
-        # Update order with shipping address info if needed
         order.shipping_address = shipping_address
         order.save()
 
-        # Create payment linked to order manually from payment_form.cleaned_data
+        # Create payment
         payment_data = payment_form.cleaned_data
         payment = Payment.objects.create(
             order=order,
@@ -1057,7 +976,8 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
                     f"{variant.size.name if variant.size else 'N/A'}). "
                     f"Available: {variant.stock_quantity}, Requested: {cart_item.quantity}"
                 )
-            price = variant.get_price  # Access property, not method
+
+            price = variant.get_price  # property
             OrderItem.objects.create(
                 order=order,
                 product_variant=variant,
@@ -1068,18 +988,17 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
             variant.save()
             subtotal += price * cart_item.quantity
 
-        # Update order totals
+        # Update totals
         order.subtotal = subtotal
-        # Add shipping cost if you have it, e.g. order.shipping_cost = Decimal('10.00')
-        order.grand_total = order.subtotal + order.shipping_cost
+        order.grand_total = subtotal + order.shipping_cost
         order.save()
 
-        # Update payment amount and mark as success (simulate)
+        # Update payment
         payment.amount = order.grand_total
         payment.is_success = True
         payment.save()
 
-        # Update order status
+        # Finalize order
         order.status = 'processing'
         order.payment_status = 'paid'
         order.save()
@@ -1101,16 +1020,23 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
         logger.exception(f"Order processing failed for user {request.user}: {e}")
         messages.error(request, _(f"An unexpected error occurred during checkout: {e}"))
         return redirect('shop:checkout')
-def order_confirmation(request, order_number):
-    if request.user.is_authenticated:
-        order = get_object_or_404(Order, order_number=order_number, user=request.user)
-    else:
-        order = get_object_or_404(Order, order_number=order_number, user=None)
-    order_items = order.items.select_related(
-        'product_variant__product', 'product_variant__color', 'product_variant__size'
-    ).all()
-    return render(request, 'shop/order_confirmation.html', {'order': order, 'order_items': order_items})
 
+def order_confirmation(request, order_number):
+    order = get_object_or_404(Order, order_number=order_number)
+
+    if order.user != request.user and order.user is not None:
+        return render(request, 'shop/order_not_found.html', status=403)
+
+    order_items = order.items.select_related(
+        'product_variant__product',
+        'product_variant__color',
+        'product_variant__size'
+    )
+
+    return render(request, 'shop/order_confirmation.html', {
+        'order': order,
+        'order_items': order_items
+    })
 
 def order_detail(request, order_number):
     if request.user.is_authenticated:
@@ -1147,9 +1073,6 @@ def get_available_sizes_ajax(request):
 
         return JsonResponse({'success': True, 'available_sizes': available_sizes_data})
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
-
-
-
 
 def vendor_detail(request, slug):
     # 1. Get the VendorProfile instance

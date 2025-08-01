@@ -1044,11 +1044,11 @@
 
         {# Main Nav Icons (Cart, Wishlist) - now only these two are left in the main nav #}
         <div class="nav-icons" id="mainNavIconsDesktop"> {# Removed d-none d-md-flex d-lg-flex here as they are controlled by JS or media queries if needed #}
-            <a href="#" class="nav-icon" title="{% trans 'Cart' %}">
+            <a href="{% url 'shop:cart_view' %}" class="nav-icon" title="{% trans 'Cart' %}">
                 <i class="fa-solid fa-shopping-cart"></i>
                 <span class="badge" id="cart-count-{{ nav_id }}">0</span>
             </a>
-            <a href="#" class="nav-icon" title="{% trans 'Wishlist' %}">
+            <a href="{% url 'shop:wishlist_view' %}" class="nav-icon" title="{% trans 'Wishlist' %}">
                 <i class="fa-solid fa-heart"></i>
                 <span class="badge" id="wishlist-count-{{ nav_id }}">0</span>
             </a>
@@ -1069,13 +1069,13 @@
         </button>
 
         <div class="nav-icons d-md-none" id="mainNavIconsMobileAlwaysVisible">
-            <a href="#" class="nav-icon" title="{% trans 'Cart' %}">
+            <a href="{% url 'shop:cart_view' %}" class="nav-icon" title="{% trans 'Cart' %}">
                 <i class="fa-solid fa-shopping-cart"></i>
-                <span class="badge" id="cart-count-mobile-{{ nav_id }}">0</span>
+                <span class="badge"  id="cart-count-{{ nav_id }}">0</span>
             </a>
-            <a href="#" class="nav-icon" title="{% trans 'Wishlist' %}">
+            <a href="% url 'shop:wishlist_view' %}" class="nav-icon" title="{% trans 'Wishlist' %}">
                 <i class="fa-solid fa-heart"></i>
-                <span class="badge" id="wishlist-count-mobile-{{ nav_id }}">0</span>
+                <span class="badge" id="wishlist-count-{{ nav_id }}">0</span>
             </a>
         </div>
 
@@ -1206,23 +1206,33 @@ function updateNavbarAppearance() {
     }
 }
         // Update global counts
-function updateGlobalCounts() {
+function updateGlobalCounts(nav_id = "nav1") {
     fetch("{% url 'shop:get_cart_and_wishlist_counts' %}", {
         method: 'GET',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(res => res.json())
     .then(data => {
-        const cartCountEl = document.getElementById('cart_count');
-        const wishCountEl = document.getElementById('wishlist_count');
-        if (cartCountEl && data.cart_count !== undefined) cartCountEl.textContent = data.cart_count;
-        if (wishCountEl && data.wishlist_count !== undefined) wishCountEl.textContent = data.wishlist_count;
+        const cartCountEl = document.getElementById(`cart-count-${nav_id}`);
+        const wishCountEl = document.getElementById(`wishlist-count-${nav_id}`);
+        if (cartCountEl && data.cart_count !== undefined) {
+            cartCountEl.textContent = data.cart_count;
+        }
+        if (wishCountEl && data.wishlist_count !== undefined) {
+            wishCountEl.textContent = data.wishlist_count;
+        }
     })
-    .catch(console.error);
+    .catch(error => {
+        console.error("Failed to fetch cart/wishlist counts:", error);
+    });
 }
+
+// Call once DOM is ready
+document.addEventListener('DOMContentLoaded', function () {
+    updateGlobalCounts("nav1");
+});
 // Call this function on DOM load
 document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
-document.addEventListener('DOMContentLoaded', updateGlobalCounts);
 
     // Simulate updating counts after some time
 

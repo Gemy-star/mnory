@@ -145,16 +145,14 @@
 </section>
 <section class="section">
   {% include 'shop/partials/_home_categories.html' %}
-</div>
+</section>
 {% endblock %}
-
 {% block js %}
 <script>
     function setupSwiper(className, next, prev) {
         new Swiper(`.${className}`, {
             slidesPerView: 2,
-            spaceBetween: 16,
-            autoHeight: true, // <-- Enable auto height for content fit
+            spaceBetween: 4,  // No space between slides
             breakpoints: {
                 576: { slidesPerView: 2 },
                 768: { slidesPerView: 3 },

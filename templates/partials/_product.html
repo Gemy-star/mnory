@@ -1,6 +1,8 @@
 {% load i18n %}
 {% load static %}
-{% load mathfilters %}
+{% load mathfilters %} {# Requires pip install django-mathfilters and adding 'mathfilters' to INSTALLED_APPS #}
+{% load dict_filters %} {# Make sure you have this custom filter loaded for 'get_item' #}
+
 
 <style>
     /* Product card and general styles */
@@ -265,10 +267,11 @@ flex-direction: column;
     }
 </style>
 
+
 {% with unique_id="product-card-"|add:product.pk|stringformat:"s" %}
   <div class="product-card text-center"
      data-product-id="{{ product.pk }}"
-     data-product-variant-id="{{ product.variants.first.pk }}">
+     data-product-variant-id="{{ product.variants.first.pk }}"> {# Assuming you have a default variant #}
     {% with main_image=product.get_main_image hover_image=product.get_hover_image %}
     <div class="position-relative product-image-wrapper">
         {% if product.is_on_sale %}
@@ -292,26 +295,31 @@ flex-direction: column;
             {% endif %}
         </a>
         <div class="product-icons">
-     <a href="#"
-   class="wishlist-btn {% if product.id in products_in_wishlist_ids %}remove-icon{% endif %}"
-   data-product-id="{{ product.id }}"
-   data-in-wishlist="{% if product.id in products_in_wishlist_ids %}true{% else %}false{% endif %}"
-   title="{% if product.id in products_in_wishlist_ids %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
-   <i class="fas {% if product.id in products_in_wishlist_ids %}fa-times{% else %}fa-heart{% endif %}"></i>
-   </a>
+             <a href="#"
+                class="wishlist-btn {% if product.id in products_in_wishlist_ids %}remove-icon{% endif %}"
+                data-product-id="{{ product.id }}"
+                data-in-wishlist="{% if product.id in products_in_wishlist_ids %}true{% else %}false{% endif %}"
+                title="{% if product.id in products_in_wishlist_ids %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
+                <i class="fas {% if product.id in products_in_wishlist_ids %}fa-times{% else %}fa-heart{% endif %}"></i>
+            </a>
 
+            {# Determine if product is in cart and get its cart_item_id #}
+            {% with product_in_cart=cart_items_data|get_item:product.id %}
             <a href="#"
                class="cart-btn quick-add-to-cart-btn"
                data-product-id="{{ product.id }}"
                data-quantity="1"
-               title="{% trans 'Add to Cart' %}">
-               <i class="fas fa-shopping-cart"></i>
+               data-in-cart="{% if product_in_cart %}true{% else %}false{% endif %}"
+               data-cart-item-id="{% if product_in_cart %}{{ product_in_cart.cart_item_id }}{% endif %}"
+               title="{% if product_in_cart %}{% trans 'Remove from Cart' %}{% else %}{% trans 'Add to Cart' %}{% endif %}">
+               <i class="fas {% if product_in_cart %}fa-trash{% else %}fa-shopping-cart{% endif %}"></i>
             </a>
+            {% endwith %}
         </div>
     </div>
     {% endwith %}
 
-    <div class="product-info mt-2 d-flex justify-content-center flex-column">
+    <div class="product-info mt-2">
         <div class="product-name">{{ product.name }}</div>
         <div class="price-area">
             {% if product.is_on_sale %}
@@ -321,45 +329,27 @@ flex-direction: column;
                 <span class="regular-price">{{ product.price|floatformat:2 }} EGP</span>
             {% endif %}
         </div>
-    </div>
-    {% if product.vendor.vendorprofile %}
+        {% if product.vendor.vendorprofile %}
 <div class="card-footer card-footer-vendor">
     <div class="vendor-info">
         <span class="vendor-name">{{ product.vendor.vendorprofile.store_name }}</span>
         <span class="vendor-rating"><i class="fa-solid fa-star"></i></span>
     </div>
     <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}"
-       class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor" 
+       class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor"
        title="{% trans 'View Vendor Profile' %}">
        <i class="fa-solid fa-store"></i> {% trans 'View Profile' %}
     </a>
 </div>
 {% endif %}
 
+    </div>
     <div class="local-toast-container"></div>
 </div>
 {% endwith %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // CSRF helper
-        // Update global counts
-function updateGlobalCounts() {
-    fetch("{% url 'shop:get_cart_and_wishlist_counts' %}", {
-        method: 'GET',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(res => res.json())
-    .then(data => {
-        const cartCountEl = document.getElementById('cart_count');
-        const wishCountEl = document.getElementById('wishlist_count');
-        if (cartCountEl && data.cart_count !== undefined) cartCountEl.textContent = data.cart_count;
-        if (wishCountEl && data.wishlist_count !== undefined) wishCountEl.textContent = data.wishlist_count;
-    })
-    .catch(console.error);
-}
-
-    updateGlobalCounts();
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -376,7 +366,6 @@ function updateGlobalCounts() {
     }
     const csrftoken = getCookie('csrftoken');
 
-    // Toast helper
     function showLocalToast(container, message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `local-toast local-toast-${type}`;
@@ -389,56 +378,65 @@ function updateGlobalCounts() {
         }, 2500);
     }
 
+    function updateGlobalCounts(nav_id = "nav1") {
+        fetch("{% url 'shop:get_cart_and_wishlist_counts' %}", {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const cartCountEl = document.getElementById(`cart-count-${nav_id}`);
+            const wishCountEl = document.getElementById(`wishlist-count-${nav_id}`);
+            if (cartCountEl && data.cart_count !== undefined) {
+                cartCountEl.textContent = data.cart_count;
+            }
+            if (wishCountEl && data.wishlist_count !== undefined) {
+                wishCountEl.textContent = data.wishlist_count;
+            }
+        })
+        .catch(error => {
+            console.error("Failed to fetch cart/wishlist counts:", error);
+        });
+    }
 
-    // Debounce helper to prevent rapid clicks
+    // Debounce function to prevent rapid clicks
     let lastClickTime = 0;
+    const DEBOUNCE_TIME = 500; // milliseconds
     function canClick() {
         const now = Date.now();
-        if (now - lastClickTime < 500) return false;
+        if (now - lastClickTime < DEBOUNCE_TIME) {
+            return false;
+        }
         lastClickTime = now;
         return true;
     }
 
-    // Event delegation for wishlist and cart buttons
+    // --- CRITICAL CHANGE: Event Delegation ---
+    // Instead of adding a listener to each button, add one to the document
+    // and check which element was clicked.
     document.addEventListener('click', function(e) {
+        // Find the closest wishlist button ancestor
         const wishlistBtn = e.target.closest('a.wishlist-btn');
         if (wishlistBtn) {
-            e.preventDefault();
-            if (wishlistBtn.disabled || !canClick()) return;
+            e.preventDefault(); // Prevent default link behavior
+            if (wishlistBtn.disabled || !canClick()) { // Use canClick for debounce
+                return;
+            }
             handleWishlistClick(wishlistBtn);
-            return;
+            return; // Stop further processing for this click
         }
 
+        // Find the closest cart button ancestor
         const cartBtn = e.target.closest('a.quick-add-to-cart-btn');
         if (cartBtn) {
-            e.preventDefault();
-            if (cartBtn.disabled || !canClick()) return;
+            e.preventDefault(); // Prevent default link behavior
+            if (cartBtn.disabled || !canClick()) { // Use canClick for debounce
+                return;
+            }
             handleCartClick(cartBtn);
-            return;
+            return; // Stop further processing for this click
         }
     });
-
-    // Touch support for hover image toggle on mobile
-    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
-        document.querySelectorAll('.product-image-wrapper').forEach(wrapper => {
-            wrapper.addEventListener('touchstart', function(e) {
-                if (!wrapper.classList.contains('is-hover')) {
-                    e.preventDefault(); // prevent immediate link navigation
-                    // Remove is-hover from other wrappers
-                    document.querySelectorAll('.product-image-wrapper.is-hover').forEach(el => {
-                        if (el !== wrapper) el.classList.remove('is-hover');
-                    });
-                    wrapper.classList.add('is-hover');
-                }
-            });
-            // Remove hover state if tapping outside
-            document.body.addEventListener('touchstart', function(e) {
-                if (!wrapper.contains(e.target)) {
-                    wrapper.classList.remove('is-hover');
-                }
-            });
-        });
-    }
 
     function handleWishlistClick(button) {
         const productId = button.dataset.productId;
@@ -446,7 +444,10 @@ function updateGlobalCounts() {
         const icon = button.querySelector('i');
         const toastContainer = button.closest('.product-card').querySelector('.local-toast-container');
 
+        // Disable button immediately to prevent multiple clicks
         button.disabled = true;
+        // Show loading spinner
+        const originalIconClass = icon.className;
         icon.className = 'fa-solid fa-spinner fa-spin';
 
         const url = inWishlist ? '{% url "shop:remove_from_wishlist" %}' : '{% url "shop:add_to_wishlist" %}';
@@ -460,23 +461,29 @@ function updateGlobalCounts() {
             },
             body: JSON.stringify({ product_id: productId })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                // Parse error message from backend if response is not OK
+                return res.json().then(errData => { throw new Error(errData.message || res.statusText); });
+            }
+            return res.json();
+        })
         .then(data => {
             if (data.success) {
-                updateGlobalCounts();
+                updateGlobalCounts("nav1");
                 if (data.status === 'added') {
-                    icon.className = 'fa-solid fa-xmark';
+                    icon.className = 'fa-solid fa-xmark'; // Icon for 'remove'
                     button.title = '{% trans "Remove from Wishlist" %}';
                     button.dataset.inWishlist = 'true';
                     button.classList.add('remove-icon');
                     showLocalToast(toastContainer, '❤️ {% trans "Added to Wishlist!" %}', 'success');
                 } else if (data.status === 'removed') {
-                    icon.className = 'fa-solid fa-heart';
+                    icon.className = 'fa-solid fa-heart'; // Icon for 'add'
                     button.title = '{% trans "Add to Wishlist" %}';
                     button.dataset.inWishlist = 'false';
                     button.classList.remove('remove-icon');
                     showLocalToast(toastContainer, '🗑️ {% trans "Removed from Wishlist" %}', 'success');
-                } else if (data.status === 'exists') {
+                } else {
                     showLocalToast(toastContainer, data.message, 'info');
                 }
             } else {
@@ -485,48 +492,148 @@ function updateGlobalCounts() {
         })
         .catch(err => {
             console.error('Wishlist AJAX error:', err);
-            showLocalToast(toastContainer, '{% trans "An unexpected error occurred. Please try again." %}', 'danger');
+            showLocalToast(toastContainer, `{% trans "An unexpected error occurred: "%} ${err.message || '{% trans "Please try again." %}'}`, 'danger');
         })
         .finally(() => {
-            button.disabled = false;
+            button.disabled = false; // Re-enable button
+            // If the icon is still a spinner, revert it (e.g., if there was a network error)
+            if (icon.className === 'fa-solid fa-spinner fa-spin') {
+                 // Revert to the appropriate icon based on the current state (inWishlist)
+                if (button.dataset.inWishlist === 'true') {
+                    icon.className = 'fa-solid fa-xmark';
+                } else {
+                    icon.className = 'fa-solid fa-heart';
+                }
+            }
         });
     }
 
     function handleCartClick(button) {
         const productId = button.dataset.productId;
+        let inCart = button.dataset.inCart === 'true';
         const toastContainer = button.closest('.product-card').querySelector('.local-toast-container');
         const icon = button.querySelector('i');
 
-        button.disabled = true;
-        const originalIconClass = icon.className;
-        icon.className = 'fa-solid fa-spinner fa-spin';
+        button.disabled = true; // Disable button immediately
+        const originalIconClass = icon.className; // Save original for potential revert
 
-        fetch('{% url "shop:add_to_cart" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ product_id: productId, quantity: 1 })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showLocalToast(toastContainer, `🛒 ${data.message}`, 'success');
-                updateGlobalCounts();
-            } else {
-                showLocalToast(toastContainer, data.message || '{% trans "Failed to add to cart." %}', 'danger');
+        if (inCart) {
+            // REMOVE FROM CART LOGIC
+            let cartItemId = button.dataset.cartItemId;
+
+            if (cartItemId === undefined || cartItemId === "undefined" || cartItemId === "") {
+                console.error("Attempted to remove from cart, but cart_item_id is missing or invalid:", cartItemId);
+                showLocalToast(toastContainer, '{% trans "Error: Item ID missing for removal." %}', 'danger');
+                button.disabled = false;
+                icon.className = originalIconClass; // Revert icon
+                return;
             }
-        })
-        .catch(err => {
-            console.error('Cart AJAX error:', err);
-            showLocalToast(toastContainer, '{% trans "An unexpected error occurred. Please try again." %}', 'danger');
-        })
-        .finally(() => {
-            icon.className = originalIconClass;
-            button.disabled = false;
-        });
+
+            const idToRemove = parseInt(cartItemId);
+            if (isNaN(idToRemove)) {
+                console.error("Attempted to remove from cart, but cart_item_id is not a number:", cartItemId);
+                showLocalToast(toastContainer, '{% trans "Error: Invalid item ID format." %}', 'danger');
+                button.disabled = false;
+                icon.className = originalIconClass; // Revert icon
+                return;
+            }
+
+            icon.className = 'fa-solid fa-spinner fa-spin'; // Show loading spinner
+
+            fetch('{% url "shop:remove_from_cart" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ cart_item_id: idToRemove })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(errData => { throw new Error(errData.message || res.statusText); });
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showLocalToast(toastContainer, '{% trans "Removed from Cart!" %}', 'success');
+                    button.dataset.inCart = 'false';
+                    button.removeAttribute('data-cart-item-id');
+                    icon.className = 'fas fa-shopping-cart'; // Change icon to "Add to Cart"
+                    button.title = '{% trans "Add to Cart" %}';
+                    updateGlobalCounts("nav1");
+                } else {
+                    showLocalToast(toastContainer, data.message || '{% trans "Failed to remove from cart." %}', 'danger');
+                }
+            })
+            .catch(err => {
+                console.error('Remove from cart AJAX error:', err.message || err);
+                showLocalToast(toastContainer, `{% trans "An unexpected error occurred:" %} ${err.message || '{% trans "Please try again." %}'}`, 'danger');
+                icon.className = originalIconClass; // Revert icon on error
+            })
+            .finally(() => {
+                button.disabled = false; // Re-enable button
+                // If the icon is still a spinner, revert it
+                if (icon.className === 'fa-solid fa-spinner fa-spin') {
+                     // Revert to the appropriate icon based on the current state (inCart)
+                    if (button.dataset.inCart === 'true') {
+                        icon.className = 'fas fa-trash';
+                    } else {
+                        icon.className = 'fas fa-shopping-cart';
+                    }
+                }
+            });
+
+        } else {
+            // ADD TO CART LOGIC
+            icon.className = 'fa-solid fa-spinner fa-spin'; // Show loading spinner
+
+            fetch('{% url "shop:add_to_cart" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(errData => { throw new Error(errData.message || res.statusText); });
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showLocalToast(toastContainer, '{% trans "Added to Cart!" %}', 'success');
+                    button.dataset.inCart = 'true';
+                    button.dataset.cartItemId = data.cart_item_id; // IMPORTANT: Store the new cart_item_id
+                    icon.className = 'fas fa-trash'; // Change icon to "Remove from Cart"
+                    button.title = '{% trans "Remove from Cart" %}';
+                    updateGlobalCounts("nav1");
+                } else {
+                    showLocalToast(toastContainer, data.message || '{% trans "Failed to add to cart." %}', 'danger');
+                }
+            })
+            .catch(err => {
+                console.error('Add to cart AJAX error:', err.message || err);
+                showLocalToast(toastContainer, `{% trans "An unexpected error occurred:" %} ${err.message || '{% trans "Please try again." %}'}`, 'danger');
+                icon.className = originalIconClass; // Revert icon on error
+            })
+            .finally(() => {
+                button.disabled = false; // Re-enable button
+                // If the icon is still a spinner, revert it
+                if (icon.className === 'fa-solid fa-spinner fa-spin') {
+                     // Revert to the appropriate icon based on the current state (inCart)
+                    if (button.dataset.inCart === 'true') {
+                        icon.className = 'fas fa-trash';
+                    } else {
+                        icon.className = 'fas fa-shopping-cart';
+                    }
+                }
+            });
+        }
     }
 });
 </script>

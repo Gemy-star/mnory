@@ -3,8 +3,8 @@ import os
 
 DEBUG = False
 ALLOWED_HOSTS = [
-    'reverse-eg.com',
-    'www.reverse-eg.com',
+    'mnory.com',
+    'www.mnory.com',
     'localhost',
     '127.0.0.1',
     '31.97.177.210',
@@ -17,8 +17,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'reversedb'),
-        'USER': os.getenv('DB_USER', 'reverse'),
+        'NAME': os.getenv('DB_NAME', 'mnorydb'),
+        'USER': os.getenv('DB_USER', 'mnory'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'Gemy@2803150'),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
         'PORT': os.getenv('DB_PORT', '3306'),
@@ -30,3 +30,22 @@ DATABASES = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR , 'staticfiles')
+FILE_UPLOAD_TEMP_DIR = '/var/tmp/mnory'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/django/mnory.log',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

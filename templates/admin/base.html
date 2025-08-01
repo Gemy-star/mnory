@@ -1,0 +1,358 @@
+{% load i18n static %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
+<head>
+<title>{% block title %}{{ title }} | {{ site_title|default:_('Mnory Shop Admin') }}{% endblock %}</title>
+<link rel="stylesheet" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
+{% block dark-mode-vars %}
+  <link rel="stylesheet" href="{% static "admin/css/dark_mode.css" %}">
+  <script src="{% static "admin/js/theme.js" %}"></script>
+{% endblock %}
+{% if not is_popup and is_nav_sidebar_enabled %}
+  <link rel="stylesheet" href="{% static "admin/css/nav_sidebar.css" %}">
+  <script src="{% static 'admin/js/nav_sidebar.js' %}" defer></script>
+{% endif %}
+{% block extrastyle %}{% endblock %}
+{% if LANGUAGE_BIDI %}<link rel="stylesheet" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}">{% endif %}
+
+{# START: Content from previous admin_base_html_fixed Canvas's extrahead block #}
+{% block extrahead %}
+    {{ block.super }} {# Keep content from parent's extrahead if this were extending #}
+    <link rel="shortcut icon" href="{% static 'images/logo.png' %}">
+    <link rel="apple-touch-icon-precomposed" href="{% static 'images/logo.png' %}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+
+<style>
+    .user-type-badge {
+        font-size: 0.8em;
+        padding: 2px 8px;
+        border-radius: 3px;
+        margin-left: 10px;
+        color: white;
+    }
+    .user-type-badge.vendor {
+        background-color: #28a745;
+    }
+    .user-type-badge.customer {
+        background-color: #007bff;
+    }
+    .user-type-badge.admin {
+        background-color: #dc3545;
+    }
+    .user-info {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        color: #ffc;
+        font-size: 0.9em;
+    }
+    .user-type {
+        font-style: italic;
+    }
+
+    /* Dynamic header background based on user type */
+    #header { /* Set default header to black */
+        background: #000000;
+    }
+
+    /* Override header color for specific user types if needed, otherwise default to black */
+    {% if request.is_vendor_user_type %}
+    #header {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+    {% elif request.is_customer_user_type %}
+    #header {
+        background: linear-gradient(135deg, #007bff, #6610f2);
+    }
+    {% elif request.is_admin_user_type %}
+    #header {
+        background: linear-gradient(135deg, #dc3545, #fd7e14); /* Admin specific color */
+    }
+    {% endif %}
+
+    /* Body background color */
+    body {
+        background-color: #e0e0e0;
+    }
+
+    /* Hide certain navigation items based on user type */
+    {# Only show these for admin user_type, hide for others #}
+    {% if not request.is_admin_user_type %}
+    .model-homeslider, /* Lowercase model names in CSS for consistency */
+    .model-category,
+    .model-subcategory,
+    .model-fittype,
+    .model-brand,
+    .model-color,
+    .model-size {
+        display: none !important;
+    }
+    {% endif %}
+
+    {# Hide vendor-specific models for customer user_type #}
+    {% if request.is_customer_user_type %}
+    .model-product,
+    .model-productimage,
+    .model-productvariant,
+    .model-vendorprofile {
+        display: none !important;
+    }
+    {% endif %}
+
+    {# Hide customer-specific models for vendor user_type #}
+    {% if request.is_vendor_user_type %}
+    .model-cart,
+    .model-cartitem,
+    .model-wishlist,
+    .model-wishlistitem,
+    .model-shippingaddress {
+        display: none !important;
+    }
+    {% endif %}
+
+    {# Custom styles from your snippet #}
+    .swiper {
+        height: fit-content;
+    }
+    .btn-primary{
+        background-color: #000000 !important;
+        border: 2px solid #000000;
+        color: #ffffff;
+    }
+    .btn-primary:hover{
+        background-color: #e0e0e0 !important;
+        border: 2px solid #e0e0e0;
+        color: #000000;
+    }
+ body {
+    font-family: 'alarabiya' !important;
+    background-color: #e0e0e0 !important; /* Off-white */
+}
+    .accordion-button:not(.collapsed) {
+        color: #ffffff !important;
+        background-color:#000000 !important;
+        box-shadow: inset 0 calc(-1 * var(--bs-accordion-border-width)) 0 #e0e0e0 !important;
+    }
+    /* Add specific styling for the logo if needed */
+    .logo-mnory {
+        height: 40px; /* Example size */
+        width: auto; /* Maintain aspect ratio */
+    }
+</style>
+{% endblock %}
+{# END: Content from previous admin_base_html_fixed Canvas's extrahead block #}
+
+{% block responsive %}
+    {{ block.super }} {# Keep default responsive meta and stylesheets #}
+{% endblock %}
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+</head>
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"
+  data-admin-utc-offset="{% now "Z" %}">
+<a href="#content-start" class="skip-to-content-link">{% translate 'Skip to main content' %}</a>
+<!-- Container -->
+<div id="container">
+
+    {% if not is_popup %}
+    <!-- Header -->
+    {% block header %}
+      <header id="header">
+        <div id="branding">
+        {# START: Content from previous admin_base_html_fixed Canvas's branding block #}
+        <h1 id="site-name">
+            <a href="{% url 'admin:index' %}">
+                <img loading="lazy" src="{% static 'images/logo.png' %}" class="logo-mnory" style="vertical-align: middle; margin-right: 10px; border-radius: 5px;">
+                {{ site_header|default:_('Mnory Shop Administration') }}
+                {% if request.user.is_authenticated %}
+                    {% if request.is_admin_user_type %}
+                        <span class="user-type-badge admin">Admin Panel</span>
+                    {% elif request.is_vendor_user_type %}
+                        <span class="user-type-badge vendor">Vendor Panel</span>
+                    {% elif request.is_customer_user_type %}
+                        <span class="user-type-badge customer">Customer Panel</span>
+                    {% endif %}
+                {% endif %}
+            </a>
+        </h1>
+        {# END: Content from previous admin_base_html_fixed Canvas's branding block #}
+        </div>
+        {% block usertools %}
+        {% if has_permission %}
+        <div id="user-tools">
+            {% block welcome-msg %}
+                {% translate 'Welcome,' %}
+                <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+            {% endblock %}
+            {% block userlinks %}
+                {% if site_url %}
+                    <a href="{{ site_url }}">{% translate 'View site' %}</a> /
+                {% endif %}
+                {% if user.is_active and user.is_staff %}
+                    {% url 'django-admindocs-docroot' as docsroot %}
+                    {% if docsroot %}
+                        <a href="{{ docsroot }}">{% translate 'Documentation' }}</a> /
+                    {% endif %}
+                {% endif %}
+                {% if user.has_usable_password %}
+                <a href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a> /
+                {% endif %}
+                <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit">{% translate 'Log out' %}</button>
+                </form>
+                {% include "admin/color_theme_toggle.html" %}
+            {% endblock %}
+        </div>
+        {% endif %}
+        {% endblock %}
+        {# START: Content from previous admin_base_html_fixed Canvas's nav-global block #}
+        {% block nav-global %}
+        {% if request.user.is_authenticated %}
+            <div class="user-info">
+                <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                {% if request.user.user_type %}
+                    <span class="user-type">({{ request.user.get_user_type_display }})</span>
+                {% endif %}
+            </div>
+        {% endif %}
+        {% endblock %}
+        {# END: Content from previous admin_base_html_fixed Canvas's nav-global block #}
+      </header>
+    {% endblock %}
+    <!-- END Header -->
+    {% block nav-breadcrumbs %}
+      <nav aria-label="{% translate 'Breadcrumbs' %}">
+        {% block breadcrumbs %}
+          <div class="breadcrumbs">
+            <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+            {% if title %} &rsaquo; {{ title }}{% endif %}
+          </div>
+        {% endblock %}
+      </nav>
+    {% endblock %}
+    {% endif %}
+
+    <div class="main" id="main">
+      {% if not is_popup and is_nav_sidebar_enabled %}
+        {% block nav-sidebar %}
+          {% include "admin/nav_sidebar.html" %}
+        {% endblock %}
+      {% endif %}
+      <main id="content-start" class="content" tabindex="-1">
+        {% block messages %}
+          {% if messages %}
+            <ul class="messagelist">{% for message in messages %}
+              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+            {% endfor %}</ul>
+          {% endif %}
+        {% endblock messages %}
+        <!-- Content -->
+        <div id="content" class="{% block coltype %}colM{% endblock %}">
+          {% block pretitle %}{% endblock %}
+          {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+          {% block content_subtitle %}{% if subtitle %}<h2>{{ subtitle }}</h2>{% endif %}{% endblock %}
+          {% block content %}
+            {% block object-tools %}{% endblock %}
+            {{ content }}
+          {% endblock %}
+          {% block sidebar %}{% endblock %}
+          <br class="clear">
+        </div>
+        <!-- END Content -->
+      </main>
+    </div>
+    <footer id="footer">{% block footer %}{% endblock %}</footer>
+</div>
+<!-- END Container -->
+
+<!-- SVGs -->
+<svg xmlns="http://www.w3.org/2000/svg" class="base-svgs">
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-auto"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2V4a8 8 0 1 0 0 16z"/></symbol>
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-moon"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol>
+  <symbol viewBox="0 0 24 24" width="1.5rem" height="1.5rem" id="icon-sun"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol>
+</svg>
+<!-- END SVGs -->
+{# START: Content from previous admin_base_html_fixed Canvas's js block (now in extrabody) #}
+{% block extrabody %}
+    {{ block.super }} {# Ensure any JS from parent template is included #}
+    <!-- jQuery (required for Bootstrap JS and AJAX) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9OhkKjXhC+MTPyPHJceVfQ" crossorigin="anonymous"></script>
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Alertify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        // Function to get CSRF token from cookie (essential for POST requests)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken'); // Get CSRF token once
+
+        // Function to fetch and update cart/wishlist counts
+        function updateCartAndWishlistCounts() {
+            $.ajax({
+                url: '{% url "shop:get_cart_and_wishlist_counts" %}', // Django URL for fetching counts
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    $('#cart-count').text(response.cart_total_items);
+                    $('#wishlist-count').text(response.wishlist_total_items);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching counts:", status, error);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // Initial call to update counts on page load
+            updateCartAndWishlistCounts();
+
+            // IMPORTANT:
+            // After any successful "Add to Cart" or "Add to Wishlist" AJAX call
+            // (e.g., in product_detail.html's script), you should call
+            // updateCartAndWishlistCounts() to refresh the counts in the navbar.
+            // Example (in product_detail.html's script, after successful add-to-cart):
+            // if (response.success) {
+            //     showMessage(response.message, 'success');
+            //     // Check if the function exists globally (if defined in base.html)
+            //     if (typeof updateCartAndWishlistCounts === 'function') {
+            //         updateCartAndWishlistCounts();
+            //     }
+            // }
+        });
+    </script>
+{% endblock extrabody %}
+{# END: Content from previous admin_base_html_fixed Canvas's js block #}
+</body>
+</html>
