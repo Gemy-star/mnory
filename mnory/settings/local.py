@@ -8,7 +8,7 @@ INSTALLED_APPS += [
 MIDDLEWARE += ['silk.middleware.SilkyMiddleware',]
 
 
-DATABASES = {
+PYTHONANYWHERE_DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mnory$mnorydb', # IMPORTANT: Use your actual username and database name
