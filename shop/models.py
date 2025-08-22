@@ -283,7 +283,7 @@ class Product(models.Model):
         exchange rate from settings.
         """
         # Get the current price (sale price if applicable)
-        current_usd_price = self.price if self.is_on_sale and self.sale_price else self.price
+        current_usd_price = self.sale_price if self.is_on_sale and self.sale_price else self.price
         
         # Access the exchange rate from settings
         rate = Decimal(str(config.EXCHANGE_RATE_USD_TO_EGP))
@@ -296,7 +296,7 @@ class Product(models.Model):
         return price in USD
         """
         # Get the current price (sale price if applicable)
-        current_usd_price = self.price if self.is_on_sale and self.sale_price else self.price
+        current_usd_price = self.sale_price if self.is_on_sale and self.sale_price else self.price
         
         # Return the calculated USD price
         return current_usd_price
@@ -306,7 +306,6 @@ class Product(models.Model):
         Calculates the price in EGP based on the USD price and the
         exchange rate from settings.
         """
-        # Get the current price (sale price if applicable)
         current_usd_price = self.price 
         
         # Access the exchange rate from settings
