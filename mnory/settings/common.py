@@ -192,7 +192,8 @@ CONSTANCE_CONFIG = {
     'ENABLE_ALL_FLAG': (True, 'Enable "All" flag display for products'),
      'ENABLE_USER_LOG': (False, 'Enable User System -- not completed yet --'),
     'SHIPPING_RATE_CAIRO': (60.00, 'Flat shipping rate for orders inside Cairo.', float),
-    'SHIPPING_RATE_OUTSIDE_CAIRO': (100.00, 'Flat shipping rate for orders outside Cairo.', float)
+    'SHIPPING_RATE_OUTSIDE_CAIRO': (100.00, 'Flat shipping rate for orders outside Cairo.', float),
+    'EXCHANGE_RATE_USD_TO_EGP':(50.00, 'Exchange Rate for change from dollar to EGP',float)
 }
 
 
@@ -219,6 +220,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         'ENABLE_SALE_FLAG',
         'ENABLE_ALL_FLAG',
         'ENABLE_USER_LOG',
+        'EXCHANGE_RATE_USD_TO_EGP',
     ),
 }
 

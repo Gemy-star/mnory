@@ -78,9 +78,10 @@
         border: none; /* No border */
         padding: 0; /* No padding */
         font-size: 0.9rem; /* Match promo text size */
-        color: var(--text-color-light);
+        color: #f4f4f4;
         backdrop-filter: none; /* Remove blur */
         box-shadow: none;
+        
     }
 
     .promo-actions .language-dropdown .language-btn:hover {
@@ -440,7 +441,7 @@
     /* Original Dropdown Menu (No longer used for categories, but kept if other dropdowns exist) */
     .dropdown-menu {
         border: none;
-        background: rgba(255, 255, 255, 0.95);
+        background: #000;
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -483,7 +484,7 @@
         padding: 14px 18px;
         border-radius: 10px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        color: var(--text-color-dark);
+        color: #fff;
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -995,33 +996,64 @@
 </style>
 
 <div class="promo-banner" id="promoBanner">
-    <div class="container d-flex flex-row"> {# Added flex-row here for direct application, but media query will override for mobile #}
-        <div class="promo-item"> {# Removed col-md-3 as flexbox will handle distribution #}
-            <div class="dropdown language-dropdown">
-                <a style="text-decoration: none;cursor: pointer; " class="dropdown-toggle" type="button"
-                        id="languageDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-globe"></i>
-                    <span class="d-none d-md-inline">{% trans "Language" %}</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-promo">
-                    <li>
-                        <form class="px-2">
-                            <select class="form-select form-select-sm" name="language">
-                                <option value="en">{% trans "English" %}</option>
-                                <option value="ar">{% trans "Arabic" %}</option>
-                                <option value="de">{% trans "German" %}</option>
-                            </select>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="promo-item"><i class="fa-solid fa-truck-fast"></i> <span>{% trans "Free Shipping" %}</span></div>
-        <div class="promo-item"><i class="fa-solid fa-arrow-rotate-left"></i> <span>{% trans "Free Returns" %}</span></div>
+    <div class="container d-flex flex-row">
+        <div class="promo-item">
+    <div class="dropdown language-dropdown">
+        <a style="text-decoration: none;cursor: pointer; " class="dropdown-toggle" type="button"
+           id="languageDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
+           <i class="fa-solid fa-globe"></i>
+           <span class="d-none d-md-inline">{% trans "Language" %}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-promo">
+            {% for lang_code, lang_name in LANGUAGES %}
+            <li>
+                <form action="{% url 'set_language' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <input type="hidden" name="language" value="{{ lang_code }}">
+                    <button type="submit" class="dropdown-item">
+                        {{ lang_name }}
+                    </button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+     <div class="promo-item">
+    <div class="dropdown currency-dropdown">
+        <a style="text-decoration: none;cursor: pointer;" class="dropdown-toggle" type="button"
+           id="currencyDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
+           <i class="fa-solid fa-dollar-sign"></i>
+           <span class="d-none d-md-inline" id="selected-currency">
+               {{ request.session.currency|default:"USD" }}
+           </span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="currencyDropdown-promo">
+            <li>
+                <form action="{% url 'shop:set_currency' %}" method="get" class="d-inline">
+                    <input type="hidden" name="currency" value="USD">
+                    <button type="submit" class="dropdown-item">
+                        <span class="currency-symbol">$</span>
+                        <span class="currency-name">{% trans "US Dollar" %}</span>
+                    </button>
+                </form>
+            </li>
+            <li>
+                <form action="{% url 'shop:set_currency' %}" method="get" class="d-inline">
+                    <input type="hidden" name="currency" value="EGP">
+                    <button type="submit" class="dropdown-item">
+                        <span class="currency-symbol">EGP</span>
+                        <span class="currency-name">{% trans "Egyptian Pound" %}</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
 
-        {# Moved user icon and language dropdown here #}
-        <div class="promo-item"> {# Removed col-md-3 #}
-            <a style="text-decoration: none;cursor: pointer;" href="#" class="promo-item" title="{% trans 'Account' %}">
+        <div class="promo-item">
+            <a style="text-decoration: none;cursor: pointer;" href="{% url 'admin:login' %}" class="promo-item" title="{% trans 'Account' %}">
                 <i class="fa-solid fa-user"></i> <span>{% trans "My Account" %}</span>
             </a>
         </div>

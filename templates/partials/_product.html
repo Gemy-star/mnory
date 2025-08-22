@@ -323,13 +323,30 @@ flex-direction: column;
         <div class="product-name">{{ product.name }}</div>
         <div class="price-area">
             {% if product.is_on_sale %}
-                <span class="original-price">{{ product.price|floatformat:2 }} EGP</span>
-                <span class="sale-price">{{ product.sale_price|floatformat:2 }} EGP</span>
+            
+                <span class="original-price">
+                {% if currency == 'EGP' %}
+                {{ product.price_egp_no_sale|floatformat:2 }} EGP
             {% else %}
-                <span class="regular-price">{{ product.price|floatformat:2 }} EGP</span>
+                {{ product.price_usd_no_sale|floatformat:2 }} USD
+            {% endif %}
+                </span>
+            <span class="sale-price"> {% if currency == 'EGP' %}
+                {{ product.price_egp|floatformat:2 }} EGP
+            {% else %}
+                {{ product.price_usd|floatformat:2 }} USD
+            {% endif %}
+        </span>
+            {% else %}
+                <span class="regular-price"> {% if currency == 'EGP' %}
+                {{ product.price_egp_no_sale|floatformat:2 }} EGP
+            {% else %}
+                {{ product.price_usd_no_sale|floatformat:2 }} USD
+            {% endif %}
+        </span>
             {% endif %}
         </div>
-        {% if product.vendor.vendorprofile %}
+{% if product.vendor %}
 <div class="card-footer card-footer-vendor">
     <div class="vendor-info">
         <span class="vendor-name">{{ product.vendor.vendorprofile.store_name }}</span>

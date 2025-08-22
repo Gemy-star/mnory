@@ -82,3 +82,20 @@ def buy_now_view(request):
     else:
         messages.error(request, _("Invalid request for buy now."))
         return redirect('shop:product_list')
+    
+
+def set_currency(request):
+    """
+    A view to set the user's preferred currency in the session.
+    It expects a 'currency' parameter in the GET request.
+    """
+    if request.method == 'GET' and 'currency' in request.GET:
+        currency = request.GET['currency']
+        
+        # Validate that the currency is one of our supported options
+        supported_currencies = ['EGP', 'USD']
+        if currency in supported_currencies:
+            request.session['currency'] = currency
+    
+    # Redirect the user back to the page they were on
+    return redirect(request.META.get('HTTP_REFERER', '/'))

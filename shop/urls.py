@@ -17,7 +17,7 @@ urlpatterns = [
     path('api/add-to-cart/', views.add_to_cart, name='add_to_cart'), # Renamed, consolidated all add-to-cart here
     path('api/add-to-wishlist/', views.add_to_wishlist, name='add_to_wishlist'), # Renamed, consolidated all add-to-wishlist here
     path('api/get-counts/', views.get_cart_and_wishlist_counts, name='get_cart_and_wishlist_counts'), # GET for counts
-    path('api/get-available-sizes/', views.get_available_sizes_ajax, name='get_available_sizes_ajax'),
+    path('api/get-available-sizes/<int:product_id>/', views.get_available_sizes_ajax, name='get_available_sizes_ajax'),
     # path('api/apply-coupon/', views.apply_coupon, name='apply_coupon'),
     # Static Pages
     path('terms/', TemplateView.as_view(template_name="shop/terms.html"), name="terms"),
@@ -47,7 +47,8 @@ urlpatterns = [
     path('register/customer/', user_views.register_customer, name='register_customer'),
     path('logout/', user_views.user_logout, name='logout'),
     path('login/', user_views.login_view, name='login'),
-
+    # change Currency
+    path('set-currency/', extra_views.set_currency, name='set_currency'),
 ]
 
 

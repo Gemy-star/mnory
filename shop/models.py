@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from colorfield.fields import ColorField
 import uuid
 from ckeditor.fields import RichTextField
+from constance import config
 
 class MnoryUser(AbstractUser):
     # Define choices for user types
@@ -275,7 +276,55 @@ class Product(models.Model):
     sizes = models.ManyToManyField(Size, through='ProductSize', blank=True)
     size_chart = RichTextField(blank=True, null=True, help_text="Add size chart content here (HTML supported)")
     delivery_return = RichTextField(blank=True, null=True, help_text="Add Delivery and return policy (HTML supported)")
-
+    @property
+    def price_egp(self):
+        """
+        Calculates the price in EGP based on the USD price and the
+        exchange rate from settings.
+        """
+        # Get the current price (sale price if applicable)
+        current_usd_price = self.price if self.is_on_sale and self.sale_price else self.price
+        
+        # Access the exchange rate from settings
+        rate = Decimal(str(config.EXCHANGE_RATE_USD_TO_EGP))
+        
+        # Return the calculated EGP price
+        return current_usd_price * rate
+    @property
+    def price_usd(self):
+        """
+        return price in USD
+        """
+        # Get the current price (sale price if applicable)
+        current_usd_price = self.price if self.is_on_sale and self.sale_price else self.price
+        
+        # Return the calculated USD price
+        return current_usd_price
+    @property
+    def price_egp_no_sale(self):
+        """
+        Calculates the price in EGP based on the USD price and the
+        exchange rate from settings.
+        """
+        # Get the current price (sale price if applicable)
+        current_usd_price = self.price 
+        
+        # Access the exchange rate from settings
+        rate = Decimal(str(config.EXCHANGE_RATE_USD_TO_EGP))
+        
+        # Return the calculated EGP price
+        return current_usd_price * rate
+    @property
+    def price_usd_no_sale(self):
+        """
+        return price in USD
+        """
+        # Get the current price (sale price if applicable)
+        current_usd_price = self.price 
+        
+        # Return the calculated USD price
+        return current_usd_price
+   
     class Meta:
         ordering = ['-created_at']
         indexes = [

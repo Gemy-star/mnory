@@ -1057,23 +1057,25 @@ def order_history(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'shop/order_history.html', {'orders': page_obj})
 
-def get_available_sizes_ajax(request):
+def get_available_sizes_ajax(request, product_id):
     """
     AJAX endpoint to get available sizes based on product and selected color.
     """
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        product_id = request.GET.get('product_id')
         color_id = request.GET.get('color_id')
+        try:
+            # You should have a Product model with a method like get_available_sizes
+            product = get_object_or_404(Product, id=product_id)
+            available_sizes_query = product.get_available_sizes(color_id=color_id)
 
-        product = get_object_or_404(Product, id=product_id)
-        available_sizes_query = product.get_available_sizes(color_id=color_id)
+            # Convert queryset to a list of dictionaries for JSON response
+            # Change 'available_sizes' to 'sizes' to match JavaScript
+            available_sizes_data = list(available_sizes_query.values('id', 'name'))
 
-        # Convert queryset to a list of dictionaries for JSON response
-        available_sizes_data = list(available_sizes_query.values('id', 'name'))
-
-        return JsonResponse({'success': True, 'available_sizes': available_sizes_data})
+            return JsonResponse({'success': True, 'sizes': available_sizes_data})
+        except Product.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Product not found.'}, status=404)
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
-
 def vendor_detail(request, slug):
     # 1. Get the VendorProfile instance
     vendor_profile = get_object_or_404(VendorProfile, slug=slug)
