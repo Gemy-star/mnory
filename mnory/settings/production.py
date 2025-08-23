@@ -1,7 +1,7 @@
 from .common import *
 import os
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'mnory.com',
@@ -81,10 +81,4 @@ LOGGING = {
     },
 }
 
-
-# INSTALLED_APPS += [
-#     'silk',
-# ]
-
-# MIDDLEWARE += ['silk.middleware.SilkyMiddleware',]
 
