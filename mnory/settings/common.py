@@ -158,54 +158,78 @@ CONSTANCE_CONFIG = {
     # Company Info
     'COMPANY_NAME': (
         'Mnory',
-        'Company name'
+        'Company name',
+        str
     ),
     'COMPANY_DESCRIPTION': (
         'Mnory is a modern e-commerce platform offering premium products and a seamless shopping experience.',
-        'Company description'
+        'Company description',
+        str
     ),
     'EMAIL_ADDRESS': (
         'support@mnory.com',
-        'Contact email address'
+        'Contact email address',
+        str
     ),
     'WHATSAPP_NUMBER': (
         '+201234567890',
-        'WhatsApp number with country code'
+        'WhatsApp number with country code',
+        str
     ),
 
     # Social Media Links
     'FACEBOOK_URL': (
         'https://facebook.com/yourpage',
-        'Facebook URL'
+        'Facebook URL',
+        str
     ),
     'INSTAGRAM_URL': (
         'https://instagram.com/yourprofile',
-        'Instagram URL'
+        'Instagram URL',
+        str
     ),
     'TIKTOK_URL': (
-        'https://linkedin.com/company/yourcompany',
-        'TIKTOk URL'
+        'https://tiktok.com/@yourprofile',
+        'TikTok URL',
+        str
     ),
-    'ENABLE_BEST_SELLER_FLAG': (True, 'Enable "Best Seller" flag display for products'),
-    'ENABLE_NEW_ARRIVAL_FLAG': (True, 'Enable "New Arrival" flag display for products'),
-    'ENABLE_FEATURED_FLAG': (True, 'Enable "Featured" flag display for products'),
-    'ENABLE_SALE_FLAG': (True, 'Enable "On Sale" flag display for products'),
-    'ENABLE_ALL_FLAG': (True, 'Enable "All" flag display for products'),
-     'ENABLE_USER_LOG': (False, 'Enable User System -- not completed yet --'),
+
+    # Product Flags
+    'ENABLE_BEST_SELLER_FLAG': (True, 'Enable "Best Seller" flag display for products', bool),
+    'ENABLE_NEW_ARRIVAL_FLAG': (True, 'Enable "New Arrival" flag display for products', bool),
+    'ENABLE_FEATURED_FLAG': (True, 'Enable "Featured" flag display for products', bool),
+    'ENABLE_SALE_FLAG': (True, 'Enable "On Sale" flag display for products', bool),
+    'ENABLE_ALL_FLAG': (True, 'Enable "All" flag display for products', bool),
+    'ENABLE_USER_LOG': (False, 'Enable User System (not completed yet)', bool),
+
+    # Shipping
     'SHIPPING_RATE_CAIRO': (60.00, 'Flat shipping rate for orders inside Cairo.', float),
     'SHIPPING_RATE_OUTSIDE_CAIRO': (100.00, 'Flat shipping rate for orders outside Cairo.', float),
-    'EXCHANGE_RATE_USD_TO_EGP':(50.00, 'Exchange Rate for change from dollar to EGP',float),
+
+    # Currency
+    'EXCHANGE_RATE_USD_TO_EGP': (50.00, 'Exchange rate from USD to EGP', float),
+
+    # Site / Admin
     'SITE_NAME': (
         None,
-        'Site name (managed by django.contrib.sites)'
+        'Site name (managed by django.contrib.sites)',
+        str
     ),
     'SITE_URL': (
         None,
-        'Site URL (managed by django.contrib.sites)'
+        'Site URL (managed by django.contrib.sites)',
+        str
     ),
-    'ADMIN_EMAIL': (os.getenv('ADMIN_EMAIL', 'support@mnory.com'), 'Admin Email used to recevive emails', str),
-    'SENDGRID_API_KEY' : (os.getenv('SENDGRID_API_KEY'), 'SendGrid API Key', str),
-
+    'ADMIN_EMAIL': (
+        os.getenv('ADMIN_EMAIL', 'support@mnory.com'),
+        'Admin Email used to receive emails',
+        str
+    ),
+    'SENDGRID_API_KEY': (
+        os.getenv('SENDGRID_API_KEY'),
+        'SendGrid API Key',
+        str
+    ),
 }
 
 
@@ -214,12 +238,12 @@ CONSTANCE_CONFIG_FIELDSETS = {
         'COMPANY_NAME',
         'COMPANY_DESCRIPTION',
         'EMAIL_ADDRESS',
-        'WHATSAPP_NUMBER'
+        'WHATSAPP_NUMBER',
     ),
     'Social Media Links': (
         'FACEBOOK_URL',
         'INSTAGRAM_URL',
-        'TIKTOK_URL'
+        'TIKTOK_URL',
     ),
     'Shipping': (
         'SHIPPING_RATE_CAIRO',
@@ -234,12 +258,11 @@ CONSTANCE_CONFIG_FIELDSETS = {
         'ENABLE_USER_LOG',
         'EXCHANGE_RATE_USD_TO_EGP',
     ),
-    'Email Flags': (
+    'Email & API': (
         'ADMIN_EMAIL',
         'SENDGRID_API_KEY',
     ),
 }
-
 
 
 LOGIN_URL = reverse_lazy('shop:login')
