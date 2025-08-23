@@ -81,3 +81,10 @@ LOGGING = {
     },
 }
 
+
+INSTALLED_APPS += [
+    'silk',
+]
+
+MIDDLEWARE += ['silk.middleware.SilkyMiddleware',]
+
