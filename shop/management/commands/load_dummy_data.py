@@ -117,7 +117,7 @@ class Command(BaseCommand):
                 email=email,
                 password="test1234",
                 user_type='vendor', # Fix: Use user_type instead of is_vendor
-                phone_number=fake.phone_number(), # Fix: Use phone_number instead of phone
+                phone_number=fake.numerify('##########'),
                 first_name=fake.first_name(),
                 last_name=fake.last_name()
             )
