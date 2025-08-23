@@ -165,7 +165,7 @@ CONSTANCE_CONFIG = {
         'Company description'
     ),
     'EMAIL_ADDRESS': (
-        'support@example.com',
+        'support@mnory.com',
         'Contact email address'
     ),
     'WHATSAPP_NUMBER': (
@@ -203,6 +203,9 @@ CONSTANCE_CONFIG = {
         None,
         'Site URL (managed by django.contrib.sites)'
     ),
+    'ADMIN_EMAIL': (os.getenv('ADMIN_EMAIL', 'support@mnory.com'), 'Admin Email used to recevive emails', str),
+    'SENDGRID_API_KEY' : (os.getenv('SENDGRID_API_KEY'), 'SendGrid API Key', str),
+
 }
 
 
@@ -231,6 +234,10 @@ CONSTANCE_CONFIG_FIELDSETS = {
         'ENABLE_USER_LOG',
         'EXCHANGE_RATE_USD_TO_EGP',
     ),
+    'Email Flags': (
+        'ADMIN_EMAIL',
+        'SENDGRID_API_KEY',
+    ),
 }
 
 
@@ -238,8 +245,10 @@ CONSTANCE_CONFIG_FIELDSETS = {
 LOGIN_URL = reverse_lazy('shop:login')
 LOGIN_REDIRECT_URL = reverse_lazy('admin:index')
 # 100 MB = 100 * 1024 * 1024 bytes
+# 100 MB = 100 * 1024 * 1024 bytes
 DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
+
 
 # Admin Site Configuration
 ADMIN_MEDIA_PREFIX = '/static/admin/'
@@ -258,3 +267,15 @@ CUSTOMER_USER_TYPES = ['customer', 'client']
 ADMIN_SITE_HEADER = "Mnory Shop Administration"
 ADMIN_SITE_TITLE = "Mnory Admin"
 ADMIN_INDEX_TITLE = "Welcome to Mnory Administration"
+
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+DEFAULT_FROM_EMAIL = "support@mnory.com"
+ADMIN_EMAIL = "support@mnory.com"
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "apikey"  # literally the word "apikey"
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
