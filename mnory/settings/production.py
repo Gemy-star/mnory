@@ -2,6 +2,7 @@ from .common import *
 import os
 
 DEBUG = False
+
 ALLOWED_HOSTS = [
     'mnory.com',
     'www.mnory.com',
@@ -10,10 +11,12 @@ ALLOWED_HOSTS = [
     '45.9.191.23',
 ]
 
-# Add this setting to be more strict about host validation
+# Ensure Django respects proxy headers (for HTTPS behind Nginx)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Database: MariaDB (MySQL compatible)
+# =======================
+# Database: MariaDB
+# =======================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -29,25 +32,52 @@ DATABASES = {
     }
 }
 
-STATIC_ROOT = os.path.join(BASE_DIR , 'staticfiles')
+# =======================
+# Static & Media
+# =======================
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 FILE_UPLOAD_TEMP_DIR = '/var/tmp/mnory'
+
+# =======================
+# Logging
+# =======================
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django/mnory.log',
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
         },
     },
-    'loggers': {
-        'django.request': {
-            'handlers': ['file'],
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.getenv('DJANGO_LOG_FILE', '/var/log/django/mnory.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
             'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['file', 'console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
             'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
         },
     },
 }
 
-STATIC_ROOT = os.path.join(BASE_DIR , "staticfiles")

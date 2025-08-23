@@ -154,45 +154,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR , "media") # Store uploaded media files in th
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# =======================
+# Django Constance
+# =======================
 CONSTANCE_CONFIG = {
     # Company Info
-    'COMPANY_NAME': (
-        'Mnory',
-        'Company name',
-        str
-    ),
+    'COMPANY_NAME': ('Mnory', 'Company name', str),
     'COMPANY_DESCRIPTION': (
         'Mnory is a modern e-commerce platform offering premium products and a seamless shopping experience.',
         'Company description',
         str
     ),
-    'EMAIL_ADDRESS': (
-        'support@mnory.com',
-        'Contact email address',
-        str
-    ),
-    'WHATSAPP_NUMBER': (
-        '+201234567890',
-        'WhatsApp number with country code',
-        str
-    ),
+    'EMAIL_ADDRESS': ('support@mnory.com', 'Contact email address', str),
+    'WHATSAPP_NUMBER': ('+201234567890', 'WhatsApp number with country code', str),
 
-    # Social Media Links
-    'FACEBOOK_URL': (
-        'https://facebook.com/yourpage',
-        'Facebook URL',
-        str
-    ),
-    'INSTAGRAM_URL': (
-        'https://instagram.com/yourprofile',
-        'Instagram URL',
-        str
-    ),
-    'TIKTOK_URL': (
-        'https://tiktok.com/@yourprofile',
-        'TikTok URL',
-        str
-    ),
+    # Social Media
+    'FACEBOOK_URL': ('https://facebook.com/yourpage', 'Facebook URL', str),
+    'INSTAGRAM_URL': ('https://instagram.com/yourprofile', 'Instagram URL', str),
+    'TIKTOK_URL': ('https://tiktok.com/@yourprofile', 'TikTok URL', str),
 
     # Product Flags
     'ENABLE_BEST_SELLER_FLAG': (True, 'Enable "Best Seller" flag display for products', bool),
@@ -210,28 +189,11 @@ CONSTANCE_CONFIG = {
     'EXCHANGE_RATE_USD_TO_EGP': (50.00, 'Exchange rate from USD to EGP', float),
 
     # Site / Admin
-    'SITE_NAME': (
-        None,
-        'Site name (managed by django.contrib.sites)',
-        str
-    ),
-    'SITE_URL': (
-        None,
-        'Site URL (managed by django.contrib.sites)',
-        str
-    ),
-    'ADMIN_EMAIL': (
-        os.getenv('ADMIN_EMAIL', 'support@mnory.com'),
-        'Admin Email used to receive emails',
-        str
-    ),
-    'SENDGRID_API_KEY': (
-        os.getenv('SENDGRID_API_KEY'),
-        'SendGrid API Key',
-        str
-    ),
+    'SITE_NAME': (None, 'Site name (managed by django.contrib.sites)', str),
+    'SITE_URL': (None, 'Site URL (managed by django.contrib.sites)', str),
+    'ADMIN_EMAIL': (os.getenv('ADMIN_EMAIL', 'support@mnory.com'), 'Admin Email used to receive emails', str),
+    'SENDGRID_API_KEY': (os.getenv('SENDGRID_API_KEY'), 'SendGrid API Key', str),
 }
-
 
 CONSTANCE_CONFIG_FIELDSETS = {
     'Company Information': (
@@ -239,6 +201,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         'COMPANY_DESCRIPTION',
         'EMAIL_ADDRESS',
         'WHATSAPP_NUMBER',
+        'SITE_NAME',
+        'SITE_URL',
     ),
     'Social Media Links': (
         'FACEBOOK_URL',
@@ -263,7 +227,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
         'SENDGRID_API_KEY',
     ),
 }
-
 
 LOGIN_URL = reverse_lazy('shop:login')
 LOGIN_REDIRECT_URL = reverse_lazy('admin:index')
