@@ -19,6 +19,7 @@ django-crispy-forms = "*"
 crispy-bootstrap5 = "*"
 python-dotenv = "*"
 sendgrid = "*"
+django-ckeditor-5 = "*"
 
 [dev-packages]
 django-silk = "*"

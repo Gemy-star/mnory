@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'imagekit',
     'colorfield',
     'mathfilters',
-    'ckeditor',
+    "django_ckeditor_5",
     'django_countries',
     # 'widget_tweaks',
 ]

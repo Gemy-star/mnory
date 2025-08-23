@@ -13,8 +13,8 @@ from imagekit.processors import ResizeToFill
 from django.utils.translation import gettext_lazy as _
 from colorfield.fields import ColorField
 import uuid
-from ckeditor.fields import RichTextField
 from constance import config
+from django_ckeditor_5.fields import CKEditor5Field
 
 class MnoryUser(AbstractUser):
     # Define choices for user types
@@ -274,8 +274,8 @@ class Product(models.Model):
     # Many-to-many (through ProductColor/ProductSize/ProductVariant)
     colors = models.ManyToManyField(Color, through='ProductColor', blank=True)
     sizes = models.ManyToManyField(Size, through='ProductSize', blank=True)
-    size_chart = RichTextField(blank=True, null=True, help_text="Add size chart content here (HTML supported)")
-    delivery_return = RichTextField(blank=True, null=True, help_text="Add Delivery and return policy (HTML supported)")
+    size_chart = CKEditor5Field(blank=True, null=True, help_text="Add size chart content here (HTML supported)")
+    delivery_return = CKEditor5Field(blank=True, null=True, help_text="Add Delivery and return policy (HTML supported)")
     @property
     def price_egp(self):
         """
