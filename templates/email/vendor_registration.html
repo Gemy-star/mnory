@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Registration - {{ site_name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .header { text-align: center; background-color: #6f42c1; color: white; padding: 20px; border-radius: 10px 10px 0 0; margin: -20px -20px 20px -20px; }
+        .info-section { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .btn { display: inline-block; padding: 12px 25px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to {{ site_name }} Vendor Portal</h1>
+            <p>Your vendor registration has been received</p>
+        </div>
+
+        <p>Dear {{ vendor_name }},</p>
+        
+        <p>Thank you for registering as a vendor with {{ site_name }}. We're excited about the possibility of partnering with you!</p>
+
+        <div class="info-section">
+            <h3>Registration Details</h3>
+            <p><strong>Store Name:</strong> {{ store_name }}</p>
+            <p><strong>Email:</strong> {{ email }}</p>
+            <p><strong>Registration Date:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+        </div>
+
+        {% if approval_required %}
+        <div class="warning">
+            <h3>⏳ Approval Required</h3>
+            <p>Your vendor account is currently under review. Our team will review your application and get back to you within 2-3 business days.</p>
+            <p>Once approved, you'll be able to:</p>
+            <ul>
+                <li>Add and manage your products</li>
+                <li>Track your sales and earnings</li>
+                <li>Access vendor dashboard tools</li>
+                <li>Manage your store profile</li>
+            </ul>
+        </div>
+        {% else %}
+        <div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3>✅ Account Approved</h3>
+            <p>Congratulations! Your vendor account has been approved and you can start selling immediately.</p>
+        </div>
+        {% endif %}
+
+        <div style="text-align: center;">
+            <a href="{{ dashboard_url }}" class="btn">Access Vendor Dashboard</a>
+        </div>
+
+        <div class="info-section">
+            <h3>Next Steps</h3>
+            <ol>
+                <li>Complete your store profile</li>
+                <li>Upload your store logo and banner</li>
+                <li>Add your first products</li>
+                <li>Set up your payment information</li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p>If you have any questions, please contact us at {{ support_email }}</p>
+            <p>Welcome to the {{ site_name }} vendor community!</p>
+        </div>
+    </div>
+</body>
+</html>

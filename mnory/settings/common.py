@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'shop.apps.ShopConfig',
     'crispy_forms',
     'crispy_bootstrap5',
@@ -52,7 +53,7 @@ INSTALLED_APPS = [
     # 'widget_tweaks',
 ]
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
-
+SITE_ID = 1
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 MIDDLEWARE = [
@@ -193,7 +194,15 @@ CONSTANCE_CONFIG = {
      'ENABLE_USER_LOG': (False, 'Enable User System -- not completed yet --'),
     'SHIPPING_RATE_CAIRO': (60.00, 'Flat shipping rate for orders inside Cairo.', float),
     'SHIPPING_RATE_OUTSIDE_CAIRO': (100.00, 'Flat shipping rate for orders outside Cairo.', float),
-    'EXCHANGE_RATE_USD_TO_EGP':(50.00, 'Exchange Rate for change from dollar to EGP',float)
+    'EXCHANGE_RATE_USD_TO_EGP':(50.00, 'Exchange Rate for change from dollar to EGP',float),
+    'SITE_NAME': (
+        None,
+        'Site name (managed by django.contrib.sites)'
+    ),
+    'SITE_URL': (
+        None,
+        'Site URL (managed by django.contrib.sites)'
+    ),
 }
 
 

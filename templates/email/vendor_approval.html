@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Account Approved - {{ site_name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .header { text-align: center; background-color: #28a745; color: white; padding: 20px; border-radius: 10px 10px 0 0; margin: -20px -20px 20px -20px; }
+        .success-section { background-color: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .btn { display: inline-block; padding: 12px 25px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 5px; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Congratulations!</h1>
+            <p>Your vendor account has been approved</p>
+        </div>
+
+        <p>Dear {{ vendor_name }},</p>
+        
+        <p>Great news! Your vendor application for "{{ store_name }}" has been approved. You can now start selling on {{ site_name }}!</p>
+
+        <div class="success-section">
+            <h3>✅ Your Account is Now Active</h3>
+            <p>You now have full access to all vendor features and can start listing your products immediately.</p>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ dashboard_url }}" class="btn">Go to Dashboard</a>
+            <a href="{{ add_product_url }}" class="btn" style="background-color: #28a745;">Add Your First Product</a>
+        </div>
+
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3>What You Can Do Now:</h3>
+            <ul>
+                <li>✓ Add and manage unlimited products</li>
+                <li>✓ Upload product images and descriptions</li>
+                <li>✓ Set your own pricing and inventory</li>
+                <li>✓ Track orders and sales analytics</li>
+                <li>✓ Manage your store profile and branding</li>
+                <li>✓ Communicate with customers</li>
+            </ul>
+        </div>
+
+        <p>We're excited to have you as part of our vendor community and look forward to your success on our platform!</p>
+
+        <div class="footer">
+            <p>Need help getting started? Contact us at {{ support_email }}</p>
+            <p>Happy selling!</p>
+            <p>The {{ site_name }} Team</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Order - {{ order_number }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .header { text-align: center; background-color: #dc3545; color: white; padding: 20px; border-radius: 10px 10px 0 0; margin: -20px -20px 20px -20px; }
+        .order-details { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .item-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .btn { display: inline-block; padding: 12px 25px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 New Order Received</h1>
+            <p>A new order needs your attention</p>
+        </div>
+
+        <div class="order-details">
+            <h3>Order Information</h3>
+            <div class="item-row">
+                <strong>Order Number:</strong>
+                <span>{{ order_number }}</span>
+            </div>
+            <div class="item-row">
+                <strong>Customer:</strong>
+                <span>{{ customer_name }}</span>
+            </div>
+            <div class="item-row">
+                <strong>Email:</strong>
+                <span>{{ customer_email }}</span>
+            </div>
+            <div class="item-row">
+                <strong>Order Date:</strong>
+                <span>{{ order_date|date:"F d, Y H:i" }}</span>
+            </div>
+            <div class="item-row">
+                <strong>Total:</strong>
+                <span>${{ grand_total }}</span>
+            </div>
+        </div>
+
+        <div class="order-details">
+            <h3>Order Items</h3>
+            {% for item in order_items %}
+            <div class="item-row">
+                <div>{{ item.product_variant.product.name }} ({{ item.product_variant.color.name }}, {{ item.product_variant.size.name }})</div>
+                <div>Qty: {{ item.quantity }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ admin_url }}" class="btn">Process Order in Admin</a>
+        </div>
+
+        <p><strong>Action Required:</strong> Please review and process this order in the admin panel.</p>
+    </div>
+</body>
+</html>

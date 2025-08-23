@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - {{ order_number }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .header { text-align: center; background-color: #2c3e50; color: white; padding: 20px; border-radius: 10px 10px 0 0; margin: -20px -20px 20px -20px; }
+        .order-details { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .total-row { font-weight: bold; background-color: #e9ecef; padding: 10px; margin-top: 10px; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; }
+        .btn { display: inline-block; padding: 12px 25px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Order Confirmation</h1>
+            <p>Thank you for your order!</p>
+        </div>
+
+        <p>Dear {{ customer_name }},</p>
+        
+        <p>Thank you for your order with {{ site_name }}. We're excited to confirm that we've received your order and are preparing it for shipment.</p>
+
+        <div class="order-details">
+            <h3>Order Details</h3>
+            <p><strong>Order Number:</strong> {{ order_number }}</p>
+            <p><strong>Order Date:</strong> {{ order_date|date:"F d, Y" }}</p>
+            <p><strong>Email:</strong> {{ order.email }}</p>
+        </div>
+
+        {% if shipping_address %}
+        <div class="order-details">
+            <h3>Shipping Address</h3>
+            <p>{{ shipping_address.full_name }}</p>
+            <p>{{ shipping_address.address_line1 }}</p>
+            {% if shipping_address.address_line2 %}
+            <p>{{ shipping_address.address_line2 }}</p>
+            {% endif %}
+            <p>{{ shipping_address.city }}</p>
+            <p>{{ shipping_address.phone_number }}</p>
+        </div>
+        {% endif %}
+
+        <div class="order-details">
+            <h3>Order Items</h3>
+            {% for item in order_items %}
+            <div class="item-row">
+                <div>
+                    <strong>{{ item.product_variant.product.name }}</strong><br>
+                    <small>Color: {{ item.product_variant.color.name }}, Size: {{ item.product_variant.size.name }}</small><br>
+                    <small>Quantity: {{ item.quantity }}</small>
+                </div>
+                <div>${{ item.price_at_purchase }}</div>
+            </div>
+            {% endfor %}
+            
+            <div class="item-row">
+                <div>Subtotal:</div>
+                <div>${{ subtotal }}</div>
+            </div>
+            <div class="item-row">
+                <div>Shipping:</div>
+                <div>${{ shipping_cost }}</div>
+            </div>
+            <div class="total-row">
+                <div class="item-row" style="border: none;">
+                    <div>Total:</div>
+                    <div>${{ grand_total }}</div>
+                </div>
+            </div>
+        </div>
+
+        <p>We'll send you another email when your order ships with tracking information.</p>
+
+        <div style="text-align: center;">
+            <a href="{{ site_url }}/orders/{{ order_number }}/" class="btn">View Order Details</a>
+        </div>
+
+        <div class="footer">
+            <p>If you have any questions about your order, please contact us at {{ support_email }}</p>
+            <p>Thank you for shopping with {{ site_name }}!</p>
+        </div>
+    </div>
+</body>
+</html>

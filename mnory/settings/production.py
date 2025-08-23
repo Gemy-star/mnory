@@ -7,7 +7,7 @@ ALLOWED_HOSTS = [
     'www.mnory.com',
     'localhost',
     '127.0.0.1',
-    '31.97.177.210',
+    '45.9.191.23',
 ]
 
 # Add this setting to be more strict about host validation
@@ -19,7 +19,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'mnorydb'),
         'USER': os.getenv('DB_USER', 'mnory'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'Gemy@2803150'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Gemy@24765202'),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
         'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
