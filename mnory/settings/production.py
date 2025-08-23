@@ -82,9 +82,9 @@ LOGGING = {
 }
 
 
-INSTALLED_APPS += [
-    'silk',
-]
+# INSTALLED_APPS += [
+#     'silk',
+# ]
 
-MIDDLEWARE += ['silk.middleware.SilkyMiddleware',]
+# MIDDLEWARE += ['silk.middleware.SilkyMiddleware',]
 
