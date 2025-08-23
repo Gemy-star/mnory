@@ -352,11 +352,13 @@ flex-direction: column;
         <span class="vendor-name">{{ product.vendor.vendorprofile.store_name }}</span>
         <span class="vendor-rating"><i class="fa-solid fa-star"></i></span>
     </div>
+    {% if product.vendor.vendorprofile.slug %}
     <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}"
        class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor"
        title="{% trans 'View Vendor Profile' %}">
        <i class="fa-solid fa-store"></i> {% trans 'View Profile' %}
     </a>
+    {% endif %}
 </div>
 {% endif %}
 
