@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{ site_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .welcome-badge {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .profile-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .cta-button:hover {
+            background: linear-gradient(135deg, #45a049, #4CAF50);
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        .quick-links {
+            background-color: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .quick-links h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        .quick-links ul {
+            list-style: none;
+            padding: 0;
+        }
+        .quick-links li {
+            margin: 8px 0;
+        }
+        .quick-links a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .next-steps {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+        }
+        .next-steps h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .step:last-child {
+            border-bottom: none;
+        }
+        .step-number {
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{ site_name }}</div>
+            <p>Your Freelancing Journey Starts Here</p>
+        </div>
+
+        <div class="welcome-badge">
+            🎉 Welcome, {{ freelancer_name }}!
+        </div>
+
+        <p>Congratulations on joining {{ site_name }} as a freelancer! Your profile has been successfully created and you're now part of our growing community of talented professionals.</p>
+
+        <div class="profile-info">
+            <h3>Your Profile Overview</h3>
+            <p><strong>Professional Title:</strong> {{ title }}</p>
+            <p><strong>Hourly Rate:</strong> ${{ hourly_rate }}/hour</p>
+            <p><strong>Email:</strong> {{ email }}</p>
+            <p><strong>Registration Date:</strong> {{ freelancer_profile.created_at|date:"F d, Y" }}</p>
+        </div>
+
+        <div class="next-steps">
+            <h3>Next Steps to Get Started</h3>
+
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Complete Your Profile:</strong> Add your skills, portfolio, and detailed bio to attract clients.
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Browse Projects:</strong> Start exploring available projects that match your expertise.
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Submit Proposals:</strong> Write compelling proposals to win your first project.
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Build Your Reputation:</strong> Deliver quality work and earn positive reviews.
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ dashboard_url }}" class="cta-button">Go to Dashboard</a>
+            <a href="{{ browse_projects_url }}" class="cta-button" style="background: linear-gradient(135deg, #2196F3, #1976D2); margin-left: 10px;">Browse Projects</a>
+        </div>
+
+        <div class="quick-links">
+            <h3>Quick Links</h3>
+            <ul>
+                <li>📋 <a href="{{ profile_url }}">View Your Profile</a></li>
+                <li>💼 <a href="{{ browse_projects_url }}">Browse Available Projects</a></li>
+                <li>📊 <a href="{{ dashboard_url }}">Your Dashboard</a></li>
+                <li>❓ <a href="mailto:{{ support_email }}">Get Help & Support</a></li>
+            </ul>
+        </div>
+
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 20px 0;">
+            <strong>💡 Pro Tip:</strong> Freelancers with complete profiles and portfolio samples are 5x more likely to get hired. Take a few minutes to showcase your best work!
+        </div>
+
+        <div class="footer">
+            <p>Welcome aboard!</p>
+            <p>The {{ site_name }} Team</p>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+            <p>
+                <small>
+                    Need help? Contact us at <a href="mailto:{{ support_email }}">{{ support_email }}</a><br>
+                    This email was sent to {{ email }} because you registered as a freelancer on {{ site_name }}.
+                </small>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -12,9 +12,9 @@ from django.utils.decorators import method_decorator
 
 from freelancing.forms import ProposalForm, MessageForm, ReviewForm, \
     PaymentForm, FreelancerRegistrationForm, CompanyRegistrationForm
+from freelancing.freelancing_utils import create_notification, update_user_rating, complete_project
 from freelancing.models import FreelancerProfile, Proposal, Contract, Project, Message, CompanyProfile, Category, Skill, \
     Review, Notification
-from freelancing.utils import create_notification, update_user_rating, complete_project
 from shop.models import MnoryUser as User
 
 
@@ -733,13 +733,13 @@ def edit_freelancer_profile(request):
     profile = get_object_or_404(FreelancerProfile, user=request.user)
 
     if request.method == 'POST':
-        form = FreelancerProfileForm(request.POST, request.FILES, instance=profile)
+        form = FreelancerRegistrationForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, "Freelancer profile updated successfully!")
             return redirect('freelancer_dashboard')
     else:
-        form = FreelancerProfileForm(instance=profile)
+        form = FreelancerRegistrationForm(instance=profile)
 
     return render(request, 'freelance/edit_freelancer_profile.html', {
         'form': form,
@@ -757,13 +757,13 @@ def edit_company_profile(request):
     profile = get_object_or_404(CompanyProfile, user=request.user)
 
     if request.method == 'POST':
-        form = CompanyProfileForm(request.POST, request.FILES, instance=profile)
+        form = CompanyRegistrationForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, "Company profile updated successfully!")
             return redirect('company_dashboard')
     else:
-        form = CompanyProfileForm(instance=profile)
+        form = CompanyRegistrationForm(instance=profile)
 
     return render(request, 'freelance/edit_company_profile.html', {
         'form': form,
@@ -834,21 +834,6 @@ def search_freelancers(request):
     } for f in freelancers]
 
     return JsonResponse({'freelancers': data})
-
-def register(request):
-    """User registration view"""
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            messages.success(request, "Account created successfully! Please log in.")
-            return redirect('login')
-    else:
-        form = UserRegistrationForm()
-
-    context = {'form': form}
-    return render(request, 'registration/register.html', context)
-
 
 def complete_contract(request, contract_id):
     """Mark contract as completed"""

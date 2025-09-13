@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Created - {{ contract.title }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .status-badge {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .contract-info {
+            background-color: #f1f8e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        .next-steps {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .important-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .party-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .party-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{ site_name }}</div>
+            <p>Contract Management System</p>
+        </div>
+
+        <div class="status-badge">
+            Contract Created Successfully!
+        </div>
+
+        {% if recipient_type == 'client' %}
+            <p>Hi {{ client_name }},</p>
+            <p>Great news! A contract has been created for your project "<strong>{{ project_title }}</strong>" with {{ freelancer_name }}. Work can now officially begin!</p>
+        {% else %}
+            <p>Hi {{ freelancer_name }},</p>
+            <p>Congratulations! {{ client_name }} has awarded you the project "<strong>{{ project_title }}</strong>". A contract has been created and you can now start working!</p>
+        {% endif %}
+
+        <div class="contract-info">
+            <h3>Contract Details</h3>
+            <p><strong>Project:</strong> {{ project_title }}</p>
+            <p><strong>Contract Value:</strong> ${{ amount }}</p>
+            <p><strong>Start Date:</strong> {{ start_date|date:"F d, Y" }}</p>
+            {% if end_date %}
+                <p><strong>End Date:</strong> {{ end_date|date:"F d, Y" }}</p>
+            {% endif %}
+            <p><strong>Contract ID:</strong> {{ contract.id }}</p>
+        </div>
+
+        <div class="party-info">
+            <div class="party-box">
+                <h4>Client</h4>
+                <p><strong>{{ client_name }}</strong></p>
+                <p>{{ contract.client.email }}</p>
+            </div>
+            <div class="party-box">
+                <h4>Freelancer</h4>
+                <p><strong>{{ freelancer_name }}</strong></p>
+                <p>{{ contract.freelancer.email }}</p>
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h3>Next Steps</h3>
+            {% if recipient_type == 'client' %}
+                <ul>
+                    <li><strong>Communicate:</strong> Stay in touch with {{ freelancer_name }} throughout the project</li>
+                    <li><strong>Track Progress:</strong> Monitor milestones and deliverables</li>
+                    <li><strong>Review Work:</strong> Provide feedback and approve completed work</li>
+                    <li><strong>Process Payments:</strong> Release payments according to contract terms</li>
+                </ul>
+            {% else %}
+                <ul>
+                    <li><strong>Review Contract:</strong> Carefully read all contract terms and conditions</li>
+                    <li><strong>Plan Your Work:</strong> Create a timeline and milestone schedule</li>
+                    <li><strong>Communicate:</strong> Keep {{ client_name }} updated on your progress</li>
+                    <li><strong>Deliver Quality:</strong> Submit your best work on time</li>
+                </ul>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ contract_url }}" class="cta-button">View Contract Details</a>
+        </div>
+
+        <div class="important-info">
+            <strong>Important:</strong> All project communication and file sharing should be done through our platform to ensure proper documentation and dispute resolution if needed.
+        </div>
+
+        <div class="footer">
+            {% if recipient_type == 'client' %}
+                <p>Thank you for using {{ site_name }} to find talent!</p>
+            {% else %}
+                <p>Congratulations and best of luck with your project!</p>
+            {% endif %}
+            <p>The {{ site_name }} Team</p>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+            <p>
+                <small>
+                    Need help? Contact us at <a href="mailto:{{ support_email }}">{{ support_email }}</a><br>
+                    This email was sent because a contract was created for your project on {{ site_name }}.
+                </small>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

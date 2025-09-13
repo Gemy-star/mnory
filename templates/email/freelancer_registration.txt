@@ -1,0 +1,48 @@
+{{ site_name }}
+=======================================
+
+Welcome, {{ freelancer_name }}!
+
+Congratulations on joining {{ site_name }} as a freelancer! Your profile has been successfully created and you're now part of our growing community of talented professionals.
+
+YOUR PROFILE OVERVIEW
+----------------------
+Professional Title: {{ title }}
+Hourly Rate: ${{ hourly_rate }}/hour
+Email: {{ email }}
+Registration Date: {{ freelancer_profile.created_at|date:"F d, Y" }}
+
+NEXT STEPS TO GET STARTED
+--------------------------
+1. Complete Your Profile
+   Add your skills, portfolio, and detailed bio to attract clients.
+
+2. Browse Projects
+   Start exploring available projects that match your expertise.
+
+3. Submit Proposals
+   Write compelling proposals to win your first project.
+
+4. Build Your Reputation
+   Deliver quality work and earn positive reviews.
+
+QUICK LINKS
+-----------
+View Your Profile: {{ profile_url }}
+Browse Available Projects: {{ browse_projects_url }}
+Your Dashboard: {{ dashboard_url }}
+Get Help & Support: mailto:{{ support_email }}
+
+KEY ACTIONS
+-----------
+Go to Dashboard: {{ dashboard_url }}
+Browse Projects: {{ browse_projects_url }}
+
+PRO TIP: Freelancers with complete profiles and portfolio samples are 5x more likely to get hired. Take a few minutes to showcase your best work!
+
+Welcome aboard!
+The {{ site_name }} Team
+
+=======================================
+Need help? Contact us at {{ support_email }}
+This email was sent to {{ email }} because you registered as a freelancer on {{ site_name }}.

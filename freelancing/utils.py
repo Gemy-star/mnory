@@ -1,669 +1,1016 @@
-from django.db.models import Avg, Count, Sum
-from django.utils import timezone
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
-from django.conf import settings
-from .models import *
-import uuid
-from decimal import Decimal
-from datetime import datetime, timedelta
+# -------------------------------
+# Freelance Platform Email Functions
+# Add these to your main/email_utils.py file
+# -------------------------------
 
-User = get_user_model()
+# -------------------------------
+# Freelancer Profile Emails
+# -------------------------------
+import logging
 
+from constance import config
 
-def create_notification(user, notification_type, title, message, related_object_id=None):
-    """Create a notification for a user"""
-    return Notification.objects.create(
-        user=user,
-        notification_type=notification_type,
-        title=title,
-        message=message,
-        related_object_id=related_object_id
-    )
+from freelancing.models import FreelancerProfile, CompanyProfile, Project, Proposal, Contract
+from shop.email import send_email_with_sendgrid
 
+logger = logging.getLogger(__name__)
+def send_freelancer_registration_email(user, freelancer_profile):
+    """
+    Send registration confirmation email to newly registered freelancer
+    """
+    logger.info(f"Sending freelancer registration email to: {user.email}")
 
-def update_user_rating(user):
-    """Update user's average rating based on reviews"""
-    reviews = Review.objects.filter(reviewee=user)
-    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+    try:
+        context = {
+            'user': user,
+            'freelancer_profile': freelancer_profile,
+            'freelancer_name': user.get_full_name() or user.email.split('@')[0],
+            'title': freelancer_profile.title,
+            'hourly_rate': freelancer_profile.hourly_rate,
+            'email': user.email,
+            'profile_url': f"{getattr(config, 'SITE_URL', '')}/freelancer/profile/{freelancer_profile.id}/",
+            'dashboard_url': f"{getattr(config, 'SITE_URL', '')}/freelancer/dashboard/",
+            'browse_projects_url': f"{getattr(config, 'SITE_URL', '')}/projects/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
 
-    if user.is_freelancer_user and hasattr(user, 'freelancer_profile'):
-        user.freelancer_profile.rating = avg_rating or 0
-        user.freelancer_profile.save(update_fields=['rating'])
-    elif user.is_company_user and hasattr(user, 'company_profile'):
-        user.company_profile.rating = avg_rating or 0
-        user.company_profile.save(update_fields=['rating'])
+        subject = f"Welcome to {getattr(config, 'SITE_NAME', 'Mnory Freelance')} - Freelancer Registration Complete"
 
+        success = send_email_with_sendgrid(
+            to_email=user.email,
+            subject=subject,
+            template_name='freelancer_registration',
+            context=context
+        )
 
-def calculate_platform_fee(amount, user_type='freelancer'):
-    """Calculate platform fee based on amount and user type"""
-    fee_percentage = getattr(settings, 'PLATFORM_FEE_PERCENTAGE', 0.05)  # 5% default
-
-    if user_type == 'freelancer':
-        # Tiered fee structure for freelancers
-        if amount <= 500:
-            fee_percentage = 0.20  # 20% for first $500
-        elif amount <= 10000:
-            fee_percentage = 0.10  # 10% for $500.01 to $10,000
+        if success:
+            logger.info(f"Freelancer registration email sent successfully to: {user.email}")
         else:
-            fee_percentage = 0.05  # 5% for amounts over $10,000
-    else:
-        fee_percentage = 0.03  # 3% for clients
+            logger.error(f"Failed to send freelancer registration email to: {user.email}")
 
-    return amount * Decimal(str(fee_percentage))
+        return success
 
-
-def process_payment(contract, amount, payment_type='milestone', description=''):
-    """Process a payment for a contract"""
-    # Calculate platform fee
-    platform_fee = calculate_platform_fee(amount, 'freelancer')
-    freelancer_amount = amount - platform_fee
-
-    # Create payment record
-    payment = Payment.objects.create(
-        contract=contract,
-        amount=amount,
-        payment_type=payment_type,
-        description=description,
-        status='completed',
-        paid_date=timezone.now(),
-        transaction_id=str(uuid.uuid4())
-    )
-
-    # Update freelancer earnings
-    if hasattr(contract.freelancer, 'freelancer_profile'):
-        profile = contract.freelancer.freelancer_profile
-        profile.total_earnings += freelancer_amount
-        profile.save(update_fields=['total_earnings'])
-
-    # Update company spending
-    if hasattr(contract.client, 'company_profile'):
-        profile = contract.client.company_profile
-        profile.total_spent += amount
-        profile.save(update_fields=['total_spent'])
-
-    # Send notifications
-    create_notification(
-        user=contract.freelancer,
-        notification_type='payment_received',
-        title=f"Payment received: ${freelancer_amount}",
-        message=f"You received ${freelancer_amount} for '{contract.title}'",
-        related_object_id=payment.id
-    )
-
-    return payment
+    except Exception as e:
+        logger.exception(f"Error sending freelancer registration email to {user.email}: {str(e)}")
+        return False
 
 
-def complete_project(contract):
-    """Complete a project and update related statistics"""
-    contract.status = 'completed'
-    contract.end_date = timezone.now()
-    contract.save()
+def send_freelancer_verification_email(user, freelancer_profile):
+    """
+    Send verification confirmation email to verified freelancer
+    """
+    logger.info(f"Sending freelancer verification email to: {user.email}")
 
-    # Update project status
-    contract.project.status = 'completed'
-    contract.project.save()
+    try:
+        context = {
+            'user': user,
+            'freelancer_profile': freelancer_profile,
+            'freelancer_name': user.get_full_name() or user.email.split('@')[0],
+            'title': freelancer_profile.title,
+            'profile_url': f"{getattr(config, 'SITE_URL', '')}/freelancer/profile/{freelancer_profile.id}/",
+            'dashboard_url': f"{getattr(config, 'SITE_URL', '')}/freelancer/dashboard/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
 
-    # Update freelancer job count
-    if hasattr(contract.freelancer, 'freelancer_profile'):
-        profile = contract.freelancer.freelancer_profile
-        profile.total_jobs_completed += 1
-        profile.save(update_fields=['total_jobs_completed'])
+        subject = "Congratulations! Your freelancer profile has been verified"
 
-    # Update company job count
-    if hasattr(contract.client, 'company_profile'):
-        profile = contract.client.company_profile
-        profile.total_jobs_posted += 1
-        profile.save(update_fields=['total_jobs_posted'])
+        success = send_email_with_sendgrid(
+            to_email=user.email,
+            subject=subject,
+            template_name='freelancer_verification',
+            context=context
+        )
 
-    # Send notifications
-    create_notification(
-        user=contract.client,
-        notification_type='project_completed',
-        title=f"Project completed: {contract.title}",
-        message=f"Your project '{contract.title}' has been completed by {contract.freelancer.get_full_name()}",
-        related_object_id=contract.id
-    )
+        if success:
+            logger.info(f"Freelancer verification email sent successfully to: {user.email}")
+        else:
+            logger.error(f"Failed to send freelancer verification email to: {user.email}")
 
-    create_notification(
-        user=contract.freelancer,
-        notification_type='project_completed',
-        title=f"Project completed: {contract.title}",
-        message=f"You have successfully completed '{contract.title}'",
-        related_object_id=contract.id
-    )
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending freelancer verification email to {user.email}: {str(e)}")
+        return False
 
 
-def send_email_notification(user, subject, message, html_message=None):
-    """Send email notification to user"""
-    if user.email:
-        try:
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_message,
-                fail_silently=False
-            )
-            return True
-        except Exception as e:
-            print(f"Email sending failed: {e}")
+# -------------------------------
+# Company Profile Emails
+# -------------------------------
+
+def send_company_registration_email(user, company_profile):
+    """
+    Send registration confirmation email to newly registered company
+    """
+    logger.info(f"Sending company registration email to: {user.email}")
+
+    try:
+        context = {
+            'user': user,
+            'company_profile': company_profile,
+            'company_name': company_profile.company_name,
+            'company_email': user.email,
+            'industry': company_profile.industry,
+            'company_size': company_profile.get_company_size_display(),
+            'location': company_profile.location,
+            'registration_date': company_profile.created_at,
+            'admin_url': f"{getattr(config, 'SITE_URL', '')}/admin/freelance/companyprofile/{company_profile.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+        }
+
+        subject = f"New Company Registration - {company_profile.company_name}"
+
+        success = send_email_with_sendgrid(
+            to_email=config.ADMIN_EMAIL,
+            subject=subject,
+            template_name='admin_new_company',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Admin new company notification sent successfully for: {user.email}")
+        else:
+            logger.error(f"Failed to send admin new company notification for: {user.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending admin new company notification for {user.email}: {str(e)}")
+        return False
+
+
+def send_admin_new_project_notification(project):
+    """
+    Send new project notification to admin
+    """
+    logger.info(f"Sending new project notification to admin for: {project.title}")
+
+    try:
+        admin_email = getattr(config, 'ADMIN_EMAIL', None)
+        if not admin_email:
+            logger.error("No admin email configured")
             return False
-    return False
 
-
-def get_recommended_freelancers(project, limit=10):
-    """Get recommended freelancers for a project based on skills and rating"""
-    required_skills = project.skills_required.all()
-
-    # Find freelancers with matching skills
-    freelancers = FreelancerProfile.objects.filter(
-        skills__in=required_skills,
-        user__is_active=True,
-        experience_level__in=[project.experience_level, 'expert']  # Include higher levels
-    ).annotate(
-        skill_matches=Count('skills', filter=models.Q(skills__in=required_skills))
-    ).filter(
-        skill_matches__gt=0
-    ).order_by('-rating', '-skill_matches', '-total_jobs_completed')[:limit]
-
-    return freelancers
-
-
-def get_recommended_projects(freelancer_user, limit=10):
-    """Get recommended projects for a freelancer based on skills"""
-    if not hasattr(freelancer_user, 'freelancer_profile'):
-        return Project.objects.none()
-
-    profile = freelancer_user.freelancer_profile
-    user_skills = profile.skills.all()
-
-    # Find projects with matching skills
-    projects = Project.objects.filter(
-        status='open',
-        skills_required__in=user_skills,
-        experience_level__in=['entry', profile.experience_level]  # Include lower levels
-    ).annotate(
-        skill_matches=Count('skills_required', filter=models.Q(skills_required__in=user_skills))
-    ).filter(
-        skill_matches__gt=0
-    ).exclude(
-        proposals__freelancer=freelancer_user  # Exclude already applied projects
-    ).order_by('-skill_matches', '-created_at')[:limit]
-
-    return projects
-
-
-def calculate_project_budget_range(category, experience_level='intermediate'):
-    """Calculate suggested budget range for a project based on category and experience"""
-    base_rates = {
-        'entry': {'min': 10, 'max': 25},
-        'intermediate': {'min': 25, 'max': 50},
-        'expert': {'min': 50, 'max': 100}
-    }
-
-    # Get average rates for the category (simplified)
-    rates = base_rates.get(experience_level, base_rates['intermediate'])
-
-    # Estimate project duration (hours)
-    estimated_hours = 40  # Default 40 hours
-
-    return {
-        'min_budget': rates['min'] * estimated_hours,
-        'max_budget': rates['max'] * estimated_hours,
-        'suggested_hourly_min': rates['min'],
-        'suggested_hourly_max': rates['max']
-    }
-
-
-def get_user_dashboard_stats(user):
-    """Get dashboard statistics for a user"""
-    stats = {}
-
-    if user.is_freelancer_user and hasattr(user, 'freelancer_profile'):
-        profile = user.freelancer_profile
-        stats = {
-            'active_contracts': Contract.objects.filter(freelancer=user, status='active').count(),
-            'pending_proposals': Proposal.objects.filter(freelancer=user, status='pending').count(),
-            'completed_jobs': profile.total_jobs_completed,
-            'total_earnings': profile.total_earnings,
-            'avg_rating': profile.rating,
-            'profile_views': 0,  # You can implement view tracking
-        }
-    elif user.is_company_user and hasattr(user, 'company_profile'):
-        profile = user.company_profile
-        stats = {
-            'active_projects': Project.objects.filter(client=user, status__in=['open', 'in_progress']).count(),
-            'total_projects': Project.objects.filter(client=user).count(),
-            'total_spent': profile.total_spent,
-            'avg_rating': profile.rating,
-            'total_proposals_received': Proposal.objects.filter(project__client=user).count(),
+        context = {
+            'project': project,
+            'project_title': project.title,
+            'client_name': project.client.get_full_name() or project.client.email.split('@')[0],
+            'client_email': project.client.email,
+            'category': project.category.name,
+            'project_type': project.get_project_type_display(),
+            'budget_range': f"${project.budget_min} - ${project.budget_max}" if project.budget_min and project.budget_max else "Not specified",
+            'created_date': project.created_at,
+            'admin_url': f"{getattr(config, 'SITE_URL', '')}/admin/freelance/project/{project.id}/",
+            'project_url': f"{getattr(config, 'SITE_URL', '')}/projects/{project.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
         }
 
-    # Common stats for all users
-    stats.update({
-        'unread_messages': Message.objects.filter(recipient=user, is_read=False).count(),
-        'unread_notifications': Notification.objects.filter(user=user, is_read=False).count(),
-    })
+        subject = f"New Project Posted - {project.title}"
 
-    return stats
-
-
-def search_and_filter_projects(request):
-    """Advanced search and filtering for projects"""
-    queryset = Project.objects.filter(status='open')
-
-    # Search query
-    search = request.GET.get('search', '').strip()
-    if search:
-        queryset = queryset.filter(
-            models.Q(title__icontains=search) |
-            models.Q(description__icontains=search) |
-            models.Q(skills_required__name__icontains=search)
-        ).distinct()
-
-    # Category filter
-    category_slug = request.GET.get('category')
-    if category_slug:
-        queryset = queryset.filter(category__slug=category_slug)
-
-    # Budget range filter
-    min_budget = request.GET.get('min_budget')
-    max_budget = request.GET.get('max_budget')
-    if min_budget:
-        queryset = queryset.filter(
-            models.Q(budget_min__gte=min_budget) |
-            models.Q(budget_max__gte=min_budget)
-        )
-    if max_budget:
-        queryset = queryset.filter(
-            models.Q(budget_max__lte=max_budget) |
-            models.Q(budget_min__lte=max_budget)
+        success = send_email_with_sendgrid(
+            to_email=admin_email,
+            subject=subject,
+            template_name='admin_new_project',
+            context=context
         )
 
-    # Experience level filter
-    experience_level = request.GET.get('experience_level')
-    if experience_level:
-        queryset = queryset.filter(experience_level=experience_level)
+        if success:
+            logger.info(f"Admin new project notification sent successfully for: {project.title}")
+        else:
+            logger.error(f"Failed to send admin new project notification for: {project.title}")
 
-    # Project type filter
-    project_type = request.GET.get('project_type')
-    if project_type:
-        queryset = queryset.filter(project_type=project_type)
+        return success
 
-    # Skills filter
-    skills = request.GET.getlist('skills')
-    if skills:
-        queryset = queryset.filter(skills_required__id__in=skills).distinct()
-
-    # Sorting
-    sort_by = request.GET.get('sort', '-created_at')
-    valid_sorts = ['-created_at', 'created_at', '-budget_max', 'budget_max',
-                   '-proposals_count', 'proposals_count', 'deadline', '-deadline']
-    if sort_by in valid_sorts:
-        queryset = queryset.order_by(sort_by)
-
-    return queryset
+    except Exception as e:
+        logger.exception(f"Error sending admin new project notification for {project.title}: {str(e)}")
+        return False
 
 
-def search_and_filter_freelancers(request):
-    """Advanced search and filtering for freelancers"""
-    queryset = FreelancerProfile.objects.filter(user__is_active=True)
-
-    # Search query
-    search = request.GET.get('search', '').strip()
-    if search:
-        queryset = queryset.filter(
-            models.Q(title__icontains=search) |
-            models.Q(bio__icontains=search) |
-            models.Q(skills__name__icontains=search) |
-            models.Q(user__first_name__icontains=search) |
-            models.Q(user__last_name__icontains=search)
-        ).distinct()
-
-    # Hourly rate range
-    min_rate = request.GET.get('min_rate')
-    max_rate = request.GET.get('max_rate')
-    if min_rate:
-        queryset = queryset.filter(hourly_rate__gte=min_rate)
-    if max_rate:
-        queryset = queryset.filter(hourly_rate__lte=max_rate)
-
-    # Experience level filter
-    experience_level = request.GET.get('experience_level')
-    if experience_level:
-        queryset = queryset.filter(experience_level=experience_level)
-
-    # Skills filter
-    skills = request.GET.getlist('skills')
-    if skills:
-        queryset = queryset.filter(skills__id__in=skills).distinct()
-
-    # Location filter
-    location = request.GET.get('location')
-    if location:
-        queryset = queryset.filter(location__icontains=location)
-
-    # Availability filter
-    availability = request.GET.get('availability')
-    if availability:
-        queryset = queryset.filter(availability=availability)
-
-    # Rating filter
-    min_rating = request.GET.get('min_rating')
-    if min_rating:
-        queryset = queryset.filter(rating__gte=min_rating)
-
-    # Verified filter
-    verified_only = request.GET.get('verified')
-    if verified_only == 'true':
-        queryset = queryset.filter(is_verified=True)
-
-    # Sorting
-    sort_by = request.GET.get('sort', '-rating')
-    valid_sorts = ['-rating', 'rating', '-hourly_rate', 'hourly_rate',
-                   '-total_jobs_completed', 'total_jobs_completed', '-created_at', 'created_at']
-    if sort_by in valid_sorts:
-        queryset = queryset.order_by(sort_by)
-
-    return queryset
-
-
-def validate_project_data(project_data):
-    """Validate project data before creation"""
-    errors = []
-
-    # Check required fields
-    required_fields = ['title', 'description', 'category', 'project_type', 'experience_level']
-    for field in required_fields:
-        if not project_data.get(field):
-            errors.append(f"{field.replace('_', ' ').title()} is required")
-
-    # Validate budget based on project type
-    if project_data.get('project_type') == 'fixed':
-        if not project_data.get('budget_min') or not project_data.get('budget_max'):
-            errors.append("Budget range is required for fixed price projects")
-        elif project_data.get('budget_min', 0) > project_data.get('budget_max', 0):
-            errors.append("Minimum budget cannot be greater than maximum budget")
-    elif project_data.get('project_type') == 'hourly':
-        if not project_data.get('hourly_rate_min') or not project_data.get('hourly_rate_max'):
-            errors.append("Hourly rate range is required for hourly projects")
-        elif project_data.get('hourly_rate_min', 0) > project_data.get('hourly_rate_max', 0):
-            errors.append("Minimum hourly rate cannot be greater than maximum hourly rate")
-
-    return errors
-
-
-def calculate_proposal_success_rate(freelancer_user):
-    """Calculate proposal success rate for a freelancer"""
-    total_proposals = Proposal.objects.filter(freelancer=freelancer_user).count()
-    if total_proposals == 0:
-        return 0
-
-    accepted_proposals = Proposal.objects.filter(freelancer=freelancer_user, status='accepted').count()
-    return round((accepted_proposals / total_proposals) * 100, 2)
-
-
-def get_trending_skills():
-    """Get trending skills based on recent project requirements"""
-    from django.db.models import Count
-    from datetime import timedelta
-
-    last_30_days = timezone.now() - timedelta(days=30)
-    trending_skills = Skill.objects.filter(
-        project__created_at__gte=last_30_days,
-        project__status='open'
-    ).annotate(
-        demand_count=Count('project')
-    ).order_by('-demand_count')[:20]
-
-    return trending_skills
-
-
-def send_proposal_notifications(proposal):
-    """Send notifications when a new proposal is submitted"""
-    # Notify the project owner
-    create_notification(
-        user=proposal.project.client,
-        notification_type='proposal_received',
-        title=f"New proposal for '{proposal.project.title}'",
-        message=f"You received a proposal from {proposal.freelancer.get_full_name() or proposal.freelancer.email}",
-        related_object_id=proposal.id
-    )
-
-    # Send email notification
-    subject = f"New Proposal Received - {proposal.project.title}"
-    message = f"""
-    Hi {proposal.project.client.get_full_name() or proposal.project.client.email},
-
-    You have received a new proposal for your project "{proposal.project.title}".
-
-    Freelancer: {proposal.freelancer.get_full_name() or proposal.freelancer.email}
-    Proposed Amount: ${proposal.proposed_amount}
-    Estimated Duration: {proposal.estimated_duration}
-
-    Please log in to review the proposal.
-
-    Best regards,
-    Your Freelance Platform Team
+def send_admin_contract_created_notification(contract):
     """
-
-    send_email_notification(proposal.project.client, subject, message)
-
-
-def auto_complete_contract_milestones(contract):
-    """Auto-complete contract based on milestones or time"""
-    # This is a simplified version - in reality, you'd have more complex logic
-    if contract.status == 'active':
-        # Check if all milestones are completed
-        total_payments = contract.payments.filter(status='completed').aggregate(
-            total=Sum('amount')
-        )['total'] or 0
-
-        if total_payments >= contract.amount:
-            complete_project(contract)
-            return True
-
-    return False
-
-
-def generate_contract_terms(project, proposal):
-    """Generate standard contract terms and conditions"""
-    terms = f"""
-    CONTRACT TERMS AND CONDITIONS
-
-    Project: {project.title}
-    Client: {project.client.get_full_name() or project.client.email}
-    Freelancer: {proposal.freelancer.get_full_name() or proposal.freelancer.email}
-
-    1. SCOPE OF WORK
-    {project.description}
-
-    2. PAYMENT TERMS
-    Total Amount: ${proposal.proposed_amount}
-    Payment Schedule: As agreed upon completion of milestones
-
-    3. TIMELINE
-    Estimated Duration: {proposal.estimated_duration}
-    Start Date: {timezone.now().strftime('%Y-%m-%d')}
-
-    4. DELIVERABLES
-    All work products shall be delivered as specified in the project description.
-
-    5. INTELLECTUAL PROPERTY
-    Upon full payment, all intellectual property rights shall transfer to the client.
-
-    6. TERMINATION
-    Either party may terminate this contract with 7 days written notice.
-
-    7. PLATFORM FEES
-    Platform fees will be deducted as per platform policy.
-
-    By accepting this contract, both parties agree to these terms and conditions.
+    Send contract creation notification to admin
     """
+    logger.info(f"Sending contract created notification to admin for: {contract.title}")
 
-    return terms
+    try:
+        admin_email = getattr(config, 'ADMIN_EMAIL', None)
+        if not admin_email:
+            logger.error("No admin email configured")
+            return False
 
+        context = {
+            'contract': contract,
+            'contract_title': contract.title,
+            'project_title': contract.project.title,
+            'client_name': contract.client.get_full_name() or contract.client.email.split('@')[0],
+            'freelancer_name': contract.freelancer.get_full_name() or contract.freelancer.email.split('@')[0],
+            'amount': contract.amount,
+            'start_date': contract.start_date,
+            'created_date': contract.created_at,
+            'admin_url': f"{getattr(config, 'SITE_URL', '')}/admin/freelance/contract/{contract.id}/",
+            'contract_url': f"{getattr(config, 'SITE_URL', '')}/contracts/{contract.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+        }
 
-def calculate_estimated_earnings(hourly_rate, hours_per_week, weeks):
-    """Calculate estimated earnings for freelancers"""
-    gross_earnings = hourly_rate * hours_per_week * weeks
-    platform_fee = calculate_platform_fee(gross_earnings, 'freelancer')
-    net_earnings = gross_earnings - platform_fee
+        subject = f"New Contract Created - {contract.title}"
 
-    return {
-        'gross_earnings': gross_earnings,
-        'platform_fee': platform_fee,
-        'net_earnings': net_earnings,
-        'effective_hourly_rate': net_earnings / (hours_per_week * weeks)
-    }
-
-
-def get_market_rate_insights(category, experience_level):
-    """Get market rate insights for a category and experience level"""
-    freelancers = FreelancerProfile.objects.filter(
-        skills__category=category,
-        experience_level=experience_level,
-        user__is_active=True
-    )
-
-    if not freelancers.exists():
-        return None
-
-    rates = freelancers.values_list('hourly_rate', flat=True)
-
-    return {
-        'min_rate': min(rates),
-        'max_rate': max(rates),
-        'avg_rate': sum(rates) / len(rates),
-        'median_rate': sorted(rates)[len(rates) // 2],
-        'sample_size': len(rates)
-    }
-
-
-def cleanup_expired_proposals():
-    """Cleanup expired proposals (run as periodic task)"""
-    expired_date = timezone.now() - timedelta(days=30)
-    expired_proposals = Proposal.objects.filter(
-        created_at__lt=expired_date,
-        status='pending',
-        project__status__in=['cancelled', 'completed']
-    )
-
-    expired_count = expired_proposals.count()
-    expired_proposals.update(status='withdrawn')
-
-    return expired_count
-
-
-def generate_invoice_data(payment):
-    """Generate invoice data for a payment"""
-    platform_fee = calculate_platform_fee(payment.amount, 'freelancer')
-    net_amount = payment.amount - platform_fee
-
-    return {
-        'invoice_number': f"INV-{payment.id}",
-        'date': payment.created_at.strftime('%Y-%m-%d'),
-        'client_name': payment.contract.client.get_full_name() or payment.contract.client.email,
-        'freelancer_name': payment.contract.freelancer.get_full_name() or payment.contract.freelancer.email,
-        'project_title': payment.contract.title,
-        'gross_amount': payment.amount,
-        'platform_fee': platform_fee,
-        'net_amount': net_amount,
-        'payment_date': payment.paid_date.strftime('%Y-%m-%d') if payment.paid_date else None,
-    }
-
-
-def check_user_verification_status(user):
-    """Check if user meets verification criteria"""
-    criteria = {
-        'email_verified': True,  # Assume email is verified during registration
-        'phone_verified': bool(user.phone_number),
-        'profile_complete': False,
-        'has_reviews': False,
-        'identity_verified': False,  # This would require additional implementation
-    }
-
-    if user.is_freelancer_user and hasattr(user, 'freelancer_profile'):
-        profile = user.freelancer_profile
-        criteria['profile_complete'] = bool(
-            profile.title and profile.bio and profile.hourly_rate and
-            profile.skills.exists() and profile.profile_picture
+        success = send_email_with_sendgrid(
+            to_email=admin_email,
+            subject=subject,
+            template_name='admin_contract_created',
+            context=context
         )
-        criteria['has_reviews'] = Review.objects.filter(reviewee=user).exists()
-    elif user.is_company_user and hasattr(user, 'company_profile'):
-        profile = user.company_profile
-        criteria['profile_complete'] = bool(
-            profile.company_name and profile.description and
-            profile.industry and profile.location
+
+        if success:
+            logger.info(f"Admin contract created notification sent successfully for: {contract.title}")
+        else:
+            logger.error(f"Failed to send admin contract created notification for: {contract.title}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending admin contract created notification for {contract.title}: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Test Functions
+# -------------------------------
+
+def test_freelancer_registration_email(freelancer_profile_id):
+    """
+    Test freelancer registration email for a specific freelancer profile
+    """
+    try:
+        freelancer_profile = FreelancerProfile.objects.get(id=freelancer_profile_id)
+        success = send_freelancer_registration_email(freelancer_profile.user, freelancer_profile)
+        print(f"Freelancer registration email test: {'✅ Success' if success else '❌ Failed'}")
+        return success
+    except FreelancerProfile.DoesNotExist:
+        print(f"❌ Freelancer profile with ID {freelancer_profile_id} not found")
+        return False
+    except Exception as e:
+        print(f"❌ Error testing freelancer registration email: {str(e)}")
+        return False
+
+
+def test_company_registration_email(company_profile_id):
+    """
+    Test company registration email for a specific company profile
+    """
+    try:
+        company_profile = CompanyProfile.objects.get(id=company_profile_id)
+        success = send_company_registration_email(company_profile.user, company_profile)
+        print(f"Company registration email test: {'✅ Success' if success else '❌ Failed'}")
+        return success
+    except CompanyProfile.DoesNotExist:
+        print(f"❌ Company profile with ID {company_profile_id} not found")
+        return False
+    except Exception as e:
+        print(f"❌ Error testing company registration email: {str(e)}")
+        return False
+
+
+def test_project_posted_email(project_id):
+    """
+    Test project posted email for a specific project
+    """
+    try:
+        project = Project.objects.get(id=project_id)
+        success = send_project_posted_email(project)
+        print(f"Project posted email test: {'✅ Success' if success else '❌ Failed'}")
+        return success
+    except Project.DoesNotExist:
+        print(f"❌ Project with ID {project_id} not found")
+        return False
+    except Exception as e:
+        print(f"❌ Error testing project posted email: {str(e)}")
+        return False
+
+
+def test_proposal_submitted_email(proposal_id):
+    """
+    Test proposal submitted email for a specific proposal
+    """
+    try:
+        proposal = Proposal.objects.get(id=proposal_id)
+        success = send_proposal_submitted_email(proposal)
+        print(f"Proposal submitted email test: {'✅ Success' if success else '❌ Failed'}")
+        return success
+    except Proposal.DoesNotExist:
+        print(f"❌ Proposal with ID {proposal_id} not found")
+        return False
+    except Exception as e:
+        print(f"❌ Error testing proposal submitted email: {str(e)}")
+        return False
+
+
+def test_contract_created_email(contract_id):
+    """
+    Test contract created email for a specific contract.
+    """
+    try:
+        contract = Contract.objects.get(id=contract_id)
+        success = send_contract_created_email(contract)
+        logger.info(f"Contract created email test: {'✅ Success' if success else '❌ Failed'}")
+        return success
+    except Contract.DoesNotExist:
+        logger.error(f"❌ Contract with ID {contract_id} not found")
+        return False
+    except Exception as e:
+        logger.error(f"❌ Error testing contract created email: {str(e)}")
+        return False
+
+
+def send_company_registration_email(user, company_profile):
+    """
+    Send company registration email to the user.
+    """
+    try:
+        context = {
+            'company_name': company_profile.company_name,
+            'industry': company_profile.industry,
+            'company_size': company_profile.get_company_size_display(),
+            'email': user.email,
+            'dashboard_url': f"{getattr(config, 'SITE_URL', '')}/company/dashboard/",
+            'post_project_url': f"{getattr(config, 'SITE_URL', '')}/projects/create/",
+            'browse_freelancers_url': f"{getattr(config, 'SITE_URL', '')}/freelancers/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"Welcome to {getattr(config, 'SITE_NAME', 'Mnory Freelance')} - Company Registration Complete"
+
+        success = send_email_with_sendgrid(
+            to_email=user.email,
+            subject=subject,
+            template_name='company_registration',
+            context=context
         )
-        criteria['has_reviews'] = Review.objects.filter(reviewee=user).exists()
 
-    verification_score = sum(criteria.values()) / len(criteria) * 100
+        if success:
+            logger.info(f"Company registration email sent successfully to: {user.email}")
+        else:
+            logger.error(f"Failed to send company registration email to: {user.email}")
 
-    return {
-        'criteria': criteria,
-        'score': round(verification_score, 2),
-        'is_verifiable': verification_score >= 80
-    }
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending company registration email to {user.email}: {str(e)}")
+        return False
 
 
-def get_user_activity_timeline(user, limit=50):
-    """Get user activity timeline"""
-    activities = []
+def send_company_verification_email(user, company_profile):
+    """
+    Send verification confirmation email to verified company
+    """
+    logger.info(f"Sending company verification email to: {user.email}")
 
-    # Get proposals
-    proposals = Proposal.objects.filter(freelancer=user).order_by('-created_at')[:limit // 4]
-    for proposal in proposals:
-        activities.append({
-            'type': 'proposal_submitted',
-            'title': f"Submitted proposal for '{proposal.project.title}'",
-            'date': proposal.created_at,
-            'url': reverse('proposal_detail', kwargs={'proposal_id': proposal.id}),
+    try:
+        context = {
+            'user': user,
+            'company_profile': company_profile,
+            'company_name': company_profile.company_name,
+            'dashboard_url': f"{getattr(config, 'SITE_URL', '')}/company/dashboard/",
+            'post_project_url': f"{getattr(config, 'SITE_URL', '')}/projects/create/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = "Congratulations! Your company profile has been verified"
+
+        success = send_email_with_sendgrid(
+            to_email=user.email,
+            subject=subject,
+            template_name='company_verification',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Company verification email sent successfully to: {user.email}")
+        else:
+            logger.error(f"Failed to send company verification email to: {user.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending company verification email to {user.email}: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Project Related Emails
+# -------------------------------
+
+def send_project_posted_email(project):
+    """
+    Send confirmation email to client when project is posted
+    """
+    logger.info(f"Sending project posted email for: {project.title}")
+
+    try:
+        context = {
+            'project': project,
+            'client_name': project.client.get_full_name() or project.client.email.split('@')[0],
+            'project_title': project.title,
+            'project_type': project.get_project_type_display(),
+            'category': project.category.name,
+            'project_url': f"{getattr(config, 'SITE_URL', '')}/projects/{project.id}/",
+            'manage_projects_url': f"{getattr(config, 'SITE_URL', '')}/company/projects/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"Project Posted Successfully - {project.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=project.client.email,
+            subject=subject,
+            template_name='project_posted',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Project posted email sent successfully for: {project.title}")
+        else:
+            logger.error(f"Failed to send project posted email for: {project.title}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending project posted email for {project.title}: {str(e)}")
+        return False
+
+
+def send_project_status_update_email(project, old_status, new_status):
+    """
+    Send project status update email to client
+    """
+    logger.info(f"Sending project status update email for: {project.title}")
+
+    try:
+        context = {
+            'project': project,
+            'client_name': project.client.get_full_name() or project.client.email.split('@')[0],
+            'project_title': project.title,
+            'old_status': old_status,
+            'new_status': new_status,
+            'status_display': project.get_status_display(),
+            'project_url': f"{getattr(config, 'SITE_URL', '')}/projects/{project.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"Project Update - {project.title} is now {project.get_status_display()}"
+
+        success = send_email_with_sendgrid(
+            to_email=project.client.email,
+            subject=subject,
+            template_name='project_status_update',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Project status update email sent successfully for: {project.title}")
+        else:
+            logger.error(f"Failed to send project status update email for: {project.title}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending project status update email for {project.title}: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Proposal Related Emails
+# -------------------------------
+
+def send_proposal_submitted_email(proposal):
+    """
+    Send confirmation email to freelancer when proposal is submitted
+    """
+    logger.info(f"Sending proposal submitted email for project: {proposal.project.title}")
+
+    try:
+        context = {
+            'proposal': proposal,
+            'freelancer_name': proposal.freelancer.get_full_name() or proposal.freelancer.email.split('@')[0],
+            'project_title': proposal.project.title,
+            'client_name': proposal.project.client.get_full_name() or proposal.project.client.email.split('@')[0],
+            'proposed_amount': proposal.proposed_amount,
+            'estimated_duration': proposal.estimated_duration,
+            'project_url': f"{getattr(config, 'SITE_URL', '')}/projects/{proposal.project.id}/",
+            'proposals_url': f"{getattr(config, 'SITE_URL', '')}/freelancer/proposals/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"Proposal Submitted - {proposal.project.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=proposal.freelancer.email,
+            subject=subject,
+            template_name='proposal_submitted.txt',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Proposal submitted email sent successfully to: {proposal.freelancer.email}")
+        else:
+            logger.error(f"Failed to send proposal submitted email to: {proposal.freelancer.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending proposal submitted email: {str(e)}")
+        return False
+
+
+def send_proposal_received_email(proposal):
+    """
+    Send notification email to client when new proposal is received
+    """
+    logger.info(f"Sending proposal received email to client for project: {proposal.project.title}")
+
+    try:
+        context = {
+            'proposal': proposal,
+            'client_name': proposal.project.client.get_full_name() or proposal.project.client.email.split('@')[0],
+            'project_title': proposal.project.title,
+            'freelancer_name': proposal.freelancer.get_full_name() or proposal.freelancer.email.split('@')[0],
+            'proposed_amount': proposal.proposed_amount,
+            'estimated_duration': proposal.estimated_duration,
+            'project_url': f"{getattr(config, 'SITE_URL', '')}/projects/{proposal.project.id}/",
+            'proposals_url': f"{getattr(config, 'SITE_URL', '')}/projects/{proposal.project.id}/proposals/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"New Proposal Received - {proposal.project.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=proposal.project.client.email,
+            subject=subject,
+            template_name='proposal_received',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Proposal received email sent successfully to: {proposal.project.client.email}")
+        else:
+            logger.error(f"Failed to send proposal received email to: {proposal.project.client.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending proposal received email: {str(e)}")
+        return False
+
+
+def send_proposal_status_update_email(proposal, old_status, new_status):
+    """
+    Send proposal status update email to freelancer
+    """
+    logger.info(f"Sending proposal status update email for: {proposal.project.title}")
+
+    try:
+        context = {
+            'proposal': proposal,
+            'freelancer_name': proposal.freelancer.get_full_name() or proposal.freelancer.email.split('@')[0],
+            'project_title': proposal.project.title,
+            'client_name': proposal.project.client.get_full_name() or proposal.project.client.email.split('@')[0],
+            'old_status': old_status,
+            'new_status': new_status,
+            'status_display': proposal.get_status_display(),
+            'project_url': f"{getattr(config, 'SITE_URL', '')}/projects/{proposal.project.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"Proposal Update - {proposal.project.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=proposal.freelancer.email,
+            subject=subject,
+            template_name='proposal_status_update',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Proposal status update email sent successfully to: {proposal.freelancer.email}")
+        else:
+            logger.error(f"Failed to send proposal status update email to: {proposal.freelancer.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending proposal status update email: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Contract Related Emails
+# -------------------------------
+
+def send_contract_created_email(contract):
+    """
+    Send contract creation email to both client and freelancer
+    """
+    logger.info(f"Sending contract created emails for: {contract.title}")
+
+    try:
+        base_context = {
+            'contract': contract,
+            'project_title': contract.project.title,
+            'amount': contract.amount,
+            'start_date': contract.start_date,
+            'end_date': contract.end_date,
+            'contract_url': f"{getattr(config, 'SITE_URL', '')}/contracts/{contract.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        # Email to client
+        client_context = base_context.copy()
+        client_context.update({
+            'client_name': contract.client.get_full_name() or contract.client.email.split('@')[0],
+            'freelancer_name': contract.freelancer.get_full_name() or contract.freelancer.email.split('@')[0],
+            'recipient_type': 'client'
         })
 
-    # Get contracts
-    contracts = Contract.objects.filter(
-        models.Q(freelancer=user) | models.Q(client=user)
-    ).order_by('-created_at')[:limit // 4]
+        client_success = send_email_with_sendgrid(
+            to_email=contract.client.email,
+            subject=f"Contract Created - {contract.title}",
+            template_name='contract_created',
+            context=client_context
+        )
 
-    for contract in contracts:
-        role = 'freelancer' if contract.freelancer == user else 'client'
-        activities.append({
-            'type': f'contract_created_{role}',
-            'title': f"Contract created for '{contract.title}'",
-            'date': contract.created_at,
-            'url': reverse('contract_detail', kwargs={'pk': contract.pk}),
+        # Email to freelancer
+        freelancer_context = base_context.copy()
+        freelancer_context.update({
+            'freelancer_name': contract.freelancer.get_full_name() or contract.freelancer.email.split('@')[0],
+            'client_name': contract.client.get_full_name() or contract.client.email.split('@')[0],
+            'recipient_type': 'freelancer'
         })
 
-    # Get reviews
-    reviews = Review.objects.filter(
-        models.Q(reviewer=user) | models.Q(reviewee=user)
-    ).order_by('-created_at')[:limit // 4]
+        freelancer_success = send_email_with_sendgrid(
+            to_email=contract.freelancer.email,
+            subject=f"Contract Created - {contract.title}",
+            template_name='contract_created',
+            context=freelancer_context
+        )
 
-    for review in reviews:
-        role = 'gave' if review.reviewer == user else 'received'
-        activities.append({
-            'type': f'review_{role}',
-            'title': f"{'Gave' if role == 'gave' else 'Received'} {review.rating}-star review",
-            'date': review.created_at,
-            'url': reverse('contract_detail', kwargs={'pk': review.contract.pk}),
+        success = client_success and freelancer_success
+
+        if success:
+            logger.info(f"Contract created emails sent successfully for: {contract.title}")
+        else:
+            logger.error(f"Failed to send one or more contract created emails for: {contract.title}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending contract created emails for {contract.title}: {str(e)}")
+        return False
+
+
+def send_contract_status_update_email(contract, old_status, new_status):
+    """
+    Send contract status update email to both parties
+    """
+    logger.info(f"Sending contract status update emails for: {contract.title}")
+
+    try:
+        base_context = {
+            'contract': contract,
+            'project_title': contract.project.title,
+            'old_status': old_status,
+            'new_status': new_status,
+            'status_display': contract.get_status_display(),
+            'contract_url': f"{getattr(config, 'SITE_URL', '')}/contracts/{contract.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        # Email to client
+        client_context = base_context.copy()
+        client_context.update({
+            'client_name': contract.client.get_full_name() or contract.client.email.split('@')[0],
+            'freelancer_name': contract.freelancer.get_full_name() or contract.freelancer.email.split('@')[0],
         })
 
-    # Get projects (for companies)
-    if user.is_company_user:
-        projects = Project.objects.filter(client=user).order_by('-created_at')[:limit // 4]
-        for project in projects:
-            activities.append({
-                'type': 'project_posted',
-                'title': f"Posted project '{project.title}'",
-                'date': project.created_at,
-                'url': reverse('project_detail', kwargs={'pk': project.pk}),
-            })
+        client_success = send_email_with_sendgrid(
+            to_email=contract.client.email,
+            subject=f"Contract Update - {contract.title}",
+            template_name='contract_status_update',
+            context=client_context
+        )
 
-    # Sort all activities by date
-    activities.sort(key=lambda x: x['date'], reverse=True)
+        # Email to freelancer
+        freelancer_context = base_context.copy()
+        freelancer_context.update({
+            'freelancer_name': contract.freelancer.get_full_name() or contract.freelancer.email.split('@')[0],
+            'client_name': contract.client.get_full_name() or contract.client.email.split('@')[0],
+        })
 
-    return activities[:limit]
+        freelancer_success = send_email_with_sendgrid(
+            to_email=contract.freelancer.email,
+            subject=f"Contract Update - {contract.title}",
+            template_name='contract_status_update',
+            context=freelancer_context
+        )
 
+        success = client_success and freelancer_success
+
+        if success:
+            logger.info(f"Contract status update emails sent successfully for: {contract.title}")
+        else:
+            logger.error(f"Failed to send contract status update emails for: {contract.title}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending contract status update emails for {contract.title}: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Payment Related Emails
+# -------------------------------
+
+def send_payment_completed_email(payment):
+    """
+    Send payment completion email to freelancer
+    """
+    logger.info(f"Sending payment completed email for contract: {payment.contract.title}")
+
+    try:
+        context = {
+            'payment': payment,
+            'freelancer_name': payment.contract.freelancer.get_full_name() or
+                               payment.contract.freelancer.email.split('@')[0],
+            'client_name': payment.contract.client.get_full_name() or payment.contract.client.email.split('@')[0],
+            'contract_title': payment.contract.title,
+            'amount': payment.amount,
+            'payment_type': payment.get_payment_type_display(),
+            'paid_date': payment.paid_date,
+            'transaction_id': payment.transaction_id,
+            'contract_url': f"{getattr(config, 'SITE_URL', '')}/contracts/{payment.contract.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"Payment Received - {payment.contract.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=payment.contract.freelancer.email,
+            subject=subject,
+            template_name='payment_completed',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Payment completed email sent successfully to: {payment.contract.freelancer.email}")
+        else:
+            logger.error(f"Failed to send payment completed email to: {payment.contract.freelancer.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending payment completed email: {str(e)}")
+        return False
+
+
+def send_payment_due_reminder_email(payment):
+    """
+    Send payment due reminder email to client
+    """
+    logger.info(f"Sending payment due reminder for contract: {payment.contract.title}")
+
+    try:
+        context = {
+            'payment': payment,
+            'client_name': payment.contract.client.get_full_name() or payment.contract.client.email.split('@')[0],
+            'freelancer_name': payment.contract.freelancer.get_full_name() or
+                               payment.contract.freelancer.email.split('@')[0],
+            'contract_title': payment.contract.title,
+            'amount': payment.amount,
+            'due_date': payment.due_date,
+            'payment_type': payment.get_payment_type_display(),
+            'contract_url': f"{getattr(config, 'SITE_URL', '')}/contracts/{payment.contract.id}/",
+            'payment_url': f"{getattr(config, 'SITE_URL', '')}/payments/{payment.id}/pay/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"Payment Due Reminder - {payment.contract.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=payment.contract.client.email,
+            subject=subject,
+            template_name='payment_due_reminder',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Payment due reminder sent successfully to: {payment.contract.client.email}")
+        else:
+            logger.error(f"Failed to send payment due reminder to: {payment.contract.client.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending payment due reminder: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Review Related Emails
+# -------------------------------
+
+def send_review_received_email(review):
+    """
+    Send review notification email to reviewee
+    """
+    logger.info(f"Sending review received email for contract: {review.contract.title}")
+
+    try:
+        context = {
+            'review': review,
+            'reviewee_name': review.reviewee.get_full_name() or review.reviewee.email.split('@')[0],
+            'reviewer_name': review.reviewer.get_full_name() or review.reviewer.email.split('@')[0],
+            'contract_title': review.contract.title,
+            'rating': review.rating,
+            'comment': review.comment,
+            'contract_url': f"{getattr(config, 'SITE_URL', '')}/contracts/{review.contract.id}/",
+            'profile_url': f"{getattr(config, 'SITE_URL', '')}/freelancer/profile/{review.reviewee.id}/" if hasattr(
+                review.reviewee,
+                'freelancer_profile') else f"{getattr(config, 'SITE_URL', '')}/company/profile/{review.reviewee.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"New Review Received - {review.contract.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=review.reviewee.email,
+            subject=subject,
+            template_name='review_received',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Review received email sent successfully to: {review.reviewee.email}")
+        else:
+            logger.error(f"Failed to send review received email to: {review.reviewee.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending review received email: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Message Related Emails
+# -------------------------------
+
+def send_message_notification_email(message):
+    """
+    Send message notification email to recipient
+    """
+    logger.info(f"Sending message notification email to: {message.recipient.email}")
+
+    try:
+        context = {
+            'message': message,
+            'recipient_name': message.recipient.get_full_name() or message.recipient.email.split('@')[0],
+            'sender_name': message.sender.get_full_name() or message.sender.email.split('@')[0],
+            'subject': message.subject,
+            'message_preview': message.message[:150] + "..." if len(message.message) > 150 else message.message,
+            'project_title': message.project.title if message.project else None,
+            'contract_title': message.contract.title if message.contract else None,
+            'messages_url': f"{getattr(config, 'SITE_URL', '')}/messages/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+            'support_email': getattr(config, 'ADMIN_EMAIL', 'support@mnory.com'),
+        }
+
+        subject = f"New Message - {message.subject}" if message.subject else "New Message Received"
+
+        success = send_email_with_sendgrid(
+            to_email=message.recipient.email,
+            subject=subject,
+            template_name='message_notification',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Message notification email sent successfully to: {message.recipient.email}")
+        else:
+            logger.error(f"Failed to send message notification email to: {message.recipient.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending message notification email: {str(e)}")
+        return False
+
+
+# -------------------------------
+# Admin Notification Emails
+# -------------------------------
+
+def send_admin_new_freelancer_notification(user, freelancer_profile):
+    """
+    Send new freelancer registration notification to admin
+    """
+    logger.info(f"Sending new freelancer notification to admin for: {user.email}")
+
+    try:
+        admin_email = getattr(config, 'ADMIN_EMAIL', None)
+        if not admin_email:
+            logger.error("No admin email configured")
+            return False
+
+        context = {
+            'user': user,
+            'freelancer_profile': freelancer_profile,
+            'freelancer_name': user.get_full_name() or user.email.split('@')[0],
+            'freelancer_email': user.email,
+            'title': freelancer_profile.title,
+            'hourly_rate': freelancer_profile.hourly_rate,
+            'experience_level': freelancer_profile.get_experience_level_display(),
+            'registration_date': freelancer_profile.created_at,
+            'admin_url': f"{getattr(config, 'SITE_URL', '')}/admin/freelance/freelancerprofile/{freelancer_profile.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+        }
+
+        subject = f"New Freelancer Registration - {freelancer_profile.title}"
+
+        success = send_email_with_sendgrid(
+            to_email=admin_email,
+            subject=subject,
+            template_name='admin_new_freelancer',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Admin new freelancer notification sent successfully for: {user.email}")
+        else:
+            logger.error(f"Failed to send admin new freelancer notification for: {user.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending admin new freelancer notification for {user.email}: {str(e)}")
+        return False
+
+def send_admin_new_company_notification(user, company_profile):
+    """
+    Send new company registration notification to admin
+    """
+    logger.info(f"Sending new company notification to admin for: {user.email}")
+
+    try:
+        admin_email = getattr(config, 'ADMIN_EMAIL', None)
+        if not admin_email:
+            logger.error("No admin email configured")
+            return False
+
+        context = {
+            'user': user,
+            'company_profile': company_profile,
+            'company_name': company_profile.company_name,
+            'company_email': user.email,
+            'industry': company_profile.industry,
+            'company_size': company_profile.get_company_size_display(),
+            'location': company_profile.location,
+            'website_url': company_profile.website_url,
+            'founded_year': company_profile.founded_year,
+            'registration_date': company_profile.created_at,
+            'admin_url': f"{getattr(config, 'SITE_URL', '')}/admin/freelance/companyprofile/{company_profile.id}/",
+            'company_profile_url': f"{getattr(config, 'SITE_URL', '')}/company/profile/{company_profile.id}/",
+            'site_name': getattr(config, 'SITE_NAME', 'Mnory Freelance'),
+        }
+
+        subject = f"New Company Registration - {company_profile.company_name}"
+
+        success = send_email_with_sendgrid(
+            to_email=admin_email,
+            subject=subject,
+            template_name='admin_new_company',
+            context=context
+        )
+
+        if success:
+            logger.info(f"Admin new company notification sent successfully for: {user.email}")
+        else:
+            logger.error(f"Failed to send admin new company notification for: {user.email}")
+
+        return success
+
+    except Exception as e:
+        logger.exception(f"Error sending admin new company notification for {user.email}: {str(e)}")
+        return False

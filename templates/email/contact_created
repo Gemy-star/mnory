@@ -1,0 +1,55 @@
+{{ site_name }} - Contract Created
+=======================================
+
+{% if recipient_type == 'client' %}
+Hi {{ client_name }},
+
+Great news! A contract has been created for your project "{{ project_title }}" with {{ freelancer_name }}. Work can now officially begin!
+{% else %}
+Hi {{ freelancer_name }},
+
+Congratulations! {{ client_name }} has awarded you the project "{{ project_title }}". A contract has been created and you can now start working!
+{% endif %}
+
+CONTRACT DETAILS
+-----------------
+Project: {{ project_title }}
+Contract Value: ${{ amount }}
+Start Date: {{ start_date|date:"F d, Y" }}
+{% if end_date %}End Date: {{ end_date|date:"F d, Y" }}{% endif %}
+Contract ID: {{ contract.id }}
+
+PARTIES INVOLVED
+----------------
+Client: {{ client_name }} ({{ contract.client.email }})
+Freelancer: {{ freelancer_name }} ({{ contract.freelancer.email }})
+
+NEXT STEPS
+----------
+{% if recipient_type == 'client' %}
+- Communicate: Stay in touch with {{ freelancer_name }} throughout the project
+- Track Progress: Monitor milestones and deliverables
+- Review Work: Provide feedback and approve completed work
+- Process Payments: Release payments according to contract terms
+{% else %}
+- Review Contract: Carefully read all contract terms and conditions
+- Plan Your Work: Create a timeline and milestone schedule
+- Communicate: Keep {{ client_name }} updated on your progress
+- Deliver Quality: Submit your best work on time
+{% endif %}
+
+IMPORTANT: All project communication and file sharing should be done through our platform to ensure proper documentation and dispute resolution if needed.
+
+View Contract Details: {{ contract_url }}
+
+{% if recipient_type == 'client' %}
+Thank you for using {{ site_name }} to find talent!
+{% else %}
+Congratulations and best of luck with your project!
+{% endif %}
+
+The {{ site_name }} Team
+
+=======================================
+Need help? Contact us at {{ support_email }}
+This email was sent because a contract was created for your project on {{ site_name }}.

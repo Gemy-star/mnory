@@ -1,0 +1,56 @@
+{{ site_name }}
+=======================================
+
+Welcome, {{ company_name }}!
+
+Thank you for joining {{ site_name }}! Your company profile has been successfully created and you can now start posting projects and connecting with talented freelancers.
+
+YOUR COMPANY PROFILE
+---------------------
+Company Name: {{ company_name }}
+Industry: {{ industry }}
+Company Size: {{ company_size }}
+Email: {{ email }}
+Registration Date: {{ company_profile.created_at|date:"F d, Y" }}
+
+GET STARTED IN 4 EASY STEPS
+----------------------------
+1. Complete Your Company Profile
+   Add your company description, logo, and detailed information to build trust with freelancers.
+
+2. Post Your First Project
+   Create a detailed project description with clear requirements and budget.
+
+3. Review Proposals
+   Evaluate freelancer proposals and choose the best fit for your project.
+
+4. Manage Your Projects
+   Use our platform to track progress and communicate with freelancers.
+
+PLATFORM FEATURES
+------------------
+- Browse Freelancers: Search our database of skilled professionals
+- Project Management: Track progress and manage deliverables
+- Direct Communication: Chat directly with freelancers
+- Quality Assurance: Review and rate completed work
+
+QUICK LINKS
+-----------
+Company Dashboard: {{ dashboard_url }}
+Post a New Project: {{ post_project_url }}
+Browse Freelancers: {{ browse_freelancers_url }}
+Get Help & Support: mailto:{{ support_email }}
+
+KEY ACTIONS
+-----------
+Go to Dashboard: {{ dashboard_url }}
+Post a Project: {{ post_project_url }}
+
+PRO TIP: Projects with detailed descriptions and clear requirements receive 3x more quality proposals. Be specific about your needs and timeline!
+
+Welcome to the future of hiring!
+The {{ site_name }} Team
+
+=======================================
+Need help? Contact us at {{ support_email }}
+This email was sent to {{ email }} because you registered your company on {{ site_name }}.

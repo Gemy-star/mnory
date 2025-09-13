@@ -1,6 +1,6 @@
 """
 Enhanced Email service functions for vendor management using SendGrid
-File: main/email_utils.py
+File: main/utils.py
 """
 import logging
 import os

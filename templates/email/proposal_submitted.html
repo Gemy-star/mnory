@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Submitted - {{ project_title }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #FF9800;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FF9800;
+            margin-bottom: 10px;
+        }
+        .status-badge {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .proposal-info {
+            background-color: #fff3e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #FF9800;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        .tips-section {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .tips-section h3 {
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+        .timeline {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .timeline h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .timeline-step {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .timeline-step:last-child {
+            border-bottom: none;
+        }
+        .highlight-box {
+            background-color: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{ site_name }}</div>
+            <p>Proposal Management System</p>
+        </div>
+
+        <div class="status-badge">
+            Proposal Successfully Submitted!
+        </div>
+
+        <p>Hi {{ freelancer_name }},</p>
+
+        <p>Your proposal for the project "<strong>{{ project_title }}</strong>" has been successfully submitted and is now under review by {{ client_name }}.</p>
+
+        <div class="proposal-info">
+            <h3>Your Proposal Details</h3>
+            <p><strong>Project:</strong> {{ project_title }}</p>
+            <p><strong>Client:</strong> {{ client_name }}</p>
+            <p><strong>Your Proposed Amount:</strong> ${{ proposed_amount }}</p>
+            <p><strong>Estimated Duration:</strong> {{ estimated_duration }}</p>
+            <p><strong>Submitted:</strong> {{ proposal.created_at|date:"F d, Y g:i A" }}</p>
+        </div>
+
+        <div class="timeline">
+            <h3>What Happens Next?</h3>
+
+            <div class="timeline-step">
+                <strong>Step 1:</strong> Client reviews your proposal (typically within 1-3 days)
+            </div>
+
+            <div class="timeline-step">
+                <strong>Step 2:</strong> Client may request clarifications or schedule an interview
+            </div>
+
+            <div class="timeline-step">
+                <strong>Step 3:</strong> Client makes their selection and notifies chosen freelancer
+            </div>
+
+            <div class="timeline-step">
+                <strong>Step 4:</strong> If selected, project contract is created and work begins
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ project_url }}" class="cta-button">View Project Details</a>
+            <a href="{{ proposals_url }}" class="cta-button" style="background: linear-gradient(135deg, #2196F3, #1976D2); margin-left: 10px;">Manage Proposals</a>
+        </div>
+
+        <div class="tips-section">
+            <h3>Tips to Increase Your Chances</h3>
+            <ul>
+                <li><strong>Be responsive:</strong> Reply quickly if the client asks questions</li>
+                <li><strong>Show examples:</strong> Share relevant work samples if requested</li>
+                <li><strong>Be professional:</strong> Maintain clear and courteous communication</li>
+                <li><strong>Stay available:</strong> Check your messages regularly for updates</li>
+            </ul>
+        </div>
+
+        <div class="highlight-box">
+            <strong>Reminder:</strong> While waiting for a response, continue applying to other relevant projects to maximize your opportunities!
+        </div>
+
+        <div class="footer">
+            <p>Best of luck with your proposal!</p>
+            <p>The {{ site_name }} Team</p>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+            <p>
+                <small>
+                    Questions? Contact us at <a href="mailto:{{ support_email }}">{{ support_email }}</a><br>
+                    You're receiving this because you submitted a proposal on {{ site_name }}.
+                </small>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
