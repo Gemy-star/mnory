@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ freelancer.user.get_full_name|default:freelancer.user.username }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Left: Profile Summary -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <img src="{{ freelancer.profile_image.url|default:'/static/img/default-avatar.png' }}"
+                         class="rounded-circle mb-3" width="120" height="120" alt="Profile Image">
+
+                    <h3 class="mb-0">{{ freelancer.user.get_full_name|default:freelancer.user.username }}</h3>
+                    <p class="text-muted">{{ freelancer.title }}</p>
+
+                    <p class="mb-1">
+                        ⭐ {{ avg_rating }} / 5
+                        <span class="text-muted">({{ completed_projects }} {% trans "completed projects" %})</span>
+                    </p>
+                    <p><strong>${{ freelancer.hourly_rate }}</strong> / {% trans "hour" %}</p>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'create_project' %}?freelancer={{ freelancer.id }}"
+                           class="btn btn-primary">
+                            <i class="fas fa-briefcase me-1"></i> {% trans "Hire Me" %}
+                        </a>
+                        <a href="{% url 'send_message' freelancer.user.id %}"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-envelope me-1"></i> {% trans "Send Message" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            {% if freelancer.skills.exists %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">
+                    <strong>{% trans "Skills" %}</strong>
+                </div>
+                <div class="card-body">
+                    {% for skill in freelancer.skills.all %}
+                        <span class="badge bg-secondary me-1">{{ skill.name }}</span>
+                    {% empty %}
+                        <p class="text-muted">{% trans "No skills listed." %}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Bio + Reviews -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <strong>{% trans "About" %}</strong>
+                </div>
+                <div class="card-body">
+                    <p>{{ freelancer.bio|linebreaks }}</p>
+                </div>
+            </div>
+
+            <!-- Reviews -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <strong>{% trans "Recent Reviews" %}</strong>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>
+                                    <span class="text-warning">⭐ {{ review.rating }}</span>
+                                </div>
+                                <p class="mb-1">{{ review.comment }}</p>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">{% trans "No reviews yet." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

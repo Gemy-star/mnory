@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ contract.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3">{{ contract.title }}</h1>
+            <p class="text-muted">
+                {% trans "Contract between" %}
+                <strong>{{ contract.client.get_full_name|default:contract.client.username }}</strong>
+                {% trans "and" %}
+                <strong>{{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- Contract summary -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{% trans "Amount" %}:</span>
+                    <strong>${{ contract.amount }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{% trans "Start Date" %}:</span>
+                    <strong>{{ contract.start_date|date:"M d, Y" }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{% trans "Status" %}:</span>
+                    <span class="badge
+                        {% if contract.status == 'active' %}bg-success
+                        {% elif contract.status == 'completed' %}bg-primary
+                        {% elif contract.status == 'cancelled' %}bg-danger
+                        {% elif contract.status == 'disputed' %}bg-warning text-dark
+                        {% else %}bg-secondary{% endif %}">
+                        {{ contract.get_status_display }}
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="contractTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">
+                <i class="fas fa-credit-card me-1"></i> {% trans "Payments" %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab">
+                <i class="fas fa-comments me-1"></i> {% trans "Messages" %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+                <i class="fas fa-star me-1"></i> {% trans "Reviews" %}
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="contractTabsContent">
+        <!-- Payments -->
+        <div class="tab-pane fade show active" id="payments" role="tabpanel">
+            {% if payments %}
+                <div class="list-group">
+                    {% for payment in payments %}
+                        <div class="list-group-item d-flex justify-content-between">
+                            <div>
+                                <strong>${{ payment.amount }}</strong>
+                                <small class="text-muted">({{ payment.get_status_display }})</small>
+                            </div>
+                            <small class="text-muted">{{ payment.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">{% trans "No payments yet." %}</div>
+            {% endif %}
+        </div>
+
+        <!-- Messages -->
+        <div class="tab-pane fade" id="messages" role="tabpanel">
+            {% if messages %}
+                <div class="list-group">
+                    {% for msg in messages %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ msg.sender.get_full_name|default:msg.sender.username }}</strong>
+                                <small class="text-muted">{{ msg.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                            <p class="mb-0">{{ msg.content }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">{% trans "No messages yet." %}</div>
+            {% endif %}
+        </div>
+
+        <!-- Reviews -->
+        <div class="tab-pane fade" id="reviews" role="tabpanel">
+            {% if reviews %}
+                <div class="list-group">
+                    {% for review in reviews %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-1">{{ review.comment }}</p>
+                            <div>
+                                {% for i in "12345"|make_list %}
+                                    <i class="fas fa-star {% if i|add:'0' <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">{% trans "No reviews yet." %}</div>
+            {% endif %}
+
+            {% if can_review %}
+                <div class="mt-3">
+                    <a href="{% url 'leave_review' contract.pk %}" class="btn btn-primary">
+                        <i class="fas fa-pen me-1"></i>{% trans "Leave a Review" %}
+                    </a>
+                </div>
+            {% elif user_review %}
+                <div class="alert alert-success mt-3">
+                    {% trans "You already left a review for this contract." %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

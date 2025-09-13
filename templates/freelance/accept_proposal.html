@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Accept Proposal" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12 mb-3">
+            <h1 class="h3">{% trans "Accept Proposal" %}</h1>
+            <p class="text-muted">
+                {% trans "You are about to accept the following proposal and create a contract." %}
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Proposal Info -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% trans "Proposal by" %} {{ proposal.freelancer.get_full_name|default:proposal.freelancer.email }}
+                    </h5>
+                    <p class="small text-muted mb-3">
+                        {% trans "Submitted on" %} {{ proposal.created_at|date:"M d, Y H:i" }}
+                    </p>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">{% trans "Proposed Amount" %}</dt>
+                        <dd class="col-sm-8">{{ proposal.proposed_amount }}</dd>
+
+                        <dt class="col-sm-4">{% trans "Estimated Duration" %}</dt>
+                        <dd class="col-sm-8">{{ proposal.duration|default:_("Not specified") }}</dd>
+                    </dl>
+
+                    <h6 class="mt-4">{% trans "Cover Letter" %}</h6>
+                    <div class="border rounded p-3 bg-light">
+                        {{ proposal.cover_letter|linebreaks }}
+                    </div>
+
+                    {% if proposal.attachment %}
+                        <div class="mt-3">
+                            <a href="{{ proposal.attachment.url }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                                <i class="fas fa-paperclip me-1"></i>
+                                {% trans "Download Attachment" %}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Accept Confirmation -->
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                {% trans "Accepting this proposal will automatically reject all other proposals for this project." %}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle me-1"></i>{% trans "Confirm Accept" %}
+                    </button>
+                    <a href="{% url 'project_detail' proposal.project.pk %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>{% trans "Cancel" %}
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Project Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3">{% trans "Project Info" %}</h5>
+                    <p><strong>{% trans "Title:" %}</strong> {{ proposal.project.title }}</p>
+                    <p><strong>{% trans "Category:" %}</strong> {{ proposal.project.category }}</p>
+                    <p><strong>{% trans "Type:" %}</strong> {{ proposal.project.project_type }}</p>
+                    <p><strong>{% trans "Deadline:" %}</strong> {{ proposal.project.deadline|date:"M d, Y" }}</p>
+
+                    <a href="{% url 'project_detail' proposal.project.pk %}" class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-eye me-1"></i>{% trans "View Project" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

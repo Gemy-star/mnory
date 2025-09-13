@@ -28,11 +28,13 @@
 
 {% block content %}
 {% include 'shop/partials/hero_slider.html' %}
-<section class="section">
+<section class="section pt-2">
 <div class="container">
-
-{% include 'shop/partials/_categories.html' with cat_name="body" categories=categories %}
-
+    {% include 'shop/partials/_categories.html' with cat_name="body" categories=categories %}
+</div>
+</section>
+<section class="section pt-2">
+<div class="container">
 {% if config.ENABLE_ALL_FLAG %}
 <div class="section-header">
     <h2>{% trans "All Products" %}</h2>
@@ -53,8 +55,11 @@
     </div>
 </div>
 {% endif %}
-
-<!-- New Arrivals -->
+</div>
+</section>
+<section class="section pt-2">
+<div class="container">
+    <!-- New Arrivals -->
 {% if config.ENABLE_NEW_ARRIVAL_FLAG %}
 <div class="section-header">
     <h2>{% trans "New Arrivals" %}</h2>
@@ -75,7 +80,11 @@
     </div>
 </div>
 {% endif %}
-<!-- Featured Products -->
+</div>
+</section>
+<section class="section pt-2">
+<div class="container">
+    <!-- Featured Products -->
 {% if config.ENABLE_FEATURED_FLAG %}
 <div class="section-header">
     <h2>{% trans "Featured Products" %}</h2>
@@ -96,8 +105,14 @@
     </div>
 </div>
 {% endif %}
-
-<!-- Best Sellers -->
+</div>
+</section>
+<section class="section pt-2">
+  {% include 'shop/partials/_home_categories.html' %}
+</section>
+<section class="section pt-2">
+<div class="container">
+   <!-- Best Sellers -->
 {% if config.ENABLE_BEST_SELLER_FLAG %}
 <div class="section-header">
     <h2>{% trans "Best Sellers" %}</h2>
@@ -118,8 +133,12 @@
     </div>
 </div>
 {% endif %}
+</div>
+</section>
 
-<!-- On Sale -->
+<section class="section pt-2">
+<div class="container">
+    <!-- On Sale -->
 {% if config.ENABLE_SALE_FLAG %}
 <div class="section-header">
     <h2>{% trans "On Sale!" %}</h2>
@@ -140,11 +159,10 @@
     </div>
 </div>
 {% endif %}
-
 </div>
 </section>
-<section class="section">
-  {% include 'shop/partials/_home_categories.html' %}
+<section class="section pt-2">
+  {% include 'freelance/partials/_home_categories.html' %}
 </section>
 {% endblock %}
 {% block js %}

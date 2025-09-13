@@ -1,734 +1,784 @@
 {% load static i18n %}
 <style>
-    /* Paste the updated CSS from above here */
-    {% with nav_id="nav1" %}
-    :root {
-        --primary-color: #000000;
-        --accent-color: #e0e0e0;
-        --text-color-light: white;
-        --text-color-dark: #333;
-        --shadow-light: #e0e0e0;
-        --shadow-dark: rgba(0,0,0,0.15);
-        --border-radius-base: 8px;
-        --border-radius-pill: 25px;
-        --glass-bg: rgba(255, 255, 255, 0.1);
-        --glass-border: rgba(255, 255, 255, 0.2);
-    }
+.category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
 
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.category-img, .placeholder-circle {
+    width: 80px;  /* fixed size for uniform circles */
+    height: 80px;
+    object-fit: cover;
+    font-size: 1.5rem;
+}
+
+.category-item h6 {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+{% with nav_id="nav1" %}
+:root {
+    --primary-color: #000000;
+    --accent-color: #e0e0e0;
+    --text-color-light: white;
+    --text-color-dark: #333;
+    --shadow-light: #e0e0e0;
+    --shadow-dark: rgba(0,0,0,0.15);
+    --border-radius-base: 8px;
+    --border-radius-pill: 25px;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.promo-banner {
+    background: linear-gradient(135deg, #e0e0e0, #000, #007aff);
+    color: var(--text-color-light);
+    padding: 8px 0;
+    font-size: 0.85rem;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    height: fit-content;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.promo-banner.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.promo-banner .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allows items to wrap to the next line if space is limited */
+}
+
+.promo-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1; /* Allows promo items to grow and shrink */
+    justify-content: center;
+}
+
+.promo-item i,
+.promo-item span {
+    color: var(--text-color-light);
+}
+
+.promo-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between the new promo items */
+    margin-left: auto; /* Push to the right */
+}
+
+.promo-actions .promo-item {
+    font-size: 0.9rem; /* Slightly larger font for these promo items */
+    gap: 5px;
+}
+
+.promo-actions .promo-item i,
+.promo-actions .promo-item span {
+    color: var(--text-color-light); /* Ensure consistent color */
+}
+
+/* Specific styling for language dropdown in promo */
+.promo-actions .language-dropdown .language-btn {
+    background: none; /* No background */
+    border: none; /* No border */
+    padding: 0; /* No padding */
+    font-size: 0.9rem; /* Match promo text size */
+    color: #f4f4f4;
+    backdrop-filter: none; /* Remove blur */
+    box-shadow: none;
+}
+
+.promo-actions .language-dropdown .language-btn:hover {
+    background: none;
+    border: none;
+    transform: none;
+    box-shadow: none;
+    color: rgba(255, 255, 255, 0.8); /* Slight hover effect */
+}
+
+/* Remove default nav-icons margin if user is moved */
+.navbar-{{ nav_id }} .nav-icons {
+    margin-left: 0;
+}
+
+/* Hide original desktop search input and toggle button */
+#searchContainerDesktop,
+.search-toggle-btn {
+    display: none !important;
+}
+
+/* New search button in navbar */
+.navbar-{{ nav_id }} .search-modal-trigger {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.3rem;
+    padding: 8px;
+    border-radius: var(--border-radius-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 20px; /* Space from other elements */
+}
+
+.navbar-{{ nav_id }} .search-modal-trigger:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Search Modal Styles */
+.search-modal .modal-content {
+    background: rgba(0, 0, 0, 0.9); /* Darker, more prominent background for search */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    border: none;
+    color: var(--text-color-light);
+}
+
+.search-modal .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 20px;
+}
+
+.search-modal .modal-title {
+    color: var(--text-color-light);
+    font-weight: 600;
+}
+
+.search-modal .btn-close {
+    filter: invert(1); /* Invert color for dark background */
+    opacity: 0.7;
+}
+.search-modal .btn-close:hover {
+    opacity: 1;
+}
+
+.search-modal .modal-body {
+    padding: 20px;
+}
+
+.search-modal .search-input {
+    width: 100%;
+    padding: 12px 50px 12px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius-pill);
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    resize: none;
+    min-height: 55px;
+}
+
+.search-modal .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-modal .search-input:focus {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.search-modal .search-btn {
+    position: absolute;
+    right: 30px; /* Adjust based on modal padding */
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--accent-color); /* Use accent for primary button */
+    color: var(--primary-color);
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.search-modal .search-btn:hover {
+    background: var(--primary-color);
+    color: var(--text-color-light);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.search-modal .search-clear-btn {
+    right: 80px; /* Adjust for space between clear and search button */
+    color: rgba(255, 255, 255, 0.6);
+}
+.search-modal .search-clear-btn:hover {
+    color: var(--text-color-light);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
     .promo-banner {
-        background: linear-gradient(135deg, #e0e0e0, #000, #007aff);
-        color: var(--text-color-light);
-        padding: 8px 0;
-        font-size: 0.85rem;
-        text-align: center;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1050;
-        height: fit-content;
-        transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-    }
-
-    .promo-banner.hidden {
-        transform: translateY(-100%);
-        opacity: 0;
+        font-size: 0.65rem; /* Slightly smaller font for mobile promo */
+        padding: 5px 0; /* Reduced padding for mobile */
     }
 
     .promo-banner .container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap; /* Allows items to wrap to the next line if space is limited */
+        flex-direction: row; /* FIXED: Ensure row direction for mobile */
+        justify-content: space-around; /* Distribute items evenly */
+        gap: 3px; /* FIXED: Set gap to 3px as requested */
+        flex-wrap: wrap; /* Ensure items wrap if screen is very small */
     }
 
     .promo-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex: 1; /* Allows promo items to grow and shrink */
+        flex: 0 0 auto; /* Allow items to shrink but not grow excessively */
+        width: auto; /* Allow content to dictate width */
         justify-content: center;
+        padding: 2px 5px; /* Add slight padding for touch targets */
+        gap: 3px; /* Ensure gap for individual items too */
     }
 
-    .promo-item i,
     .promo-item span {
-        color: var(--text-color-light);
+        font-size: 0.65rem; /* Match promo banner font size or slightly smaller */
     }
 
     .promo-actions {
-        display: flex;
-        align-items: center;
-        gap: 15px; /* Space between the new promo items */
-        margin-left: auto; /* Push to the right */
-    }
-
-    .promo-actions .promo-item {
-        font-size: 0.9rem; /* Slightly larger font for these promo items */
-        gap: 5px;
-    }
-
-    .promo-actions .promo-item i,
-    .promo-actions .promo-item span {
-        color: var(--text-color-light); /* Ensure consistent color */
-    }
-
-    /* Specific styling for language dropdown in promo */
-    .promo-actions .language-dropdown .language-btn {
-        background: none; /* No background */
-        border: none; /* No border */
-        padding: 0; /* No padding */
-        font-size: 0.9rem; /* Match promo text size */
-        color: #f4f4f4;
-        backdrop-filter: none; /* Remove blur */
-        box-shadow: none;
-        
-    }
-
-    .promo-actions .language-dropdown .language-btn:hover {
-        background: none;
-        border: none;
-        transform: none;
-        box-shadow: none;
-        color: rgba(255, 255, 255, 0.8); /* Slight hover effect */
-    }
-
-    /* Remove default nav-icons margin if user is moved */
-    .navbar-{{ nav_id }} .nav-icons {
+        width: 100%; /* Take full width for promo actions on mobile */
+        justify-content: space-around; /* Distribute items evenly */
         margin-left: 0;
+        margin-top: 5px; /* Add some top margin for separation */
+        gap: 5px; /* Gap for promo actions themselves */
+    }
+    .promo-actions .promo-item {
+        font-size: 0.8rem;
+        gap: 3px; /* Consistency in gap */
     }
 
-    /* Hide original desktop search input and toggle button */
-    #searchContainerDesktop,
-    .search-toggle-btn {
-        display: none !important;
+    /* Adjust navbar order for mobile to make search button more prominent */
+    .navbar-{{ nav_id }} .navbar-brand {
+        order: 2;
+        text-align: center; /* Center brand for mobile */
+        flex-grow: 1; /* Allow brand to take available space */
     }
-
-    /* New search button in navbar */
+    .navbar-{{ nav_id }} .categories-btn {
+        order: 1;
+        padding: 8px 10px; /* Adjust padding for mobile button */
+        flex-shrink: 0; /* Prevent shrinking too much */
+    }
     .navbar-{{ nav_id }} .search-modal-trigger {
+        order: 3;
+        margin-left: auto; /* Push to right */
+        flex-shrink: 0;
+        padding: 8px; /* Consistent padding */
+    }
+    /* Ensure search-toggle-btn is visible on mobile and styled correctly */
+    .search-toggle-btn {
+        display: flex !important; /* Make sure it's visible */
+        order: 3; /* Ensure it's in the right order */
+        margin-left: auto; /* Pushes it to the right */
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
-        font-size: 1.3rem;
+        font-size: 1rem;
         padding: 8px;
         border-radius: var(--border-radius-base);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         flex-shrink: 0;
-        margin-left: 20px; /* Space from other elements */
     }
 
-    .navbar-{{ nav_id }} .search-modal-trigger:hover {
+    .search-toggle-btn:hover {
         color: white;
-        background: rgba(255, 255, 255, 0.2);
+        background: linear-gradient(135deg, #000000, #e0e0e0);
         border-color: rgba(255, 255, 255, 0.3);
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
-    /* Search Modal Styles */
-    .search-modal .modal-content {
-        background: rgba(0, 0, 0, 0.9); /* Darker, more prominent background for search */
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        border: none;
-        color: var(--text-color-light);
+    #mainNavIconsMobileAlwaysVisible {
+        order: 4;
+        flex-basis: 100%; /* Take full width */
+        justify-content: space-around; /* Distribute icons evenly */
+        display: flex !important; /* Ensure it's always visible on mobile */
+        gap: 10px; /* Gap between icons */
+    }
+    .nav-icon, .language-btn {
+        font-size: 0.9rem; /* Slightly larger icons for better touch */
+        padding: 8px; /* More padding for touch targets */
+        flex: 1; /* Allow icons to share space */
+        text-align: center; /* Center content within icon */
     }
 
-    .search-modal .modal-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 15px 20px;
-    }
-
-    .search-modal .modal-title {
-        color: var(--text-color-light);
-        font-weight: 600;
-    }
-
-    .search-modal .btn-close {
-        filter: invert(1); /* Invert color for dark background */
-        opacity: 0.7;
-    }
-    .search-modal .btn-close:hover {
-        opacity: 1;
-    }
-
-    .search-modal .modal-body {
-        padding: 20px;
-    }
-
-    .search-modal .search-input {
-        width: 100%;
-        padding: 12px 50px 12px 20px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: var(--border-radius-pill);
-        font-size: 1.1rem;
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
-        resize: none;
-        min-height: 55px;
-    }
-
-    .search-modal .search-input::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-    }
-
-    .search-modal .search-input:focus {
-        border-color: rgba(255, 255, 255, 0.6);
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-    }
-
-    .search-modal .search-btn {
-        position: absolute;
-        right: 30px; /* Adjust based on modal padding */
-        top: 50%;
-        transform: translateY(-50%);
-        background: var(--accent-color); /* Use accent for primary button */
-        color: var(--primary-color);
-        border: none;
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .search-modal .search-btn:hover {
-        background: var(--primary-color);
-        color: var(--text-color-light);
-        transform: translateY(-50%) scale(1.05);
-    }
-
-    .search-modal .search-clear-btn {
-        right: 80px; /* Adjust for space between clear and search button */
-        color: rgba(255, 255, 255, 0.6);
-    }
-    .search-modal .search-clear-btn:hover {
-        color: var(--text-color-light);
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .promo-banner {
-            font-size: 0.65rem; /* Slightly smaller font for mobile promo */
-            padding: 5px 0; /* Reduced padding for mobile */
-        }
-
-        .promo-banner .container {
-            flex-direction: row; /* **FIXED: Ensure row direction for mobile** */
-            justify-content: space-around; /* Distribute items evenly */
-            gap: 3px; /* **FIXED: Set gap to 3px as requested** */
-            flex-wrap: wrap; /* Ensure items wrap if screen is very small */
-        }
-
-        .promo-item {
-            flex: 0 0 auto; /* Allow items to shrink but not grow excessively */
-            width: auto; /* Allow content to dictate width */
-            justify-content: center;
-            padding: 2px 5px; /* Add slight padding for touch targets */
-            gap: 3px; /* Ensure gap for individual items too */
-        }
-
-        .promo-item span {
-            font-size: 0.65rem; /* Match promo banner font size or slightly smaller */
-        }
-
-        .promo-actions {
-            width: 100%; /* Take full width for promo actions on mobile */
-            justify-content: space-around; /* Distribute items evenly */
-            margin-left: 0;
-            margin-top: 5px; /* Add some top margin for separation */
-            gap: 5px; /* Gap for promo actions themselves */
-        }
-        .promo-actions .promo-item {
-            font-size: 0.8rem;
-            gap: 3px; /* Consistency in gap */
-        }
-
-        /* Adjust navbar order for mobile to make search button more prominent */
-        .navbar-{{ nav_id }} .navbar-brand {
-            order: 2;
-            text-align: center; /* Center brand for mobile */
-            flex-grow: 1; /* Allow brand to take available space */
-        }
-        .navbar-{{ nav_id }} .categories-btn {
-            order: 1;
-            padding: 8px 10px; /* Adjust padding for mobile button */
-            flex-shrink: 0; /* Prevent shrinking too much */
-        }
-        .navbar-{{ nav_id }} .search-modal-trigger {
-            order: 3;
-            margin-left: auto; /* Push to right */
-            flex-shrink: 0;
-            padding: 8px; /* Consistent padding */
-        }
-        /* Ensure search-toggle-btn is visible on mobile and styled correctly */
-        .search-toggle-btn {
-            display: flex !important; /* Make sure it's visible */
-            order: 3; /* Ensure it's in the right order */
-            margin-left: auto; /* Pushes it to the right */
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1rem;
-            padding: 8px;
-            border-radius: var(--border-radius-base);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .search-toggle-btn:hover {
-            color: white;
-            background: linear-gradient(135deg, #000000, #e0e0e0);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .navbar-{{ nav_id }} #mainNavIconsMobileAlwaysVisible {
-            order: 4;
-            flex-basis: 100%; /* Take full width */
-            justify-content: space-around; /* Distribute icons evenly */
-            display: flex !important; /* Ensure it's always visible on mobile */
-            gap: 10px; /* Gap between icons */
-        }
-        .nav-icon, .language-btn {
-            font-size: 0.9rem; /* Slightly larger icons for better touch */
-            padding: 8px; /* More padding for touch targets */
-            flex: 1; /* Allow icons to share space */
-            text-align: center; /* Center content within icon */
-        }
-
-        /* Specific mobile search container behavior */
-        #searchContainerMobileToggled {
-            display: none; /* Hidden by default, shown by JS */
-            order: 5;
-            flex-basis: 100%;
-            margin-top: 15px;
-            box-sizing: border-box;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #searchContainerMobileToggled.active {
-            display: flex; /* Display when active */
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        #searchContainerMobileToggled .search-clear-btn {
-            display: block; /* Show clear button on mobile search */
-            right: 50px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        /* Hide desktop elements on mobile */
-        #searchContainerDesktop,
-        #mainNavIconsDesktop {
-            display: none !important;
-        }
-
-        .promo-actions .language-dropdown .language-btn {
-            font-size: 0.8rem; /* Smaller font for language in promo for mobile */
-            padding: 0;
-        }
-    }
-
-    .navbar-{{ nav_id }} {
-        background-color: transparent !important;
-        box-shadow: none;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 1040;
-        padding: 12px 0;
-        position: fixed;
-        left: 0;
-        right: 0;
-    }
-
-    .navbar-{{ nav_id }}.home-transparent {
-        background-color: transparent !important;
-        box-shadow: none !important;
-        backdrop-filter: none;
-    }
-
-    .navbar-{{ nav_id }}.scrolled {
-        background: #000000 !important;
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-    }
-
-    .navbar-{{ nav_id }} .container {
-        max-width: 1400px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: nowrap;
-    }
-
-    /* Enhanced Categories Button with Clothing Icon */
-    .categories-btn {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: var(--text-color-light);
-        font-size: 1.1rem;
-        padding: 10px 15px;
-        border-radius: var(--border-radius-base);
+    /* Specific mobile search container behavior */
+    #searchContainerMobileToggled {
+        display: none; /* Hidden by default, shown by JS */
+        order: 5;
+        flex-basis: 100%;
+        margin-top: 15px;
+        box-sizing: border-box;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        backdrop-filter: blur(10px);
-        position: relative;
-        overflow: hidden;
     }
 
-    .categories-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-        transition: left 0.5s ease;
+    #searchContainerMobileToggled.active {
+        display: flex; /* Display when active */
+        animation: slideDown 0.3s ease-out;
     }
 
-    .categories-btn:hover::before {
-        left: 100%;
-    }
-
-    .categories-btn:hover {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-        border-color: rgba(255, 255, 255, 0.3);
-        color: var(--text-color-light);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .categories-btn i {
-        font-size: 1.3rem;
-        transition: transform 0.3s ease;
-    }
-
-    .categories-btn:hover i {
-        transform: rotate(10deg) scale(1.1);
-    }
-
-    /* Original Dropdown Menu (No longer used for categories, but kept if other dropdowns exist) */
-    .dropdown-menu {
-        border: none;
-        background: #000;
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
-        border-radius: 16px;
-        padding: 12px;
-        margin-top: 12px;
-        min-width: 280px;
-        transform-origin: top left;
-        animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        max-height: calc(100vh - 150px);
-        overflow-y: auto;
-        position: relative;
-    }
-
-    .dropdown-menu::before {
-        content: '';
-        position: absolute;
-        top: -8px;
-        left: 20px;
-        width: 16px;
-        height: 16px;
-        background: rgba(255, 255, 255, 0.95);
-        transform: rotate(45deg);
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
-        border-left: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    @keyframes fadeInScale {
+    @keyframes slideDown {
         from {
             opacity: 0;
-            transform: scale(0.95) translateY(-10px);
+            transform: translateY(-20px);
         }
         to {
             opacity: 1;
-            transform: scale(1) translateY(0);
+            transform: translateY(0);
         }
     }
 
-    .dropdown-item {
-        padding: 14px 18px;
-        border-radius: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        color: #fff;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        text-decoration: none;
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 2px;
-    }
-
-    .dropdown-item::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        transform: scaleY(0);
-        transition: transform 0.3s ease;
-        border-radius: 0 2px 2px 0;
-    }
-
-    .dropdown-item:hover::before {
-        transform: scaleY(1);
-    }
-
-    .dropdown-item i {
-        color: var(--primary-color);
-        font-size: 1.1rem;
-        width: 1.5em;
-        text-align: center;
-        transition: all 0.3s ease;
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        padding: 8px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .dropdown-item:hover {
-        background: linear-gradient(135deg, var(--primary-color), #1a365d);
-        color: var(--text-color-light);
-        transform: translateX(8px);
-        box-shadow: 0 8px 25px rgba(10, 31, 68, 0.2);
-    }
-
-    .dropdown-item:hover i {
-        color: var(--text-color-light);
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-        transform: scale(1.1) rotate(5deg);
-    }
-
-    .dropdown-divider {
-        margin: 12px 0;
-        border: none;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
-        position: relative;
-    }
-
-    .dropdown-divider::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 6px;
-        height: 6px;
-        background: var(--primary-color);
-        border-radius: 50%;
-    }
-
-    /* Special styling for "All Categories" item */
-    .dropdown-item.all-categories {
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border: 2px dashed #dee2e6;
-        margin-top: 8px;
-        font-weight: 600;
-    }
-
-    .dropdown-item.all-categories:hover {
-        background: linear-gradient(135deg, var(--accent-color), #333);
-        border-color: var(--accent-color);
-    }
-
-    .navbar-{{ nav_id }} .navbar-brand {
-        font-family: 'Times New Roman', serif;
-        font-size: 2.5rem;
-        font-weight: 900;
-        letter-spacing: 0.1em;
-        color: var(--text-color-light) !important;
-        margin: 0;
-        text-decoration: none;
-        position: static;
-        transform: none;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        user-select: none;
-        transition: all 0.3s ease;
-    }
-
-    .navbar-{{ nav_id }} .navbar-brand:hover {
-        color: rgba(255, 255, 255, 0.8) !important;
-        transform: scale(1.05);
-    }
-
-    /* Search Container Styles */
-    .search-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .search-input {
-        width: 100%;
-        padding: 12px 50px 12px 20px;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        border-radius: var(--border-radius-pill);
-        font-size: 0.95rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        color: white;
-        resize: vertical;
-        min-height: 48px;
-        box-sizing: border-box;
-    }
-
-    .search-input::placeholder {
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: rgba(255, 255, 255, 0.4);
-        background: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-        transform: scale(1.02);
-    }
-
-    .search-btn {
-        position: absolute;
-        right: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: var(--primary-color);
-        color: var(--text-color-light);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .search-btn:hover {
-        background: var(--accent-color);
-        transform: translateY(-50%) scale(1.1);
-    }
-
-    .search-clear-btn {
-        position: absolute;
+    #searchContainerMobileToggled .search-clear-btn {
+        display: block; /* Show clear button on mobile search */
         right: 50px;
         top: 50%;
         transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 1rem;
-        cursor: pointer;
-        display: none;
-        padding: 5px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-        z-index: 2;
     }
 
-    .search-clear-btn:hover {
-        color: var(--text-color-light);
-        background: rgba(255, 255, 255, 0.1);
+    /* Hide desktop elements on mobile */
+    #searchContainerDesktop,
+    #mainNavIconsDesktop {
+        display: none !important;
     }
 
-    .nav-icons {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-left: 20px;
+    .promo-actions .language-dropdown .language-btn {
+        font-size: 0.8rem; /* Smaller font for language in promo for mobile */
+        padding: 0;
     }
+}
 
-    .nav-icon {
-        color: var(--text-color-light);
-        font-size: 1.1rem;
-        text-decoration: none;
-        position: relative;
-        padding: 8px;
-        border-radius: var(--border-radius-base);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        width: fit-content;
+.navbar-{{ nav_id }} {
+    background-color: transparent !important;
+    box-shadow: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1040;
+    padding: 12px 0;
+    position: fixed;
+    left: 0;
+    right: 0;
+}
+
+.navbar-{{ nav_id }}.home-transparent {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+}
+
+.navbar-{{ nav_id }}.scrolled {
+    background: #000000 !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.navbar-{{ nav_id }} .container {
+    max-width: 1400px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+/* Enhanced Categories Button with Hover Text, No Border */
+.categories-btn {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: none; /* Removed border */
+    color: var(--text-color-light);
+    font-size: 1.1rem;
+    padding: 10px 15px;
+    border-radius: var(--border-radius-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* spacing between icon and text */
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* Gradient animation on hover */
+.categories-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+    z-index: 0;
+}
+
+.categories-btn:hover::before {
+    left: 100%;
+}
+
+/* Hover effects for button */
+.categories-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    color: var(--text-color-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon effects */
+.categories-btn i {
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
+    z-index: 1; /* above the ::before overlay */
+}
+
+.categories-btn:hover i {
+    transform: rotate(10deg) scale(1.1);
+}
+
+/* Text hidden by default, appear on hover */
+.categories-btn .btn-text {
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.categories-btn:hover .btn-text {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Original Dropdown Menu (No longer used for categories, but kept if other dropdowns exist) */
+.dropdown-menu {
+    border: none;
+    background: #000;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 12px;
+    margin-top: 12px;
+    min-width: 280px;
+    transform-origin: top left;
+    animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+    position: relative;
+}
+
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    width: 16px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    transform: rotate(45deg);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
     }
-
-    .nav-icon:hover {
-        color: var(--text-color-light);
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        font-size: 1.3rem;
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
+}
 
-    .nav-icon .badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #007aff;
-        color: var(--text-color-light);
-        font-size: 0.75rem;
-        font-weight: 800;
-        min-width: 24px;
-        height: 24px;
-        line-height: 22px;
-        border-radius: 50%;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        transition: all 0.3s ease;
-        animation: pulse 2s infinite;
-    }
+.dropdown-item {
+    padding: 14px 18px;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #fff;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2px;
+}
 
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
+.dropdown-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+    border-radius: 0 2px 2px 0;
+}
 
-    .nav-icon:hover .badge {
-        transform: scale(1.2);
-        animation: none;
-        background: linear-gradient(135deg, #000000, #e0e0e0);
+.dropdown-item:hover::before {
+    transform: scaleY(1);
+}
 
-    }
- @media (max-width: 480px) {
+.dropdown-item i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    width: 1.5em;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, var(--primary-color), #1a365d);
+    color: var(--text-color-light);
+    transform: translateX(8px);
+    box-shadow: 0 8px 25px rgba(10, 31, 68, 0.2);
+}
+
+.dropdown-item:hover i {
+    color: var(--text-color-light);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    transform: scale(1.1) rotate(5deg);
+}
+
+.dropdown-divider {
+    margin: 12px 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+    position: relative;
+}
+
+.dropdown-divider::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+/* Special styling for "All Categories" item */
+.dropdown-item.all-categories {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 2px dashed #dee2e6;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+.dropdown-item.all-categories:hover {
+    background: linear-gradient(135deg, var(--accent-color), #333);
+    border-color: var(--accent-color);
+}
+
+.navbar-{{ nav_id }} .navbar-brand {
+    font-family: 'Times New Roman', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    color: var(--text-color-light) !important;
+    margin: 0;
+    text-decoration: none;
+    position: static;
+    transform: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    user-select: none;
+    transition: all 0.3s ease;
+}
+
+.navbar-{{ nav_id }} .navbar-brand:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+    transform: scale(1.05);
+}
+
+/* Search Container Styles */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 50px 12px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-pill);
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    resize: vertical;
+    min-height: 48px;
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    transform: scale(1.02);
+}
+
+.search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary-color);
+    color: var(--text-color-light);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.search-btn:hover {
+    background: var(--accent-color);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    cursor: pointer;
+    display: none;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.search-clear-btn:hover {
+    color: var(--text-color-light);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: 20px;
+}
+
+.nav-icon {
+    color: var(--text-color-light);
+    font-size: 1.1rem;
+    text-decoration: none;
+    position: relative;
+    padding: 8px;
+    border-radius: var(--border-radius-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    width: fit-content;
+}
+
+.nav-icon:hover {
+    color: var(--text-color-light);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    font-size: 1.3rem;
+}
+
+.nav-icon .badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #007aff;
+    color: var(--text-color-light);
+    font-size: 0.75rem;
+    font-weight: 800;
+    min-width: 24px;
+    height: 24px;
+    line-height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.nav-icon:hover .badge {
+    transform: scale(1.2);
+    animation: none;
+    background: linear-gradient(135deg, #000000, #e0e0e0);
+}
+
+@media (max-width: 480px) {
     .nav-icon {
         color: var(--text-color-light);
         font-size: 0.9rem;
@@ -740,7 +790,7 @@
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
     }
-       .nav-icon .badge {
+    .nav-icon .badge {
         position: absolute;
         top: -8px;
         right: -8px;
@@ -757,300 +807,299 @@
         transition: all 0.3s ease;
         animation: pulse 2s infinite;
     }
-    }
-    .language-dropdown {
-        position: relative;
-    }
+}
+.language-dropdown {
+    position: relative;
+}
 
-    .language-btn {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: var(--text-color-light);
-        font-size: 1.3rem;
-        padding: 8px;
-        border-radius: var(--border-radius-base);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+.language-btn {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color-light);
+    font-size: 1.3rem;
+    padding: 8px;
+    border-radius: var(--border-radius-base);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    .language-btn:hover {
-        color: var(--text-color-light);
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
+.language-btn:hover {
+    color: var(--text-color-light);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
 
-    /* Material Design Search Input */
-    .search-container.material-design {
-        position: relative;
-        padding-top: 20px;
-    }
+/* Material Design Search Input */
+.search-container.material-design {
+    position: relative;
+    padding-top: 20px;
+}
 
-    .search-container.material-design .search-input {
-        background-color: transparent;
-        border: none;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 0;
-        padding: 8px 50px 8px 0;
-        font-size: 1rem;
-        height: auto;
-        min-height: auto;
-        box-shadow: none;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
+.search-container.material-design .search-input {
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    padding: 8px 50px 8px 0;
+    font-size: 1rem;
+    height: auto;
+    min-height: auto;
+    box-shadow: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .search-container.material-design .search-input:focus {
-        outline: none;
-        border-color: rgba(255, 255, 255, 0.8);
-        box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.8);
-        background-color: transparent;
-        transform: none;
-    }
+.search-container.material-design .search-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    background-color: transparent;
+    transform: none;
+}
 
-    .search-label {
-        position: absolute;
-        left: 0;
-        top: 30px;
-        color: rgba(255, 255, 255, 0.7);
-        pointer-events: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 0.95rem;
-    }
+.search-label {
+    position: absolute;
+    left: 0;
+    top: 30px;
+    color: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+}
 
-    .search-input:focus + .search-label,
-    .search-input:not(:placeholder-shown) + .search-label {
-        top: 0;
+.search-input:focus + .search-label,
+.search-input:not(:placeholder-shown) + .search-label {
+    top: 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.search-container.material-design .search-btn {
+    right: 0;
+    background: none;
+    color: rgba(255, 255, 255, 0.8);
+    width: 35px;
+    height: 35px;
+}
+
+.search-container.material-design .search-btn:hover {
+    color: var(--text-color-light);
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.search-container.material-design .search-clear-btn {
+    right: 40px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-container.material-design .search-clear-btn:hover {
+    color: var(--text-color-light);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Desktop Specific Layout */
+@media (min-width: 769px) {
+    body {
+        padding-top: var(--total-fixed-header-height);
+    }
+    .navbar-{{ nav_id }} .container {
+        justify-content: flex-start;
+        gap: 40px;
+    }
+    .navbar-{{ nav_id }} .navbar-brand {
+        order: 1;
+    }
+    .search-container {
+        flex: 1;
+        max-width: 500px;
+        margin-left: auto;
+        gap: 5px;
+    }
+    #searchContainerDesktop {
+        order: 2;
+        flex-grow: 1;
+        margin-left: 40px;
+        max-width: 600px;
+        display: flex !important; /* Ensure desktop search is visible */
+    }
+    .nav-icons {
+        order: 3;
+        margin-left: auto;
+    }
+    .search-toggle-btn {
+        display: none !important; /* Hide mobile search toggle on desktop */
+    }
+    #mainNavIconsDesktop {
+        display: flex !important; /* Ensure desktop nav icons are visible */
+    }
+    #searchContainerMobileToggled, #mainNavIconsMobileAlwaysVisible {
+        display: none !important; /* Hide mobile specific elements on desktop */
+    }
+    .search-clear-btn {
+        display: block; /* Show clear button on desktop */
+        right: 50px;
+    }
+}
+
+@media (max-width: 992px) {
+    .promo-banner {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.9);
     }
 
-    .search-container.material-design .search-btn {
-        right: 0;
-        background: none;
-        color: rgba(255, 255, 255, 0.8);
-        width: 35px;
-        height: 35px;
+    .promo-item {
+        font-size: 0.7rem;
     }
 
-    .search-container.material-design .search-btn:hover {
-        color: var(--text-color-light);
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-50%) scale(1.1);
+    .navbar-{{ nav_id }} .navbar-brand {
+        font-size: 2rem;
     }
 
-    .search-container.material-design .search-clear-btn {
-        right: 40px;
-        color: rgba(255, 255, 255, 0.6);
+    .search-container {
+        max-width: 300px;
     }
 
-    .search-container.material-design .search-clear-btn:hover {
-        color: var(--text-color-light);
-        background: rgba(255, 255, 255, 0.1);
+    .nav-icons {
+        gap: 15px;
     }
+}
 
-    /* Desktop Specific Layout */
-    @media (min-width: 769px) {
-        body {
-            padding-top: var(--total-fixed-header-height);
-        }
-        .navbar-{{ nav_id }} .container {
-            justify-content: flex-start;
-            gap: 40px;
-        }
-        .navbar-{{ nav_id }} .navbar-brand {
-            order: 1;
-        }
-        .search-container {
-            flex: 1;
-            max-width: 500px;
-            margin-left: auto;
-            gap: 5px;
-        }
-        #searchContainerDesktop {
-            order: 2;
-            flex-grow: 1;
-            margin-left: 40px;
-            max-width: 600px;
-            display: flex !important; /* Ensure desktop search is visible */
-        }
-        .nav-icons {
-            order: 3;
-            margin-left: auto;
-        }
-        .search-toggle-btn {
-            display: none !important; /* Hide mobile search toggle on desktop */
-        }
-        #mainNavIconsDesktop {
-            display: flex !important; /* Ensure desktop nav icons are visible */
-        }
-        #searchContainerMobileToggled, #mainNavIconsMobileAlwaysVisible {
-            display: none !important; /* Hide mobile specific elements on desktop */
-        }
-        .search-clear-btn {
-            display: block; /* Show clear button on desktop */
-            right: 50px;
-        }
-    }
+/* Modal specific styles */
+.category-modal .modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    border: none;
+}
 
-    @media (max-width: 992px) {
-        .promo-banner {
-            font-size: 0.75rem;
-        }
+.category-modal .modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 15px 20px;
+}
 
-        .promo-item {
-            font-size: 0.7rem;
-        }
+.category-modal .modal-title {
+    color: var(--primary-color);
+    font-weight: 600;
+}
 
-        .navbar-{{ nav_id }} .navbar-brand {
-            font-size: 2rem;
-        }
+/* Fix btn-close color based on modal background */
+.category-modal .btn-close {
+    /* You might want a different filter or color directly if the modal background is light */
+    color: var(--text-color-dark); /* Or a specific dark color like #333 */
+    opacity: 0.7; /* Make it slightly transparent */
+}
+.category-modal .btn-close:hover {
+    opacity: 1;
+    color: var(--primary-color); /* Or a distinct hover color */
+}
 
-        .search-container {
-            max-width: 300px;
-        }
+.category-modal .modal-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Adjust icon size */
+    gap: 20px;
+    justify-items: center;
+    align-items: center;
+}
 
-        .nav-icons {
-            gap: 15px;
-        }
-    }
+.category-icon-item {
+    display: flex;
+    flex-direction: column; /* To keep icon and potential future text stacked if needed */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-color-dark);
+    transition: all 0.3s ease;
+    padding: 10px 5px; /* Add some padding around the icon clickable area */
+    border-radius: var(--border-radius-base);
+    background: transparent; /* Ensure transparent background for the item container */
+}
 
-    /* Modal specific styles */
-    .category-modal .modal-content {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
-        border-radius: 16px;
-        border: none;
-    }
+.category-icon-item:hover {
+    background: linear-gradient(135deg, var(--primary-color), #1a365d);
+    color: var(--text-color-light);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(10, 31, 68, 0.2);
+}
 
-    .category-modal .modal-header {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        padding: 15px 20px;
-    }
+.category-icon-item i {
+    font-size: 2.5rem; /* Make icons larger */
+    color: var(--primary-color);
+    margin-bottom: 0; /* No margin if no text */
+    transition: all 0.3s ease;
+    background: transparent; /* CRUCIAL: Remove background from icon itself */
+    padding: 0; /* Remove padding */
+    border-radius: 0; /* Remove border-radius */
+    box-shadow: none; /* Remove box-shadow */
+}
 
-    .category-modal .modal-title {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-
-    /* Fix btn-close color based on modal background */
-    .category-modal .btn-close {
-        /* You might want a different filter or color directly if the modal background is light */
-        color: var(--text-color-dark); /* Or a specific dark color like #333 */
-        opacity: 0.7; /* Make it slightly transparent */
-    }
-    .category-modal .btn-close:hover {
-        opacity: 1;
-        color: var(--primary-color); /* Or a distinct hover color */
-    }
-
-
-    .category-modal .modal-body {
-        padding: 20px;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Adjust icon size */
-        gap: 20px;
-        justify-items: center;
-        align-items: center;
-    }
-
-    .category-icon-item {
-        display: flex;
-        flex-direction: column; /* To keep icon and potential future text stacked if needed */
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        text-decoration: none;
-        color: var(--text-color-dark);
-        transition: all 0.3s ease;
-        padding: 10px 5px; /* Add some padding around the icon clickable area */
-        border-radius: var(--border-radius-base);
-        background: transparent; /* Ensure transparent background for the item container */
-    }
-
-    .category-icon-item:hover {
-        background: linear-gradient(135deg, var(--primary-color), #1a365d);
-        color: var(--text-color-light);
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 8px 25px rgba(10, 31, 68, 0.2);
-    }
-
-    .category-icon-item i {
-        font-size: 2.5rem; /* Make icons larger */
-        color: var(--primary-color);
-        margin-bottom: 0; /* No margin if no text */
-        transition: all 0.3s ease;
-        background: transparent; /* CRUCIAL: Remove background from icon itself */
-        padding: 0; /* Remove padding */
-        border-radius: 0; /* Remove border-radius */
-        box-shadow: none; /* Remove box-shadow */
-    }
-
-    .category-icon-item:hover i {
-        color: var(--text-color-light);
-        transform: scale(1.1);
-    }
-    {% endwith %}
+.category-icon-item:hover i {
+    color: var(--text-color-light);
+    transform: scale(1.1);
+}
+{% endwith %}
 </style>
 
 <div class="promo-banner" id="promoBanner">
     <div class="container d-flex flex-row">
         <div class="promo-item">
-    <div class="dropdown language-dropdown">
-        <a style="text-decoration: none;cursor: pointer; " class="dropdown-toggle" type="button"
-           id="languageDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
-           <i class="fa-solid fa-globe"></i>
-           <span class="d-none d-md-inline">{% trans "Language" %}</span>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-promo">
-            {% for lang_code, lang_name in LANGUAGES %}
-            <li>
-                <form action="{% url 'set_language' %}" method="post" class="d-inline">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}">
-                    <input type="hidden" name="language" value="{{ lang_code }}">
-                    <button type="submit" class="dropdown-item">
-                        {{ lang_name }}
-                    </button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
-     <div class="promo-item">
-    <div class="dropdown currency-dropdown">
-        <a style="text-decoration: none;cursor: pointer;" class="dropdown-toggle" type="button"
-           id="currencyDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
-           <i class="fa-solid fa-dollar-sign"></i>
-           <span class="d-none d-md-inline" id="selected-currency">
-               {{ request.session.currency|default:"USD" }}
-           </span>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="currencyDropdown-promo">
-            <li>
-                <form action="{% url 'shop:set_currency' %}" method="get" class="d-inline">
-                    <input type="hidden" name="currency" value="USD">
-                    <button type="submit" class="dropdown-item">
-                        <span class="currency-symbol">$</span>
-                        <span class="currency-name">{% trans "US Dollar" %}</span>
-                    </button>
-                </form>
-            </li>
-            <li>
-                <form action="{% url 'shop:set_currency' %}" method="get" class="d-inline">
-                    <input type="hidden" name="currency" value="EGP">
-                    <button type="submit" class="dropdown-item">
-                        <span class="currency-symbol">EGP</span>
-                        <span class="currency-name">{% trans "Egyptian Pound" %}</span>
-                    </button>
-                </form>
-            </li>
-        </ul>
-    </div>
-</div>
+            <div class="dropdown language-dropdown">
+                <a style="text-decoration: none;cursor: pointer; " class="dropdown-toggle" type="button"
+                   id="languageDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
+                   <i class="fa-solid fa-globe"></i>
+                   <span class="d-none d-md-inline">{% trans "Language" %}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-promo">
+                    {% for lang_code, lang_name in LANGUAGES %}
+                    <li>
+                        <form action="{% url 'set_language' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <input type="hidden" name="language" value="{{ lang_code }}">
+                            <button type="submit" class="dropdown-item">
+                                {{ lang_name }}
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="promo-item">
+            <div class="dropdown currency-dropdown">
+                <a style="text-decoration: none;cursor: pointer;" class="dropdown-toggle" type="button"
+                   id="currencyDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
+                   <i class="fa-solid fa-dollar-sign"></i>
+                   <span class="d-none d-md-inline" id="selected-currency">
+                       {{ request.session.currency|default:"USD" }}
+                   </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="currencyDropdown-promo">
+                    <li>
+                        <form action="{% url 'shop:set_currency' %}" method="get" class="d-inline">
+                            <input type="hidden" name="currency" value="USD">
+                            <button type="submit" class="dropdown-item">
+                                <span class="currency-symbol">$</span>
+                                <span class="currency-name">{% trans "US Dollar" %}</span>
+                            </button>
+                        </form>
+                    </li>
+                    <li>
+                        <form action="{% url 'shop:set_currency' %}" method="get" class="d-inline">
+                            <input type="hidden" name="currency" value="EGP">
+                            <button type="submit" class="dropdown-item">
+                                <span class="currency-symbol">EGP</span>
+                                <span class="currency-name">{% trans "Egyptian Pound" %}</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
         <div class="promo-item">
             <a style="text-decoration: none;cursor: pointer;" href="{% url 'shop:login' %}" class="promo-item" title="{% trans 'Account' %}">
@@ -1063,19 +1112,34 @@
 {% with nav_id="nav1" %}
 <nav class="navbar navbar-expand-lg navbar-{{ nav_id }} pt-lg-2 {% if current_url_name == 'home' and not request.GET.search %}home-transparent{% endif %}" id="mainNavbar">
     <div class="container d-flex align-items-center justify-content-around">
-        {# Categories Button to trigger modal #}
-        <button class="categories-btn" type="button" data-bs-toggle="modal" data-bs-target="#categoryIconModal">
-        <i class="fa-solid fa-house"></i>           
-         <span class="d-none d-md-inline">{% trans "Categories" %}</span>
-        </button>
+        <!-- Categories Button -->
+        <div class="dropdown d-inline-block">
+            <button class="categories-btn dropdown-toggle" type="button" id="homeCategoriesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-house"></i>
+                <span class="btn-text">{% trans "Menu" %}</span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="homeCategoriesDropdown">
+                <li>
+                    <a class="dropdown-item d-flex align-items-center" href="{% url 'shop:home' %}">
+                        <i class="fa-solid fa-house me-2"></i>
+                        <span>{% trans "Home" %}</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center" href="#" data-bs-toggle="modal" data-bs-target="#categoryIconModal">
+                        <i class="fa-solid fa-tags me-2"></i>
+                        <span>{% trans "Categories" %}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
 
         <a class="navbar-brand" href="{% url 'shop:home' %}">
             <img loading="lazy" src="{% static 'images/logo.png' %}" class="logo-mnory"/>
         </a>
 
-
-        {# Main Nav Icons (Cart, Wishlist) - now only these two are left in the main nav #}
-        <div class="nav-icons" id="mainNavIconsDesktop"> {# Removed d-none d-md-flex d-lg-flex here as they are controlled by JS or media queries if needed #}
+        <!-- Main Nav Icons (Cart, Wishlist) - now only these two are left in the main nav -->
+        <div class="nav-icons" id="mainNavIconsDesktop">
             <a href="{% url 'shop:cart_view' %}" class="nav-icon" title="{% trans 'Cart' %}">
                 <i class="fa-solid fa-shopping-cart"></i>
                 <span class="badge" id="cart-count-{{ nav_id }}">0</span>
@@ -1084,18 +1148,13 @@
                 <i class="fa-solid fa-heart"></i>
                 <span class="badge" id="wishlist-count-{{ nav_id }}">0</span>
             </a>
-        {# New search trigger button for modal #}
-        <button class="search-modal-trigger" type="button" id="searchModalTrigger" title="{% trans 'Search' %}">
-            <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-
+            <!-- New search trigger button for modal -->
+            <button class="search-modal-trigger" type="button" id="searchModalTrigger" title="{% trans 'Search' %}">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
         </div>
 
-        {# Mobile Nav Icons - Keep if separate mobile layout is truly needed, otherwise can merge with desktop icons and rely on CSS media queries #}
-        {# For this example, I'm simplifying by assuming mainNavIconsDesktop will handle responsiveness with CSS #}
-        {# The original #mai #}
-        {# This section was truncated, assuming it contained mobile-specific nav icons or search toggle #}
-        {# Adding a placeholder for what was likely the mobile search toggle and nav icons container #}
+        <!-- Mobile Nav Icons - Keep if separate mobile layout is truly needed, otherwise can merge with desktop icons and rely on CSS media queries -->
         <button class="search-toggle-btn d-md-none" type="button" id="mobileSearchToggle" title="{% trans 'Search' %}">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
@@ -1105,176 +1164,154 @@
                 <i class="fa-solid fa-shopping-cart"></i>
                 <span class="badge"  id="cart-count-{{ nav_id }}">0</span>
             </a>
-            <a href="% url 'shop:wishlist_view' %}" class="nav-icon" title="{% trans 'Wishlist' %}">
+            <a href="{% url 'shop:wishlist_view' %}" class="nav-icon" title="{% trans 'Wishlist' %}">
                 <i class="fa-solid fa-heart"></i>
                 <span class="badge" id="wishlist-count-{{ nav_id }}">0</span>
             </a>
         </div>
 
-        {# Mobile Search Container - hidden by default, shown by JS toggle #}
+        <!-- Mobile Search Container -->
         <div class="search-container material-design" id="searchContainerMobileToggled">
             <input type="text" class="search-input" placeholder=" " aria-label="{% trans 'Search' %}" id="mobileSearchInput">
             <label for="mobileSearchInput" class="search-label">{% trans "Search..." %}</label>
             <button class="search-btn" type="button"><i class="fa-solid fa-magnifying-glass"></i></button>
             <button class="search-clear-btn" type="button" aria-label="Clear search"><i class="fa-solid fa-times"></i></button>
         </div>
-
     </div>
 </nav>
-
+<!-- Categories Modal -->
 <div class="modal fade category-modal" id="categoryIconModal" tabindex="-1" aria-labelledby="categoryIconModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="categoryIconModalLabel">{% trans "Browse Categories" %}</h5>
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="categoryIconModalLabel">
+                    <i class="fa-solid fa-tags me-2"></i>{% trans "Browse Categories" %}
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body-unique-categories">
-    <div class="container-unique-categories">
-        <div class="category-swiper-controls-unique">
-            <button class="btn btn-outline-secondary btn-sm me-2 category-swiper-prev-unique">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="btn btn-outline-secondary btn-sm category-swiper-next-unique">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-
-    <div class="swiper category-swiper-container-unique mb-5">
-        <div class="swiper-wrapper">
-            {% for cat in categories %}
-                <div class="swiper-slide">
-                    <div class="category-card-small-unique text-center shadow-sm rounded-3">
-                        {% if cat.image %}
-                            <img src="{{ cat.image.url }}" class="category-img-square-unique rounded-circle mb-2" alt="{{ cat.name }}">
-                        {% else %}
-                            <img src="https://placehold.co/100x100/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="category-img-square-unique rounded-circle mb-2" alt="{{ cat.name }}">
-                        {% endif %}
-                        <h6 class="card-title-unique text-truncate">{{ cat.name }}</h6>
-                        <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link-unique"></a>
+            <div class="modal-body py-4">
+                <div class="container-fluid">
+                    <!-- Search input -->
+                    <div class="mb-3">
+                        <input type="text" id="categorySearchInput" class="form-control" placeholder="{% trans 'Search categories...' %}">
                     </div>
+                    {% if categories %}
+                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3" id="categoryGrid">
+                            {% for cat in categories %}
+                                <div class="category-item" data-name="{{ cat.name|lower }}">
+                                    <div class="category-card d-flex flex-column align-items-center p-3 shadow-sm rounded bg-white position-relative h-100 text-center hover-shadow">
+                                        {% if cat.image %}
+                                            <img src="{{ cat.image.url }}" class="rounded-circle mb-2 category-img" alt="{{ cat.name }}">
+                                        {% else %}
+                                            <div class="placeholder-circle mb-2 d-flex align-items-center justify-content-center bg-secondary text-white rounded-circle">
+                                                {{ cat.name|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                        <h6 class="text-truncate mb-0">{{ cat.name }}</h6>
+                                        <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link"></a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted">{% trans "No categories available." %}</p>
+                    {% endif %}
                 </div>
-            {% empty %}
-                <div class="swiper-slide text-center text-muted">
-                    {% comment %} Make sure 'trans' tag is loaded if using Django's i18n {% endcomment %}
-                    {% load i18n %}
-                    {% trans "No categories available." %}
-                </div>
-            {% endfor %}
-        </div>
-        {# If you need pagination or scrollbar, add them here with unique classes #}
-        {# <div class="swiper-pagination-unique"></div> #}
-        {# <div class="swiper-scrollbar-unique"></div> #}
-    </div>
-</div>
             </div>
         </div>
     </div>
 </div>
 {% endwith %}
 <script>
-    // Paste the updated JavaScript from above here
-    // Function to update cart count
-    // Make sure this script runs after the DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    const uniqueCategorySwiper = new Swiper('.category-swiper-container-unique', {
-        // Optional parameters
-        loop: true, // Example: enables continuous loop mode
-        navigation: {
-            nextEl: '.category-swiper-next-unique',
-            prevEl: '.category-swiper-prev-unique',
-        },
-        // Breakpoints for responsive design
-        breakpoints: {
-            // when window width is >= 320px
-            320: {
-                slidesPerView: 2,
-                spaceBetween: 20
-            },
-            // when window width is >= 640px
-            640: {
-                slidesPerView: 3,
-                spaceBetween: 30
-            },
-            // when window width is >= 768px
-            768: {
-                slidesPerView: 4,
-                spaceBetween: 40
-            },
-            // when window width is >= 1024px
-            1024: {
-                slidesPerView: 5,
-                spaceBetween: 50
-            }
-        }
+    // Search filter for categories
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('categorySearchInput');
+        const categoryItems = document.querySelectorAll('.category-item');
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            categoryItems.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
     });
-});
+</script>
+<script>
+    // JavaScript functions for updating counts and header behavior
+
+    // Function to update cart count
     function updateCartCount(count) {
-        document.getElementById('cart-count-nav1').textContent = count;
-        const mobileCartCount = document.getElementById('cart-count-nav1-mobile');
+        document.getElementById('cart-count-{{ nav_id }}').textContent = count;
+        const mobileCartCount = document.getElementById('cart-count-{{ nav_id }}');
         if (mobileCartCount) {
             mobileCartCount.textContent = count;
         }
     }
 
-function updateNavbarAppearance() {
-    const navbar = document.getElementById('mainNavbar');
-    const promoBanner = document.getElementById('promoBanner');
-
-    // Replace 'home' with your actual URL name variable if needed
-    const currentUrlName = '{{ current_url_name }}'; // Django template variable
-
-    if (currentUrlName === 'home') {
-        // Make transparent
-        navbar.classList.add('home-transparent');
-        navbar.classList.remove('scrolled');
-        if (promoBanner) promoBanner.classList.remove('hidden');
-    } else {
-        // Make it black
-        navbar.classList.remove('home-transparent');
-        navbar.classList.add('scrolled');
-        if (promoBanner) promoBanner.classList.add('hidden');
+    // Function to update wishlist count
+    function updateWishlistCount(count) {
+        document.getElementById('wishlist-count-{{ nav_id }}').textContent = count;
+        const mobileWishCount = document.getElementById('wishlist-count-{{ nav_id }}');
+        if (mobileWishCount) {
+            mobileWishCount.textContent = count;
+        }
     }
-}
-        // Update global counts
-function updateGlobalCounts(nav_id = "nav1") {
-    fetch("{% url 'shop:get_cart_and_wishlist_counts' %}", {
-        method: 'GET',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(res => res.json())
-    .then(data => {
-        const cartCountEl = document.getElementById(`cart-count-${nav_id}`);
-        const wishCountEl = document.getElementById(`wishlist-count-${nav_id}`);
-        if (cartCountEl && data.cart_count !== undefined) {
-            cartCountEl.textContent = data.cart_count;
+
+    function updateNavbarAppearance() {
+        const navbar = document.getElementById('mainNavbar');
+        const promoBanner = document.getElementById('promoBanner');
+
+        const currentUrlName = '{{ current_url_name }}';
+
+        if (currentUrlName === 'home') {
+            // Make transparent
+            navbar.classList.add('home-transparent');
+            navbar.classList.remove('scrolled');
+            if (promoBanner) promoBanner.classList.remove('hidden');
+        } else {
+            // Make it black
+            navbar.classList.remove('home-transparent');
+            navbar.classList.add('scrolled');
+            if (promoBanner) promoBanner.classList.add('hidden');
         }
-        if (wishCountEl && data.wishlist_count !== undefined) {
-            wishCountEl.textContent = data.wishlist_count;
-        }
-    })
-    .catch(error => {
-        console.error("Failed to fetch cart/wishlist counts:", error);
-    });
-}
+    }
 
-// Call once DOM is ready
-document.addEventListener('DOMContentLoaded', function () {
-    updateGlobalCounts("nav1");
-});
-// Call this function on DOM load
-document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
+    // Update global counts
+    function updateGlobalCounts(nav_id = "nav1") {
+        fetch("{% url 'shop:get_cart_and_wishlist_counts' %}", {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const cartCountEl = document.getElementById(`cart-count-${nav_id}`);
+            const wishCountEl = document.getElementById(`wishlist-count-${nav_id}`);
+            if (cartCountEl && data.cart_count !== undefined) {
+                cartCountEl.textContent = data.cart_count;
+            }
+            if (wishCountEl && data.wishlist_count !== undefined) {
+                wishCountEl.textContent = data.wishlist_count;
+            }
+        })
+        .catch(error => {
+            console.error("Failed to fetch cart/wishlist counts:", error);
+        });
+    }
 
-    // Simulate updating counts after some time
+    document.addEventListener('DOMContentLoaded', function () {
+        updateGlobalCounts("nav1");
+        updateNavbarAppearance();
 
-    // Enhanced navbar scroll behavior with glassmorphism effect
-    document.addEventListener('DOMContentLoaded', function() {
+        // Additional event listeners for scroll, resize, etc.
         const navbar = document.getElementById('mainNavbar');
         const promoBanner = document.getElementById('promoBanner');
         const body = document.body;
 
-        // Determine if the 'home-transparent' class is initially present from Django context
         const isHomeTransparentInitial = navbar.classList.contains('home-transparent');
 
         function adjustHeaderPositions() {
@@ -1282,8 +1319,7 @@ document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
             const scrollY = window.scrollY;
             let totalFixedHeaderHeight = 0;
 
-            if (scrollY > 10) { // Add small threshold for smoother transition
-                // Scrolled down: Promo banner hides, Navbar sticks to top with glass effect
+            if (scrollY > 10) {
                 promoBanner.classList.add('hidden');
                 if (isHomeTransparentInitial) {
                     navbar.classList.add('scrolled');
@@ -1291,7 +1327,6 @@ document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
                 }
                 navbar.style.top = `0px`;
             } else {
-                // Scrolled to top: Promo banner shows, Navbar positions below it
                 promoBanner.classList.remove('hidden');
                 if (isHomeTransparentInitial) {
                     navbar.classList.remove('scrolled');
@@ -1300,22 +1335,17 @@ document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
                 navbar.style.top = `${promoBannerHeight}px`;
             }
 
-            // Calculate total fixed header height for body padding
             totalFixedHeaderHeight = navbar.offsetHeight + (promoBanner.classList.contains('hidden') ? 0 : promoBannerHeight);
             body.style.paddingTop = `${totalFixedHeaderHeight}px`;
         }
 
-        // Initial adjustment on load
+        // Initial adjustment
         adjustHeaderPositions();
 
-        // Adjustments on scroll
         window.addEventListener('scroll', adjustHeaderPositions);
-
-        // Adjustments on resize
         window.addEventListener('resize', adjustHeaderPositions);
 
-
-        // Search Modal Logic
+        // Search modal logic
         const searchModal = new bootstrap.Modal(document.getElementById('searchModal'));
         const searchModalTrigger = document.getElementById('searchModalTrigger');
         const searchInputModal = document.getElementById('searchInputModal');
@@ -1324,13 +1354,15 @@ document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
         if (searchModalTrigger) {
             searchModalTrigger.addEventListener('click', function() {
                 searchModal.show();
-                setTimeout(() => searchInputModal.focus(), 500); // Focus after modal transition
+                setTimeout(() => searchInputModal.focus(), 500);
             });
         }
 
         if (searchInputModal) {
             searchInputModal.addEventListener('input', function() {
-                searchClearBtnModal.style.display = this.value.length > 0 ? 'block' : 'none';
+                if (searchClearBtnModal) {
+                    searchClearBtnModal.style.display = this.value.length > 0 ? 'block' : 'none';
+                }
             });
         }
 
@@ -1342,15 +1374,11 @@ document.addEventListener('DOMContentLoaded', updateNavbarAppearance);
             });
         }
 
-        // Handle language selection
+        // Language change handler
         document.querySelectorAll('.language-dropdown select[name="language"]').forEach(selectElement => {
             selectElement.addEventListener('change', function() {
-                // In a real Django setup, you'd likely submit a form or make an AJAX call
-                // to change the language and reload the page or update content.
-                // For demonstration, we'll just log the selected language.
-                console.log("Language changed to:", this.value);
-                // Example: Redirect to a URL that sets the language (Django's set_language view)
-                // this.closest('form').submit(); // If it's a form
+                // Submit form or handle language change
+                // this.closest('form').submit();
             });
         });
     });

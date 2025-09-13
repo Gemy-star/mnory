@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'shop.apps.ShopConfig',
+    'freelancing.apps.FreelancingConfig',
     'crispy_forms',
     'crispy_bootstrap5',
     'constance',
@@ -265,3 +266,15 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "apikey"  # literally the word "apikey"
 EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+
+
+PLATFORM_SETTINGS = {
+    'MIN_HOURLY_RATE': 5,
+    'MAX_HOURLY_RATE': 500,
+    'MIN_PROJECT_BUDGET': 50,
+    'MAX_PROJECT_BUDGET': 100000,
+    'PROPOSAL_EXPIRY_DAYS': 30,
+    'CONTRACT_AUTO_COMPLETE_DAYS': 90,
+    'PLATFORM_FEE_PERCENTAGE': 0.10,  # 10%
+    'PAYMENT_PROCESSING_FEE': 0.029,  # 2.9%
+}

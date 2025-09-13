@@ -27,6 +27,7 @@ urlpatterns = [
 
 urlpatterns += i18n_patterns(
     path('', include('shop.urls')),  # Your main app
+    path('jobs/', include('freelancing.urls')),  # Your freelancer app
     path('admin/', admin.site.urls),
 )
 

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Company Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-4">{% trans "Company Dashboard" %}</h1>
+        </div>
+    </div>
+
+    <!-- Dashboard Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Active Projects" %}</h5>
+                    <p class="display-6 text-primary">{{ active_projects }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Total Proposals" %}</h5>
+                    <p class="display-6 text-success">{{ total_proposals }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Total Spent" %}</h5>
+                    <p class="display-6 text-danger">${{ total_spent|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Verified" %}</h5>
+                    {% if profile.is_verified %}
+                        <span class="badge bg-success">{% trans "Yes" %}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{% trans "No" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Projects -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="mb-3">{% trans "Recent Projects" %}</h3>
+            {% if recent_projects %}
+                {% for project in recent_projects %}
+                    <div class="card project-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5>
+                                        <a href="{% url 'project_detail' project.pk %}" class="text-decoration-none">
+                                            {{ project.title }}
+                                        </a>
+                                    </h5>
+                                    <p class="text-muted mb-2">{{ project.description|truncatechars:150 }}</p>
+                                    <span class="badge bg-primary">{{ project.get_status_display }}</span>
+                                    <small class="text-muted ms-2">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ project.created_at|timesince }} {% trans "ago" %}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <p class="h5 text-primary mb-1">
+                                        {% if project.project_type == 'fixed' %}
+                                            ${{ project.budget_min|floatformat:0 }} - ${{ project.budget_max|floatformat:0 }}
+                                        {% else %}
+                                            ${{ project.hourly_rate_min|floatformat:0 }}-${{ project.hourly_rate_max|floatformat:0 }}/hr
+                                        {% endif %}
+                                    </p>
+                                    <a href="{% url 'project_detail' project.pk %}" class="btn btn-outline-primary btn-sm">
+                                        {% trans "View Details" %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">{% trans "No recent projects found." %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Messages -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">{% trans "Recent Messages" %}</h3>
+            {% if recent_messages %}
+                <ul class="list-group">
+                    {% for msg in recent_messages %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ msg.sender.email }}</strong>
+                                <p class="mb-0 text-muted small">{{ msg.message|truncatechars:80 }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ msg.created_at|timesince }} {% trans "ago" %}
+                                </small>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-outline-primary">{% trans "View" %}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">{% trans "No new messages." %}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

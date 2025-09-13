@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Post a New Project" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">{% trans "Post a New Project" %}</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>
+                                {% trans "Post Project" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Help -->
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>{% trans "Tips for Posting a Project" %}</h5>
+                    <ul class="small text-muted mb-0">
+                        <li>{% trans "Write a clear, descriptive title." %}</li>
+                        <li>{% trans "Provide detailed requirements." %}</li>
+                        <li>{% trans "Select the right category and skills." %}</li>
+                        <li>{% trans "Set a realistic budget and deadline." %}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

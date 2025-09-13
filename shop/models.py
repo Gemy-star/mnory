@@ -15,7 +15,6 @@ from colorfield.fields import ColorField
 import uuid
 from constance import config
 from django_ckeditor_5.fields import CKEditor5Field
-
 class MnoryUser(AbstractUser):
     # Define choices for user types
     USER_TYPE_CHOICES = (
@@ -27,22 +26,19 @@ class MnoryUser(AbstractUser):
         ('affiliate', 'Affiliate'),
     )
 
-    # Make username nullable if you plan to use email as the USERNAME_FIELD
-    # If you intend to keep username as the primary login field, do NOT make it nullable.
-    # However, given your forms, using email for login seems to be the intent.
     username = models.CharField(
         _("username"),
         max_length=150,
         unique=True,
-        blank=True, # Make it blank and null
-        null=True,  # Make it blank and null
-        help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
+        blank=True,  # Allow blank
+        null=True,   # Allow null
+        help_text=_("Optional. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
         error_messages={
             "unique": _("A user with that username already exists."),
         },
     )
 
-    email = models.EmailField(_("email address"), unique=True) # Ensure email is unique and required
+    email = models.EmailField(_("email address"), unique=True)  # Main identifier
 
     phone_number = models.CharField(
         max_length=15,
@@ -52,53 +48,49 @@ class MnoryUser(AbstractUser):
         help_text="User's phone number, must be unique if provided."
     )
 
-    # Single field to define the user's primary type
+    # Main field for user role/type
     user_type = models.CharField(
         max_length=10,
         choices=USER_TYPE_CHOICES,
-        default='customer',  # Set a sensible default for new users
+        default='customer',
         help_text="Defines the primary role or type of the user."
     )
 
     # Set email as the USERNAME_FIELD for authentication
     USERNAME_FIELD = 'email'
-    # Remove 'email' from REQUIRED_FIELDS because it's now the USERNAME_FIELD
-    REQUIRED_FIELDS = [] # Add any other fields you want to be required during createsuperuser
+    REQUIRED_FIELDS = []  # No extra required fields
 
     class Meta:
         verbose_name = "Mnory User"
         verbose_name_plural = "Mnory Users"
 
     def __str__(self):
-        # Display email and user type for better identification
         return f"{self.email} ({self.get_user_type_display()})"
 
-    # Helper methods to check user type (optional, but convenient)
+    # --- Helper methods (renamed to avoid conflict with Django internals) ---
     @property
-    def is_admin_user(self):
+    def is_admin_type(self):
         return self.user_type == 'admin'
 
     @property
-    def is_vendor_user(self):
+    def is_vendor_type(self):
         return self.user_type == 'vendor'
 
     @property
-    def is_customer_user(self):
+    def is_customer_type(self):
         return self.user_type == 'customer'
 
     @property
-    def is_company_user(self):
+    def is_company_type(self):
         return self.user_type == 'company'
 
     @property
-    def is_freelancer_user(self):
+    def is_freelancer_type(self):
         return self.user_type == 'freelancer'
 
     @property
-    def is_affiliate_user(self):
+    def is_affiliate_type(self):
         return self.user_type == 'affiliate'
-
-
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)

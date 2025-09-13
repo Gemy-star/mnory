@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags i18n %}
+
+{% block title %}{% trans "Create Payment Milestone" %}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-wallet me-2"></i>
+                        {% trans "Create Payment Milestone" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        {% blocktrans with contract_title=contract.title %}
+                        You are creating a payment milestone for contract: <strong>{{ contract_title }}</strong>.
+                        {% endblocktrans %}
+                    </p>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'contract_detail' contract.id %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> {% trans "Back to Contract" %}
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus-circle me-1"></i> {% trans "Create Milestone" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

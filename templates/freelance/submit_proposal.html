@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Submit a Proposal" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-3">
+                {% trans "Submit a Proposal for" %} "{{ project.title }}"
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Proposal Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-1"></i>
+                                {% trans "Submit Proposal" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Project Info -->
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3">{% trans "Project Details" %}</h5>
+                    <p><strong>{% trans "Category:" %}</strong> {{ project.category }}</p>
+                    <p><strong>{% trans "Type:" %}</strong> {{ project.project_type }}</p>
+                    <p><strong>{% trans "Experience:" %}</strong> {{ project.experience_level }}</p>
+                    <p><strong>{% trans "Budget:" %}</strong>
+                        {% if project.budget_min and project.budget_max %}
+                            {{ project.budget_min }} - {{ project.budget_max }}
+                        {% elif project.hourly_rate_min and project.hourly_rate_max %}
+                            {{ project.hourly_rate_min }}/h - {{ project.hourly_rate_max }}/h
+                        {% else %}
+                            {% trans "Not specified" %}
+                        {% endif %}
+                    </p>
+                    <p><strong>{% trans "Deadline:" %}</strong> {{ project.deadline|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

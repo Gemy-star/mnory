@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ company.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    {% if company.logo %}
+        <img src="{{ company.logo.url }}" class="rounded mb-3" width="120" height="120" alt="Company Logo">
+    {% else %}
+        <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center bg-light"
+             style="width:120px; height:120px; font-size:50px; color:#007aff;">
+            <i class="fas fa-building"></i>  <!-- Font Awesome 6.4 icon -->
+        </div>
+    {% endif %}
+
+                    <h3 class="mb-0">{{ company.company_name }}</h3>
+                    <p class="text-muted">{{ company.industry|default:_("Industry not specified") }}</p>
+
+                    <p class="mb-1">
+                        ⭐ {{ avg_rating }} / 5
+                    </p>
+
+                    <dl class="row mt-3 small text-start">
+                        <dt class="col-5">{% trans "Location" %}</dt>
+                        <dd class="col-7">{{ company.location|default:_("N/A") }}</dd>
+
+                        <dt class="col-5">{% trans "Company Size" %}</dt>
+                        <dd class="col-7">{{ company.get_company_size_display }}</dd>
+
+                        <dt class="col-5">{% trans "Total Jobs Posted" %}</dt>
+                        <dd class="col-7">{{ company.total_jobs_posted|default:"0" }}</dd>
+
+                        <dt class="col-5">{% trans "Total Spent" %}</dt>
+                        <dd class="col-7">${{ company.total_spent|default:"0" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content -->
+        <div class="col-md-8">
+            <!-- About -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <strong>{% trans "About" %}</strong>
+                </div>
+                <div class="card-body">
+                    <p>{{ company.description|linebreaks|default:_("No description available.") }}</p>
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{% trans "Recent Projects" %}</strong>
+                    <a href="{% url 'project_list' %}?client={{ company.user.id }}" class="btn btn-sm btn-outline-primary">
+                        {% trans "View All" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_projects %}
+                        <ul class="list-group list-group-flush">
+                            {% for project in recent_projects %}
+                                <li class="list-group-item">
+                                    <a href="{% url 'project_detail' project.pk %}" class="fw-bold">
+                                        {{ project.title }}
+                                    </a>
+                                    <p class="small text-muted mb-0">
+                                        {{ project.category }} · {{ project.created_at|date:"M d, Y" }}
+                                    </p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">{% trans "No recent projects available." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reviews -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <strong>{% trans "Reviews from Freelancers" %}</strong>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>
+                                    <span class="text-warning">⭐ {{ review.rating }}</span>
+                                </div>
+                                <p class="mb-1">{{ review.comment }}</p>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">{% trans "No reviews yet." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

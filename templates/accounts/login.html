@@ -1,33 +1,32 @@
-{# templates/accounts/login.html #}
 {% extends "base.html" %}
 {% load i18n crispy_forms_tags %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<section class="section py-5 mnory-bg"> {# Full light background for the section #}
+<section class="section py-5 mnory-bg">
   <div class="container">
     <div class="row justify-content-center mb-5">
       <div class="col-lg-8 text-center">
-        <h2 class="fw-bold text-white"><i class="fa-solid fa-lock me-3"></i>{{ title }}</h2> {# Icon for title #}
+        <h2 class="fw-bold text-white"><i class="fa-solid fa-lock me-3"></i>{{ title }}</h2>
         <p class="text-white">{% trans "Enter your credentials to access your account." %}</p>
       </div>
     </div>
 
-    <div class="row gy-4 justify-content-center"> {# Centering content columns #}
-      <div class="col-md-7"> {# Column for the login form card #}
-        <div class="card shadow-lg border border-light bg-light text-dark"> {# Light card styling #}
-          <div class="card-header border-bottom border-light"> {# Distinct card header #}
-            <h4 class="mb-0 fw-bold"><i class="fa-solid fa-sign-in-alt me-2"></i>{% trans "Account Login" %}</h4> {# Icon for form header #}
+    <div class="row gy-4 justify-content-center">
+      <!-- Login Form -->
+      <div class="col-md-7">
+        <div class="card shadow-lg border border-light bg-light text-dark">
+          <div class="card-header border-bottom border-light">
+            <h4 class="mb-0 fw-bold"><i class="fa-solid fa-sign-in-alt me-2"></i>{% trans "Account Login" %}</h4>
           </div>
           <div class="card-body p-4">
             <form method="post" action="{{ form_action }}" novalidate>
               {% csrf_token %}
-              {{ form|crispy }} {# Apply crispy_forms_tags filter for consistent styling #}
-
+              {{ form|crispy }}
               <div class="d-grid mt-4">
-                <button type="submit" class="btn btn-dark btn-lg"> {# Dark button for contrast #}
-                  <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>{{ submit_label }} {# Icon for submit button #}
+                <button type="submit" class="btn btn-dark btn-lg">
+                  <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>{{ submit_label }}
                 </button>
               </div>
             </form>
@@ -35,24 +34,36 @@
         </div>
       </div>
 
-      <div class="col-md-5"> {# Column for the "Don't have an account?" card #}
-        <div class="card border border-light bg-light text-dark h-100"> {# Light card styling, full height #}
-          <div class="card-body p-4 d-flex flex-column justify-content-center"> {# Flexbox for vertical centering content #}
-            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-user-plus me-2"></i>{% trans "Don't have an account?" %}</h5> {# Icon for registration prompt header #}
+      <!-- Registration Options -->
+      <div class="col-md-5">
+        <div class="card border border-light bg-light text-dark h-100">
+          <div class="card-body p-4 d-flex flex-column justify-content-center">
+            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-user-plus me-2"></i>{% trans "Don't have an account?" %}</h5>
             <p class="mb-4 text-muted">
-              {% trans "Join our community! Register as a customer to shop or as a vendor to sell your products." %}
+              {% trans "Join our community! Register as a freelancer, company, customer, or vendor." %}
             </p>
-            <div class="d-grid gap-2"> {# Use d-grid and gap for spaced buttons #}
-              <a href="{% url 'shop:register_customer' %}" class="btn btn-outline-dark btn-lg"> {# Outline dark button for customer registration #}
+            <div class="d-grid gap-2">
+              <!-- Freelancer -->
+              <a href="{% url 'create_freelancer_profile' %}" class="btn btn-outline-dark btn-lg">
+                <i class="fa-solid fa-user-tie me-2"></i>{% trans "Register as Freelancer" %}
+              </a>
+              <!-- Company -->
+              <a href="{% url 'create_company_profile' %}" class="btn btn-outline-dark btn-lg mt-2">
+                <i class="fa-solid fa-building me-2"></i>{% trans "Register as Company" %}
+              </a>
+              <!-- Customer -->
+              <a href="{% url 'shop:register_customer' %}" class="btn btn-outline-dark btn-lg mt-2">
                 <i class="fa-solid fa-user me-2"></i>{% trans "Register as Customer" %}
               </a>
-              <a href="{% url 'shop:register_vendor' %}" class="btn btn-outline-dark btn-lg mt-2"> {# Outline dark button for vendor registration #}
+              <!-- Vendor -->
+              <a href="{% url 'shop:register_vendor' %}" class="btn btn-outline-dark btn-lg mt-2">
                 <i class="fa-solid fa-store me-2"></i>{% trans "Register as Vendor" %}
               </a>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </section>

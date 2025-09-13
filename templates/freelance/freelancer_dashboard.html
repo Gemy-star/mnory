@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Freelancer Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="hero-section rounded-3 mb-4">
+                <div class="container py-4">
+                    <h1 class="display-5 fw-bold">
+                        {% trans "Welcome back" %}, {{ profile.user.get_full_name|default:profile.user.email }}!
+                    </h1>
+                    <p class="lead">{{ profile.title }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ active_contracts }}</div>
+                <div class="text-muted">{% trans "Active Contracts" %}</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ pending_proposals }}</div>
+                <div class="text-muted">{% trans "Pending Proposals" %}</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">${{ total_earnings|floatformat:2 }}</div>
+                <div class="text-muted">{% trans "Total Earnings" %}</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">
+                    {{ profile.rating|floatformat:1 }}
+                    <span class="rating-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= profile.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="text-muted">{% trans "Rating" %}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Projects -->
+        <div class="col-lg-8">
+            <div class="card project-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-briefcase me-2"></i>{% trans "Recent Projects" %}
+                    </h5>
+                    <a href="{% url 'project_list' %}" class="btn btn-outline-primary btn-sm">
+                        {% trans "View All" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_projects %}
+                        {% for project in recent_projects %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6><a href="{% url 'project_detail' project.pk %}" class="text-decoration-none">{{ project.title }}</a></h6>
+                                    <p class="text-muted small mb-2">{{ project.description|truncatechars:100 }}</p>
+                                    <div class="d-flex flex-wrap">
+                                        {% for skill in project.skills_required.all|slice:":3" %}
+                                            <span class="badge-skill">{{ skill.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="text-primary fw-bold">
+                                        {% if project.project_type == 'fixed' %}
+                                            ${{ project.budget_min|floatformat:0 }} - ${{ project.budget_max|floatformat:0 }}
+                                        {% else %}
+                                            ${{ project.hourly_rate_min|floatformat:0 }}-${{ project.hourly_rate_max|floatformat:0 }}/hr
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ project.proposals_count }} proposals</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">
+                            <i class="fas fa-search fa-2x mb-3 d-block"></i>
+                            {% trans "No recent projects found. Start browsing to find your next opportunity!" %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Profile Completion -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-check me-2"></i>{% trans "Profile Completion" %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 85%"></div>
+                    </div>
+                    <p class="small text-muted mb-0">85% complete</p>
+                    <small>
+                        <a href="{% url 'edit_freelancer_profile' %}" class="text-decoration-none">
+                            {% trans "Complete your profile" %}
+                        </a>
+                    </small>
+                </div>
+            </div>
+
+            <!-- Recent Messages -->
+            <div class="card message-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>{% trans "Recent Messages" %}
+                    </h6>
+                    <a href="{% url 'message_list' %}" class="btn btn-outline-warning btn-sm">
+                        {% trans "View All" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_messages %}
+                        {% for message in recent_messages %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ message.subject|default:"No Subject" }}</h6>
+                                <p class="small text-muted mb-1">
+                                    {% trans "From" %}: {{ message.sender.get_full_name|default:message.sender.email }}
+                                </p>
+                                <small class="text-muted">{{ message.created_at|timesince }} ago</small>
+                            </div>
+                            {% if not message.is_read %}
+                                <span class="badge bg-primary">{% trans "New" %}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            {% trans "No recent messages" %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>{% trans "Quick Actions" %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'project_list' %}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>{% trans "Find Projects" %}
+                        </a>
+                        <a href="{% url 'edit_freelancer_profile' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-edit me-2"></i>{% trans "Edit Profile" %}
+                        </a>
+                        <a href="{% url 'contract_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-file-contract me-2"></i>{% trans "My Contracts" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
