@@ -54,6 +54,8 @@ def login_view(request):
         user = request.user
         if getattr(user, "is_vendor_type", False):
             return redirect(reverse("shop_admin:index"))
+        if getattr(user, "is_admin_type", False):
+            return redirect(reverse("admin:index"))
         elif getattr(user, "is_freelancer_type", False) or getattr(user, "is_company_type", False):
             return redirect(reverse("freelancing_admin:index"))
         elif getattr(user, "is_customer_type", False):
