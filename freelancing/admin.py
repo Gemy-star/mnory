@@ -1,10 +1,19 @@
-# admin.py - Django Admin Configuration for Freelance Platform
+# freelancing/admin.py - Django Admin Configuration for Freelance Platform
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth import get_user_model
+from django.db import models
 from .models import *
+from .mixins import (
+    CompanyFreelancerOnlyMixin, SuperuserOnlyMixin, FreelancerFilterMixin, CompanyFilterMixin,
+    ProjectFilterMixin, ProposalFilterMixin, ContractFilterMixin,
+    UserEmailMixin, ClientFreelancerEmailMixin, FreelancerVerificationMixin,
+    ProjectFeatureMixin, CountDisplayMixin
+)
+from .admin_sites import freelancing_admin_site
 
+User = get_user_model()
 
-# Custom User Admin
+# Inline Classes
 class FreelancerProfileInline(admin.StackedInline):
     model = FreelancerProfile
     can_delete = False
@@ -16,7 +25,6 @@ class FreelancerProfileInline(admin.StackedInline):
         'rating', 'total_jobs_completed', 'total_earnings', 'is_verified'
     )
     readonly_fields = ('rating', 'total_jobs_completed', 'total_earnings')
-
 
 class CompanyProfileInline(admin.StackedInline):
     model = CompanyProfile
@@ -30,50 +38,31 @@ class CompanyProfileInline(admin.StackedInline):
     )
     readonly_fields = ('rating', 'total_jobs_posted', 'total_spent')
 
-
-
-
 # Category Admin
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+@admin.register(Category, site=freelancing_admin_site)
+class CategoryAdmin(SuperuserOnlyMixin, CountDisplayMixin, admin.ModelAdmin):
     list_display = ('name', 'slug', 'skills_count', 'projects_count', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ('created_at',)
 
-    def skills_count(self, obj):
-        return obj.skills.count()
-
-    skills_count.short_description = 'Skills Count'
-
-    def projects_count(self, obj):
-        return obj.project_set.count()
-
-    projects_count.short_description = 'Projects Count'
-
-
 # Skill Admin
-@admin.register(Skill)
-class SkillAdmin(admin.ModelAdmin):
+@admin.register(Skill, site=freelancing_admin_site)
+class SkillAdmin(SuperuserOnlyMixin, CountDisplayMixin, admin.ModelAdmin):
     list_display = ('name', 'category', 'freelancers_count', 'projects_count')
     list_filter = ('category',)
     search_fields = ('name',)
 
-    def freelancers_count(self, obj):
-        return obj.freelancerprofile_set.count()
-
-    freelancers_count.short_description = 'Freelancers'
-
-    def projects_count(self, obj):
-        return obj.project_set.count()
-
-    projects_count.short_description = 'Projects'
-
-
 # Freelancer Profile Admin
-@admin.register(FreelancerProfile)
-class FreelancerProfileAdmin(admin.ModelAdmin):
+@admin.register(FreelancerProfile, site=freelancing_admin_site)
+class FreelancerProfileAdmin(
+    CompanyFreelancerOnlyMixin,
+    FreelancerFilterMixin,
+    UserEmailMixin,
+    FreelancerVerificationMixin,
+    admin.ModelAdmin
+):
     list_display = (
         'user_email', 'title', 'experience_level', 'hourly_rate',
         'rating', 'total_jobs_completed', 'is_verified', 'created_at'
@@ -103,30 +92,20 @@ class FreelancerProfileAdmin(admin.ModelAdmin):
         }),
     )
 
-    def user_email(self, obj):
-        return obj.user.email
-
-    user_email.short_description = 'Email'
-    user_email.admin_order_field = 'user__email'
-
-    actions = ['verify_freelancers', 'unverify_freelancers']
-
-    def verify_freelancers(self, request, queryset):
-        updated = queryset.update(is_verified=True)
-        self.message_user(request, f'{updated} freelancers were successfully verified.')
-
-    verify_freelancers.short_description = "Verify selected freelancers"
-
-    def unverify_freelancers(self, request, queryset):
-        updated = queryset.update(is_verified=False)
-        self.message_user(request, f'{updated} freelancers were unverified.')
-
-    unverify_freelancers.short_description = "Unverify selected freelancers"
-
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        if request.user.is_freelancer_type and obj and obj.user != request.user:
+            readonly_fields.extend(['user', 'is_verified'])
+        return readonly_fields
 
 # Company Profile Admin
-@admin.register(CompanyProfile)
-class CompanyProfileAdmin(admin.ModelAdmin):
+@admin.register(CompanyProfile, site=freelancing_admin_site)
+class CompanyProfileAdmin(
+    CompanyFreelancerOnlyMixin,
+    CompanyFilterMixin,
+    UserEmailMixin,
+    admin.ModelAdmin
+):
     list_display = (
         'company_name', 'user_email', 'industry', 'company_size',
         'rating', 'total_jobs_posted', 'is_verified', 'created_at'
@@ -152,16 +131,20 @@ class CompanyProfileAdmin(admin.ModelAdmin):
         }),
     )
 
-    def user_email(self, obj):
-        return obj.user.email
-
-    user_email.short_description = 'Email'
-    user_email.admin_order_field = 'user__email'
-
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        if request.user.is_company_type and obj and obj.user != request.user:
+            readonly_fields.extend(['user', 'is_verified'])
+        return readonly_fields
 
 # Project Admin
-@admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+@admin.register(Project, site=freelancing_admin_site)
+class ProjectAdmin(
+    CompanyFreelancerOnlyMixin,
+    ProjectFilterMixin,
+    ProjectFeatureMixin,
+    admin.ModelAdmin
+):
     list_display = (
         'title', 'client_email', 'category', 'project_type', 'status',
         'budget_display', 'proposals_count', 'views_count', 'created_at'
@@ -197,7 +180,6 @@ class ProjectAdmin(admin.ModelAdmin):
 
     def client_email(self, obj):
         return obj.client.email
-
     client_email.short_description = 'Client Email'
     client_email.admin_order_field = 'client__email'
 
@@ -206,27 +188,21 @@ class ProjectAdmin(admin.ModelAdmin):
             return f"${obj.budget_min} - ${obj.budget_max}"
         else:
             return f"${obj.hourly_rate_min} - ${obj.hourly_rate_max}/hr"
-
     budget_display.short_description = 'Budget'
 
-    actions = ['feature_projects', 'unfeature_projects']
-
-    def feature_projects(self, request, queryset):
-        updated = queryset.update(is_featured=True)
-        self.message_user(request, f'{updated} projects were featured.')
-
-    feature_projects.short_description = "Feature selected projects"
-
-    def unfeature_projects(self, request, queryset):
-        updated = queryset.update(is_featured=False)
-        self.message_user(request, f'{updated} projects were unfeatured.')
-
-    unfeature_projects.short_description = "Unfeature selected projects"
-
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        if request.user.is_freelancer_type:
+            readonly_fields.extend(['client', 'status', 'is_featured'])
+        return readonly_fields
 
 # Proposal Admin
-@admin.register(Proposal)
-class ProposalAdmin(admin.ModelAdmin):
+@admin.register(Proposal, site=freelancing_admin_site)
+class ProposalAdmin(
+    CompanyFreelancerOnlyMixin,
+    ProposalFilterMixin,
+    admin.ModelAdmin
+):
     list_display = (
         'project_title', 'freelancer_email', 'proposed_amount',
         'status', 'created_at'
@@ -241,20 +217,30 @@ class ProposalAdmin(admin.ModelAdmin):
 
     def project_title(self, obj):
         return obj.project.title
-
     project_title.short_description = 'Project'
     project_title.admin_order_field = 'project__title'
 
     def freelancer_email(self, obj):
         return obj.freelancer.email
-
     freelancer_email.short_description = 'Freelancer'
     freelancer_email.admin_order_field = 'freelancer__email'
 
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        if request.user.is_freelancer_type:
+            readonly_fields.extend(['freelancer', 'status'])
+        elif request.user.is_company_type:
+            readonly_fields.extend(['freelancer', 'project', 'proposed_amount', 'cover_letter'])
+        return readonly_fields
 
 # Contract Admin
-@admin.register(Contract)
-class ContractAdmin(admin.ModelAdmin):
+@admin.register(Contract, site=freelancing_admin_site)
+class ContractAdmin(
+    CompanyFreelancerOnlyMixin,
+    ContractFilterMixin,
+    ClientFreelancerEmailMixin,
+    admin.ModelAdmin
+):
     list_display = (
         'title', 'client_email', 'freelancer_email', 'amount',
         'status', 'start_date', 'end_date'
@@ -264,20 +250,17 @@ class ContractAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'start_date'
 
-    def client_email(self, obj):
-        return obj.client.email
-
-    client_email.short_description = 'Client'
-
-    def freelancer_email(self, obj):
-        return obj.freelancer.email
-
-    freelancer_email.short_description = 'Freelancer'
-
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        if request.user.is_freelancer_type:
+            readonly_fields.extend(['client', 'amount'])
+        elif request.user.is_company_type:
+            readonly_fields.extend(['freelancer'])
+        return readonly_fields
 
 # Payment Admin
-@admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
+@admin.register(Payment, site=freelancing_admin_site)
+class PaymentAdmin(CompanyFreelancerOnlyMixin, admin.ModelAdmin):
     list_display = (
         'contract_title', 'amount', 'payment_type', 'status',
         'due_date', 'paid_date', 'created_at'
@@ -289,14 +272,22 @@ class PaymentAdmin(admin.ModelAdmin):
 
     def contract_title(self, obj):
         return obj.contract.title
-
     contract_title.short_description = 'Contract'
     contract_title.admin_order_field = 'contract__title'
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.is_admin_type:
+            return qs
+        elif request.user.is_company_type:
+            return qs.filter(contract__client=request.user)
+        elif request.user.is_freelancer_type:
+            return qs.filter(contract__freelancer=request.user)
+        return qs.none()
 
 # Review Admin
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
+@admin.register(Review, site=freelancing_admin_site)
+class ReviewAdmin(CompanyFreelancerOnlyMixin, admin.ModelAdmin):
     list_display = (
         'contract_title', 'reviewer_email', 'reviewee_email',
         'rating', 'is_public', 'created_at'
@@ -309,23 +300,28 @@ class ReviewAdmin(admin.ModelAdmin):
 
     def contract_title(self, obj):
         return obj.contract.title
-
     contract_title.short_description = 'Contract'
 
     def reviewer_email(self, obj):
         return obj.reviewer.email
-
     reviewer_email.short_description = 'Reviewer'
 
     def reviewee_email(self, obj):
         return obj.reviewee.email
-
     reviewee_email.short_description = 'Reviewee'
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.is_admin_type:
+            return qs
+        else:
+            return qs.filter(
+                models.Q(reviewer=request.user) | models.Q(reviewee=request.user)
+            )
 
 # Message Admin
-@admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
+@admin.register(Message, site=freelancing_admin_site)
+class MessageAdmin(CompanyFreelancerOnlyMixin, admin.ModelAdmin):
     list_display = (
         'subject', 'sender_email', 'recipient_email',
         'is_read', 'created_at'
@@ -339,22 +335,40 @@ class MessageAdmin(admin.ModelAdmin):
 
     def sender_email(self, obj):
         return obj.sender.email
-
     sender_email.short_description = 'From'
 
     def recipient_email(self, obj):
         return obj.recipient.email
-
     recipient_email.short_description = 'To'
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.is_admin_type:
+            return qs
+        else:
+            return qs.filter(
+                models.Q(sender=request.user) | models.Q(recipient=request.user)
+            )
 
 # Notification Admin
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
+@admin.register(Notification, site=freelancing_admin_site)
+class NotificationAdmin(CompanyFreelancerOnlyMixin, admin.ModelAdmin):
     list_display = (
-        'title', 'user__email', 'notification_type',
+        'title', 'user_email', 'notification_type',
         'is_read', 'created_at'
     )
     list_filter = ('notification_type', 'is_read', 'created_at')
     search_fields = ('title', 'message', 'user__email')
     readonly_fields = ('created_at',)
+
+    def user_email(self, obj):
+        return obj.user.email
+    user_email.short_description = 'User Email'
+    user_email.admin_order_field = 'user__email'
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.is_admin_type:
+            return qs
+        else:
+            return qs.filter(user=request.user)
