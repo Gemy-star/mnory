@@ -50,31 +50,47 @@ def register_customer(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect(reverse('admin:index'))  # Redirect already logged-in users
+        # If already logged in, redirect based on role
+        user = request.user
+        if getattr(user, "is_vendor_type", False):
+            return redirect(reverse("shop_admin:index"))
+        elif getattr(user, "is_freelancer_type", False) or getattr(user, "is_company_type", False):
+            return redirect(reverse("freelancing_admin:index"))
+        elif getattr(user, "is_customer_type", False):
+            return redirect(reverse("shop:home"))
+        return redirect(reverse("shop:home"))  # fallback
 
     form = LoginForm(request.POST or None)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         if form.is_valid():
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
             user = authenticate(request, email=email, password=password)
 
             if user is not None:
                 login(request, user)
                 messages.success(request, _("Login successful."))
-                return redirect(request.GET.get('next') or reverse('shop:home'))
+
+                # 🔑 Redirect based on role
+                if getattr(user, "is_vendor_type", False):
+                    return redirect(reverse("shop_admin:index"))
+                elif getattr(user, "is_freelancer_type", False) or getattr(user, "is_company_type", False):
+                    return redirect(reverse("freelancing_admin:index"))
+                elif getattr(user, "is_customer_type", False):
+                    return redirect(reverse("shop:home"))
+                else:
+                    return redirect(reverse("shop:home"))  # fallback
             else:
                 messages.error(request, _("Invalid email or password."))
 
     context = {
-        'form': form,
-        'title': _("Login"),
-        'form_action': request.path,
-        'submit_label': _("Log In"),
+        "form": form,
+        "title": _("Login"),
+        "form_action": request.path,
+        "submit_label": _("Log In"),
     }
-    return render(request, 'accounts/login.html', context)
-
+    return render(request, "accounts/login.html", context)
 
 
 @login_required

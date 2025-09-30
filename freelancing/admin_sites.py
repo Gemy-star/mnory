@@ -1,4 +1,6 @@
 from django.contrib.admin import AdminSite
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 class FreelancingAdminSite(AdminSite):
@@ -6,21 +8,23 @@ class FreelancingAdminSite(AdminSite):
     site_title = "Freelancing Admin"
     index_title = "Welcome to Freelancing Admin"
 
+
     def has_permission(self, request):
-        """Allow only authenticated users with specific user types into admin."""
         user = request.user
-
-        if not user.is_authenticated:
-            return False  # Django will auto-redirect to login
-
         return (
-            user.is_active and (
-                user.is_superuser or
-                getattr(user, "is_admin_type", False) or
-                getattr(user, "is_company_type", False) or
-                getattr(user, "is_freelancer_type", False)
+            user.is_authenticated
+            and user.is_active
+            and (
+                user.is_superuser
+                or getattr(user, "is_admin_type", False)
+                or getattr(user, "is_company_type", False)
+                or getattr(user, "is_freelancer_type", False)
             )
         )
+
+    def login(self, request, extra_context=None):
+        """Redirect freelancing admin login to global /login/"""
+        return redirect(reverse("shop:login"))
 
     def get_app_list(self, request):
         """Filter apps and models based on user_type."""
