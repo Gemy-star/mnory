@@ -50,17 +50,7 @@ def register_customer(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        # If already logged in, redirect based on role
-        user = request.user
-        if getattr(user, "is_vendor_type", False):
-            return redirect(reverse("shop_admin:index"))
-        if getattr(user, "is_admin_type", False):
-            return redirect(reverse("admin:index"))
-        elif getattr(user, "is_freelancer_type", False) or getattr(user, "is_company_type", False):
-            return redirect(reverse("freelancing_admin:index"))
-        elif getattr(user, "is_customer_type", False):
-            return redirect(reverse("shop:home"))
-        return redirect(reverse("shop:home"))  # fallback
+        return _redirect_by_role(request.user)
 
     form = LoginForm(request.POST or None)
 
@@ -74,15 +64,13 @@ def login_view(request):
                 login(request, user)
                 messages.success(request, _("Login successful."))
 
-                # 🔑 Redirect based on role
-                if getattr(user, "is_vendor_type", False):
-                    return redirect(reverse("shop_admin:index"))
-                elif getattr(user, "is_freelancer_type", False) or getattr(user, "is_company_type", False):
-                    return redirect(reverse("freelancing_admin:index"))
-                elif getattr(user, "is_customer_type", False):
-                    return redirect(reverse("shop:home"))
-                else:
-                    return redirect(reverse("shop:home"))  # fallback
+                # ✅ If ?next= exists → go there
+                next_url = request.POST.get("next") or request.GET.get("next")
+                if next_url:
+                    return redirect(next_url)
+
+                return _redirect_by_role(user)
+
             else:
                 messages.error(request, _("Invalid email or password."))
 
@@ -94,6 +82,18 @@ def login_view(request):
     }
     return render(request, "accounts/login.html", context)
 
+
+def _redirect_by_role(user):
+    """Helper: redirect based on role flags"""
+    if getattr(user, "is_vendor_type", False):
+        return redirect(reverse("shop_admin:index"))
+    if getattr(user, "is_admin_type", False):
+        return redirect(reverse("admin:index"))
+    if getattr(user, "is_freelancer_type", False) or getattr(user, "is_company_type", False):
+        return redirect(reverse("freelancing_admin:index"))
+    if getattr(user, "is_customer_type", False):
+        return redirect(reverse("shop:home"))
+    return redirect(reverse("shop:home"))  # fallback
 
 @login_required
 def user_logout(request):

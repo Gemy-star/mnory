@@ -21,15 +21,20 @@
             <h4 class="mb-0 fw-bold"><i class="fa-solid fa-sign-in-alt me-2"></i>{% trans "Account Login" %}</h4>
           </div>
           <div class="card-body p-4">
-            <form method="post" action="{{ form_action }}" novalidate>
-              {% csrf_token %}
-              {{ form|crispy }}
-              <div class="d-grid mt-4">
-                <button type="submit" class="btn btn-dark btn-lg">
-                  <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>{{ submit_label }}
-                </button>
-              </div>
-            </form>
+          <form method="post" action="{{ form_action }}" novalidate>
+  {% csrf_token %}
+  {{ form|crispy }}
+  {% if request.GET.next %}
+    <input type="hidden" name="next" value="{{ request.GET.next }}">
+  {% endif %}
+
+  <div class="d-grid mt-4">
+    <button type="submit" class="btn btn-dark btn-lg">
+      <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>{{ submit_label }}
+    </button>
+  </div>
+</form>
+
           </div>
         </div>
       </div>
