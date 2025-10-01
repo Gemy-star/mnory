@@ -217,9 +217,15 @@ class MnoryUserChangeForm(UserChangeForm):
 class SimpleLoginForm(forms.Form):
     email = forms.EmailField(
         label=_("Email"),
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': _('Email')})
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Email')
+        })
     )
     password = forms.CharField(
         label=_("Password"),
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': _('Password')})
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Password')
+        })
     )

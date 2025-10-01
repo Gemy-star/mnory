@@ -9,14 +9,15 @@ from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
-
+from django.utils.translation import gettext_lazy as _
 from freelancing.forms import ProposalForm, MessageForm, ReviewForm, \
     PaymentForm, FreelancerRegistrationForm, CompanyRegistrationForm
 from freelancing.freelancing_utils import create_notification, update_user_rating, complete_project
 from freelancing.models import FreelancerProfile, Proposal, Contract, Project, Message, CompanyProfile, Category, Skill, \
     Review, Notification
 from shop.models import MnoryUser as User
-
+from django.contrib.auth import login
+from shop.user_views import _redirect_by_role
 
 
 # Dashboard Views
@@ -694,20 +695,24 @@ def submit_review(request, contract_id):
     }
     return render(request, 'freelance/submit_review.html', context)
 
-
-
 def register_company(request):
     """Register a new company user + profile"""
     if request.method == 'POST':
         form = CompanyRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Company account created successfully! Please log in.")
-            return redirect('login')
+            user = form.save()
+            messages.success(request, _("Company account created successfully."))
+            login(request, user)  # ✅ auto login
+            return _redirect_by_role(user)  # ✅ redirect based on role
     else:
         form = CompanyRegistrationForm()
 
-    return render(request, 'freelance/create_company_profile.html', {'form': form})
+    return render(request, 'freelance/create_company_profile.html', {
+        'form': form,
+        'title': _("Company Registration"),
+        'form_action': request.path,
+        'submit_label': _("Register as Company"),
+    })
 
 
 def register_freelancer(request):
@@ -715,13 +720,20 @@ def register_freelancer(request):
     if request.method == 'POST':
         form = FreelancerRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Freelancer account created successfully! Please log in.")
-            return redirect('login')
+            user = form.save()
+            messages.success(request, _("Freelancer account created successfully."))
+            login(request, user)  # ✅ auto login
+            return _redirect_by_role(user)  # ✅ redirect based on role
     else:
         form = FreelancerRegistrationForm()
 
-    return render(request, 'freelance/create_freelancer_profile.html', {'form': form})
+    return render(request, 'freelance/create_freelancer_profile.html', {
+        'form': form,
+        'title': _("Freelancer Registration"),
+        'form_action': request.path,
+        'submit_label': _("Register as Freelancer"),
+    })
+
 
 @login_required
 def edit_freelancer_profile(request):

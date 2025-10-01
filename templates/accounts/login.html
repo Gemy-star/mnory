@@ -22,17 +22,17 @@
           </div>
           <div class="card-body p-4">
           <form method="post" action="{{ form_action }}" novalidate>
+    <form method="post" action="{{ form_action }}" novalidate>
   {% csrf_token %}
-  {{ form|crispy }}
+  {{ form.as_p }}
+
   {% if request.GET.next %}
     <input type="hidden" name="next" value="{{ request.GET.next }}">
   {% endif %}
 
-  <div class="d-grid mt-4">
-    <button type="submit" class="btn btn-dark btn-lg">
-      <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>{{ submit_label }}
-    </button>
-  </div>
+  <button type="submit" class="btn btn-dark">
+    {{ submit_label }}
+  </button>
 </form>
 
           </div>
