@@ -2,10 +2,10 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
-
+from django.db import transaction, IntegrityError
+from django.utils.translation import gettext_lazy as _
 from shop.models import MnoryUser as User
 from .models import *
-
 
 
 class CompanyRegistrationForm(UserCreationForm):
@@ -38,29 +38,29 @@ class CompanyRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['email', 'phone_number', 'password1', 'password2']
-        widgets = {
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
-            'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}),
-            'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm Password'}),
-        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.user_type = 'company'
         if commit:
-            user.save()
-            CompanyProfile.objects.create(
-                user=user,
-                company_name=self.cleaned_data['company_name'],
-                description=self.cleaned_data.get('description'),
-                logo=self.cleaned_data.get('logo'),
-                website_url=self.cleaned_data.get('website_url'),
-                industry=self.cleaned_data.get('industry'),
-                company_size=self.cleaned_data.get('company_size'),
-                location=self.cleaned_data.get('location'),
-                founded_year=self.cleaned_data.get('founded_year'),
-            )
+            try:
+                with transaction.atomic():
+                    user.save()
+                    CompanyProfile.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            'company_name': self.cleaned_data['company_name'],
+                            'description': self.cleaned_data.get('description'),
+                            'logo': self.cleaned_data.get('logo'),
+                            'website_url': self.cleaned_data.get('website_url'),
+                            'industry': self.cleaned_data.get('industry'),
+                            'company_size': self.cleaned_data.get('company_size'),
+                            'location': self.cleaned_data.get('location'),
+                            'founded_year': self.cleaned_data.get('founded_year'),
+                        }
+                    )
+            except IntegrityError:
+                raise forms.ValidationError(_("A company profile already exists for this user."))
         return user
 
 
@@ -106,35 +106,34 @@ class FreelancerRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['email', 'phone_number', 'password1', 'password2']
-        widgets = {
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
-            'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}),
-            'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm Password'}),
-        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.user_type = 'freelancer'
         if commit:
-            user.save()
-            FreelancerProfile.objects.create(
-                user=user,
-                title=self.cleaned_data['title'],
-                bio=self.cleaned_data.get('bio'),
-                profile_picture=self.cleaned_data.get('profile_picture'),
-                hourly_rate=self.cleaned_data.get('hourly_rate'),
-                skills=self.cleaned_data.get('skills'),
-                languages=self.cleaned_data.get('languages'),
-                experience_level=self.cleaned_data.get('experience_level'),
-                portfolio_url=self.cleaned_data.get('portfolio_url'),
-                linkedin_url=self.cleaned_data.get('linkedin_url'),
-                github_url=self.cleaned_data.get('github_url'),
-                location=self.cleaned_data.get('location'),
-                availability=self.cleaned_data.get('availability'),
-            )
+            try:
+                with transaction.atomic():
+                    user.save()
+                    FreelancerProfile.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            'title': self.cleaned_data['title'],
+                            'bio': self.cleaned_data.get('bio'),
+                            'profile_picture': self.cleaned_data.get('profile_picture'),
+                            'hourly_rate': self.cleaned_data.get('hourly_rate'),
+                            'skills': self.cleaned_data.get('skills'),
+                            'languages': self.cleaned_data.get('languages'),
+                            'experience_level': self.cleaned_data.get('experience_level'),
+                            'portfolio_url': self.cleaned_data.get('portfolio_url'),
+                            'linkedin_url': self.cleaned_data.get('linkedin_url'),
+                            'github_url': self.cleaned_data.get('github_url'),
+                            'location': self.cleaned_data.get('location'),
+                            'availability': self.cleaned_data.get('availability'),
+                        }
+                    )
+            except IntegrityError:
+                raise forms.ValidationError(_("A freelancer profile already exists for this user."))
         return user
-
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project

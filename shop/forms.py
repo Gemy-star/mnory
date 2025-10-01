@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, User
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from .models import ShippingAddress, VendorProfile
+from django.db import transaction, IntegrityError
 
 MnoryUser = get_user_model()
 
@@ -126,17 +127,23 @@ class VendorRegistrationForm(UserCreationForm):
         user = super().save(commit=False)
         user.user_type = 'vendor'
         if commit:
-            user.save()
-            VendorProfile.objects.create(
-                user=user,
-                store_name=self.cleaned_data['store_name'],
-                store_description=self.cleaned_data.get('store_description'),
-                website=self.cleaned_data.get('website'),
-                logo=self.cleaned_data.get('logo'),
-                country_of_operation=self.cleaned_data.get('country_of_operation'),
-            )
+            try:
+                with transaction.atomic():
+                    user.save()
+                    # Avoid duplicate VendorProfile
+                    VendorProfile.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            'store_name': self.cleaned_data['store_name'],
+                            'store_description': self.cleaned_data.get('store_description'),
+                            'website': self.cleaned_data.get('website'),
+                            'logo': self.cleaned_data.get('logo'),
+                            'country_of_operation': self.cleaned_data.get('country_of_operation'),
+                        }
+                    )
+            except IntegrityError:
+                raise forms.ValidationError(_("A vendor profile already exists for this user."))
         return user
-
 
 class CustomerRegistrationForm(UserCreationForm):
     class Meta:
@@ -155,7 +162,6 @@ class CustomerRegistrationForm(UserCreationForm):
         if commit:
             user.save()
         return user
-
 
 class VendorProfileForm(forms.ModelForm):
     class Meta:
