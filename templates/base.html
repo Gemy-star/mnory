@@ -28,9 +28,6 @@
 {% endblock css  %}
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
  <style>
-    .swiper {
-    height: fit-content;
-}
 .btn-primary{
     background-color: #000000 !important;
     border: 2px solid #000000;
@@ -64,6 +61,8 @@ body {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9OhkKjXhC+MTPyPHJceVfQ" crossorigin="anonymous"></script>
+    <!-- Bootstrap Modal Fix - defensive patching -->
+    <script src="{% static 'js/modal-fix.js' %}"></script>
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <!-- GSAP 3.x for animations -->
@@ -73,8 +72,8 @@ body {
     <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
 
     <script src="{% static 'js/main.js' %}"></script>
-    <!-- Enhanced animations and interactions -->
-    <script src="{% static 'js/mnory-animations.js' %}"></script>
+    <!-- Enhanced animations and interactions (loaded as module) -->
+    <script type="module" src="{% static 'js/mnory-animations.js' %}"></script>
   <script>
         // Function to get CSRF token from cookie (essential for POST requests)
         function getCookie(name) {
