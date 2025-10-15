@@ -229,10 +229,18 @@ function initHeroGallery() {
     const heroGalleryElement = document.querySelector('.hero-gallery-swiper');
     if (!heroGalleryElement) return;
     
-    const heroGallerySwiper = new Swiper('.hero-gallery-swiper', {
+    // Element-based Swiper initialization with observer options
+    const heroGallerySwiper = new Swiper(heroGalleryElement, {
         slidesPerView: 1,
         spaceBetween: 0,
         loop: true,
+        observer: true,
+        observeParents: true,
+        preloadImages: true,
+        lazy: {
+            loadPrevNext: true,
+            loadPrevNextAmount: 2
+        },
         autoplay: {
             delay: 4000,
             disableOnInteraction: false,
@@ -263,9 +271,11 @@ function initHeroGallery() {
         on: {
             init: function() {
                 console.log('Hero gallery Swiper initialized');
+                // Force update after initialization
+                this.update();
             },
             slideChange: function() {
-                // Add GSAP animation when slide changes
+                // Add GSAP animation when slide changes (guarded)
                 if (animationsEnabled() && typeof gsap !== 'undefined') {
                     const activeSlide = this.slides[this.activeIndex];
                     const img = activeSlide.querySelector('img');
@@ -277,6 +287,29 @@ function initHeroGallery() {
                     }
                 }
             }
+        }
+    });
+    
+    // Update swiper after images load
+    const images = heroGalleryElement.querySelectorAll('img');
+    let loadedCount = 0;
+    images.forEach(img => {
+        if (img.complete) {
+            loadedCount++;
+        } else {
+            img.addEventListener('load', function() {
+                loadedCount++;
+                if (loadedCount === images.length && heroGallerySwiper) {
+                    heroGallerySwiper.update();
+                }
+            });
+        }
+    });
+    
+    // Also update on window load
+    window.addEventListener('load', function() {
+        if (heroGallerySwiper) {
+            heroGallerySwiper.update();
         }
     });
     
@@ -369,50 +402,51 @@ function initSmoothScroll() {
  * Initialize all animations and enhancements
  */
 function initMnoryEnhancements() {
-    console.log('Initializing Mnory Enhancements...');
+    // Core animations
+    initPageEntranceAnimations();
+    initCardHoverAnimations();
+    initScrollTriggerAnimations();
     
-    // Wait for DOM to be fully loaded
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // Swiper enhancements
+    initHeroGallery();
+    enhanceProductSwipers();
     
-    function init() {
-        // Core animations
-        initPageEntranceAnimations();
-        initCardHoverAnimations();
-        initScrollTriggerAnimations();
-        
-        // Swiper enhancements
-        initHeroGallery();
-        enhanceProductSwipers();
-        
-        // Utility enhancements
-        initButtonRipples();
-        initLazyImageLoading();
-        initSmoothScroll();
-        
-        console.log('Mnory Enhancements Initialized!');
-        
-        // Log animation status
-        if (!animationsEnabled()) {
-            console.log('Animations are disabled (prefers-reduced-motion or data-animations=false)');
-        }
+    // Utility enhancements
+    initButtonRipples();
+    initLazyImageLoading();
+    initSmoothScroll();
+    
+    console.log('Mnory Enhancements Initialized!');
+    
+    // Log animation status
+    if (!animationsEnabled()) {
+        console.log('Animations are disabled (prefers-reduced-motion or data-animations=false)');
     }
 }
 
-// Auto-initialize
-initMnoryEnhancements();
+// Auto-initialize - single DOMContentLoaded wrapper
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Initializing Mnory Enhancements...');
+        initMnoryEnhancements();
+    });
+} else {
+    console.log('Initializing Mnory Enhancements...');
+    initMnoryEnhancements();
+}
 
-// Export functions for manual control if needed
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        initPageEntranceAnimations,
-        initCardHoverAnimations,
-        initScrollTriggerAnimations,
-        initHeroGallery,
-        enhanceProductSwipers,
-        animationsEnabled
-    };
+// UMD-friendly guard for module exports (avoid in browser builds)
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    try {
+        module.exports = {
+            initPageEntranceAnimations,
+            initCardHoverAnimations,
+            initScrollTriggerAnimations,
+            initHeroGallery,
+            enhanceProductSwipers,
+            animationsEnabled
+        };
+    } catch (e) {
+        // Silently fail in browser environment
+    }
 }

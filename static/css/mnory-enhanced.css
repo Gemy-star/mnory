@@ -289,13 +289,25 @@ img[loading="lazy"].loaded {
     }
 }
 
+/* Swiper Container Fixes - prevent collapsing */
+.swiper {
+    min-height: 300px;
+    z-index: 1;
+}
+
+.swiper-wrapper {
+    align-items: stretch;
+}
+
 /* Hero Gallery Swiper Styles */
 .hero-gallery-swiper {
     width: 100%;
+    min-height: 400px;
     margin: 40px auto;
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+    z-index: 1;
 }
 
 .hero-gallery-swiper .swiper-slide {
@@ -303,6 +315,7 @@ img[loading="lazy"].loaded {
     align-items: center;
     justify-content: center;
     background: var(--secondary-color);
+    min-height: 400px;
 }
 
 .hero-gallery-swiper .swiper-slide img {

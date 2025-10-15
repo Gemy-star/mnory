@@ -116,6 +116,34 @@ The following libraries are loaded via CDN:
 - CSS transitions are hardware-accelerated where possible
 - Swiper instances are efficiently initialized only once
 
+#### Recent Fixes (2025-10-15)
+
+**JavaScript Runtime Error Fixes:**
+- Fixed Swiper initialization to use element-based approach with observer options
+- Added defensive guards for Bootstrap Modal to prevent `this._config` TypeError
+- Consolidated auto-initialization to prevent multiple console logs
+- Added proper module export guards for UMD compatibility
+- Ensured proper script loading order in base.html
+
+**Swiper Collapsing Issues:**
+- Removed problematic inline `.swiper {height: fit-content;}` style
+- Added `min-height` and `z-index` to Swiper containers
+- Configured `observer: true`, `observeParents: true`, and `preloadImages` options
+- Added `swiper.update()` calls after image load and on window load
+- Ensured `.swiper-wrapper` uses `align-items: stretch`
+
+**Testing Steps:**
+```bash
+git fetch && git checkout -b fix/gsap-swiper-modal
+python manage.py runserver
+```
+Then open http://localhost:8000 and verify:
+- No SyntaxError in browser console
+- No TypeError about `this._config.backdrop`
+- Swiper is visible with proper height (not zero/collapsed)
+- Navigation controls and pagination are visible
+- GSAP animations work when assets are available
+
 #### Troubleshooting
 
 **Animations not working?**
