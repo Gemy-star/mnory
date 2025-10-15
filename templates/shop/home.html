@@ -28,6 +28,32 @@
 
 {% block content %}
 {% include 'shop/partials/hero_slider.html' %}
+
+<!-- Enhanced Hero Gallery with GSAP animations - sample showcase -->
+<section class="section pt-4">
+    <div class="container">
+        <!-- Hero Gallery Swiper: Enhanced with GSAP slide transitions -->
+        <div class="hero-gallery-swiper swiper">
+            <div class="swiper-wrapper">
+                <!-- Sample slides - can be replaced with dynamic content -->
+                <div class="swiper-slide">
+                    <img src="https://placehold.co/1200x500/000000/ffffff?text=Welcome+to+MNORY" alt="Welcome to MNORY" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://placehold.co/1200x500/e0e0e0/000000?text=Modern+Design" alt="Modern Design" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://placehold.co/1200x500/007aff/ffffff?text=Enhanced+Experience" alt="Enhanced Experience" loading="lazy">
+                </div>
+            </div>
+            <!-- Swiper controls -->
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+</section>
+
 <section class="section pt-2">
 <div class="container">
     {% include 'shop/partials/_categories.html' with cat_name="body" categories=categories %}

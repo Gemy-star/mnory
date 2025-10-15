@@ -18,6 +18,8 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Enhanced CSS with modern animations and transitions -->
+    <link rel="stylesheet" href="{% static 'css/mnory-enhanced.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
@@ -45,7 +47,8 @@ body {
 }
  </style>
     </head>
-<body>
+<!-- Enhanced with GSAP animations - disable by setting data-animations="false" or ?animations=false in URL -->
+<body data-animations="true">
     {% include 'partials/_header.html' %}
     {% include 'partials/_loader.html' %}
     {% include 'partials/_messages.html' %}
@@ -63,10 +66,15 @@ body {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9OhkKjXhC+MTPyPHJceVfQ" crossorigin="anonymous"></script>
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- GSAP 3.x for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <!-- Custom JS -->
     <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
 
     <script src="{% static 'js/main.js' %}"></script>
+    <!-- Enhanced animations and interactions -->
+    <script src="{% static 'js/mnory-animations.js' %}"></script>
   <script>
         // Function to get CSRF token from cookie (essential for POST requests)
         function getCookie(name) {
