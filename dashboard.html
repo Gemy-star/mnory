@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mnory — Dashboard</title>
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Mnory</h1>
+      </div>
+      <nav class="nav">
+        <a class="nav-item active" href="#">Overview</a>
+        <a class="nav-item" href="#">Projects</a>
+        <a class="nav-item" href="#">Analytics</a>
+        <a class="nav-item" href="#">Users</a>
+        <a class="nav-item" href="#">Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-cta">New Project</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="search">
+          <input type="search" placeholder="Search projects, users..." />
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn">🔔</button>
+          <button class="profile">
+            <span class="avatar">G</span>
+            <span class="username">Gemy-star</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="content">
+        <h2 class="page-title">Overview</h2>
+
+        <div class="cards">
+          <div class="card">
+            <div class="card-title">Active Projects</div>
+            <div class="card-value">12</div>
+            <div class="card-sub">+2 this month</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Users</div>
+            <div class="card-value">284</div>
+            <div class="card-sub">+12 this week</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Storage used</div>
+            <div class="card-value">72 GB</div>
+            <div class="card-sub">of 200 GB</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Errors</div>
+            <div class="card-value error">3</div>
+            <div class="card-sub">This week</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Recent Activity</h3>
+            <div class="panel-actions">
+              <button class="link-btn">Refresh</button>
+            </div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Website Redesign</td>
+                <td>Amina</td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td>2025-10-15</td>
+                <td><button class="small">View</button></td>
+              </tr>
+              <tr>
+                <td>API Migration</td>
+                <td>Jorge</td>
+                <td><span class="badge badge-warning">Staging</span></td>
+                <td>2025-10-12</td>
+                <td><button class="small">View</button></td>
+              </tr>
+              <tr>
+                <td>Mobile App</td>
+                <td>Li</td>
+                <td><span class="badge badge-muted">Paused</span></td>
+                <td>2025-09-30</td>
+                <td><button class="small">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="footer">
+          <p>© 2025 Mnory — Built with care</p>
+        </footer>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
