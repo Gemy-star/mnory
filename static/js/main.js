@@ -203,42 +203,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Theme toggle in drawer
+    // Theme toggle in drawer (desktop)
     if (drawerThemeToggle) {
-        drawerThemeToggle.addEventListener('click', function() {
-            const isDark = document.body.classList.contains('dark-mode');
-            const htmlElement = document.documentElement;
+        drawerThemeToggle.addEventListener('click', toggleTheme);
+    }
 
-            if (isDark) {
-                document.body.classList.remove('dark-mode');
-                htmlElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
+    // Mobile drawer theme toggle
+    const mobileDrawerThemeToggle = document.getElementById('mobileDrawerThemeToggle');
+    if (mobileDrawerThemeToggle) {
+        mobileDrawerThemeToggle.addEventListener('click', toggleTheme);
+    }
 
-                // Update header theme toggle icons
-                const headerLightIcon = document.querySelector('.theme-icon-light');
-                const headerDarkIcon = document.querySelector('.theme-icon-dark');
-                if (headerLightIcon) headerLightIcon.style.display = 'block';
-                if (headerDarkIcon) headerDarkIcon.style.display = 'none';
+    // Unified theme toggle function
+    function toggleTheme() {
+        const isDark = document.body.classList.contains('dark-mode');
+        const htmlElement = document.documentElement;
 
-                // Update drawer theme text
+        if (isDark) {
+            document.body.classList.remove('dark-mode');
+            htmlElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+
+            // Update header theme toggle icons
+            const headerLightIcon = document.querySelector('.theme-icon-light');
+            const headerDarkIcon = document.querySelector('.theme-icon-dark');
+            if (headerLightIcon) headerLightIcon.style.display = 'block';
+            if (headerDarkIcon) headerDarkIcon.style.display = 'none';
+
+            // Update drawer theme text (desktop only)
+            if (drawerThemeToggle) {
                 const themeText = drawerThemeToggle.querySelector('.drawer-theme-text');
                 if (themeText) themeText.textContent = document.documentElement.lang === 'ar' ? 'الوضع الداكن' : 'Dark Mode';
-            } else {
-                document.body.classList.add('dark-mode');
-                htmlElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
+            }
+        } else {
+            document.body.classList.add('dark-mode');
+            htmlElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
 
-                // Update header theme toggle icons
-                const headerLightIcon = document.querySelector('.theme-icon-light');
-                const headerDarkIcon = document.querySelector('.theme-icon-dark');
-                if (headerLightIcon) headerLightIcon.style.display = 'none';
-                if (headerDarkIcon) headerDarkIcon.style.display = 'block';
+            // Update header theme toggle icons
+            const headerLightIcon = document.querySelector('.theme-icon-light');
+            const headerDarkIcon = document.querySelector('.theme-icon-dark');
+            if (headerLightIcon) headerLightIcon.style.display = 'none';
+            if (headerDarkIcon) headerDarkIcon.style.display = 'block';
 
-                // Update drawer theme text
+            // Update drawer theme text (desktop only)
+            if (drawerThemeToggle) {
                 const themeText = drawerThemeToggle.querySelector('.drawer-theme-text');
                 if (themeText) themeText.textContent = document.documentElement.lang === 'ar' ? 'الوضع الفاتح' : 'Light Mode';
             }
-        });
+        }
     }
 
     // Cart & Wishlist functionality is now handled by cart-wishlist.js module

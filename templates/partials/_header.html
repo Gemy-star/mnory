@@ -33,11 +33,8 @@
             <div class="dropdown currency-dropdown">
                 <a style="text-decoration: none; cursor: pointer;" class="dropdown-toggle" type="button"
                    id="currencyDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
-                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
-                       <circle cx="12" cy="12" r="10" stroke="#000" stroke-width="2" fill="none"/>
-                       <path d="M12 6v12M9 9h4.5a1.5 1.5 0 110 3H9M9 12h4.5a1.5 1.5 0 110 3H9" stroke="#007aff" stroke-width="1.5" stroke-linecap="round"/>
-                   </svg>
-                   <span class="d-none d-md-inline" style="margin-left: 4px;">
+                   <span class="material-icons">payments</span>
+                   <span class="d-none d-md-inline">
                        {% if request.session.currency %}
                            {{ request.session.currency }}
                        {% else %}
@@ -98,10 +95,7 @@
                         type="button"
                         id="pagesDrawerBtn"
                         title="{% trans 'Menu' %}">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6h16M4 12h16M4 18h16" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M4 6h16M4 12h16M4 18h16" stroke="#007aff" stroke-width="0.5" stroke-linecap="round"/>
-                    </svg>
+                    <span class="material-icons">reorder</span>
                 </button>
 
                 <!-- Categories Button (Desktop) - Opens Categories Drawer -->
@@ -109,16 +103,7 @@
                         type="button"
                         id="categoriesDrawerBtn"
                         title="{% trans 'Browse Categories' %}">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="3" y="3" width="7" height="7" rx="1" fill="#000"/>
-                        <rect x="14" y="3" width="7" height="7" rx="1" fill="#000"/>
-                        <rect x="3" y="14" width="7" height="7" rx="1" fill="#000"/>
-                        <rect x="14" y="14" width="7" height="7" rx="1" fill="#000"/>
-                        <rect x="3.5" y="3.5" width="6" height="6" rx="0.5" fill="none" stroke="#007aff" stroke-width="1"/>
-                        <rect x="14.5" y="3.5" width="6" height="6" rx="0.5" fill="none" stroke="#007aff" stroke-width="1"/>
-                        <rect x="3.5" y="14.5" width="6" height="6" rx="0.5" fill="none" stroke="#007aff" stroke-width="1"/>
-                        <rect x="14.5" y="14.5" width="6" height="6" rx="0.5" fill="none" stroke="#007aff" stroke-width="1"/>
-                    </svg>
+                    <span class="material-icons">apps</span>
                 </button>
 
                 <!-- Desktop Search -->
@@ -206,8 +191,9 @@
     <div class="menu-drawer-content">
         <!-- Drawer Header -->
         <div class="menu-drawer-header">
-            <a href="{% url 'shop:home' %}" class="drawer-logo text-decoration-none">
-                <img src="{% static 'images/logo.png' %}" alt="MNORY" class="drawer-logo-img">
+            <a href="{% url 'shop:home' %}" class="drawer-logo text-decoration-none mx-auto">
+                <img src="{% static 'images/logo-black.png' %}" alt="MNORY" class="drawer-logo-img drawer-logo-light">
+                <img src="{% static 'images/logo.png' %}" alt="MNORY" class="drawer-logo-img drawer-logo-dark" style="display: none;">
             </a>
             <button class="menu-drawer-close" id="menuDrawerClose" aria-label="{% trans 'Close menu' %}">
                 <span class="material-icons">close</span>
@@ -216,26 +202,6 @@
 
         <!-- Mobile Quick Actions Bar (Only visible on mobile) -->
         <div class="mobile-drawer-actions d-lg-none">
-            <!-- Search -->
-            <button class="mobile-action-btn" data-bs-toggle="modal" data-bs-target="#searchModal" title="{% trans 'Search' %}">
-                <span class="material-icons">search</span>
-                <span class="action-label">{% trans "Search" %}</span>
-            </button>
-
-            <!-- Wishlist -->
-            <a href="{% url 'shop:wishlist_view' %}" class="mobile-action-btn position-relative">
-                <span class="material-icons">favorite</span>
-                <span class="action-label">{% trans "Wishlist" %}</span>
-                <span class="mobile-action-badge" id="mobile-wishlist-count">0</span>
-            </a>
-
-            <!-- Cart -->
-            <a href="{% url 'shop:cart_view' %}" class="mobile-action-btn position-relative">
-                <span class="material-icons">shopping_cart</span>
-                <span class="action-label">{% trans "Cart" %}</span>
-                <span class="mobile-action-badge" id="mobile-cart-count">0</span>
-            </a>
-
             <!-- Theme Toggle -->
             <button class="mobile-action-btn" id="mobileDrawerThemeToggle" title="{% trans 'Toggle Theme' %}">
                 <span class="material-icons mobile-theme-icon-light">light_mode</span>
@@ -247,7 +213,7 @@
         <!-- Drawer Body -->
         <div class="menu-drawer-body">
             <!-- User Account Section -->
-            <div class="drawer-section">
+            <div class="drawer-nav">
                 {% if user.is_authenticated %}
                     <a href="{% url 'shop:order_history' %}" class="drawer-user-info">
                         <div class="drawer-user-avatar">
@@ -270,26 +236,6 @@
 
             <div class="drawer-divider"></div>
 
-            <!-- Search Box (Mobile Only) -->
-            <div class="drawer-section d-lg-none">
-                <div class="drawer-search-box">
-                    <form action="{% url 'shop:home' %}" method="get">
-                        <div class="position-relative">
-                            <input type="text"
-                                   name="search"
-                                   class="form-control"
-                                   placeholder="{% trans 'Search products...' %}"
-                                   autocomplete="off">
-                            <button type="submit" class="drawer-search-btn">
-                                <span class="material-icons">search</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="drawer-divider d-lg-none"></div>
-
             <!-- Main Navigation -->
             <nav class="drawer-nav">
                 <a href="{% url 'shop:home' %}" class="drawer-menu-item">
@@ -306,21 +252,22 @@
                     <span>{% trans "Shop" %}</span>
                 </a>
 
-                <!-- Show cart/wishlist only on desktop in menu drawer, mobile has quick actions -->
-                <a href="{% url 'shop:cart_view' %}" class="drawer-menu-item d-none d-lg-flex">
-                    <span class="drawer-icon-circle">
-                        <span class="material-icons">shopping_cart</span>
-                    </span>
-                    <span>{% trans "Cart" %}</span>
-                    <span class="drawer-badge" id="drawer-cart-count">0</span>
-                </a>
-
+                <!-- Wishlist (Desktop only, mobile has quick actions) -->
                 <a href="{% url 'shop:wishlist_view' %}" class="drawer-menu-item d-none d-lg-flex">
                     <span class="drawer-icon-circle">
                         <span class="material-icons">favorite</span>
                     </span>
                     <span>{% trans "Wishlist" %}</span>
                     <span class="drawer-badge" id="drawer-wishlist-count">0</span>
+                </a>
+
+                <!-- Cart (Desktop only, mobile has quick actions) -->
+                <a href="{% url 'shop:cart_view' %}" class="drawer-menu-item d-none d-lg-flex">
+                    <span class="drawer-icon-circle">
+                        <span class="material-icons">shopping_cart</span>
+                    </span>
+                    <span>{% trans "Cart" %}</span>
+                    <span class="drawer-badge" id="drawer-cart-count">0</span>
                 </a>
 
                 {% if user.is_authenticated %}
@@ -379,8 +326,8 @@
 
             <div class="drawer-divider"></div>
 
-            <!-- Theme Toggle in Drawer -->
-            <div class="drawer-section">
+            <!-- Theme Toggle in Drawer (Desktop only, mobile has quick actions) -->
+            <div class="drawer-section d-none d-lg-block">
                 <button class="drawer-menu-item drawer-theme-toggle" id="drawerThemeToggle">
                     <span class="drawer-icon-circle">
                         <span class="material-icons drawer-theme-icon-moon">dark_mode</span>
