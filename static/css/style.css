@@ -4540,45 +4540,8 @@ body.dark-mode .empty-state {
   }
 }
 
-/* Extra small mobile devices - Hero Slider */
+/* Responsive footer styles for small mobile */
 @media (max-width: 576px) {
-  .hero-heading {
-    font-size: 2rem !important;
-    margin-bottom: 0.75rem;
-  }
-
-  .hero-subtext {
-    font-size: 0.9rem !important;
-    margin-bottom: 1.25rem;
-  }
-
-  .btn-hero-primary {
-    padding: 0.6rem 1.25rem;
-    font-size: 0.85rem;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .btn-hero-secondary {
-    padding: 0.6rem 1rem;
-    font-size: 0.8rem;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .hero-actions {
-    width: 100%;
-  }
-
-  .hero-badge {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
-  }
-
-  .hero-content-wrapper {
-    padding: 0 15px;
-  }
-
   footer .logo {
     font-size: 1.8rem;
   }
@@ -4595,37 +4558,6 @@ body.dark-mode .empty-state {
 
   .social-icons {
     justify-content: center;
-  }
-}
-
-/* Very small devices - Hero Slider */
-@media (max-width: 420px) {
-  .hero-heading {
-    font-size: 1.75rem !important;
-  }
-
-  .hero-subtext {
-    font-size: 0.85rem !important;
-  }
-
-  .btn-hero-primary,
-  .btn-hero-secondary {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-  }
-
-  .btn-hero-primary .material-icons,
-  .btn-hero-secondary .material-icons {
-    font-size: 16px;
-  }
-
-  .hero-badge {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.7rem;
-  }
-
-  .hero-badge .material-icons {
-    font-size: 14px;
   }
 }
 
@@ -4937,6 +4869,205 @@ body.dark-mode .hero-nav-btn:hover {
   border-radius: 6px;
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(255, 255, 255, 0.4);
+}
+
+/* ========================================
+   HERO SLIDER RESPONSIVE STYLES
+======================================== */
+
+/* Tablet and below */
+@media (max-width: 992px) {
+  .hero-swiper {
+    height: 75vh;
+    min-height: 500px;
+  }
+
+  .hero-content-wrapper {
+    padding: 1.5rem 15px;
+  }
+
+  .hero-heading {
+    font-size: 3rem;
+  }
+
+  .hero-subtext {
+    font-size: 1.1rem;
+  }
+
+  .btn-hero-primary {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+  }
+
+  .btn-hero-secondary {
+    padding: 0.9rem 1.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Mobile landscape and below */
+@media (max-width: 768px) {
+  .hero-swiper {
+    height: 70vh;
+    min-height: 450px;
+  }
+
+  .min-vh-70 {
+    min-height: 50vh;
+  }
+
+  .hero-content-wrapper {
+    padding: 1rem 15px;
+  }
+
+  .hero-content {
+    padding: 1rem 0;
+  }
+
+  .hero-heading {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+
+  .hero-subtext {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    max-width: 100%;
+  }
+
+  .btn-hero-primary {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .btn-hero-secondary {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .hero-actions {
+    gap: 0.75rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-badge {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-badge .material-icons {
+    font-size: 16px;
+  }
+
+  .hero-pagination {
+    bottom: 20px !important;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 576px) {
+  .hero-swiper {
+    height: 65vh;
+    min-height: 400px;
+  }
+
+  .min-vh-70 {
+    min-height: 45vh;
+  }
+
+  .hero-heading {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-subtext {
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .btn-hero-primary {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.85rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-hero-primary .material-icons {
+    font-size: 20px;
+  }
+
+  .btn-hero-secondary {
+    padding: 0.65rem 1rem;
+    font-size: 0.8rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-hero-secondary .material-icons {
+    font-size: 18px;
+  }
+
+  .hero-badge {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .hero-badge .material-icons {
+    font-size: 14px;
+  }
+
+  .hero-pagination .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+  }
+
+  .hero-pagination .swiper-pagination-bullet-active {
+    width: 30px;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 420px) {
+  .hero-swiper {
+    height: 60vh;
+    min-height: 350px;
+  }
+
+  .hero-heading {
+    font-size: 1.75rem;
+  }
+
+  .hero-subtext {
+    font-size: 0.85rem;
+  }
+
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-hero-primary .material-icons,
+  .btn-hero-secondary .material-icons {
+    font-size: 16px;
+  }
+
+  .hero-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .hero-badge .material-icons {
+    font-size: 12px;
+  }
+
+  .hero-pagination {
+    bottom: 15px !important;
+  }
 }
 
 /* Default Hero Section */

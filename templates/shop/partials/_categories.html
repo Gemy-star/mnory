@@ -91,17 +91,8 @@
                             {% endfor %}
                         {% endif %}
                     </div>
-
-                    <!-- Swiper Navigation -->
-                    <div class="swiper-button-next category-swiper-next">
-                        <span class="material-icons">chevron_right</span>
-                    </div>
-                    <div class="swiper-button-prev category-swiper-prev">
-                        <span class="material-icons">chevron_left</span>
-                    </div>
-
                     <!-- Swiper Pagination -->
-                    <div class="swiper-pagination category-swiper-pagination"></div>
+                    <div class="swiper-pagination"></div>
                 </div>
             </div>
 
@@ -350,8 +341,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             products.forEach((product, index) => {
                 console.log('Creating card for product:', product.name, 'with image:', product.image);
+
+                // Create swiper slide wrapper
+                const slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+
+                // Create product card
                 const productCard = createProductCard(product);
-                productsGrid.appendChild(productCard);
+
+                // Append card to slide
+                slide.appendChild(productCard);
+
+                // Append slide to grid
+                productsGrid.appendChild(slide);
             });
 
             // Cache the generated HTML
@@ -366,6 +368,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Initialize interactions
             initializeProductInteractions();
+
+            // Destroy and reinitialize swiper
+            if (categorySwiper) {
+                categorySwiper.destroy(true, true);
+            }
+            setTimeout(() => {
+                initCategorySwiper();
+            }, 100);
         }
     }
 
@@ -530,19 +540,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // State Management Functions
     function showLoading() {
         loadingState.style.display = 'flex';
-        productsGrid.style.display = 'none';
+        swiperContainer.style.display = 'none';
         emptyState.style.display = 'none';
     }
 
     function showProducts() {
         loadingState.style.display = 'none';
-        productsGrid.style.display = 'grid';
+        swiperContainer.style.display = 'block';
         emptyState.style.display = 'none';
     }
 
     function showEmptyState() {
         loadingState.style.display = 'none';
-        productsGrid.style.display = 'none';
+        swiperContainer.style.display = 'none';
         emptyState.style.display = 'flex';
     }
 
