@@ -3118,14 +3118,14 @@ body.dark-mode .menu-drawer-content {
 
 @media (min-width: 481px) and (max-width: 768px) {
     .drawer-logo-img {
-        height: 113px !important;
+        height: 42px !important;
         max-width: 140px !important;
     }
 }
 
 @media (min-width: 769px) {
     .drawer-logo-img {
-        height: 113px !important;
+        height: 48px !important;
         max-width: 160px !important;
     }
 }
@@ -3284,7 +3284,7 @@ body.dark-mode .drawer-logo-dark {
 }
 
 .drawer-logo-img {
-    height: 113px;
+    height: 45px;
     width: auto;
     max-width: 150px;
     object-fit: contain;
@@ -4922,6 +4922,14 @@ body.dark-mode .sale-section {
     rgba(220, 53, 69, 0.08) 0%,
     var(--theme-bg) 100%
   );
+}
+
+body.dark-mode .home-categories-section,
+body.dark-mode .freelance-categories-section {
+  background: var(--theme-bg-secondary);
+  box-shadow:
+    inset 0 4px 10px -4px rgba(0, 0, 0, 0.2),
+    0 2px 10px -2px rgba(0, 0, 0, 0.15);
 }
 
 body.dark-mode .swiper-nav-btn {

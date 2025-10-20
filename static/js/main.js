@@ -220,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const htmlElement = document.documentElement;
 
         if (isDark) {
+            // Switch to light mode
             document.body.classList.remove('dark-mode');
             htmlElement.setAttribute('data-theme', 'light');
             localStorage.setItem('theme', 'light');
@@ -230,12 +231,25 @@ document.addEventListener('DOMContentLoaded', function() {
             if (headerLightIcon) headerLightIcon.style.display = 'block';
             if (headerDarkIcon) headerDarkIcon.style.display = 'none';
 
+            // Update mobile drawer theme toggle icons
+            const mobileLightIcon = document.querySelector('.mobile-theme-icon-light');
+            const mobileDarkIcon = document.querySelector('.mobile-theme-icon-dark');
+            if (mobileLightIcon) mobileLightIcon.style.display = 'block';
+            if (mobileDarkIcon) mobileDarkIcon.style.display = 'none';
+
+            // Update drawer theme toggle icons (desktop)
+            const drawerMoonIcon = document.querySelector('.drawer-theme-icon-moon');
+            const drawerSunIcon = document.querySelector('.drawer-theme-icon-sun');
+            if (drawerMoonIcon) drawerMoonIcon.style.display = 'block';
+            if (drawerSunIcon) drawerSunIcon.style.display = 'none';
+
             // Update drawer theme text (desktop only)
             if (drawerThemeToggle) {
                 const themeText = drawerThemeToggle.querySelector('.drawer-theme-text');
                 if (themeText) themeText.textContent = document.documentElement.lang === 'ar' ? 'الوضع الداكن' : 'Dark Mode';
             }
         } else {
+            // Switch to dark mode
             document.body.classList.add('dark-mode');
             htmlElement.setAttribute('data-theme', 'dark');
             localStorage.setItem('theme', 'dark');
@@ -245,6 +259,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const headerDarkIcon = document.querySelector('.theme-icon-dark');
             if (headerLightIcon) headerLightIcon.style.display = 'none';
             if (headerDarkIcon) headerDarkIcon.style.display = 'block';
+
+            // Update mobile drawer theme toggle icons
+            const mobileLightIcon = document.querySelector('.mobile-theme-icon-light');
+            const mobileDarkIcon = document.querySelector('.mobile-theme-icon-dark');
+            if (mobileLightIcon) mobileLightIcon.style.display = 'none';
+            if (mobileDarkIcon) mobileDarkIcon.style.display = 'block';
+
+            // Update drawer theme toggle icons (desktop)
+            const drawerMoonIcon = document.querySelector('.drawer-theme-icon-moon');
+            const drawerSunIcon = document.querySelector('.drawer-theme-icon-sun');
+            if (drawerMoonIcon) drawerMoonIcon.style.display = 'none';
+            if (drawerSunIcon) drawerSunIcon.style.display = 'block';
 
             // Update drawer theme text (desktop only)
             if (drawerThemeToggle) {
