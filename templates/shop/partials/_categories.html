@@ -72,22 +72,37 @@
                 <p class="loading-text">{% trans "Loading products..." %}</p>
             </div>
 
-            <!-- Products Grid -->
-            <div class="products-grid" id="categoryProductsGrid">
-                <!-- Initial products loaded server-side -->
-                {% if initial_category_products %}
-                    {% for product in initial_category_products %}
-                        <div data-aos="fade-up" data-aos-delay="{% cycle 0 50 100 150 200 250 300 350 400 450 500 550 %}">
-                            {% include "partials/_product.html" with product=product %}
-                        </div>
-                    {% endfor %}
-                {% elif products %}
-                    {% for product in products %}
-                        <div data-aos="fade-up" data-aos-delay="{% cycle 0 50 100 150 200 250 300 350 400 450 500 550 %}">
-                            {% include "partials/_product.html" with product=product %}
-                        </div>
-                    {% endfor %}
-                {% endif %}
+            <!-- Products Swiper Container -->
+            <div class="category-products-swiper-container" id="categoryProductsSwiper" data-aos="fade-up" data-aos-delay="300">
+                <div class="swiper">
+                    <div class="swiper-wrapper" id="categoryProductsGrid">
+                        <!-- Initial products loaded server-side -->
+                        {% if initial_category_products %}
+                            {% for product in initial_category_products %}
+                                <div class="swiper-slide">
+                                    {% include "partials/_product.html" with product=product %}
+                                </div>
+                            {% endfor %}
+                        {% elif products %}
+                            {% for product in products %}
+                                <div class="swiper-slide">
+                                    {% include "partials/_product.html" with product=product %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Swiper Navigation -->
+                    <div class="swiper-button-next category-swiper-next">
+                        <span class="material-icons">chevron_right</span>
+                    </div>
+                    <div class="swiper-button-prev category-swiper-prev">
+                        <span class="material-icons">chevron_left</span>
+                    </div>
+
+                    <!-- Swiper Pagination -->
+                    <div class="swiper-pagination category-swiper-pagination"></div>
+                </div>
             </div>
 
             <!-- Empty State -->
@@ -126,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tabsNav = document.querySelector('.category-tabs-nav');
     const tabButtons = document.querySelectorAll('.category-tab-btn');
     const productsGrid = document.getElementById('categoryProductsGrid');
+    const swiperContainer = document.getElementById('categoryProductsSwiper');
     const loadingState = document.querySelector('.products-loading');
     const emptyState = document.querySelector('.products-empty');
     const viewAllLink = document.getElementById('viewAllLink');
@@ -137,12 +153,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // Store cached products HTML by category
     let cachedProductsHTML = {};
     let currentCategory = 'all';
+    let categorySwiper = null;
+
+    // Initialize Category Products Swiper
+    function initCategorySwiper() {
+        if (typeof window.initCategoryProductsSwiper === 'function') {
+            categorySwiper = window.initCategoryProductsSwiper();
+        }
+    }
 
     // Cache the initial server-rendered products
     const hasInitialProducts = productsGrid.children.length > 0;
     if (hasInitialProducts) {
         cachedProductsHTML['all'] = productsGrid.innerHTML;
         console.log('Cached initial products for "all" category');
+        // Initialize swiper after initial products are loaded
+        setTimeout(() => {
+            initCategorySwiper();
+        }, 100);
     }
 
     // Also cache initial products data for potential API usage
@@ -166,6 +194,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             console.log('Products found:', productsGrid.children.length);
             showProducts();
+            // Initialize swiper if not already done
+            if (!categorySwiper) {
+                initCategorySwiper();
+            }
         }
     }, 100);
 
@@ -260,6 +292,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Re-initialize interactions
         initializeProductInteractions();
+
+        // Destroy and reinitialize swiper
+        if (categorySwiper) {
+            categorySwiper.destroy(true, true);
+        }
+        setTimeout(() => {
+            initCategorySwiper();
+        }, 100);
     }
 
     // Load Products Function
@@ -311,8 +351,6 @@ document.addEventListener('DOMContentLoaded', function () {
             products.forEach((product, index) => {
                 console.log('Creating card for product:', product.name, 'with image:', product.image);
                 const productCard = createProductCard(product);
-                productCard.setAttribute('data-aos', 'fade-up');
-                productCard.setAttribute('data-aos-delay', (index * 50).toString());
                 productsGrid.appendChild(productCard);
             });
 

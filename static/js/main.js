@@ -56,6 +56,77 @@ function debounce(func, wait, immediate) {
 }
 
 // ========================================
+// SWIPER INITIALIZATION FUNCTIONS
+// ========================================
+
+// Initialize Category Products Swiper
+function initCategoryProductsSwiper() {
+    const swiperContainer = document.querySelector('.category-products-swiper-container .swiper');
+    if (!swiperContainer) return null;
+
+    return new Swiper(swiperContainer, {
+        slidesPerView: 1,
+        spaceBetween: 15,
+        loop: false,
+        autoplay: false,
+        centeredSlides: false,
+        grabCursor: true,
+        watchOverflow: true,
+
+        // Navigation arrows
+        navigation: {
+            nextEl: '.category-swiper-next',
+            prevEl: '.category-swiper-prev',
+        },
+
+        // Pagination dots
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+            dynamicBullets: true,
+        },
+
+        // Responsive breakpoints
+        breakpoints: {
+            480: {
+                slidesPerView: 2,
+                spaceBetween: 15,
+            },
+            768: {
+                slidesPerView: 3,
+                spaceBetween: 20,
+            },
+            1024: {
+                slidesPerView: 4,
+                spaceBetween: 25,
+            },
+            1200: {
+                slidesPerView: 5,
+                spaceBetween: 30,
+            }
+        },
+
+        // Effects and animations
+        on: {
+            init: function() {
+                // Add custom styling when swiper initializes
+                this.el.classList.add('swiper-initialized');
+            },
+            slideChange: function() {
+                // Optional: Add animations on slide change
+                const activeSlide = this.slides[this.activeIndex];
+                if (activeSlide) {
+                    activeSlide.style.transform = 'scale(1)';
+                }
+            }
+        }
+    });
+}
+
+// Make function globally accessible
+window.initCategoryProductsSwiper = initCategoryProductsSwiper;
+
+// ========================================
 // DOM READY - MAIN INITIALIZATION
 // ========================================
 
