@@ -1,58 +1,98 @@
 {% load i18n %}
-{% if categories %}
 
-<!-- Sustainable Style Section -->
-<div class="sustainable-style-section">
+{% if categories %}
+<!-- Modern Categories Section -->
+<div class="modern-categories-section" data-aos="fade-up">
     <div class="container">
-        <!-- Header Section -->
-        <div class="text-center mb-5">
-            <h1 class="sustainable-title mb-3">Sustainable Style</h1>
-            <p class="sustainable-subtitle mb-4">Better materials. Better quality. Better Price and Better for the planet.</p>
-            
-            <!-- Category Pills Navigation -->
-            <div class="swiper sustainable-category-swiper-unique mb-5">
-                <div class="swiper-wrapper d-flex">
-                    {% for cat in categories %}
-                    <div class="swiper-slide">
-                        <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="pill-btn">{{ cat.name }}</a>
+        <!-- Categories Grid -->
+        <div class="categories-grid" data-aos="fade-up" data-aos-delay="200">
+            {% for cat in categories %}
+            <div class="category-card" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:200 }}">
+                <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="category-link">
+                    <div class="category-icon-wrapper">
+                        {% if cat.image %}
+                            <div class="category-image">
+                                <img src="{{ cat.image.url }}" alt="{{ cat.name }}" loading="lazy">
+                            </div>
+                        {% else %}
+                            <div class="category-icon">
+                                <span class="material-icons">category</span>
+                            </div>
+                        {% endif %}
+                        <div class="category-overlay">
+                            <span class="material-icons">arrow_forward</span>
+                        </div>
                     </div>
-                    {% endfor %}
-                     <div class="swiper-slide">
-                        <a href="{% url 'shop:category_detail' slug='all' %}" class="pill-btn">{% trans 'All' %}</a>
+                    <div class="category-content">
+                        <h3 class="category-name">{{ cat.name }}</h3>
+                        <p class="category-description">{% trans "Explore our" %} {{ cat.name|lower }} {% trans "collection" %}</p>
+                        <div class="category-stats">
+                            <span class="material-icons">inventory_2</span>
+                            <span class="stats-text">{{ cat.products.count|default:"0" }} {% trans "Products" %}</span>
+                        </div>
                     </div>
-                </div>
+                </a>
+            </div>
+            {% endfor %}
+
+            <!-- All Categories Card -->
+            <div class="category-card all-categories" data-aos="zoom-in" data-aos-delay="{{ categories|length|add:300 }}">
+                <a href="{% url 'shop:category_detail' slug='all' %}" class="category-link">
+                    <div class="category-icon-wrapper">
+                        <div class="category-icon">
+                            <span class="material-icons">apps</span>
+                        </div>
+                        <div class="category-overlay">
+                            <span class="material-icons">explore</span>
+                        </div>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-name">{% trans "All Categories" %}</h3>
+                        <p class="category-description">{% trans "Browse all our products" %}</p>
+                        <div class="category-stats">
+                            <span class="material-icons">explore</span>
+                            <span class="stats-text">{% trans "Discover All" %}</span>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
 
-        <!-- Registration Cards Section -->
-        <div class="registration-cards-section">
-            <div class="row justify-content-center g-4">
-                <!-- Vendor Registration Card -->
-                <div class="col-md-5 col-lg-4">
-                    <div class="registration-card vendor-card">
-                        <div class="card-icon mb-3">
-                            <i class="fas fa-store"></i>
-                        </div>
-                        <h3 class="card-title mb-3">{% trans "Become a Vendor" %}</h3>
-                        <p class="card-description mb-4">{% trans "Join our marketplace and start selling your sustainable products to customers worldwide" %}</p>
+        <!-- Registration Section -->
+        <div class="registration-section" data-aos="fade-up" data-aos-delay="400">
+            <h3 class="registration-title">
+                <span class="material-icons">store</span>
+                {% trans "Join Our Marketplace" %}
+            </h3>
+            <p class="registration-subtitle">{% trans "Start your journey as a vendor or customer today" %}</p>
+
+            <div class="registration-cards">
+                <!-- Vendor Registration -->
+                <div class="registration-card vendor-card" data-aos="slide-up" data-aos-delay="500">
+                    <div class="card-icon">
+                        <span class="material-icons">storefront</span>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">{% trans "Become a Vendor" %}</h4>
+                        <p class="card-description">{% trans "Join our marketplace and start selling your products worldwide" %}</p>
                         <a href="{% url 'shop:register_vendor' %}" class="registration-btn vendor-btn">
-                            {% trans "Register as Vendor" %}
-                            <i class="fas fa-arrow-right ms-2"></i>
+                            <span class="btn-text">{% trans "Register as Vendor" %}</span>
+                            <span class="material-icons">arrow_forward</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- Customer Registration Card -->
-                <div class="col-md-5 col-lg-4">
-                    <div class="registration-card customer-card">
-                        <div class="card-icon mb-3">
-                            <i class="fas fa-user-circle"></i>
-                        </div>
-                        <h3 class="card-title mb-3">{% trans "Join as Customer" %}</h3>
-                        <p class="card-description mb-4">{% trans "Discover amazing sustainable products and enjoy exclusive offers from our verified vendors" %}</p>
+                <!-- Customer Registration -->
+                <div class="registration-card customer-card" data-aos="slide-up" data-aos-delay="600">
+                    <div class="card-icon">
+                        <span class="material-icons">person_add</span>
+                    </div>
+                    <div class="card-content">
+                        <h4 class="card-title">{% trans "Join as Customer" %}</h4>
+                        <p class="card-description">{% trans "Create an account to enjoy exclusive offers and fast checkout" %}</p>
                         <a href="{% url 'shop:register_customer' %}" class="registration-btn customer-btn">
-                            {% trans "Register as Customer" %}
-                            <i class="fas fa-arrow-right ms-2"></i>
+                            <span class="btn-text">{% trans "Register as Customer" %}</span>
+                            <span class="material-icons">arrow_forward</span>
                         </a>
                     </div>
                 </div>
@@ -60,460 +100,4 @@
         </div>
     </div>
 </div>
-
-<style>
-/* Sustainable Style Section Background */
-.sustainable-style-section {
-    background: linear-gradient(135deg, #e0e0e0, #000, #007aff);
-    min-height: 100vh;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);;
-}
-
-.sustainable-style-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    z-index: 1;
-}
-
-.sustainable-style-section .container {
-    position: relative;
-    z-index: 2;
-}
-
-/* Title Styling */
-.sustainable-title {
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 700;
-    color: #ffffff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    letter-spacing: -0.02em;
-}
-
-.sustainable-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.25rem);
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 400;
-    max-width: 600px;
-    margin: 0 auto;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Category Pills */
-.pill-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 12px 24px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.pill-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.pill-btn:hover::before {
-    left: 100%;
-}
-
-.pill-btn:hover,
-.pill-btn.active {
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border-color: rgba(255, 255, 255, 0.9);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* Category Cards */
-.sustainable-category-card {
-    width: 160px;
-    margin: 0 auto;
-    transition: transform 0.3s ease;
-}
-
-.sustainable-category-card:hover {
-    transform: translateY(-10px);
-}
-
-.category-circle-modern {
-    width: 140px;
-    height: 140px;
-    overflow: hidden;
-    border-radius: 50%;
-    position: relative;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 3px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.category-circle-modern::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #007aff, #00c6ff, #007aff);
-    border-radius: 50%;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.category-circle-modern:hover::before {
-    opacity: 1;
-}
-
-.category-circle-modern:hover {
-    transform: scale(1.05);
-    border-color: rgba(255, 255, 255, 0.4);
-}
-
-.category-circle-modern img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    filter: brightness(1.1) contrast(1.1);
-}
-
-.category-circle-modern:hover img {
-    transform: scale(1.1);
-}
-
-.category-label-modern {
-    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-    margin-top: 1rem;
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-}
-
-/* Swiper Specific Styles */
-.sustainable-category-swiper-unique {
-    margin-bottom: 3rem;
-}
-
-.sustainable-category-swiper-unique .swiper-slide {
-    height: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: auto !important; /* Allow flexible width for pills */
-}
-
-.sustainable-category-swiper-unique .swiper-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sustainable-category-swiper-unique .swiper-button-next,
-.sustainable-category-swiper-unique .swiper-button-prev {
-    display: none !important;
-}
-
-/* Registration Cards Section */
-.registration-cards-section {
-    margin-top: 4rem;
-    padding: 0 1rem;
-}
-
-.registration-card {
-    background: #000 !important;
-    backdrop-filter: blur(15px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 2.5rem 2rem;
-    text-align: center;
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.registration-card::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    border-radius: 22px;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.registration-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.4);
-}
-
-.registration-card:hover::before {
-    opacity: 1;
-}
-
-.vendor-card:hover {
-    background: rgba(0, 122, 255, 0.2);
-}
-
-.customer-card:hover {
-    background: rgba(0, 198, 255, 0.2);
-}
-
-.card-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.card-icon i {
-    font-size: 2.2rem;
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.registration-card:hover .card-icon {
-    transform: scale(1.1) rotate(5deg);
-    background: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-}
-
-.card-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    margin-bottom: 1rem;
-}
-
-.card-description {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    line-height: 1.6;
-    margin-bottom: 2rem;
-}
-
-.registration-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 15px 30px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.registration-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.registration-btn:hover::before {
-    left: 100%;
-}
-
-.registration-btn:hover {
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border-color: rgba(255, 255, 255, 0.9);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    text-shadow: none;
-}
-
-.vendor-btn:hover {
-    background: linear-gradient(135deg, #007aff, #0056d3);
-    color: #ffffff;
-    border-color: #007aff;
-}
-
-.customer-btn:hover {
-    background: linear-gradient(135deg, #00c6ff, #0072ff);
-    color: #ffffff;
-    border-color: #00c6ff;
-}
-
-.registration-btn i {
-    transition: transform 0.3s ease;
-}
-
-.registration-btn:hover i {
-    transform: translateX(5px);
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .sustainable-style-section {
-        min-height: auto;
-        padding: 3rem 0;
-    }
-    
-    .pill-btn {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
-    
-    .registration-cards-section {
-        margin-top: 2rem;
-        padding: 0 0.5rem;
-    }
-    
-    .registration-card {
-        padding: 2rem 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .card-icon {
-        width: 70px;
-        height: 70px;
-    }
-    
-    .card-icon i {
-        font-size: 2rem;
-    }
-    
-    .card-title {
-        font-size: 1.3rem;
-    }
-    
-    .card-description {
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .registration-btn {
-        padding: 12px 25px;
-        font-size: 0.95rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .registration-card {
-        padding: 1.5rem 1rem;
-    }
-    
-    .card-icon {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .card-icon i {
-        font-size: 1.8rem;
-    }
-    
-    .card-title {
-        font-size: 1.2rem;
-    }
-    
-    .card-description {
-        font-size: 0.9rem;
-    }
-    
-    .registration-btn {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    new Swiper('.sustainable-category-swiper-unique', {
-        loop: false,
-        slidesPerView: 'auto',
-        spaceBetween: 15,
-        centeredSlides: true,
-        grabCursor: true,
-        freeMode: true,
-        breakpoints: {
-            576: { 
-                spaceBetween: 20,
-                centeredSlides: false
-            },
-            768: { 
-                spaceBetween: 25,
-                centeredSlides: false
-            },
-            992: { 
-                spaceBetween: 30,
-                centeredSlides: false
-            }
-        }
-    });
-
-    // Set first pill as active by default
-    const firstPill = document.querySelector('.pill-btn');
-    if (firstPill) {
-        firstPill.classList.add('active');
-    }
-
-    // Category pills interaction
-    const pillButtons = document.querySelectorAll('.pill-btn');
-    
-    pillButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            pillButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-});
-</script>
-
 {% endif %}

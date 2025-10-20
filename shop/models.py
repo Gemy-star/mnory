@@ -15,15 +15,17 @@ from colorfield.fields import ColorField
 import uuid
 from constance import config
 from django_ckeditor_5.fields import CKEditor5Field
+
+
 class MnoryUser(AbstractUser):
     # Define choices for user types
     USER_TYPE_CHOICES = (
-        ('admin', 'Admin'),
-        ('vendor', 'Vendor'),
-        ('customer', 'Customer'),
-        ('company', 'Company'),
-        ('freelancer', 'Freelancer'),
-        ('affiliate', 'Affiliate'),
+        ("admin", "Admin"),
+        ("vendor", "Vendor"),
+        ("customer", "Customer"),
+        ("company", "Company"),
+        ("freelancer", "Freelancer"),
+        ("affiliate", "Affiliate"),
     )
 
     username = models.CharField(
@@ -31,8 +33,10 @@ class MnoryUser(AbstractUser):
         max_length=150,
         unique=True,
         blank=True,  # Allow blank
-        null=True,   # Allow null
-        help_text=_("Optional. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
+        null=True,  # Allow null
+        help_text=_(
+            "Optional. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
         error_messages={
             "unique": _("A user with that username already exists."),
         },
@@ -45,19 +49,19 @@ class MnoryUser(AbstractUser):
         unique=True,
         blank=True,
         null=True,
-        help_text="User's phone number, must be unique if provided."
+        help_text="User's phone number, must be unique if provided.",
     )
 
     # Main field for user role/type
     user_type = models.CharField(
         max_length=10,
         choices=USER_TYPE_CHOICES,
-        default='customer',
-        help_text="Defines the primary role or type of the user."
+        default="customer",
+        help_text="Defines the primary role or type of the user.",
     )
 
     # Set email as the USERNAME_FIELD for authentication
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []  # No extra required fields
 
     class Meta:
@@ -70,45 +74,47 @@ class MnoryUser(AbstractUser):
     # --- Helper methods (renamed to avoid conflict with Django internals) ---
     @property
     def is_admin_type(self):
-        return self.user_type == 'admin'
+        return self.user_type == "admin"
 
     @property
     def is_vendor_type(self):
-        return self.user_type == 'vendor'
+        return self.user_type == "vendor"
 
     @property
     def is_customer_type(self):
-        return self.user_type == 'customer'
+        return self.user_type == "customer"
 
     @property
     def is_company_type(self):
-        return self.user_type == 'company'
+        return self.user_type == "company"
 
     @property
     def is_freelancer_type(self):
-        return self.user_type == 'freelancer'
+        return self.user_type == "freelancer"
 
     @property
     def is_affiliate_type(self):
-        return self.user_type == 'affiliate'
+        return self.user_type == "affiliate"
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    image = models.ImageField(upload_to="categories/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     image_resized = ImageSpecField(
-        source='image',
+        source="image",
         processors=[ResizeToFill(376, 477)],
-        format='JPEG',
-        options={'quality': 85}
+        format="JPEG",
+        options={"quality": 85},
     )
+
     class Meta:
         verbose_name_plural = "Categories"
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -119,28 +125,31 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('shop:category_detail', kwargs={'slug': self.slug})
+        return reverse("shop:category_detail", kwargs={"slug": self.slug})
 
 
 class SubCategory(models.Model):
-    category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        Category, related_name="subcategories", on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, blank=True)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='subcategories/', blank=True, null=True)
+    image = models.ImageField(upload_to="subcategories/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     image_resized = ImageSpecField(
-        source='image',
+        source="image",
         processors=[ResizeToFill(376, 477)],
-        format='JPEG',
-        options={'quality': 85}
+        format="JPEG",
+        options={"quality": 85},
     )
+
     class Meta:
         verbose_name_plural = "Sub Categories"
-        unique_together = ['category', 'slug']
-        ordering = ['name']
+        unique_together = ["category", "slug"]
+        ordering = ["name"]
 
     def __str__(self):
         return f"{self.category.name} - {self.name}"
@@ -151,7 +160,10 @@ class SubCategory(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('shop:subcategory_detail', kwargs={'category_slug': self.category.slug, 'slug': self.slug})
+        return reverse(
+            "shop:subcategory_detail",
+            kwargs={"category_slug": self.category.slug, "slug": self.slug},
+        )
 
 
 class FitType(models.Model):
@@ -161,7 +173,7 @@ class FitType(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -175,18 +187,19 @@ class FitType(models.Model):
 class Brand(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
-    logo = models.ImageField(upload_to='brands/', blank=True, null=True)
+    logo = models.ImageField(upload_to="brands/", blank=True, null=True)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     logo_resized = ImageSpecField(
-        source='logo',
+        source="logo",
         processors=[ResizeToFill(376, 477)],
-        format='JPEG',
-        options={'quality': 85}
+        format="JPEG",
+        options={"quality": 85},
     )
+
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -196,13 +209,18 @@ class Brand(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+
 class Color(models.Model):
     name = models.CharField(max_length=50, unique=True)
-    hex_code = ColorField(default='#FFFFFF', verbose_name=_("Color Code"), help_text="Color hex code (e.g., #FF0000)")
+    hex_code = ColorField(
+        default="#FFFFFF",
+        verbose_name=_("Color Code"),
+        help_text="Color hex code (e.g., #FF0000)",
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -210,19 +228,19 @@ class Color(models.Model):
 
 class Size(models.Model):
     SIZE_TYPES = [
-        ('clothing', 'Clothing'),
-        ('shoes', 'Shoes'),
-        ('accessories', 'Accessories'),
+        ("clothing", "Clothing"),
+        ("shoes", "Shoes"),
+        ("accessories", "Accessories"),
     ]
 
     name = models.CharField(max_length=20)
-    size_type = models.CharField(max_length=20, choices=SIZE_TYPES, default='clothing')
+    size_type = models.CharField(max_length=20, choices=SIZE_TYPES, default="clothing")
     order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['size_type', 'order', 'name']
-        unique_together = ['name', 'size_type']
+        ordering = ["size_type", "order", "name"]
+        unique_together = ["name", "size_type"]
 
     def __str__(self):
         return f"{self.name} ({self.get_size_type_display()})"  # type: ignore
@@ -234,15 +252,44 @@ class Product(models.Model):
     description = models.TextField()
     short_description = models.CharField(max_length=300, blank=True)
 
-    category = models.ForeignKey('Category', related_name='products', on_delete=models.CASCADE) # Use string if not imported
-    subcategory = models.ForeignKey('SubCategory', related_name='products', on_delete=models.CASCADE) # Use string if not imported
-    fit_type = models.ForeignKey('FitType', related_name='products', on_delete=models.SET_NULL, null=True, blank=True) # Use string if not imported
-    brand = models.ForeignKey('Brand', related_name='products', on_delete=models.SET_NULL, null=True, blank=True) # Use string if not imported
-    vendor = models.ForeignKey('VendorProfile', related_name='products', on_delete=models.SET_NULL, null=True, blank=True) # Use string if not imported
+    category = models.ForeignKey(
+        "Category", related_name="products", on_delete=models.CASCADE
+    )  # Use string if not imported
+    subcategory = models.ForeignKey(
+        "SubCategory", related_name="products", on_delete=models.CASCADE
+    )  # Use string if not imported
+    fit_type = models.ForeignKey(
+        "FitType",
+        related_name="products",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )  # Use string if not imported
+    brand = models.ForeignKey(
+        "Brand",
+        related_name="products",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )  # Use string if not imported
+    vendor = models.ForeignKey(
+        "VendorProfile",
+        related_name="products",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )  # Use string if not imported
 
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
-                                     validators=[MinValueValidator(Decimal('0.01'))])
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
+    sale_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.01"))],
+    )
 
     # Flags
     is_best_seller = models.BooleanField(default=False)
@@ -251,7 +298,9 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False)
 
     # Stock status
-    stock_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)]) # This might become less relevant with variants
+    stock_quantity = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)]
+    )  # This might become less relevant with variants
     is_active = models.BooleanField(default=True)
     is_available = models.BooleanField(default=True)
 
@@ -264,10 +313,17 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     # Many-to-many (through ProductColor/ProductSize/ProductVariant)
-    colors = models.ManyToManyField(Color, through='ProductColor', blank=True)
-    sizes = models.ManyToManyField(Size, through='ProductSize', blank=True)
-    size_chart = CKEditor5Field(blank=True, null=True, help_text="Add size chart content here (HTML supported)")
-    delivery_return = CKEditor5Field(blank=True, null=True, help_text="Add Delivery and return policy (HTML supported)")
+    colors = models.ManyToManyField(Color, through="ProductColor", blank=True)
+    sizes = models.ManyToManyField(Size, through="ProductSize", blank=True)
+    size_chart = CKEditor5Field(
+        blank=True, null=True, help_text="Add size chart content here (HTML supported)"
+    )
+    delivery_return = CKEditor5Field(
+        blank=True,
+        null=True,
+        help_text="Add Delivery and return policy (HTML supported)",
+    )
+
     @property
     def price_egp(self):
         """
@@ -275,53 +331,60 @@ class Product(models.Model):
         exchange rate from settings.
         """
         # Get the current price (sale price if applicable)
-        current_usd_price = self.sale_price if self.is_on_sale and self.sale_price else self.price
-        
+        current_usd_price = (
+            self.sale_price if self.is_on_sale and self.sale_price else self.price
+        )
+
         # Access the exchange rate from settings
         rate = Decimal(str(config.EXCHANGE_RATE_USD_TO_EGP))
-        
+
         # Return the calculated EGP price
         return current_usd_price * rate
+
     @property
     def price_usd(self):
         """
         return price in USD
         """
         # Get the current price (sale price if applicable)
-        current_usd_price = self.sale_price if self.is_on_sale and self.sale_price else self.price
-        
+        current_usd_price = (
+            self.sale_price if self.is_on_sale and self.sale_price else self.price
+        )
+
         # Return the calculated USD price
         return current_usd_price
+
     @property
     def price_egp_no_sale(self):
         """
         Calculates the price in EGP based on the USD price and the
         exchange rate from settings.
         """
-        current_usd_price = self.price 
-        
+        current_usd_price = self.price
+
         # Access the exchange rate from settings
         rate = Decimal(str(config.EXCHANGE_RATE_USD_TO_EGP))
-        
+
         # Return the calculated EGP price
         return current_usd_price * rate
+
     @property
     def price_usd_no_sale(self):
         """
         return price in USD
         """
         # Get the current price (sale price if applicable)
-        current_usd_price = self.price 
-        
+        current_usd_price = self.price
+
         # Return the calculated USD price
         return current_usd_price
-   
+
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['slug']),
-            models.Index(fields=['category', 'subcategory']),
-            models.Index(fields=['is_active', 'is_available']),
+            models.Index(fields=["slug"]),
+            models.Index(fields=["category", "subcategory"]),
+            models.Index(fields=["is_active", "is_available"]),
         ]
 
     def __str__(self):
@@ -340,7 +403,7 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('shop:product_detail', kwargs={'slug': self.slug})
+        return reverse("shop:product_detail", kwargs={"slug": self.slug})
 
     @property
     def get_price(self):
@@ -378,7 +441,7 @@ class Product(models.Model):
             is_active=True,
             productvariant__product=self,
             productvariant__stock_quantity__gt=0,
-            productvariant__is_available=True
+            productvariant__is_available=True,
         ).distinct()
 
     def get_available_sizes(self, color_id=None):
@@ -386,13 +449,21 @@ class Product(models.Model):
         Return distinct active sizes that have at least one variant in stock.
         Optionally filter by a specific color.
         """
-        filters = Q(is_active=True) & Q(productvariant__product=self) & \
-                  Q(productvariant__stock_quantity__gt=0) & Q(productvariant__is_available=True)
+        filters = (
+            Q(is_active=True)
+            & Q(productvariant__product=self)
+            & Q(productvariant__stock_quantity__gt=0)
+            & Q(productvariant__is_available=True)
+        )
 
         if color_id:
             filters &= Q(productvariant__color_id=color_id)
 
-        return Size.objects.filter(filters).distinct().order_by('size_type', 'order', 'name')
+        return (
+            Size.objects.filter(filters)
+            .distinct()
+            .order_by("size_type", "order", "name")
+        )
 
     @property
     def get_all_product_sizes_by_type(self):
@@ -402,45 +473,58 @@ class Product(models.Model):
         For simplicity here, let's assume `self.category.size_type` exists.
         If not, you'd need to explicitly set `size_type` on the Product or deduce it.
         """
-        if hasattr(self.category, 'size_type') and self.category.size_type:
-            return Size.objects.filter(is_active=True, size_type=self.category.size_type).order_by('size_type', 'order', 'name')
+        if hasattr(self.category, "size_type") and self.category.size_type:
+            return Size.objects.filter(
+                is_active=True, size_type=self.category.size_type
+            ).order_by("size_type", "order", "name")
         else:
-            return Size.objects.filter(is_active=True).order_by('size_type', 'order', 'name')
+            return Size.objects.filter(is_active=True).order_by(
+                "size_type", "order", "name"
+            )
 
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='products/')
+    product = models.ForeignKey(
+        Product, related_name="images", on_delete=models.CASCADE
+    )
+    image = models.ImageField(upload_to="products/")
     alt_text = models.CharField(max_length=200, blank=True)
     is_main = models.BooleanField(default=False)
     is_hover = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
-    color = models.ForeignKey(Color, related_name='product_images', on_delete=models.SET_NULL, null=True, blank=True)
+    color = models.ForeignKey(
+        Color,
+        related_name="product_images",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     image_resized = ImageSpecField(
-        source='image',
+        source="image",
         processors=[ResizeToFill(376, 477)],
-        format='JPEG',
-        options={'quality': 85}
+        format="JPEG",
+        options={"quality": 85},
     )
     thumb_resized = ImageSpecField(
-        source='image',
+        source="image",
         processors=[ResizeToFill(709, 920)],
-        format='JPEG',
-        options={'quality': 70}
+        format="JPEG",
+        options={"quality": 70},
     )
+
     class Meta:
-        ordering = ['order', 'created_at']
+        ordering = ["order", "created_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=['product', 'color'],
+                fields=["product", "color"],
                 condition=Q(is_main=True),
-                name='unique_main_image_per_product_color'
+                name="unique_main_image_per_product_color",
             ),
             models.UniqueConstraint(
-                fields=['product', 'color'],
+                fields=["product", "color"],
                 condition=Q(is_hover=True),
-                name='unique_hover_image_per_product_color'
+                name="unique_hover_image_per_product_color",
             ),
         ]
 
@@ -451,18 +535,15 @@ class ProductImage(models.Model):
         if self.is_main:
             # Ensure only one main image per product and color
             ProductImage.objects.filter(
-                product=self.product,
-                color=self.color,
-                is_main=True
+                product=self.product, color=self.color, is_main=True
             ).exclude(pk=self.pk).update(is_main=False)
         if self.is_hover:
             # Ensure only one hover image per product and color
             ProductImage.objects.filter(
-                product=self.product,
-                color=self.color,
-                is_hover=True
+                product=self.product, color=self.color, is_hover=True
             ).exclude(pk=self.pk).update(is_hover=False)
         super().save(*args, **kwargs)
+
 
 class ProductColor(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -472,7 +553,7 @@ class ProductColor(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['product', 'color']
+        unique_together = ["product", "color"]
 
     def __str__(self):
         return f"{self.product.name} - {self.color.name}"
@@ -486,24 +567,28 @@ class ProductSize(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['product', 'size']
+        unique_together = ["product", "size"]
 
     def __str__(self):
         return f"{self.product.name} - {self.size.name}"
 
 
 class ProductVariant(models.Model):
-    product = models.ForeignKey(Product, related_name='variants', on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product, related_name="variants", on_delete=models.CASCADE
+    )
     color = models.ForeignKey(Color, on_delete=models.CASCADE)
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
     sku = models.CharField(max_length=100, unique=True, blank=True)
     stock_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    price_adjustment = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    price_adjustment = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00
+    )
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['product', 'color', 'size']
+        unique_together = ["product", "color", "size"]
 
     def __str__(self):
         return f"{self.product.name} - {self.color.name} - {self.size.name}"
@@ -516,23 +601,27 @@ class ProductVariant(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.sku:
-            self.sku = f"{self.product.slug}-{self.color.name.lower()}-{self.size.name.lower()}".replace(' ', '-')
+            self.sku = f"{self.product.slug}-{self.color.name.lower()}-{self.size.name.lower()}".replace(
+                " ", "-"
+            )
         super().save(*args, **kwargs)
+
+
 # --- Cart Models ---
 class Cart(models.Model):
-    session_key = models.CharField(max_length=40, null=True, blank=True, unique=True)  # For anonymous users
+    session_key = models.CharField(
+        max_length=40, null=True, blank=True, unique=True
+    )  # For anonymous users
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.OneToOneField(
-        MnoryUser,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='cart'
+        MnoryUser, on_delete=models.CASCADE, null=True, blank=True, related_name="cart"
     )
 
     total_items_field = models.PositiveIntegerField(default=0)
-    total_price_field = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    total_price_field = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
 
     class Meta:
         verbose_name = "Shopping Cart"
@@ -545,14 +634,24 @@ class Cart(models.Model):
 
     @property
     def total_items(self):
-        return self.items.aggregate(total_quantity=models.Sum('quantity'))['total_quantity'] or 0
+        return (
+            self.items.aggregate(total_quantity=models.Sum("quantity"))[
+                "total_quantity"
+            ]
+            or 0
+        )
 
     @property
     def total_price(self):
         return sum(item.get_total_price() for item in self.items.all())
 
     def update_totals(self):
-        total_quantity = self.items.aggregate(total_quantity=models.Sum('quantity'))['total_quantity'] or 0
+        total_quantity = (
+            self.items.aggregate(total_quantity=models.Sum("quantity"))[
+                "total_quantity"
+            ]
+            or 0
+        )
         total_price = sum(item.get_total_price() for item in self.items.all())
         self.total_items_field = total_quantity
         self.total_price_field = total_price
@@ -561,13 +660,13 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, related_name="items", on_delete=models.CASCADE)
     product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('cart', 'product_variant')
+        unique_together = ("cart", "product_variant")
         verbose_name = "Cart Item"
         verbose_name_plural = "Cart Items"
 
@@ -575,12 +674,19 @@ class CartItem(models.Model):
         return f"{self.quantity} x {self.product_variant.product.name} ({self.product_variant.color.name}, {self.product_variant.size.name})"
 
     def get_total_price(self):
-        price = self.product_variant.get_price() if callable(getattr(self.product_variant, 'get_price', None)) else self.product_variant.get_price
+        price = (
+            self.product_variant.get_price()
+            if callable(getattr(self.product_variant, "get_price", None))
+            else self.product_variant.get_price
+        )
         return self.quantity * price
+
 
 # --- Wishlist Models ---
 class Wishlist(models.Model):
-    user = models.OneToOneField(MnoryUser, on_delete=models.CASCADE, related_name='wishlist')
+    user = models.OneToOneField(
+        MnoryUser, on_delete=models.CASCADE, related_name="wishlist"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -593,13 +699,19 @@ class Wishlist(models.Model):
 
 
 class WishlistItem(models.Model):
-    wishlist = models.ForeignKey(Wishlist, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product,
-                                on_delete=models.CASCADE)  # Wishlist can be for a product, not necessarily a variant
+    wishlist = models.ForeignKey(
+        Wishlist, related_name="items", on_delete=models.CASCADE
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE
+    )  # Wishlist can be for a product, not necessarily a variant
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('wishlist', 'product')  # A product can only be in a wishlist once
+        unique_together = (
+            "wishlist",
+            "product",
+        )  # A product can only be in a wishlist once
         verbose_name = "Wishlist Item"
         verbose_name_plural = "Wishlist Items"
 
@@ -608,13 +720,13 @@ class WishlistItem(models.Model):
 
 
 class HomeSlider(models.Model):
-    image = models.ImageField(upload_to='slider/', verbose_name=_("Slider Image"))
+    image = models.ImageField(upload_to="slider/", verbose_name=_("Slider Image"))
     # Processed image (1920x600)
     image_resized = ImageSpecField(
-        source='image',
+        source="image",
         processors=[ResizeToFill(1400, 650)],
-        format='JPEG',
-        options={'quality': 85}
+        format="JPEG",
+        options={"quality": 85},
     )
 
     alt_text = models.CharField(max_length=255, verbose_name=_("Alt Text"))
@@ -624,13 +736,13 @@ class HomeSlider(models.Model):
     button_url_name = models.URLField(
         max_length=100,
         verbose_name=_("URL Address"),
-        help_text=_("Enter the URL Address")
+        help_text=_("Enter the URL Address"),
     )
     order = models.PositiveIntegerField(default=0, verbose_name=_("Display Order"))
     is_active = models.BooleanField(default=True, verbose_name=_("Active"))
 
     class Meta:
-        ordering = ['order']
+        ordering = ["order"]
         verbose_name = _("Home Slider")
         verbose_name_plural = _("Home Sliders")
 
@@ -640,25 +752,34 @@ class HomeSlider(models.Model):
 
 # --- Order Models ---
 
+
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('processing', 'Processing'),
-        ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled'),
-        ('refunded', 'Refunded'),
+        ("pending", "Pending"),
+        ("processing", "Processing"),
+        ("shipped", "Shipped"),
+        ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
+        ("refunded", "Refunded"),
     ]
 
     PAYMENT_STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('failed', 'Failed'),
-        ('refunded', 'Refunded'),
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+        ("refunded", "Refunded"),
     ]
 
-    order_number = models.CharField(max_length=32, null=False, editable=False, unique=True)
-    user = models.ForeignKey(MnoryUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    order_number = models.CharField(
+        max_length=32, null=False, editable=False, unique=True
+    )
+    user = models.ForeignKey(
+        MnoryUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
 
     # Billing Information (can be same as shipping or separate)
     full_name = models.CharField(max_length=255)
@@ -666,15 +787,29 @@ class Order(models.Model):
     phone_number = models.CharField(max_length=20)
 
     # Order Totals
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0.00,
-                                   validators=[MinValueValidator(Decimal('0.00'))])
-    shipping_cost = models.DecimalField(max_digits=6, decimal_places=2, default=0.00,
-                                        validators=[MinValueValidator(Decimal('0.00'))])
-    grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00,
-                                      validators=[MinValueValidator(Decimal('0.00'))])
+    subtotal = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        validators=[MinValueValidator(Decimal("0.00"))],
+    )
+    shipping_cost = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0.00,
+        validators=[MinValueValidator(Decimal("0.00"))],
+    )
+    grand_total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        validators=[MinValueValidator(Decimal("0.00"))],
+    )
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    payment_status = models.CharField(
+        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -684,7 +819,7 @@ class Order(models.Model):
     stripe_pid = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         verbose_name = "Order"
         verbose_name_plural = "Orders"
 
@@ -707,15 +842,18 @@ class Order(models.Model):
         return self.order_number
 
     def get_absolute_url(self):
-        return reverse('shop:order_detail', args=[self.order_number])
+        return reverse("shop:order_detail", args=[self.order_number])
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product_variant = models.ForeignKey(ProductVariant,
-                                        on_delete=models.PROTECT)  # Protect from deletion if order exists
+    order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
+    product_variant = models.ForeignKey(
+        ProductVariant, on_delete=models.PROTECT
+    )  # Protect from deletion if order exists
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)  # Price at the time of purchase
+    price_at_purchase = models.DecimalField(
+        max_digits=10, decimal_places=2
+    )  # Price at the time of purchase
 
     class Meta:
         verbose_name = "Order Item"
@@ -727,45 +865,51 @@ class OrderItem(models.Model):
     def get_total_price(self):
         return self.quantity * self.price_at_purchase
 
+
 class ShippingAddress(models.Model):
     """Stores shipping address details, optionally linked to an order or user."""
+
     CITY_CHOICE = (
-        ('OUTSIDE_CAIRO', _('Outside Cairo')),
-        ('INSIDE_CAIRO', _('Inside Cairo')),
+        ("OUTSIDE_CAIRO", _("Outside Cairo")),
+        ("INSIDE_CAIRO", _("Inside Cairo")),
     )
 
     order = models.OneToOneField(
-        'Order',  # Use string if Order is defined later or import it
-        related_name='shipping_address',
+        "Order",  # Use string if Order is defined later or import it
+        related_name="shipping_address",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name=_("Order")
+        verbose_name=_("Order"),
     )
     user = models.ForeignKey(
-        'MnoryUser',  # Use string if MnoryUser is defined later or import it
+        "MnoryUser",  # Use string if MnoryUser is defined later or import it
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='shipping_addresses',
-        verbose_name=_("User")
+        related_name="shipping_addresses",
+        verbose_name=_("User"),
     )
     full_name = models.CharField(max_length=255, verbose_name=_("Full Name"))
-    email = models.EmailField(null=True,blank=True, verbose_name=_("Email"))
+    email = models.EmailField(null=True, blank=True, verbose_name=_("Email"))
     address_line1 = models.TextField(verbose_name=_("Address Line 1"))
-    address_line2 = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Address Line 2"))
+    address_line2 = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name=_("Address Line 2")
+    )
     city = models.CharField(max_length=100, verbose_name=_("City"))
     phone_number = models.CharField(max_length=20, verbose_name=_("Phone Number"))
-    is_default = models.BooleanField(default=False, verbose_name=_("Is Default Address"))
+    is_default = models.BooleanField(
+        default=False, verbose_name=_("Is Default Address")
+    )
 
     class Meta:
         verbose_name = _("Shipping Address")
         verbose_name_plural = _("Shipping Addresses")
         constraints = [
             models.UniqueConstraint(
-                fields=['user'],
+                fields=["user"],
                 condition=models.Q(is_default=True),
-                name='unique_default_address_per_user'
+                name="unique_default_address_per_user",
             )
         ]
 
@@ -775,24 +919,31 @@ class ShippingAddress(models.Model):
     def save(self, *args, **kwargs):
         if self.is_default and self.user:
             # Unset other default addresses for this user
-            ShippingAddress.objects.filter(user=self.user, is_default=True).exclude(pk=self.pk).update(is_default=False)
+            ShippingAddress.objects.filter(user=self.user, is_default=True).exclude(
+                pk=self.pk
+            ).update(is_default=False)
         super().save(*args, **kwargs)
-
 
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
-        ('credit_card', 'Credit Card'),
-        ('paypal', 'PayPal'),
-        ('bank_transfer', 'Bank Transfer'),
-        ('cash_on_delivery', 'Cash on Delivery'),
+        ("credit_card", "Credit Card"),
+        ("paypal", "PayPal"),
+        ("bank_transfer", "Bank Transfer"),
+        ("cash_on_delivery", "Cash on Delivery"),
         # Add more as needed
     ]
 
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
-    transaction_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    order = models.OneToOneField(
+        Order, on_delete=models.CASCADE, related_name="payment"
+    )
+    transaction_id = models.CharField(
+        max_length=255, unique=True, blank=True, null=True
+    )
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
     timestamp = models.DateTimeField(auto_now_add=True)
     is_success = models.BooleanField(default=False)
 
@@ -802,32 +953,54 @@ class Payment(models.Model):
     class Meta:
         verbose_name = "Payment"
         verbose_name_plural = "Payments"
-        ordering = ['-timestamp']
+        ordering = ["-timestamp"]
 
     def __str__(self):
         return f"Payment for Order {self.order.order_number} - {self.payment_method}"
 
+
 class VendorProfile(models.Model):
     """Vendor (Merchant) profile linked to User."""
+
     PROFILE_TYPE_CHOICES = [
-        ('free', 'Free'),
-        ('premium', 'Premium'),
+        ("free", "Free"),
+        ("premium", "Premium"),
     ]
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="vendorprofile")
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="vendorprofile"
+    )
     store_name = models.CharField(max_length=255, verbose_name="Store Name")
-    store_description = models.TextField(null=True, blank=True, verbose_name="Store Description")
-    logo = models.ImageField(upload_to="vendor_logos/", null=True, blank=True, verbose_name="Store Logo")
+    store_description = models.TextField(
+        null=True, blank=True, verbose_name="Store Description"
+    )
+    logo = models.ImageField(
+        upload_to="vendor_logos/", null=True, blank=True, verbose_name="Store Logo"
+    )
     website = models.URLField(null=True, blank=True, verbose_name="Store Website URL")
-    product_count = models.PositiveIntegerField(default=0, verbose_name="Number of Products")
-    country_of_operation = models.CharField(max_length=200, null=True, blank=True, verbose_name="Country of Operation")
-    wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Wallet Balance")
-    profile_type = models.CharField(max_length=10, choices=PROFILE_TYPE_CHOICES, default='free', verbose_name="Profile Type")
+    product_count = models.PositiveIntegerField(
+        default=0, verbose_name="Number of Products"
+    )
+    country_of_operation = models.CharField(
+        max_length=200, null=True, blank=True, verbose_name="Country of Operation"
+    )
+    wallet_balance = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        verbose_name="Wallet Balance",
+    )
+    profile_type = models.CharField(
+        max_length=10,
+        choices=PROFILE_TYPE_CHOICES,
+        default="free",
+        verbose_name="Profile Type",
+    )
     is_approved = models.BooleanField(default=False)
     logo_resized = ImageSpecField(
-        source='logo',
+        source="logo",
         processors=[ResizeToFill(1920, 600)],
-        format='JPEG',
-        options={'quality': 85}
+        format="JPEG",
+        options={"quality": 85},
     )
     slug = models.SlugField(max_length=100, unique=True, blank=True)
 
@@ -836,11 +1009,13 @@ class VendorProfile(models.Model):
 
     @property
     def is_premium(self) -> bool:
-        return self.profile_type == 'premium'
+        return self.profile_type == "premium"
 
     def update_product_count(self):
         """Update the count of products in the vendor's store."""
-        self.product_count = self.user.products.count()  # Assuming related_name='products' on Product model
+        self.product_count = (
+            self.user.products.count()
+        )  # Assuming related_name='products' on Product model
         self.save()
 
     def deposit(self, amount: Decimal):
@@ -859,15 +1034,15 @@ class VendorProfile(models.Model):
 
     def upgrade_to_premium(self) -> bool:
         """Upgrade vendor to premium if they have enough balance."""
-        if self.profile_type == 'premium':
+        if self.profile_type == "premium":
             return True  # Already premium
         if self.wallet_balance >= settings.PREMIUM_UPGRADE_FEE:
             self.wallet_balance -= settings.PREMIUM_UPGRADE_FEE
-            self.profile_type = 'premium'
+            self.profile_type = "premium"
             self.save()
             return True
         return False
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.store_name)
@@ -881,5 +1056,137 @@ class VendorProfile(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('shop:vendor_detail', kwargs={'slug': self.slug})
 
+        return reverse("shop:vendor_detail", kwargs={"slug": self.slug})
+
+
+class Advertisement(models.Model):
+    """
+    Advertisement model for displaying ads on home page, category pages, etc.
+    Supports GIF and static images with scheduling and analytics.
+    """
+
+    PLACEMENT_CHOICES = [
+        ("home", "Home Page"),
+        ("category", "Category Page"),
+        ("product", "Product Page"),
+        ("all", "All Pages"),
+    ]
+
+    title = models.CharField(max_length=255, verbose_name=_("Title"))
+    title_ar = models.CharField(
+        max_length=255, blank=True, verbose_name=_("Title (Arabic)")
+    )
+    description = models.TextField(blank=True, verbose_name=_("Description"))
+    description_ar = models.TextField(
+        blank=True, verbose_name=_("Description (Arabic)")
+    )
+
+    image = models.ImageField(
+        upload_to="ads/",
+        verbose_name=_("Advertisement Image"),
+        help_text=_("Supports GIF and static images. Recommended size: 1200x500px"),
+    )
+
+    link_url = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name=_("Link URL"),
+        help_text=_("URL to redirect when ad is clicked"),
+    )
+
+    placement = models.CharField(
+        max_length=20,
+        choices=PLACEMENT_CHOICES,
+        default="home",
+        verbose_name=_("Placement"),
+        help_text=_("Where this ad should be displayed"),
+    )
+
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="advertisements",
+        verbose_name=_("Category"),
+        help_text=_("Optional: Show this ad only on specific category page"),
+    )
+
+    is_active = models.BooleanField(default=True, verbose_name=_("Active"))
+    display_order = models.IntegerField(
+        default=0,
+        verbose_name=_("Display Order"),
+        help_text=_("Lower numbers appear first"),
+    )
+
+    # Scheduling
+    start_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("Start Date"),
+        help_text=_("Optional: When to start showing this ad"),
+    )
+    end_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("End Date"),
+        help_text=_("Optional: When to stop showing this ad"),
+    )
+
+    # Analytics
+    click_count = models.IntegerField(default=0, verbose_name=_("Click Count"))
+    view_count = models.IntegerField(default=0, verbose_name=_("View Count"))
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
+
+    class Meta:
+        ordering = ["display_order", "-created_at"]
+        verbose_name = _("Advertisement")
+        verbose_name_plural = _("Advertisements")
+
+    def __str__(self):
+        return self.title
+
+    @classmethod
+    def get_active_ads(cls, placement=None, category=None):
+        """
+        Get active advertisements based on placement and category.
+        Filters by date range if specified.
+        """
+        from django.utils import timezone
+
+        now = timezone.now()
+
+        queryset = cls.objects.filter(is_active=True)
+
+        # Filter by placement
+        if placement:
+            queryset = queryset.filter(
+                models.Q(placement=placement) | models.Q(placement="all")
+            )
+
+        # Filter by category
+        if category:
+            queryset = queryset.filter(
+                models.Q(category=category) | models.Q(category__isnull=True)
+            )
+
+        # Filter by date range
+        queryset = queryset.filter(
+            models.Q(start_date__isnull=True) | models.Q(start_date__lte=now)
+        ).filter(models.Q(end_date__isnull=True) | models.Q(end_date__gte=now))
+
+        return queryset.order_by("display_order", "-created_at")
+
+    def increment_view_count(self):
+        """Increment the view count for this ad."""
+        self.view_count = models.F("view_count") + 1
+        self.save(update_fields=["view_count"])
+
+    def increment_click_count(self):
+        """Increment the click count for this ad."""
+        self.click_count = models.F("click_count") + 1
+        self.save(update_fields=["click_count"])

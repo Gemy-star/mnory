@@ -12,7 +12,6 @@ mysqlclient = "*"
 django-constance = {extras = ["redis"], version = "*"}
 django-imagekit = "*"
 django-colorfield = "*"
-django-mathfilters = "*"
 django-ckeditor = "*"
 django-countries = "*"
 django-crispy-forms = "*"
@@ -20,6 +19,7 @@ crispy-bootstrap5 = "*"
 python-dotenv = "*"
 sendgrid = "*"
 django-ckeditor-5 = "*"
+django-mathfilters = "*"
 
 [dev-packages]
 django-silk = "*"

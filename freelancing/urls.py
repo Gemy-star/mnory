@@ -10,7 +10,7 @@ urlpatterns = [
 
     # Project URLs
     path('projects/', views.ProjectListView.as_view(), name='project_list'),
-    path('projects/<uuid:pk>/', views.ProjectDetailView.as_view(), name='project_detail'),
+    path("projects/<uuid:pk>/", views.ProjectDetailView.as_view(), name="project_detail"),
     path('projects/create/', views.ProjectCreateView.as_view(), name='project_create'),
     path('projects/<uuid:pk>/edit/', views.ProjectUpdateView.as_view(), name='project_edit'),
 

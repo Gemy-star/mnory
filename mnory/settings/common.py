@@ -232,7 +232,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
 LOGIN_URL = reverse_lazy('shop:login')
 LOGIN_REDIRECT_URL = reverse_lazy('admin:index')
 # 100 MB = 100 * 1024 * 1024 bytes
-# 100 MB = 100 * 1024 * 1024 bytes
 DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
 

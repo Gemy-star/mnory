@@ -1,127 +1,372 @@
 {% load i18n %}
 {% if categories %}
 
-<section class="section pt-2">
-<div class="d-flex align-items-center justify-content-between mb-4">
-    <h2 class="mb-0 fw-bold">{% trans "Season Collection" %}</h2>
-    <div class="swiper-controls">
-        {# Changed button classes to specifically target this swiper #}
-        <button class="btn btn-outline-secondary btn-sm category-swiper-prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-outline-secondary btn-sm category-swiper-next"><i class="fas fa-chevron-right"></i></button>
-    </div>
-</div>
+<!-- Category Tabs Section -->
+<section class="category-tabs-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="section-header-tabs" data-aos="fade-up">
+            <h2 class="section-title-tabs">
+                <span class="material-icons">category</span>
+                {% trans "Shop by Category" %}
+            </h2>
+            <p class="section-subtitle-tabs">{% trans "Discover our curated collections" %}</p>
+        </div>
 
-<div class="swiper category-swiper-unique mb-0">
-    <div class="swiper-wrapper">
-        {% for cat in categories %}
-        <div class="swiper-slide text-center">
-            <div class="season-category-card position-relative mx-auto">
-                <div class="category-circle position-relative mb-3">
-                    {% if cat.image %}
-                        <img src="{{ cat.image.url }}" class="rounded-circle w-100 h-100 object-fit-cover" alt="{{ cat.name }}">
-                    {% else %}
-                        {# Fallback image for categories without an image #}
-                        <img src="https://placehold.co/120x120/e0e0e0/555555?text={{ cat.name|slice:":1" }}" class="rounded-circle w-100 h-100 object-fit-cover" alt="{{ cat.name }}">
-                    {% endif %}
-                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="stretched-link"></a>
+        <!-- Category Tabs Navigation -->
+        <div class="category-tabs-nav-wrapper" data-aos="fade-up" data-aos-delay="100">
+            <div class="category-tabs-nav">
+                <!-- All Categories Tab (Active by Default) -->
+                <button class="category-tab-btn active" data-category="all" data-aos="zoom-in" data-aos-delay="150">
+                    <span class="tab-icon">
+                        <span class="material-icons">apps</span>
+                    </span>
+                    <span class="tab-label">{% trans "All" %}</span>
+                    <span class="tab-indicator"></span>
+                </button>
+
+                {% for cat in categories %}
+                <button class="category-tab-btn" data-category="{{ cat.slug }}" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:150 }}">
+                    <span class="tab-icon">
+                        {% if cat.image %}
+                            <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="tab-image">
+                        {% else %}
+                            <span class="material-icons">folder_open</span>
+                        {% endif %}
+                    </span>
+                    <span class="tab-label">{{ cat.name }}</span>
+                    <span class="tab-indicator"></span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Navigation Arrows for Mobile -->
+            <button class="tab-nav-arrow tab-nav-prev" aria-label="Previous">
+                <span class="material-icons">chevron_left</span>
+            </button>
+            <button class="tab-nav-arrow tab-nav-next" aria-label="Next">
+                <span class="material-icons">chevron_right</span>
+            </button>
+        </div>
+
+        <!-- Products Grid Container -->
+        <div class="category-products-container" data-aos="fade-up" data-aos-delay="200">
+            <!-- Section Title -->
+            <div class="category-products-header" data-aos="fade-up" data-aos-delay="250">
+                <h3 class="category-products-title">
+                    <span class="material-icons">inventory</span>
+                    <span id="categoryTitle">{% trans "All Products" %}</span>
+                </h3>
+                <p class="category-products-subtitle" id="categorySubtitle">
+                    {% trans "Discover our latest collection" %}
+                </p>
+            </div>
+
+            <!-- Loading State -->
+            <div class="products-loading" style="display: none;">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
                 </div>
-                <div class="category-label fw-semibold text-center">{{ cat.name }}</div>
+                <p class="loading-text">{% trans "Loading products..." %}</p>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="categoryProductsGrid">
+                <!-- Initial products will be loaded here -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="products-empty" style="display: none;">
+                <div class="empty-illustration">
+                    <span class="material-icons empty-icon">inventory_2</span>
+                    <div class="empty-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                    </div>
+                </div>
+                <h4 class="empty-title">{% trans "No products found" %}</h4>
+                <p class="empty-message">{% trans "We couldn't find any products in this category" %}</p>
+                <a href="{% url 'shop:category_detail' slug='all' %}" class="btn-view-all">
+                    <span class="material-icons">search</span>
+                    {% trans "Browse All Products" %}
+                </a>
+            </div>
+
+            <!-- View All Button -->
+            <div class="text-center mt-4" id="viewAllContainer" data-aos="fade-up" data-aos-delay="300">
+                <a href="{% url 'shop:category_detail' slug='all' %}" id="viewAllLink" class="btn-view-all-category">
+                    <span>{% trans "View All Products" %}</span>
+                    <span class="material-icons">arrow_forward</span>
+                </a>
             </div>
         </div>
-        {% endfor %}
-        {# "All" category slide #}
-        <div class="swiper-slide text-center">
-            <div class="season-category-card position-relative mx-auto">
-                <div class="category-circle position-relative mb-3">
-                    <img src='https://placehold.co/120x120/e0e0e0/555555?text={{ "All" }}' class="rounded-circle w-100 h-100 object-fit-cover" alt="All categories">
-                    <a href="{% url 'shop:category_detail' slug='all' %}" class="stretched-link"></a> {# Assuming shop:category_list is for all categories #}
-                </div>
-                <div class="category-label fw-semibold text-center">{% trans 'All' %}</div>
-            </div>
-        </div>
     </div>
-</div>
-
 </section>
-<style>
-/* Custom styles to match the provided image */
-.season-category-card {
-    width: 150px; /* Slightly wider to match the image proportions */
-    margin: 0 auto;
-}
 
-.category-circle {
-    width: 120px;
-    height: 120px;
-    overflow: hidden;
-    border-radius: 50%;
-    position: relative;
-}
-
-.category-circle img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.category-circle:hover img {
-    transform: scale(1.05);
-}
-
-.category-label {
-    font-size: clamp(1rem, 4vw, 1.4rem); /* Min 1rem, preferred 4vw, Max 1.4rem */
-    margin-top: 0.5rem; /* Adjust spacing */
-    margin-bottom: 0.2rem;
-    color: #333; /* Darker text for labels */
-}
-
-/* Swiper specific overrides for navigation buttons if default ones are not wanted */
-.category-swiper-unique .swiper-button-next,
-.category-swiper-unique .swiper-button-prev {
-    display: none !important; /* Hides any default Swiper navigation arrows */
-}
-
-/* If Swiper's default pseudo-elements for arrows are active, this removes them */
-.swiper-button-next:after,
-.swiper-button-prev:after {
-    content: '' !important;
-}
-
-.btn {
-    transition: all 0.2s ease-in-out;
-}
-</style>
+{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const categorySwiper = new Swiper('.category-swiper-unique', {
-        loop: false,
-        slidesPerView: 2,
-        spaceBetween: 10,
-        breakpoints: {
-            576: { slidesPerView: 3, spaceBetween: 15 },
-            768: { slidesPerView: 4, spaceBetween: 15 },
-            992: { slidesPerView: 6, spaceBetween: 20 },
-            1200: { slidesPerView: 7, spaceBetween: 20 },
-            1400: { slidesPerView: 8, spaceBetween: 20 },
-        },
-        // Enable navigation and specify custom buttons
-        navigation: {
-            nextEl: '.category-swiper-next',
-            prevEl: '.category-swiper-prev',
-        },
+    const tabsNav = document.querySelector('.category-tabs-nav');
+    const tabButtons = document.querySelectorAll('.category-tab-btn');
+    const productsGrid = document.getElementById('categoryProductsGrid');
+    const loadingState = document.querySelector('.products-loading');
+    const emptyState = document.querySelector('.products-empty');
+    const viewAllLink = document.getElementById('viewAllLink');
+    const categoryTitle = document.getElementById('categoryTitle');
+    const categorySubtitle = document.getElementById('categorySubtitle');
+    const prevArrow = document.querySelector('.tab-nav-prev');
+    const nextArrow = document.querySelector('.tab-nav-next');
+
+    // Store all products by category
+    let productsByCategory = {};
+    let currentCategory = 'all';
+
+    // Get initial products data from Django context
+    const initialProducts = JSON.parse('{{ initial_category_products|escapejs }}');
+    const currency = "{{ currency|default:'USD' }}";
+
+    // Initialize with initial products data
+    if (initialProducts && initialProducts.length > 0) {
+        productsByCategory['all'] = initialProducts;
+        displayProducts(initialProducts, 'all');
+    } else {
+        // Fallback: Load all products via AJAX
+        loadProducts('all');
+    }    // Tab Click Handler
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            const categoryName = this.querySelector('.tab-label').textContent;
+
+            // Update active state
+            tabButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // Scroll tab into view
+            this.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+            // Update category title
+            updateCategoryTitle(category, categoryName);
+
+            // Load products for this category
+            if (productsByCategory[category]) {
+                // Use cached data
+                displayProducts(productsByCategory[category], category);
+            } else {
+                // Load from server
+                loadProducts(category);
+            }
+
+            // Update view all link
+            const categorySlug = category === 'all' ? 'all' : category;
+            viewAllLink.href = `/category/${categorySlug}/`;
+        });
     });
 
-    // Optional: Add event listeners for custom buttons if not using `navigation.nextEl/prevEl` directly
-    // This part is generally not needed if `navigation.nextEl/prevEl` is correctly configured,
-    // but useful for debugging or complex custom setups.
-    // document.querySelector('.category-swiper-prev').addEventListener('click', () => {
-    //     categorySwiper.slidePrev();
-    // });
-    // document.querySelector('.category-swiper-next').addEventListener('click', () => {
-    //     categorySwiper.slideNext();
-    // });
+    // Update Category Title
+    function updateCategoryTitle(category, categoryName) {
+        const titles = {
+            'all': '{% trans "All Products" %}',
+        };
+
+        const subtitles = {
+            'all': '{% trans "Discover our latest collection" %}',
+        };
+
+        categoryTitle.textContent = titles[category] || categoryName;
+        categorySubtitle.textContent = subtitles[category] || `{% trans "Explore our" %} ${categoryName.toLowerCase()} {% trans "collection" %}`;
+    }
+
+    // Navigation Arrows
+    if (prevArrow && nextArrow) {
+        prevArrow.addEventListener('click', () => {
+            tabsNav.scrollBy({ left: -200, behavior: 'smooth' });
+        });
+
+        nextArrow.addEventListener('click', () => {
+            tabsNav.scrollBy({ left: 200, behavior: 'smooth' });
+        });
+
+        // Show/hide arrows based on scroll position
+        function updateArrows() {
+            const scrollLeft = tabsNav.scrollLeft;
+            const maxScroll = tabsNav.scrollWidth - tabsNav.clientWidth;
+
+            prevArrow.style.opacity = scrollLeft > 0 ? '1' : '0';
+            prevArrow.style.pointerEvents = scrollLeft > 0 ? 'auto' : 'none';
+
+            nextArrow.style.opacity = scrollLeft < maxScroll - 10 ? '1' : '0';
+            nextArrow.style.pointerEvents = scrollLeft < maxScroll - 10 ? 'auto' : 'none';
+        }
+
+        tabsNav.addEventListener('scroll', updateArrows);
+        window.addEventListener('resize', updateArrows);
+        updateArrows();
+    }
+
+    // Load Products Function
+    function loadProducts(category) {
+        currentCategory = category;
+
+        // Show loading state
+        loadingState.style.display = 'flex';
+        productsGrid.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        fetch(`/api/products/?category=${category}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    displayProducts([]);
+                } else {
+                    // Cache the data
+                    productsByCategory[category] = data.products;
+                    displayProducts(data.products, category);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                displayProducts([]);
+            });
+    }
+
+    // Display Products Function
+    function displayProducts(products, category = 'all') {
+        loadingState.style.display = 'none';
+
+        if (products.length === 0) {
+            productsGrid.style.display = 'none';
+            emptyState.style.display = 'flex';
+        } else {
+            emptyState.style.display = 'none';
+            productsGrid.style.display = 'grid';
+
+            // Clear existing products
+            productsGrid.innerHTML = '';
+
+            // Add products
+            products.forEach((product, index) => {
+                const productCard = createProductCard(product);
+                productCard.setAttribute('data-aos', 'fade-up');
+                productCard.setAttribute('data-aos-delay', (index * 50).toString());
+                productsGrid.appendChild(productCard);
+            });
+
+            // Refresh AOS
+            if (typeof AOS !== 'undefined') {
+                AOS.refresh();
+            }
+        }
+    }
+
+    // Create Product Card - Enhanced version matching Django template
+    function createProductCard(product) {
+        const div = document.createElement('div');
+        div.className = 'product-card text-center';
+        div.setAttribute('data-product-id', product.id);
+
+        // Sale badge
+        const saleBadge = product.is_on_sale ? '<div class="sale-badge">{% trans "Sale" %}</div>' : '';
+
+        // Price HTML
+        let priceHtml = '';
+        if (product.is_on_sale && product.original_price) {
+            priceHtml = `
+                <span class="original-price">${product.original_price}</span>
+                <span class="sale-price">${product.price}</span>
+            `;
+        } else {
+            priceHtml = `<span class="regular-price">${product.price}</span>`;
+        }
+
+        // Wishlist icon
+        const wishlistIcon = product.in_wishlist ? 'favorite' : 'favorite_border';
+        const wishlistClass = product.in_wishlist ? 'active' : '';
+
+        // Vendor info
+        const vendorHtml = product.vendor_name ? `
+            <div class="card-footer card-footer-vendor">
+                <div class="vendor-info">
+                    <span class="vendor-name">${product.vendor_name}</span>
+                    <span class="vendor-rating"><span class="material-icons">star</span></span>
+                </div>
+                ${product.vendor_slug ? `
+                    <a href="/vendor/${product.vendor_slug}/"
+                       class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor"
+                       title="{% trans 'View Vendor Profile' %}">
+                       <span class="material-icons">store</span> {% trans 'View Profile' %}
+                    </a>
+                ` : ''}
+            </div>
+        ` : '';
+
+        div.innerHTML = `
+            <div class="position-relative product-image-wrapper">
+                ${saleBadge}
+                <a href="${product.url}">
+                    <img src="${product.image}"
+                         alt="${product.name}"
+                         loading="lazy"
+                         class="product-img">
+                </a>
+                <div class="product-icons">
+                    <button type="button"
+                            class="wishlist-btn btn-icon-action ${wishlistClass}"
+                            data-action="wishlist-toggle"
+                            data-product-id="${product.id}"
+                            title="{% trans 'Add to Wishlist' %}">
+                        <span class="material-icons">${wishlistIcon}</span>
+                    </button>
+                    <button type="button"
+                            class="cart-btn btn-icon-action"
+                            data-action="cart-add"
+                            data-product-id="${product.id}"
+                            title="{% trans 'Add to Cart' %}">
+                        <span class="material-icons">shopping_cart</span>
+                    </button>
+                </div>
+            </div>
+            <div class="product-info mt-2">
+                <div class="product-name">${product.name}</div>
+                <div class="price-area">${priceHtml}</div>
+                ${vendorHtml}
+            </div>
+            <div class="local-toast-container"></div>
+        `;
+
+        return div;
+    }
+
+    // Mobile Touch Scroll for Tabs
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    tabsNav.addEventListener('mousedown', (e) => {
+        isDown = true;
+        startX = e.pageX - tabsNav.offsetLeft;
+        scrollLeft = tabsNav.scrollLeft;
+    });
+
+    tabsNav.addEventListener('mouseleave', () => {
+        isDown = false;
+    });
+
+    tabsNav.addEventListener('mouseup', () => {
+        isDown = false;
+    });
+
+    tabsNav.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - tabsNav.offsetLeft;
+        const walk = (x - startX) * 2;
+        tabsNav.scrollLeft = scrollLeft - walk;
+    });
 });
 </script>
-{% endif %}

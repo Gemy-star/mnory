@@ -3,218 +3,298 @@
 {% load i18n %}
 
 {% block css %}
-<style>
-    .swiper-slide {
-        padding-bottom: unset !important;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .section-header h2 {
-        font-size: 1.5rem;
-    }
-
-    .swiper-controls {
-        display: flex;
-        gap: 0.5rem;
-    }
-</style>
+<!-- Home page specific styles -->
 {% endblock %}
 
 {% block content %}
+<!-- Hero Slider -->
 {% include 'shop/partials/hero_slider.html' %}
 
-<!-- Enhanced Hero Gallery with GSAP animations - sample showcase -->
-<section class="section pt-4">
+<!-- Category Tabs with Products -->
+{% include 'shop/partials/_categories.html' with cat_name="body" categories=categories initial_category_products=initial_category_products currency=currency %}
+
+<!-- Featured Products Section -->
+{% if config.ENABLE_FEATURED_FLAG %}
+<section class="product-section featured-section">
     <div class="container">
-        <!-- Hero Gallery Swiper: Enhanced with GSAP slide transitions -->
-        <div class="hero-gallery-swiper swiper">
-            <div class="swiper-wrapper">
-                <!-- Sample slides - can be replaced with dynamic content -->
-                <div class="swiper-slide">
-                    <img src="https://placehold.co/1200x500/000000/ffffff?text=Welcome+to+MNORY" alt="Welcome to MNORY" loading="lazy">
-                </div>
-                <div class="swiper-slide">
-                    <img src="https://placehold.co/1200x500/e0e0e0/000000?text=Modern+Design" alt="Modern Design" loading="lazy">
-                </div>
-                <div class="swiper-slide">
-                    <img src="https://placehold.co/1200x500/007aff/ffffff?text=Enhanced+Experience" alt="Enhanced Experience" loading="lazy">
+        <!-- Section Header -->
+        <div class="section-header-tabs" data-aos="fade-up">
+            <h2 class="section-title-tabs">
+                <span class="material-icons">star</span>
+                {% trans "Featured Products" %}
+            </h2>
+            <p class="section-subtitle-tabs">{% trans "Hand-picked premium products just for you" %}</p>
+        </div>
+
+        <!-- Products Swiper -->
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper featured-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in featured_products %}
+                    <div class="swiper-slide">
+                        {% include "partials/_product.html" with product=product section="featured_products" %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state" data-aos="fade-up">
+                        <span class="material-icons">star_border</span>
+                        <p>{% trans "No featured products available at the moment." %}</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
-            <!-- Swiper controls -->
-            <div class="swiper-pagination"></div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-        </div>
-    </div>
-</section>
 
-<section class="section pt-2">
-<div class="container">
-    {% include 'shop/partials/_categories.html' with cat_name="body" categories=categories %}
-</div>
-</section>
-<section class="section pt-2">
-<div class="container">
-{% if config.ENABLE_ALL_FLAG %}
-<div class="section-header">
-    <h2>{% trans "All Products" %}</h2>
-    <div class="swiper-controls">
-        <button class="btn btn-outline-secondary btn-sm all-products-prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-outline-secondary btn-sm all-products-next"><i class="fas fa-chevron-right"></i></button>
-    </div>
-</div>
-<div class="swiper all-products-swiper mb-5">
-    <div class="swiper-wrapper">
-        {% for product in all_products %}
-        <div class="swiper-slide">
-          {% include "partials/_product.html" with product=product section="all" %}
+            <!-- Navigation -->
+            <div class="swiper-navigation">
+                <button class="swiper-nav-btn swiper-nav-prev featured-prev" aria-label="{% trans 'Previous' %}">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="swiper-nav-btn swiper-nav-next featured-next" aria-label="{% trans 'Next' %}">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </div>
         </div>
-        {% empty %}
-        <div class="text-muted">{% trans "No products available." %}</div>
-        {% endfor %}
     </div>
-</div>
-{% endif %}
-</div>
 </section>
-<section class="section pt-2">
-<div class="container">
-    <!-- New Arrivals -->
+{% endif %}
+
+<!-- New Arrivals Section -->
 {% if config.ENABLE_NEW_ARRIVAL_FLAG %}
-<div class="section-header">
-    <h2>{% trans "New Arrivals" %}</h2>
-    <div class="swiper-controls">
-        <button class="btn btn-outline-secondary btn-sm newarrivals-prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-outline-secondary btn-sm newarrivals-next"><i class="fas fa-chevron-right"></i></button>
-    </div>
-</div>
-<div class="swiper newarrivals-swiper mb-5">
-    <div class="swiper-wrapper">
-        {% for product in new_arrivals %}
-        <div class="swiper-slide">
-          {% include "partials/_product.html" with product=product section="new_arrivals" %}
+<section class="product-section newarrivals-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="section-header-tabs" data-aos="fade-up">
+            <h2 class="section-title-tabs">
+                <span class="material-icons">new_releases</span>
+                {% trans "New Arrivals" %}
+            </h2>
+            <p class="section-subtitle-tabs">{% trans "Fresh styles and latest trends" %}</p>
         </div>
-        {% empty %}
-        <div class="text-muted">{% trans "No products available." %}</div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-</div>
-</section>
-<section class="section pt-2">
-<div class="container">
-    <!-- Featured Products -->
-{% if config.ENABLE_FEATURED_FLAG %}
-<div class="section-header">
-    <h2>{% trans "Featured Products" %}</h2>
-    <div class="swiper-controls">
-        <button class="btn btn-outline-secondary btn-sm featured-prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-outline-secondary btn-sm featured-next"><i class="fas fa-chevron-right"></i></button>
-    </div>
-</div>
-<div class="swiper featured-swiper mb-5">
-    <div class="swiper-wrapper">
-        {% for product in featured_products %}
-        <div class="swiper-slide">
-          {% include "partials/_product.html" with product=product section="featured_products" %}
+
+        <!-- Products Swiper -->
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper newarrivals-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in new_arrivals %}
+                    <div class="swiper-slide">
+                        {% include "partials/_product.html" with product=product section="new_arrivals" %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state" data-aos="fade-up">
+                        <span class="material-icons">new_releases</span>
+                        <p>{% trans "No new arrivals available at the moment." %}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="swiper-navigation">
+                <button class="swiper-nav-btn swiper-nav-prev newarrivals-prev" aria-label="{% trans 'Previous' %}">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="swiper-nav-btn swiper-nav-next newarrivals-next" aria-label="{% trans 'Next' %}">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </div>
         </div>
-        {% empty %}
-        <div class="text-muted">{% trans "No products available." %}</div>
-        {% endfor %}
     </div>
-</div>
+</section>
 {% endif %}
-</div>
-</section>
-<section class="section pt-2">
-  {% include 'shop/partials/_home_categories.html' %}
-</section>
-<section class="section pt-2">
-<div class="container">
-   <!-- Best Sellers -->
+
+<!-- Best Sellers Section -->
 {% if config.ENABLE_BEST_SELLER_FLAG %}
-<div class="section-header">
-    <h2>{% trans "Best Sellers" %}</h2>
-    <div class="swiper-controls">
-        <button class="btn btn-outline-secondary btn-sm bestseller-prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-outline-secondary btn-sm bestseller-next"><i class="fas fa-chevron-right"></i></button>
-    </div>
-</div>
-<div class="swiper bestseller-swiper mb-5">
-    <div class="swiper-wrapper">
-        {% for product in best_sellers %}
-        <div class="swiper-slide">
-          {% include "partials/_product.html" with product=product section="best_sellers" %}
+<section class="product-section bestseller-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="section-header-tabs" data-aos="fade-up">
+            <h2 class="section-title-tabs">
+                <span class="material-icons">trending_up</span>
+                {% trans "Best Sellers" %}
+            </h2>
+            <p class="section-subtitle-tabs">{% trans "Most popular products loved by customers" %}</p>
         </div>
-        {% empty %}
-        <div class="text-muted">{% trans "No products available." %}</div>
-        {% endfor %}
+
+        <!-- Products Swiper -->
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper bestseller-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in best_sellers %}
+                    <div class="swiper-slide">
+                        {% include "partials/_product.html" with product=product section="best_sellers" %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state" data-aos="fade-up">
+                        <span class="material-icons">trending_up</span>
+                        <p>{% trans "No best sellers available at the moment." %}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="swiper-navigation">
+                <button class="swiper-nav-btn swiper-nav-prev bestseller-prev" aria-label="{% trans 'Previous' %}">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="swiper-nav-btn swiper-nav-next bestseller-next" aria-label="{% trans 'Next' %}">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 {% endif %}
-</div>
+
+<!-- On Sale Section -->
+{% if config.ENABLE_SALE_FLAG %}
+<section class="product-section sale-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="section-header-tabs" data-aos="fade-up">
+            <h2 class="section-title-tabs sale-title">
+                <span class="material-icons sale-icon">local_offer</span>
+                {% trans "On Sale!" %}
+            </h2>
+            <p class="section-subtitle-tabs">{% trans "Don't miss these amazing deals and discounts" %}</p>
+        </div>
+
+        <!-- Products Swiper -->
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper onsale-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in sale_products %}
+                    <div class="swiper-slide">
+                        {% include "partials/_product.html" with product=product section="sale_products" %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state" data-aos="fade-up">
+                        <span class="material-icons">local_offer</span>
+                        <p>{% trans "No sale products available at the moment." %}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="swiper-navigation">
+                <button class="swiper-nav-btn swiper-nav-prev onsale-prev" aria-label="{% trans 'Previous' %}">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="swiper-nav-btn swiper-nav-next onsale-next" aria-label="{% trans 'Next' %}">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Home Categories -->
+<section class="product-section home-categories-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="section-header-tabs" data-aos="fade-up">
+            <h2 class="section-title-tabs">
+                <span class="material-icons">category</span>
+                {% trans "Shop Categories" %}
+            </h2>
+            <p class="section-subtitle-tabs">{% trans "Explore our diverse product categories" %}</p>
+        </div>
+
+        <div data-aos="fade-up" data-aos-delay="100">
+            {% include 'shop/partials/_home_categories.html' %}
+        </div>
+    </div>
 </section>
 
-<section class="section pt-2">
-<div class="container">
-    <!-- On Sale -->
-{% if config.ENABLE_SALE_FLAG %}
-<div class="section-header">
-    <h2>{% trans "On Sale!" %}</h2>
-    <div class="swiper-controls">
-        <button class="btn btn-outline-secondary btn-sm onsale-prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-outline-secondary btn-sm onsale-next"><i class="fas fa-chevron-right"></i></button>
-    </div>
-</div>
-<div class="swiper onsale-swiper mb-5">
-    <div class="swiper-wrapper">
-        {% for product in sale_products %}
-        <div class="swiper-slide">
-          {% include "partials/_product.html" with product=product section="sale_products" %}
+<!-- Freelance Categories -->
+<section class="product-section freelance-categories-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="section-header-tabs" data-aos="fade-up">
+            <h2 class="section-title-tabs">
+                <span class="material-icons">work</span>
+                {% trans "Freelance Services" %}
+            </h2>
+            <p class="section-subtitle-tabs">{% trans "Professional services by skilled freelancers" %}</p>
         </div>
-        {% empty %}
-        <div class="text-muted">{% trans "No products available." %}</div>
-        {% endfor %}
+
+        <div data-aos="fade-up" data-aos-delay="100">
+            {% include 'freelance/partials/_home_categories.html' %}
+        </div>
     </div>
-</div>
-{% endif %}
-</div>
-</section>
-<section class="section pt-2">
-  {% include 'freelance/partials/_home_categories.html' %}
 </section>
 {% endblock %}
 {% block js %}
 <script>
     function setupSwiper(className, next, prev) {
-        new Swiper(`.${className}`, {
-            slidesPerView: 2,
-            spaceBetween: 4,  // No space between slides
-            breakpoints: {
-                576: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                992: { slidesPerView: 4 }
-            },
-            navigation: {
-                nextEl: `.${next}`,
-                prevEl: `.${prev}`
-            }
-        });
+        const swiperEl = document.querySelector(`.${className}`);
+        if (swiperEl) {
+            new Swiper(`.${className}`, {
+                slidesPerView: 2,
+                spaceBetween: 15,
+                breakpoints: {
+                    576: { slidesPerView: 2, spaceBetween: 15 },
+                    768: { slidesPerView: 3, spaceBetween: 20 },
+                    992: { slidesPerView: 4, spaceBetween: 20 },
+                    1200: { slidesPerView: 5, spaceBetween: 25 }
+                },
+                navigation: {
+                    nextEl: `.${next}`,
+                    prevEl: `.${prev}`
+                },
+                loop: false,
+                speed: 600,
+                watchOverflow: true,
+                // Enhanced options for better UX
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true
+                },
+                effect: 'slide',
+                touchRatio: 1,
+                touchAngle: 45,
+                simulateTouch: true,
+                allowTouchMove: true,
+                resistance: true,
+                resistanceRatio: 0.85
+            });
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize all product swipers with new class names
         setupSwiper('newarrivals-swiper', 'newarrivals-next', 'newarrivals-prev');
         setupSwiper('featured-swiper', 'featured-next', 'featured-prev');
         setupSwiper('bestseller-swiper', 'bestseller-next', 'bestseller-prev');
         setupSwiper('onsale-swiper', 'onsale-next', 'onsale-prev');
-        setupSwiper('all-products-swiper', 'all-products-next', 'all-products-prev');
+
+        // Add hover effects for swiper navigation
+        document.querySelectorAll('.swiper-nav-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px) scale(1.05)';
+            });
+
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Add special effects for sale section
+        const saleSection = document.querySelector('.sale-section');
+        if (saleSection) {
+            const saleIcon = saleSection.querySelector('.sale-icon');
+            if (saleIcon) {
+                // Add click effect
+                saleIcon.addEventListener('click', function() {
+                    this.style.animation = 'none';
+                    setTimeout(() => {
+                        this.style.animation = 'bounce-sale 2s ease-in-out infinite';
+                    }, 100);
+                });
+            }
+        }
     });
 </script>
 {% endblock %}

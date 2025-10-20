@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.db.models import Q, Min, Max, Sum
@@ -11,15 +10,32 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 from .forms import RegisterForm, LoginForm, ShippingAddressForm, PaymentForm
 from .models import (
-    Category, SubCategory, FitType, Brand, Color, Size,
-    Product, ProductVariant, Cart, CartItem, Wishlist, WishlistItem, HomeSlider,
-    Order, OrderItem, ShippingAddress, Payment, MnoryUser, VendorProfile
+    Category,
+    SubCategory,
+    FitType,
+    Brand,
+    Color,
+    Size,
+    Product,
+    ProductVariant,
+    Cart,
+    CartItem,
+    Wishlist,
+    WishlistItem,
+    HomeSlider,
+    Order,
+    OrderItem,
+    ShippingAddress,
+    Payment,
+    MnoryUser,
+    VendorProfile,
 )
 from decimal import Decimal
 import uuid
 import logging
 from django.utils.translation import gettext as _
 from constance import config
+
 # Set up logger
 logger = logging.getLogger(__name__)
 
@@ -29,17 +45,19 @@ def _filter_and_sort_products(products_queryset, request_get_params):
     """
     Applies common filtering and sorting logic to a product queryset.
     """
-    subcategory_filter = request_get_params.get('subcategory')
-    fit_type_filter = request_get_params.get('fit_type')
-    brand_filter = request_get_params.get('brand')
-    color_filter = request_get_params.get('color')
-    size_filter = request_get_params.get('size')
-    min_price_str = request_get_params.get('min_price')
-    max_price_str = request_get_params.get('max_price')
-    sort_by = request_get_params.get('sort', 'name')
+    subcategory_filter = request_get_params.get("subcategory")
+    fit_type_filter = request_get_params.get("fit_type")
+    brand_filter = request_get_params.get("brand")
+    color_filter = request_get_params.get("color")
+    size_filter = request_get_params.get("size")
+    min_price_str = request_get_params.get("min_price")
+    max_price_str = request_get_params.get("max_price")
+    sort_by = request_get_params.get("sort", "name")
 
     if subcategory_filter:
-        products_queryset = products_queryset.filter(subcategory__slug=subcategory_filter)
+        products_queryset = products_queryset.filter(
+            subcategory__slug=subcategory_filter
+        )
 
     if fit_type_filter:
         products_queryset = products_queryset.filter(fit_type__slug=fit_type_filter)
@@ -49,11 +67,15 @@ def _filter_and_sort_products(products_queryset, request_get_params):
 
     if color_filter:
         # Filter products by color of their available variants
-        products_queryset = products_queryset.filter(productvariant__color__slug=color_filter).distinct()
+        products_queryset = products_queryset.filter(
+            productvariant__color__slug=color_filter
+        ).distinct()
 
     if size_filter:
         # Filter products by size of their available variants
-        products_queryset = products_queryset.filter(productvariant__size__name__iexact=size_filter).distinct()
+        products_queryset = products_queryset.filter(
+            productvariant__size__name__iexact=size_filter
+        ).distinct()
 
     # Price filtering
     if min_price_str:
@@ -71,19 +93,21 @@ def _filter_and_sort_products(products_queryset, request_get_params):
             pass
 
     # Sorting
-    if sort_by == 'price_low':
-        products_queryset = products_queryset.order_by('price')
-    elif sort_by == 'price_high':
-        products_queryset = products_queryset.order_by('-price')
-    elif sort_by == 'newest':
-        products_queryset = products_queryset.order_by('-created_at')
-    elif sort_by == 'popular':
+    if sort_by == "price_low":
+        products_queryset = products_queryset.order_by("price")
+    elif sort_by == "price_high":
+        products_queryset = products_queryset.order_by("-price")
+    elif sort_by == "newest":
+        products_queryset = products_queryset.order_by("-created_at")
+    elif sort_by == "popular":
         # Consider adding a sales count or view count to Product model for true popularity
-        products_queryset = products_queryset.order_by('-is_best_seller', '-created_at')
+        products_queryset = products_queryset.order_by("-is_best_seller", "-created_at")
     else:  # Default or invalid sort
-        products_queryset = products_queryset.order_by('name')
+        products_queryset = products_queryset.order_by("name")
 
-    return products_queryset.distinct()  # Use distinct to avoid duplicates from many-to-many filters
+    return (
+        products_queryset.distinct()
+    )  # Use distinct to avoid duplicates from many-to-many filters
 
 
 # --- Core Product & Category Views ---
@@ -91,208 +115,446 @@ def home(request):
     """Homepage view"""
     # Optimized initial product queries to reduce database hits
     # Use prefetch_related for images and select_related for foreign keys
-    base_products = Product.objects.filter(is_active=True, is_available=True).prefetch_related('images') \
-        .select_related('category', 'subcategory', 'brand')
+    base_products = (
+        Product.objects.filter(is_active=True, is_available=True)
+        .prefetch_related("images")
+        .select_related("category", "subcategory", "brand")
+    )
 
     featured_products = base_products.filter(is_featured=True).distinct()[:8]
     new_arrivals = base_products.filter(is_new_arrival=True).distinct()[:8]
     best_sellers = base_products.filter(is_best_seller=True).distinct()[:8]
-    all_products_recent = base_products.order_by('-created_at').distinct()[:8]  # Most recent based on creation
+    all_products_recent = base_products.order_by("-created_at").distinct()[
+        :12
+    ]  # Get 12 for category tabs
     sale_products = base_products.filter(is_on_sale=True).distinct()[:8]
 
-    categories = Category.objects.filter(is_active=True).order_by('name')
-    sliders = HomeSlider.objects.filter(is_active=True).order_by('order')
+    categories = Category.objects.filter(is_active=True).order_by("name")
+    sliders = HomeSlider.objects.filter(is_active=True).order_by("order")
+
+    # Get active advertisements for home page
+    from .models import Advertisement
+
+    home_ads = Advertisement.get_active_ads(placement="home")
 
     products_in_wishlist_ids = []
     if request.user.is_authenticated:
         try:
             # Efficiently get wishlist product IDs for the logged-in user
-            wishlist = Wishlist.objects.only('id').get(user=request.user)
-            products_in_wishlist_ids = list(wishlist.items.values_list('product_id', flat=True))
+            wishlist = Wishlist.objects.only("id").get(user=request.user)
+            products_in_wishlist_ids = list(
+                wishlist.items.values_list("product_id", flat=True)
+            )
         except Wishlist.DoesNotExist:
             pass  # No wishlist yet for this user
 
+    # Prepare initial category products data for the tabs
+    initial_category_products = []
+    for product in all_products_recent:
+        # Get primary image
+        primary_image = product.images.filter(is_main=True).first()
+        if not primary_image:
+            primary_image = product.images.first()
+
+        image_url = (
+            primary_image.image.url if primary_image else "/static/img/placeholder.jpg"
+        )
+
+        # Calculate price based on session currency
+        currency = request.session.get("currency", "USD")
+        if currency == "EGP":
+            display_price = f"EGP {product.price_egp if product.is_on_sale and hasattr(product, 'price_egp') else product.price}"
+        else:
+            display_price = f"USD {product.price_usd if product.is_on_sale and hasattr(product, 'price_usd') else product.price}"
+
+        initial_category_products.append(
+            {
+                "id": product.id,
+                "name": product.name,
+                "slug": product.slug,
+                "price": display_price,
+                "image": image_url,
+                "url": product.get_absolute_url(),
+                "is_on_sale": product.is_on_sale,
+                "is_featured": product.is_featured,
+                "is_new_arrival": product.is_new_arrival,
+                "in_wishlist": product.id in products_in_wishlist_ids,
+                "vendor_name": (
+                    product.vendor.vendorprofile.store_name
+                    if product.vendor and hasattr(product.vendor, "vendorprofile")
+                    else None
+                ),
+                "vendor_slug": (
+                    product.vendor.vendorprofile.slug
+                    if product.vendor and hasattr(product.vendor, "vendorprofile")
+                    else None
+                ),
+            }
+        )
+
     context = {
-        'featured_products': featured_products,
-        'new_arrivals': new_arrivals,
-        'best_sellers': best_sellers,
-        'sale_products': sale_products,
-        'categories': categories,
-        'sliders': sliders,
-        'all_products': all_products_recent,  # Renamed for clarity
-        'products_in_wishlist_ids': products_in_wishlist_ids,
+        "featured_products": featured_products,
+        "new_arrivals": new_arrivals,
+        "best_sellers": best_sellers,
+        "sale_products": sale_products,
+        "categories": categories,
+        "sliders": sliders,
+        "home_ads": home_ads,  # Add advertisements to context
+        "all_products": all_products_recent,  # Renamed for clarity
+        "products_in_wishlist_ids": products_in_wishlist_ids,
+        "initial_category_products": json.dumps(
+            initial_category_products
+        ),  # JSON serialize for template
+        "currency": request.session.get("currency", "USD"),  # Add currency for template
     }
 
-    return render(request, 'shop/home.html', context)
+    return render(request, "shop/home.html", context)
+
+
+@require_GET
+def get_category_products_api(request):
+    """API endpoint to get products by category for AJAX filtering"""
+    category_slug = request.GET.get("category", "all")
+
+    # Base query for active products
+    base_products = (
+        Product.objects.filter(is_active=True, is_available=True)
+        .prefetch_related("images")
+        .select_related("category", "subcategory", "brand", "vendor__vendorprofile")
+    )
+
+    # Filter by category if not 'all'
+    if category_slug and category_slug != "all":
+        try:
+            category = Category.objects.get(slug=category_slug, is_active=True)
+            products = base_products.filter(category=category)[
+                :12
+            ]  # Limit to 12 products
+        except Category.DoesNotExist:
+            return JsonResponse({"error": "Category not found"}, status=404)
+    else:
+        products = base_products.order_by("-created_at")[:12]  # Show recent products
+
+    # Get user's wishlist items if authenticated
+    products_in_wishlist_ids = []
+    if request.user.is_authenticated:
+        try:
+            wishlist = Wishlist.objects.only("id").get(user=request.user)
+            products_in_wishlist_ids = list(
+                wishlist.items.values_list("product_id", flat=True)
+            )
+        except Wishlist.DoesNotExist:
+            pass
+
+    # Build product data
+    products_data = []
+    currency = request.session.get("currency", "USD")
+
+    for product in products:
+        # Get primary image
+        primary_image = product.images.filter(is_main=True).first()
+        if not primary_image:
+            primary_image = product.images.first()
+
+        image_url = (
+            primary_image.image.url if primary_image else "/static/img/placeholder.jpg"
+        )
+
+        # Calculate price based on currency and sale status
+        if currency == "EGP":
+            if product.is_on_sale and hasattr(product, "price_egp"):
+                display_price = f"EGP {product.price_egp}"
+                original_price = (
+                    f"EGP {getattr(product, 'price_egp_no_sale', product.price)}"
+                )
+            else:
+                display_price = (
+                    f"EGP {getattr(product, 'price_egp_no_sale', product.price)}"
+                )
+                original_price = None
+        else:
+            if product.is_on_sale and hasattr(product, "price_usd"):
+                display_price = f"USD {product.price_usd}"
+                original_price = (
+                    f"USD {getattr(product, 'price_usd_no_sale', product.price)}"
+                )
+            else:
+                display_price = (
+                    f"USD {getattr(product, 'price_usd_no_sale', product.price)}"
+                )
+                original_price = None
+
+        # Vendor information
+        vendor_name = None
+        vendor_slug = None
+        if product.vendor and hasattr(product.vendor, "vendorprofile"):
+            vendor_name = product.vendor.vendorprofile.store_name
+            vendor_slug = product.vendor.vendorprofile.slug
+
+        products_data.append(
+            {
+                "id": product.id,
+                "name": product.name,
+                "slug": product.slug,
+                "price": display_price,
+                "original_price": original_price,
+                "image": image_url,
+                "url": product.get_absolute_url(),
+                "is_on_sale": product.is_on_sale,
+                "is_featured": product.is_featured,
+                "is_new_arrival": product.is_new_arrival,
+                "in_wishlist": product.id in products_in_wishlist_ids,
+                "vendor_name": vendor_name,
+                "vendor_slug": vendor_slug,
+            }
+        )
+
+    return JsonResponse({"products": products_data})
+
 
 def category_detail(request, slug):
     """Category detail view - supports 'all' to show all products"""
     category = None
     subcategories = []
     # Start with active and available products
-    products_queryset = Product.objects.filter(is_active=True, is_available=True) \
-        .prefetch_related('images') \
-        .select_related('category', 'subcategory', 'brand')
+    products_queryset = (
+        Product.objects.filter(is_active=True, is_available=True)
+        .prefetch_related("images")
+        .select_related("category", "subcategory", "brand")
+    )
 
-    if slug and slug != 'all':
+    if slug and slug != "all":
         category = get_object_or_404(Category, slug=slug, is_active=True)
-        subcategories = category.subcategories.filter(is_active=True).order_by('name')
+        subcategories = category.subcategories.filter(is_active=True).order_by("name")
         products_queryset = products_queryset.filter(category=category)
-    elif not slug or slug == 'all':
+    elif not slug or slug == "all":
         # If slug is 'all', products_queryset remains unfiltered by category
         pass
     else:
         messages.error(request, _("Invalid category selected."))
-        return redirect('shop:home')  # Redirect to home or all products view
+        return redirect("shop:home")  # Redirect to home or all products view
+
+    # Get active advertisements for this category
+    from .models import Advertisement
+
+    category_ads = (
+        Advertisement.get_active_ads(placement="category", category=category)
+        if category
+        else []
+    )
 
     # Apply filters and sorting using helper. Pass request object to helper for messages
     products_queryset = _filter_and_sort_products(products_queryset, request.GET)
 
     # Price range calculation for the *entire* filtered set, before pagination
-    price_range = products_queryset.aggregate(Min('price'), Max('price'))
+    price_range = products_queryset.aggregate(Min("price"), Max("price"))
 
     # Pagination
     paginator = Paginator(products_queryset, 12)  # 12 products per page
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     # Filter options: Only show options relevant to products in the current category/filter set
     # Use correct related names for reverse relations
-    fit_types = FitType.objects.filter(is_active=True, products__in=products_queryset).distinct().order_by('name')
-    brands = Brand.objects.filter(is_active=True, products__in=products_queryset).distinct().order_by('name')
-    colors = Color.objects.filter(is_active=True, productvariant__product__in=products_queryset).distinct().order_by('name')
-    sizes = Size.objects.filter(is_active=True, productvariant__product__in=products_queryset).distinct().order_by('name')
+    fit_types = (
+        FitType.objects.filter(is_active=True, products__in=products_queryset)
+        .distinct()
+        .order_by("name")
+    )
+    brands = (
+        Brand.objects.filter(is_active=True, products__in=products_queryset)
+        .distinct()
+        .order_by("name")
+    )
+    colors = (
+        Color.objects.filter(
+            is_active=True, productvariant__product__in=products_queryset
+        )
+        .distinct()
+        .order_by("name")
+    )
+    sizes = (
+        Size.objects.filter(
+            is_active=True, productvariant__product__in=products_queryset
+        )
+        .distinct()
+        .order_by("name")
+    )
 
-    all_categories = Category.objects.filter(is_active=True).order_by('name')  # For navbar/sidebar
+    all_categories = Category.objects.filter(is_active=True).order_by(
+        "name"
+    )  # For navbar/sidebar
 
     products_in_wishlist_ids = []
     if request.user.is_authenticated:
         try:
-            wishlist = Wishlist.objects.only('id').get(user=request.user)
-            products_in_wishlist_ids = list(wishlist.items.values_list('product_id', flat=True))
+            wishlist = Wishlist.objects.only("id").get(user=request.user)
+            products_in_wishlist_ids = list(
+                wishlist.items.values_list("product_id", flat=True)
+            )
         except Wishlist.DoesNotExist:
             pass
 
     context = {
-        'category': category,
-        'subcategories': subcategories,
-        'products': page_obj,  # This is the paginated queryset
-        'fit_types': fit_types,
-        'brands': brands,
-        'colors': colors,
-        'sizes': sizes,
-        'price_range': price_range,
-        'categories': all_categories,
-        'products_in_wishlist_ids': products_in_wishlist_ids,
-        'current_filters': {
-            'subcategory': request.GET.get('subcategory'),
-            'fit_type': request.GET.get('fit_type'),
-            'brand': request.GET.get('brand'),
-            'color': request.GET.get('color'),
-            'size': request.GET.get('size'),
-            'min_price': request.GET.get('min_price'),
-            'max_price': request.GET.get('max_price'),
-            'sort': request.GET.get('sort', 'name'),
-        }
+        "category": category,
+        "subcategories": subcategories,
+        "products": page_obj,  # This is the paginated queryset
+        "fit_types": fit_types,
+        "brands": brands,
+        "colors": colors,
+        "sizes": sizes,
+        "price_range": price_range,
+        "categories": all_categories,
+        "category_ads": category_ads,  # Add advertisements for category
+        "products_in_wishlist_ids": products_in_wishlist_ids,
+        "current_filters": {
+            "subcategory": request.GET.get("subcategory"),
+            "fit_type": request.GET.get("fit_type"),
+            "brand": request.GET.get("brand"),
+            "color": request.GET.get("color"),
+            "size": request.GET.get("size"),
+            "min_price": request.GET.get("min_price"),
+            "max_price": request.GET.get("max_price"),
+            "sort": request.GET.get("sort", "name"),
+        },
     }
 
-    return render(request, 'shop/category_detail.html', context)
+    return render(request, "shop/category_detail.html", context)
+
+
 def subcategory_detail(request, category_slug, slug):
     """Subcategory detail view"""
     category = get_object_or_404(Category, slug=category_slug, is_active=True)
-    subcategory = get_object_or_404(SubCategory, slug=slug, category=category, is_active=True)
+    subcategory = get_object_or_404(
+        SubCategory, slug=slug, category=category, is_active=True
+    )
 
-    products_queryset = Product.objects.filter(
-        subcategory=subcategory,
-        is_active=True,
-        is_available=True
-    ).prefetch_related('images') \
-     .select_related('category', 'subcategory', 'brand')
+    products_queryset = (
+        Product.objects.filter(
+            subcategory=subcategory, is_active=True, is_available=True
+        )
+        .prefetch_related("images")
+        .select_related("category", "subcategory", "brand")
+    )
 
     # Apply filters and sorting using helper
     products_queryset = _filter_and_sort_products(products_queryset, request.GET)
 
     # Price range calculation for current filtered set
-    price_range = products_queryset.aggregate(Min('price'), Max('price'))
+    price_range = products_queryset.aggregate(Min("price"), Max("price"))
 
     # Pagination
     paginator = Paginator(products_queryset, 12)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     # Get filter options relevant to this subcategory's products
-    fit_types = FitType.objects.filter(is_active=True, products__in=products_queryset).distinct().order_by('name')
-    brands = Brand.objects.filter(is_active=True, products__in=products_queryset).distinct().order_by('name')
-    colors = Color.objects.filter(is_active=True, productvariant__product__in=products_queryset).distinct().order_by('name')
-    sizes = Size.objects.filter(is_active=True, productvariant__product__in=products_queryset).distinct().order_by('name')
+    fit_types = (
+        FitType.objects.filter(is_active=True, products__in=products_queryset)
+        .distinct()
+        .order_by("name")
+    )
+    brands = (
+        Brand.objects.filter(is_active=True, products__in=products_queryset)
+        .distinct()
+        .order_by("name")
+    )
+    colors = (
+        Color.objects.filter(
+            is_active=True, productvariant__product__in=products_queryset
+        )
+        .distinct()
+        .order_by("name")
+    )
+    sizes = (
+        Size.objects.filter(
+            is_active=True, productvariant__product__in=products_queryset
+        )
+        .distinct()
+        .order_by("name")
+    )
 
-    all_categories = Category.objects.filter(is_active=True).order_by('name')  # For sidebar navigation
+    all_categories = Category.objects.filter(is_active=True).order_by(
+        "name"
+    )  # For sidebar navigation
 
     products_in_wishlist_ids = []
     if request.user.is_authenticated:
         try:
-            wishlist = Wishlist.objects.only('id').get(user=request.user)
-            products_in_wishlist_ids = list(wishlist.items.values_list('product_id', flat=True))
+            wishlist = Wishlist.objects.only("id").get(user=request.user)
+            products_in_wishlist_ids = list(
+                wishlist.items.values_list("product_id", flat=True)
+            )
         except Wishlist.DoesNotExist:
             pass
 
     context = {
-        'category': category,
-        'subcategory': subcategory,
-        'products': page_obj,
-        'fit_types': fit_types,
-        'brands': brands,
-        'colors': colors,
-        'sizes': sizes,
-        'price_range': price_range,
-        'categories': all_categories,
-        'subcategories': category.subcategories.filter(is_active=True).order_by('name'),
-        'products_in_wishlist_ids': products_in_wishlist_ids,
-        'current_filters': {
-            'subcategory': request.GET.get('subcategory'),  # This will be the current subcategory
-            'fit_type': request.GET.get('fit_type'),
-            'brand': request.GET.get('brand'),
-            'color': request.GET.get('color'),
-            'size': request.GET.get('size'),
-            'min_price': request.GET.get('min_price'),
-            'max_price': request.GET.get('max_price'),
-            'sort': request.GET.get('sort', 'name'),
-        }
+        "category": category,
+        "subcategory": subcategory,
+        "products": page_obj,
+        "fit_types": fit_types,
+        "brands": brands,
+        "colors": colors,
+        "sizes": sizes,
+        "price_range": price_range,
+        "categories": all_categories,
+        "subcategories": category.subcategories.filter(is_active=True).order_by("name"),
+        "products_in_wishlist_ids": products_in_wishlist_ids,
+        "current_filters": {
+            "subcategory": request.GET.get(
+                "subcategory"
+            ),  # This will be the current subcategory
+            "fit_type": request.GET.get("fit_type"),
+            "brand": request.GET.get("brand"),
+            "color": request.GET.get("color"),
+            "size": request.GET.get("size"),
+            "min_price": request.GET.get("min_price"),
+            "max_price": request.GET.get("max_price"),
+            "sort": request.GET.get("sort", "name"),
+        },
     }
 
-    return render(request, 'shop/subcategory_detail.html', context)
+    return render(request, "shop/subcategory_detail.html", context)
+
+
 def product_detail(request, slug):
     """Product detail view"""
     product = get_object_or_404(
-        Product.objects.select_related('category', 'subcategory', 'brand', 'fit_type')
-        .prefetch_related('images', 'variants__color', 'variants__size'),
+        Product.objects.select_related(
+            "category", "subcategory", "brand", "fit_type"
+        ).prefetch_related("images", "variants__color", "variants__size"),
         slug=slug,
         is_active=True,
-        is_available=True
+        is_available=True,
     )
 
-    related_products = Product.objects.filter(
-        Q(category=product.category) | Q(subcategory=product.subcategory),
-        is_active=True,
-        is_available=True
-    ).exclude(id=product.id).distinct().prefetch_related('images') \
-                           .select_related('category', 'subcategory', 'brand')[:8]
+    related_products = (
+        Product.objects.filter(
+            Q(category=product.category) | Q(subcategory=product.subcategory),
+            is_active=True,
+            is_available=True,
+        )
+        .exclude(id=product.id)
+        .distinct()
+        .prefetch_related("images")
+        .select_related("category", "subcategory", "brand")[:8]
+    )
 
     variants = product.variants.filter(is_available=True, stock_quantity__gt=0)
 
-    available_colors = Color.objects.filter(
-        productvariant__in=variants,
-        is_active=True
-    ).distinct().order_by('name') # Keep this if you want colors sorted alphabetically by name
+    available_colors = (
+        Color.objects.filter(productvariant__in=variants, is_active=True)
+        .distinct()
+        .order_by("name")
+    )  # Keep this if you want colors sorted alphabetically by name
 
     available_sizes = Size.objects.filter(
-        productvariant__in=variants,
-        is_active=True
-    ).distinct() # REMOVE .order_by('name') to use Size model's Meta.ordering
+        productvariant__in=variants, is_active=True
+    ).distinct()  # REMOVE .order_by('name') to use Size model's Meta.ordering
 
-    product_images = product.images.all().order_by('order')
+    product_images = product.images.all().order_by("order")
 
-    categories = Category.objects.filter(is_active=True).order_by('name')
+    categories = Category.objects.filter(is_active=True).order_by("name")
 
     is_in_wishlist = False
     if request.user.is_authenticated:
@@ -301,50 +563,65 @@ def product_detail(request, slug):
         ).exists()
 
     context = {
-        'product': product,
-        'related_products': related_products,
-        'variants': variants,
-        'available_colors': available_colors,
-        'available_sizes': available_sizes, # This will now be ordered by size_type, then 'order', then 'name'
-        'product_images': product_images,
-        'categories': categories,
-        'is_in_wishlist': is_in_wishlist,
+        "product": product,
+        "related_products": related_products,
+        "variants": variants,
+        "available_colors": available_colors,
+        "available_sizes": available_sizes,  # This will now be ordered by size_type, then 'order', then 'name'
+        "product_images": product_images,
+        "categories": categories,
+        "is_in_wishlist": is_in_wishlist,
     }
 
-    return render(request, 'shop/product_detail.html', context)
+    return render(request, "shop/product_detail.html", context)
+
+
 # --- Search & API Endpoints ---
 @require_http_methods(["GET"])
 def search_products(request):
     """AJAX search for products"""
-    query = request.GET.get('q', '').strip()  # .strip() to remove leading/trailing whitespace
+    query = request.GET.get(
+        "q", ""
+    ).strip()  # .strip() to remove leading/trailing whitespace
 
     if not query or len(query) < 2:
-        return JsonResponse({'products': []})
+        return JsonResponse({"products": []})
 
-    products = Product.objects.filter(
-        Q(name__icontains=query) |
-        Q(description__icontains=query) |
-        Q(brand__name__icontains=query) |
-        Q(category__name__icontains=query),
-        is_active=True,
-        is_available=True
-    ).select_related('category', 'subcategory', 'brand').prefetch_related('images')[
-               :10]  # Limit results for performance
+    products = (
+        Product.objects.filter(
+            Q(name__icontains=query)
+            | Q(description__icontains=query)
+            | Q(brand__name__icontains=query)
+            | Q(category__name__icontains=query),
+            is_active=True,
+            is_available=True,
+        )
+        .select_related("category", "subcategory", "brand")
+        .prefetch_related("images")[:10]
+    )  # Limit results for performance
 
     results = []
     for product in products:
-        main_image = product.get_main_image()  # Assuming this method gets the main image object
-        results.append({
-            'id': product.id,
-            'name': product.name,
-            'price': str(product.get_price()),  # Ensure price is a string for JSON serialization
-            'url': product.get_absolute_url(),
-            'image': main_image.image.url if main_image and main_image.image else '',  # Check if image file exists
-            'category': product.category.name if product.category else '',
-            'brand': product.brand.name if product.brand else '',
-        })
+        main_image = (
+            product.get_main_image()
+        )  # Assuming this method gets the main image object
+        results.append(
+            {
+                "id": product.id,
+                "name": product.name,
+                "price": str(
+                    product.get_price()
+                ),  # Ensure price is a string for JSON serialization
+                "url": product.get_absolute_url(),
+                "image": (
+                    main_image.image.url if main_image and main_image.image else ""
+                ),  # Check if image file exists
+                "category": product.category.name if product.category else "",
+                "brand": product.brand.name if product.brand else "",
+            }
+        )
 
-    return JsonResponse({'products': results})
+    return JsonResponse({"products": results})
 
 
 @require_http_methods(["GET"])
@@ -356,46 +633,57 @@ def get_product_variants(request, product_id):
     try:
         product = get_object_or_404(Product, id=product_id)
     except ValueError:
-        return JsonResponse({'variants': [], 'message': _("Invalid product ID.")}, status=400)
+        return JsonResponse(
+            {"variants": [], "message": _("Invalid product ID.")}, status=400
+        )
 
-    color_id = request.GET.get('color')
-    size_id = request.GET.get('size')
+    color_id = request.GET.get("color")
+    size_id = request.GET.get("size")
 
     variants_queryset = ProductVariant.objects.filter(
         product=product,
         is_available=True,
-        stock_quantity__gt=0  # Only show variants that are in stock
-    ).select_related('color', 'size')  # Efficiently fetch related color and size objects
+        stock_quantity__gt=0,  # Only show variants that are in stock
+    ).select_related(
+        "color", "size"
+    )  # Efficiently fetch related color and size objects
 
     if color_id:
         try:
             variants_queryset = variants_queryset.filter(color__id=int(color_id))
         except (ValueError, TypeError):
             # If color_id is invalid, return empty results (or all if that's desired behavior)
-            return JsonResponse({'variants': [], 'message': _("Invalid color ID.")}, status=400)
+            return JsonResponse(
+                {"variants": [], "message": _("Invalid color ID.")}, status=400
+            )
 
     if size_id:
         try:
             variants_queryset = variants_queryset.filter(size__id=int(size_id))
         except (ValueError, TypeError):
             # If size_id is invalid, return empty results
-            return JsonResponse({'variants': [], 'message': _("Invalid size ID.")}, status=400)
+            return JsonResponse(
+                {"variants": [], "message": _("Invalid size ID.")}, status=400
+            )
 
     results = []
     for variant in variants_queryset:
-        results.append({
-            'id': variant.id,
-            'color_id': variant.color.id if variant.color else None,
-            'color_name': variant.color.name if variant.color else _('N/A'),
-            'size_id': variant.size.id if variant.size else None,
-            'size_name': variant.size.name if variant.size else _('N/A'),
-            'price': str(variant.get_price()),  # Ensure Decimal is serialized as string
-            'stock': variant.stock_quantity,
-            'sku': variant.sku,
-        })
+        results.append(
+            {
+                "id": variant.id,
+                "color_id": variant.color.id if variant.color else None,
+                "color_name": variant.color.name if variant.color else _("N/A"),
+                "size_id": variant.size.id if variant.size else None,
+                "size_name": variant.size.name if variant.size else _("N/A"),
+                "price": str(
+                    variant.get_price()
+                ),  # Ensure Decimal is serialized as string
+                "stock": variant.stock_quantity,
+                "sku": variant.sku,
+            }
+        )
 
-    return JsonResponse({'variants': results})
-
+    return JsonResponse({"variants": results})
 
 
 @require_GET
@@ -419,15 +707,15 @@ def get_cart_and_wishlist_counts(request):
         wishlist = Wishlist.objects.filter(user=request.user).first()
         wishlist_count = wishlist.items.count() if wishlist else 0
     else:
-        wishlist_session = request.session.get('wishlist', [])
+        wishlist_session = request.session.get("wishlist", [])
         wishlist_count = len(wishlist_session)
 
-    return JsonResponse({
-        'cart_count': cart_count,
-        'wishlist_count': wishlist_count,
-    })
-
-
+    return JsonResponse(
+        {
+            "cart_count": cart_count,
+            "wishlist_count": wishlist_count,
+        }
+    )
 
 
 # --- Wishlist Views ---
@@ -438,23 +726,27 @@ def wishlist_view(request):
     if request.user.is_authenticated:
         try:
             wishlist = request.user.wishlist
-            products_qs = Product.objects.filter(
-                wishlistitem__wishlist=wishlist
-            ).select_related(
-                'category', 'subcategory', 'brand'
-            ).prefetch_related('images').order_by('name')
+            products_qs = (
+                Product.objects.filter(wishlistitem__wishlist=wishlist)
+                .select_related("category", "subcategory", "brand")
+                .prefetch_related("images")
+                .order_by("name")
+            )
             products_in_wishlist_ids = set(
-                wishlist.items.values_list('product_id', flat=True)
+                wishlist.items.values_list("product_id", flat=True)
             )
         except Wishlist.DoesNotExist:
             products_qs = Product.objects.none()
             products_in_wishlist_ids = set()
     else:
-        wishlist_session = request.session.get('wishlist', [])
+        wishlist_session = request.session.get("wishlist", [])
         if wishlist_session:
-            products_qs = Product.objects.filter(id__in=wishlist_session).select_related(
-                'category', 'subcategory', 'brand'
-            ).prefetch_related('images').order_by('name')
+            products_qs = (
+                Product.objects.filter(id__in=wishlist_session)
+                .select_related("category", "subcategory", "brand")
+                .prefetch_related("images")
+                .order_by("name")
+            )
             products_in_wishlist_ids = set(wishlist_session)
         else:
             products_qs = Product.objects.none()
@@ -462,7 +754,7 @@ def wishlist_view(request):
 
     # Pagination: 8 products per page
     paginator = Paginator(products_qs, 8)
-    page = request.GET.get('page', 1)
+    page = request.GET.get("page", 1)
     try:
         products = paginator.page(page)
     except PageNotAnInteger:
@@ -471,234 +763,462 @@ def wishlist_view(request):
         products = paginator.page(paginator.num_pages)
 
     # Update wishlist count in session
-    request.session['wishlist_count'] = products_qs.count()
+    request.session["wishlist_count"] = products_qs.count()
 
     context = {
-        'products': products,
-        'products_in_wishlist_ids': products_in_wishlist_ids,
+        "products": products,
+        "products_in_wishlist_ids": products_in_wishlist_ids,
     }
-    return render(request, 'shop/wishlist_view.html', context)
+    return render(request, "shop/wishlist_view.html", context)
 
 
 @require_POST
 def add_to_cart(request):
     # Determine current language
-    lang = getattr(request, 'LANGUAGE_CODE', 'en')
+    lang = getattr(request, "LANGUAGE_CODE", "en")
 
     try:
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
             data = request.POST
-        product_variant_id = data.get('product_variant_id')
-        product_id = data.get('product_id')
-        quantity = int(data.get('quantity', 1))
+        product_variant_id = data.get("product_variant_id")
+        product_id = data.get("product_id")
+        quantity = int(data.get("quantity", 1))
     except (ValueError, TypeError):
-        message = 'Invalid data provided.' if lang == 'en' else 'بيانات غير صالحة.'
-        return JsonResponse({'success': False, 'message': message}, status=400)
+        message = "Invalid data provided." if lang == "en" else "بيانات غير صالحة."
+        return JsonResponse({"success": False, "message": message}, status=400)
 
     product_variant = None
     product = None
     if product_variant_id:
         try:
-            product_variant = ProductVariant.objects.get(id=product_variant_id, is_available=True)
+            product_variant = ProductVariant.objects.get(
+                id=product_variant_id, is_available=True
+            )
             product = product_variant.product
         except ProductVariant.DoesNotExist:
-            message = 'Product variant not found or not available.' if lang == 'en' else 'النسخة المحددة من المنتج غير موجودة أو غير متوفرة.'
-            return JsonResponse({'success': False, 'message': message}, status=404)
+            message = (
+                "Product variant not found or not available."
+                if lang == "en"
+                else "النسخة المحددة من المنتج غير موجودة أو غير متوفرة."
+            )
+            return JsonResponse({"success": False, "message": message}, status=404)
     elif product_id:
         try:
-            product = Product.objects.get(id=product_id, is_active=True, is_available=True)
-            product_variant = ProductVariant.objects.filter(
-                product=product, is_available=True, stock_quantity__gt=0
-            ).order_by('pk').first()
+            product = Product.objects.get(
+                id=product_id, is_active=True, is_available=True
+            )
+            product_variant = (
+                ProductVariant.objects.filter(
+                    product=product, is_available=True, stock_quantity__gt=0
+                )
+                .order_by("pk")
+                .first()
+            )
             if not product_variant:
-                message = f'No available variants for {product.name} or out of stock.' if lang == 'en' else f'لا توجد نسخ متاحة لـ {product.name} أو نفدت الكمية.'
-                return JsonResponse({'success': False, 'message': message}, status=400)
+                message = (
+                    f"No available variants for {product.name} or out of stock."
+                    if lang == "en"
+                    else f"لا توجد نسخ متاحة لـ {product.name} أو نفدت الكمية."
+                )
+                return JsonResponse({"success": False, "message": message}, status=400)
         except Product.DoesNotExist:
-            message = 'Product not found or not available.' if lang == 'en' else 'المنتج غير موجود أو غير متوفر.'
-            return JsonResponse({'success': False, 'message': message}, status=404)
+            message = (
+                "Product not found or not available."
+                if lang == "en"
+                else "المنتج غير موجود أو غير متوفر."
+            )
+            return JsonResponse({"success": False, "message": message}, status=404)
     else:
-        message = 'Product or variant not provided.' if lang == 'en' else 'لم يتم تقديم منتج أو نسخة.'
-        return JsonResponse({'success': False, 'message': message}, status=400)
+        message = (
+            "Product or variant not provided."
+            if lang == "en"
+            else "لم يتم تقديم منتج أو نسخة."
+        )
+        return JsonResponse({"success": False, "message": message}, status=400)
 
     if quantity <= 0:
-        message = 'Quantity must be at least 1.' if lang == 'en' else 'يجب أن تكون الكمية على الأقل 1.'
-        return JsonResponse({'success': False, 'message': message}, status=400)
+        message = (
+            "Quantity must be at least 1."
+            if lang == "en"
+            else "يجب أن تكون الكمية على الأقل 1."
+        )
+        return JsonResponse({"success": False, "message": message}, status=400)
 
     if product_variant.stock_quantity < quantity:
         message = (
-            f'Not enough stock for {product.name} ({product_variant.color.name if product_variant.color else "N/A"}, '
-            f'{product_variant.size.name if product_variant.size else "N/A"}). Available: {product_variant.stock_quantity}.'
-        ) if lang == 'en' else (
-            f'الكمية غير كافية للمنتج {product.name} ({product_variant.color.name if product_variant.color else "غير متوفر"}, '
-            f'{product_variant.size.name if product_variant.size else "غير متوفر"}). المتوفر: {product_variant.stock_quantity}.'
+            (
+                f'Not enough stock for {product.name} ({product_variant.color.name if product_variant.color else "N/A"}, '
+                f'{product_variant.size.name if product_variant.size else "N/A"}). Available: {product_variant.stock_quantity}.'
+            )
+            if lang == "en"
+            else (
+                f'الكمية غير كافية للمنتج {product.name} ({product_variant.color.name if product_variant.color else "غير متوفر"}, '
+                f'{product_variant.size.name if product_variant.size else "غير متوفر"}). المتوفر: {product_variant.stock_quantity}.'
+            )
         )
-        return JsonResponse({'success': False, 'message': message}, status=400)
+        return JsonResponse({"success": False, "message": message}, status=400)
 
     with transaction.atomic():
         if request.user.is_authenticated:
-            cart, created = Cart.objects.select_for_update().get_or_create(user=request.user)
+            cart, created = Cart.objects.select_for_update().get_or_create(
+                user=request.user
+            )
         else:
             session_key = request.session.session_key
             if not session_key:
                 request.session.save()
                 session_key = request.session.session_key
-            cart, created = Cart.objects.select_for_update().get_or_create(session_key=session_key)
+            cart, created = Cart.objects.select_for_update().get_or_create(
+                session_key=session_key
+            )
 
         cart_item, created = CartItem.objects.select_for_update().get_or_create(
-            cart=cart,
-            product_variant=product_variant,
-            defaults={'quantity': quantity}
+            cart=cart, product_variant=product_variant, defaults={"quantity": quantity}
         )
         if not created:
             cart_item.quantity += quantity
             cart_item.save()
 
-        request.session['cart_count'] = cart.total_items
-        message = 'Item added to cart successfully!' if lang == 'en' else 'تمت إضافة العنصر إلى السلة بنجاح!'
-        return JsonResponse({'success': True, 'message': message, 'cart_total_items': cart.total_items})
+        request.session["cart_count"] = cart.total_items
+        message = (
+            "Item added to cart successfully!"
+            if lang == "en"
+            else "تمت إضافة العنصر إلى السلة بنجاح!"
+        )
+        return JsonResponse(
+            {"success": True, "message": message, "cart_total_items": cart.total_items}
+        )
+
 
 @require_POST
 def add_to_wishlist(request):
-    lang = getattr(request, 'LANGUAGE_CODE', 'en')
+    lang = getattr(request, "LANGUAGE_CODE", "en")
     try:
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'message': 'Invalid JSON.' if lang == 'en' else 'نص غير صالح.'}, status=400)
-        product_id = data.get('product_id')
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
+                },
+                status=400,
+            )
+        product_id = data.get("product_id")
         if not product_id:
-            return JsonResponse({'success': False, 'message': 'Product ID not provided.' if lang == 'en' else 'معرف المنتج غير موجود.'}, status=400)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Product ID not provided."
+                        if lang == "en"
+                        else "معرف المنتج غير موجود."
+                    ),
+                },
+                status=400,
+            )
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Product not found.' if lang == 'en' else 'المنتج غير موجود.'}, status=404)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Product not found." if lang == "en" else "المنتج غير موجود."
+                    ),
+                },
+                status=404,
+            )
 
         if request.user.is_authenticated:
             with transaction.atomic():
-                wishlist, created = Wishlist.objects.select_for_update().get_or_create(user=request.user)
-                wishlist_item, item_created = WishlistItem.objects.get_or_create(wishlist=wishlist, product=product)
+                wishlist, created = Wishlist.objects.select_for_update().get_or_create(
+                    user=request.user
+                )
+                wishlist_item, item_created = WishlistItem.objects.get_or_create(
+                    wishlist=wishlist, product=product
+                )
                 if item_created:
-                    message = 'Item added to wishlist successfully!' if lang == 'en' else 'تمت إضافة العنصر إلى قائمة الرغبات بنجاح!'
-                    status = 'added'
+                    message = (
+                        "Item added to wishlist successfully!"
+                        if lang == "en"
+                        else "تمت إضافة العنصر إلى قائمة الرغبات بنجاح!"
+                    )
+                    status = "added"
                 else:
-                    message = 'Item is already in your wishlist.' if lang == 'en' else 'العنصر موجود بالفعل في قائمة رغباتك.'
-                    status = 'exists'
+                    message = (
+                        "Item is already in your wishlist."
+                        if lang == "en"
+                        else "العنصر موجود بالفعل في قائمة رغباتك."
+                    )
+                    status = "exists"
                 wishlist_count = wishlist.items.count()
         else:
-            wishlist_session = request.session.get('wishlist', [])
+            wishlist_session = request.session.get("wishlist", [])
             if str(product_id) in wishlist_session:
-                message = 'Item is already in your wishlist.' if lang == 'en' else 'العنصر موجود بالفعل في قائمة رغباتك.'
-                status = 'exists'
+                message = (
+                    "Item is already in your wishlist."
+                    if lang == "en"
+                    else "العنصر موجود بالفعل في قائمة رغباتك."
+                )
+                status = "exists"
             else:
                 wishlist_session.append(str(product_id))
-                request.session['wishlist'] = wishlist_session
-                message = 'Item added to wishlist successfully!' if lang == 'en' else 'تمت إضافة العنصر إلى قائمة الرغبات بنجاح!'
-                status = 'added'
+                request.session["wishlist"] = wishlist_session
+                message = (
+                    "Item added to wishlist successfully!"
+                    if lang == "en"
+                    else "تمت إضافة العنصر إلى قائمة الرغبات بنجاح!"
+                )
+                status = "added"
             wishlist_count = len(wishlist_session)
 
-        request.session['wishlist_count'] = wishlist_count
-        return JsonResponse({'success': True, 'message': message, 'status': status, 'wishlist_total_items': wishlist_count})
+        request.session["wishlist_count"] = wishlist_count
+        return JsonResponse(
+            {
+                "success": True,
+                "message": message,
+                "status": status,
+                "wishlist_total_items": wishlist_count,
+            }
+        )
     except Exception:
-        message = 'An error occurred.' if lang == 'en' else 'حدث خطأ.'
-        return JsonResponse({'success': False, 'message': message}, status=500)
+        message = "An error occurred." if lang == "en" else "حدث خطأ."
+        return JsonResponse({"success": False, "message": message}, status=500)
+
 
 @require_POST
 def remove_from_wishlist(request):
-    lang = getattr(request, 'LANGUAGE_CODE', 'en')
+    lang = getattr(request, "LANGUAGE_CODE", "en")
     try:
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'message': 'Invalid JSON.' if lang == 'en' else 'نص غير صالح.'}, status=400)
-        product_id = data.get('product_id')
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
+                },
+                status=400,
+            )
+        product_id = data.get("product_id")
         if not product_id:
-            return JsonResponse({'success': False, 'message': 'Product ID not provided.' if lang == 'en' else 'معرف المنتج غير موجود.'}, status=400)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Product ID not provided."
+                        if lang == "en"
+                        else "معرف المنتج غير موجود."
+                    ),
+                },
+                status=400,
+            )
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Product not found.' if lang == 'en' else 'المنتج غير موجود.'}, status=404)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Product not found." if lang == "en" else "المنتج غير موجود."
+                    ),
+                },
+                status=404,
+            )
 
         if request.user.is_authenticated:
             try:
                 wishlist = Wishlist.objects.get(user=request.user)
             except Wishlist.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'Wishlist not found for user.', 'status': 'wishlist_missing'}, status=404)
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Wishlist not found for user.",
+                        "status": "wishlist_missing",
+                    },
+                    status=404,
+                )
             with transaction.atomic():
-                deleted_count, _ = WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
+                deleted_count, _ = WishlistItem.objects.filter(
+                    wishlist=wishlist, product=product
+                ).delete()
                 if deleted_count > 0:
                     wishlist_count = wishlist.items.count()
-                    request.session['wishlist_count'] = wishlist_count
-                    message = 'Item removed successfully!' if lang == 'en' else 'تمت إزالة العنصر بنجاح!'
-                    return JsonResponse({'success': True, 'message': message, 'wishlist_total_items': wishlist_count, 'status': 'removed'})
+                    request.session["wishlist_count"] = wishlist_count
+                    message = (
+                        "Item removed successfully!"
+                        if lang == "en"
+                        else "تمت إزالة العنصر بنجاح!"
+                    )
+                    return JsonResponse(
+                        {
+                            "success": True,
+                            "message": message,
+                            "wishlist_total_items": wishlist_count,
+                            "status": "removed",
+                        }
+                    )
                 else:
-                    message = 'Item not found in wishlist.' if lang == 'en' else 'العنصر غير موجود في قائمة الرغبات.'
-                    return JsonResponse({'success': False, 'message': message, 'status': 'not_found'}, status=404)
+                    message = (
+                        "Item not found in wishlist."
+                        if lang == "en"
+                        else "العنصر غير موجود في قائمة الرغبات."
+                    )
+                    return JsonResponse(
+                        {"success": False, "message": message, "status": "not_found"},
+                        status=404,
+                    )
         else:
-            wishlist_session = request.session.get('wishlist', [])
+            wishlist_session = request.session.get("wishlist", [])
             if str(product_id) in wishlist_session:
                 wishlist_session.remove(str(product_id))
-                request.session['wishlist'] = wishlist_session
+                request.session["wishlist"] = wishlist_session
                 wishlist_count = len(wishlist_session)
-                request.session['wishlist_count'] = wishlist_count
-                message = 'Item removed successfully!' if lang == 'en' else 'تمت إزالة العنصر بنجاح!'
-                return JsonResponse({'success': True, 'message': message, 'wishlist_total_items': wishlist_count, 'status': 'removed'})
+                request.session["wishlist_count"] = wishlist_count
+                message = (
+                    "Item removed successfully!"
+                    if lang == "en"
+                    else "تمت إزالة العنصر بنجاح!"
+                )
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "message": message,
+                        "wishlist_total_items": wishlist_count,
+                        "status": "removed",
+                    }
+                )
             else:
-                message = 'Item not found in wishlist.' if lang == 'en' else 'العنصر غير موجود في قائمة الرغبات.'
-                return JsonResponse({'success': False, 'message': message, 'status': 'not_found'}, status=404)
+                message = (
+                    "Item not found in wishlist."
+                    if lang == "en"
+                    else "العنصر غير موجود في قائمة الرغبات."
+                )
+                return JsonResponse(
+                    {"success": False, "message": message, "status": "not_found"},
+                    status=404,
+                )
     except Exception:
-        message = 'An error occurred.' if lang == 'en' else 'حدث خطأ.'
-        return JsonResponse({'success': False, 'message': message}, status=500)
+        message = "An error occurred." if lang == "en" else "حدث خطأ."
+        return JsonResponse({"success": False, "message": message}, status=500)
+
 
 @require_POST
 def remove_from_cart(request):
-    lang = getattr(request, 'LANGUAGE_CODE', 'en')
+    lang = getattr(request, "LANGUAGE_CODE", "en")
     try:
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'message': 'Invalid JSON.' if lang == 'en' else 'نص غير صالح.'}, status=HttpResponseBadRequest.status_code)
-        cart_item_id = data.get('cart_item_id')
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
+                },
+                status=HttpResponseBadRequest.status_code,
+            )
+        cart_item_id = data.get("cart_item_id")
         if not cart_item_id:
-            return JsonResponse({'success': False, 'message': 'Cart item ID not provided.' if lang == 'en' else 'معرف عنصر السلة غير موجود.'}, status=HttpResponseBadRequest.status_code)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Cart item ID not provided."
+                        if lang == "en"
+                        else "معرف عنصر السلة غير موجود."
+                    ),
+                },
+                status=HttpResponseBadRequest.status_code,
+            )
         try:
             cart_item_id = int(cart_item_id)
         except ValueError:
-            return JsonResponse({'success': False, 'message': 'Invalid cart item ID format.' if lang == 'en' else 'تنسيق معرف عنصر السلة غير صالح.'}, status=HttpResponseBadRequest.status_code)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Invalid cart item ID format."
+                        if lang == "en"
+                        else "تنسيق معرف عنصر السلة غير صالح."
+                    ),
+                },
+                status=HttpResponseBadRequest.status_code,
+            )
         try:
-            cart_item = get_object_or_404(CartItem.objects.select_related('cart'), id=cart_item_id)
+            cart_item = get_object_or_404(
+                CartItem.objects.select_related("cart"), id=cart_item_id
+            )
             if request.user.is_authenticated:
                 if cart_item.cart.user != request.user:
-                    return JsonResponse({'success': False, 'message': 'Unauthorized action.' if lang == 'en' else 'إجراء غير مصرح به.'}, status=HttpResponseForbidden.status_code)
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": (
+                                "Unauthorized action."
+                                if lang == "en"
+                                else "إجراء غير مصرح به."
+                            ),
+                        },
+                        status=HttpResponseForbidden.status_code,
+                    )
             else:
                 if cart_item.cart.session_key != request.session.session_key:
-                    return JsonResponse({'success': False, 'message': 'Unauthorized action.' if lang == 'en' else 'إجراء غير مصرح به.'}, status=HttpResponseForbidden.status_code)
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": (
+                                "Unauthorized action."
+                                if lang == "en"
+                                else "إجراء غير مصرح به."
+                            ),
+                        },
+                        status=HttpResponseForbidden.status_code,
+                    )
             cart = cart_item.cart
             with transaction.atomic():
                 cart_item.delete()
-                request.session['cart_count'] = cart.total_items
-                message = 'Item removed from cart.' if lang == 'en' else 'تمت إزالة العنصر من السلة.'
-                return JsonResponse({
-                    'success': True,
-                    'message': message,
-                    'cart_item_id': cart_item_id,
-                    'cart_total_items': cart.total_items,
-                    'cart_total_price': str(cart.total_price)
-                })
+                request.session["cart_count"] = cart.total_items
+                message = (
+                    "Item removed from cart."
+                    if lang == "en"
+                    else "تمت إزالة العنصر من السلة."
+                )
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "message": message,
+                        "cart_item_id": cart_item_id,
+                        "cart_total_items": cart.total_items,
+                        "cart_total_price": str(cart.total_price),
+                    }
+                )
         except CartItem.DoesNotExist:
-            message = 'Cart item not found.' if lang == 'en' else 'لم يتم العثور على عنصر في السلة.'
-            return JsonResponse({'success': False, 'message': message}, status=404)
+            message = (
+                "Cart item not found."
+                if lang == "en"
+                else "لم يتم العثور على عنصر في السلة."
+            )
+            return JsonResponse({"success": False, "message": message}, status=404)
         except Exception as e:
-            return JsonResponse({'success': False, 'message': f'An unexpected error occurred: {str(e)}'}, status=500)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": f"An unexpected error occurred: {str(e)}",
+                },
+                status=500,
+            )
     except Exception:
-        message = 'An error occurred.' if lang == 'en' else 'حدث خطأ.'
-        return JsonResponse({'success': False, 'message': message}, status=500)
+        message = "An error occurred." if lang == "en" else "حدث خطأ."
+        return JsonResponse({"success": False, "message": message}, status=500)
+
 
 # --- Cart Views ---
 def cart_view(request):
     cart_items_data = []
-    total_cart_price = Decimal('0.00')
+    total_cart_price = Decimal("0.00")
     shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)
     cart = None
 
@@ -717,11 +1237,15 @@ def cart_view(request):
 
     if cart:
         cart_items = cart.items.select_related(
-            'product_variant__product', 'product_variant__color', 'product_variant__size'
-        ).order_by('pk')
+            "product_variant__product",
+            "product_variant__color",
+            "product_variant__size",
+        ).order_by("pk")
 
         for item in cart_items:
-            current_stock = item.product_variant.stock_quantity if item.product_variant else 0
+            current_stock = (
+                item.product_variant.stock_quantity if item.product_variant else 0
+            )
             if item.quantity > current_stock:
                 item.quantity = current_stock
                 item.save()
@@ -732,104 +1256,158 @@ def cart_view(request):
 
             item_total = item.get_total_price()
             total_cart_price += item_total
-            cart_items_data.append({
-                'id': item.id,
-                'variant': item.product_variant,
-                'quantity': item.quantity,
-                'total': item_total,
-                'stock_available': current_stock
-            })
+            cart_items_data.append(
+                {
+                    "id": item.id,
+                    "variant": item.product_variant,
+                    "quantity": item.quantity,
+                    "total": item_total,
+                    "stock_available": current_stock,
+                }
+            )
 
         cart.update_totals()
         total_cart_price = cart.total_price_field
-        request.session['cart_count'] = cart.total_items_field
+        request.session["cart_count"] = cart.total_items_field
     else:
-        request.session['cart_count'] = 0
+        request.session["cart_count"] = 0
 
     grand_total = total_cart_price + shipping_fee
 
-    return render(request, 'shop/cart_view.html', {
-        'items': cart_items_data,
-        'total': total_cart_price,
-        'shipping_fee': shipping_fee,
-        'grand_total': grand_total,
-        'cart': cart
-    })
+    return render(
+        request,
+        "shop/cart_view.html",
+        {
+            "items": cart_items_data,
+            "total": total_cart_price,
+            "shipping_fee": shipping_fee,
+            "grand_total": grand_total,
+            "cart": cart,
+        },
+    )
+
+
 @require_POST
 def update_cart_quantity(request):
     try:
-        lang = getattr(request, 'LANGUAGE_CODE', 'en')  # Default to 'en' if not set
+        lang = getattr(request, "LANGUAGE_CODE", "en")  # Default to 'en' if not set
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
-            message = 'Invalid JSON.' if lang == 'en' else 'نص غير صالح.'
-            return JsonResponse({'success': False, 'message': message}, status=HttpResponseBadRequest.status_code)
+            message = "Invalid JSON." if lang == "en" else "نص غير صالح."
+            return JsonResponse(
+                {"success": False, "message": message},
+                status=HttpResponseBadRequest.status_code,
+            )
 
-        cart_item_id = data.get('cart_item_id')
-        new_quantity = data.get('quantity')
+        cart_item_id = data.get("cart_item_id")
+        new_quantity = data.get("quantity")
 
         if not cart_item_id or new_quantity is None:
-            message = 'Cart item ID or quantity not provided.' if lang == 'en' else 'معرف عنصر السلة أو الكمية غير موجود.'
-            return JsonResponse({'success': False, 'message': message}, status=HttpResponseBadRequest.status_code)
+            message = (
+                "Cart item ID or quantity not provided."
+                if lang == "en"
+                else "معرف عنصر السلة أو الكمية غير موجود."
+            )
+            return JsonResponse(
+                {"success": False, "message": message},
+                status=HttpResponseBadRequest.status_code,
+            )
 
         try:
             cart_item_id = int(cart_item_id)
             new_quantity = int(new_quantity)
         except ValueError:
-            message = 'Invalid quantity or item ID format.' if lang == 'en' else 'تنسيق معرف العنصر أو الكمية غير صالح.'
-            return JsonResponse({'success': False, 'message': message}, status=HttpResponseBadRequest.status_code)
+            message = (
+                "Invalid quantity or item ID format."
+                if lang == "en"
+                else "تنسيق معرف العنصر أو الكمية غير صالح."
+            )
+            return JsonResponse(
+                {"success": False, "message": message},
+                status=HttpResponseBadRequest.status_code,
+            )
 
         try:
-            cart_item = get_object_or_404(CartItem.objects.select_related('cart', 'product_variant'), id=cart_item_id)
+            cart_item = get_object_or_404(
+                CartItem.objects.select_related("cart", "product_variant"),
+                id=cart_item_id,
+            )
             if request.user.is_authenticated:
                 if cart_item.cart.user != request.user:
-                    message = 'Unauthorized action.' if lang == 'en' else 'إجراء غير مصرح به.'
-                    return JsonResponse({'success': False, 'message': message}, status=HttpResponseForbidden.status_code)
+                    message = (
+                        "Unauthorized action." if lang == "en" else "إجراء غير مصرح به."
+                    )
+                    return JsonResponse(
+                        {"success": False, "message": message},
+                        status=HttpResponseForbidden.status_code,
+                    )
             else:
                 if cart_item.cart.session_key != request.session.session_key:
-                    message = 'Unauthorized action.' if lang == 'en' else 'إجراء غير مصرح به.'
-                    return JsonResponse({'success': False, 'message': message}, status=HttpResponseForbidden.status_code)
+                    message = (
+                        "Unauthorized action." if lang == "en" else "إجراء غير مصرح به."
+                    )
+                    return JsonResponse(
+                        {"success": False, "message": message},
+                        status=HttpResponseForbidden.status_code,
+                    )
 
             if new_quantity <= 0:
                 with transaction.atomic():
                     cart_item.delete()
-                message = 'Item removed from cart.' if lang == 'en' else 'تمت إزالة العنصر من السلة.'
-                status = 'removed'
-                item_total_price = Decimal('0.00')
+                message = (
+                    "Item removed from cart."
+                    if lang == "en"
+                    else "تمت إزالة العنصر من السلة."
+                )
+                status = "removed"
+                item_total_price = Decimal("0.00")
             else:
                 if cart_item.product_variant.stock_quantity < new_quantity:
                     new_quantity = cart_item.product_variant.stock_quantity
                 with transaction.atomic():
                     cart_item.quantity = new_quantity
                     cart_item.save()
-                message = 'Cart quantity updated.' if lang == 'en' else 'تم تحديث كمية السلة.'
-                status = 'updated'
+                message = (
+                    "Cart quantity updated." if lang == "en" else "تم تحديث كمية السلة."
+                )
+                status = "updated"
                 item_total_price = cart_item.get_total_price()
 
-            request.session['cart_count'] = cart_item.cart.total_items
-            return JsonResponse({
-                'success': True,
-                'message': message,
-                'status': status,
-                'cart_item_id': cart_item_id,
-                'new_quantity': cart_item.quantity if status == 'updated' else 0,
-                'item_total_price': str(item_total_price),
-                'cart_total_items': cart_item.cart.total_items,
-                'cart_total_price': str(cart_item.cart.total_price)
-            })
+            request.session["cart_count"] = cart_item.cart.total_items
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": message,
+                    "status": status,
+                    "cart_item_id": cart_item_id,
+                    "new_quantity": cart_item.quantity if status == "updated" else 0,
+                    "item_total_price": str(item_total_price),
+                    "cart_total_items": cart_item.cart.total_items,
+                    "cart_total_price": str(cart_item.cart.total_price),
+                }
+            )
 
         except CartItem.DoesNotExist:
-            message = 'Cart item not found.' if lang == 'en' else 'لم يتم العثور على عنصر في السلة.'
-            return JsonResponse({'success': False, 'message': message}, status=404)
+            message = (
+                "Cart item not found."
+                if lang == "en"
+                else "لم يتم العثور على عنصر في السلة."
+            )
+            return JsonResponse({"success": False, "message": message}, status=404)
 
         except Exception as e:
             print(f"Error updating cart quantity: {e}")
-            message = f'An unexpected error occurred: {str(e)}' if lang == 'en' else f'حدث خطأ غير متوقع: {str(e)}'
-            return JsonResponse({'success': False, 'message': message}, status=500)
+            message = (
+                f"An unexpected error occurred: {str(e)}"
+                if lang == "en"
+                else f"حدث خطأ غير متوقع: {str(e)}"
+            )
+            return JsonResponse({"success": False, "message": message}, status=500)
 
     except Exception as e:
-        message = 'An error occurred.' if lang == 'en' else 'حدث خطأ.'
-        return JsonResponse({'success': False, 'message': message}, status=500)
+        message = "An error occurred." if lang == "en" else "حدث خطأ."
+        return JsonResponse({"success": False, "message": message}, status=500)
 
 
 # --- Checkout & Order Views ---
@@ -848,17 +1426,26 @@ def get_cart_for_request(request):
             return Cart.objects.get(session_key=session_key)
         except Cart.DoesNotExist:
             return None
+
+
 def checkout_view(request):
     cart = get_cart_for_request(request)
 
     if not cart or not cart.items.exists():
-        messages.warning(request, _("Your cart is empty. Please add items before checking out."))
-        return redirect('shop:cart_view')
+        messages.warning(
+            request, _("Your cart is empty. Please add items before checking out.")
+        )
+        return redirect("shop:cart_view")
 
     cart.update_totals()
     if cart.total_items == 0:
-        messages.warning(request, _("Your cart is empty after stock adjustments. Please add items before checking out."))
-        return redirect('shop:cart_view')
+        messages.warning(
+            request,
+            _(
+                "Your cart is empty after stock adjustments. Please add items before checking out."
+            ),
+        )
+        return redirect("shop:cart_view")
 
     initial_shipping_data = {}
     user_shipping_addresses = ShippingAddress.objects.none()
@@ -867,77 +1454,115 @@ def checkout_view(request):
         user_orders = Order.objects.filter(user=request.user)
         user_shipping_addresses = ShippingAddress.objects.filter(order__in=user_orders)
         if user_shipping_addresses.exists():
-            default_address = user_shipping_addresses.filter(is_default=True).first() or user_shipping_addresses.order_by('-id').first()
+            default_address = (
+                user_shipping_addresses.filter(is_default=True).first()
+                or user_shipping_addresses.order_by("-id").first()
+            )
             if default_address:
                 initial_shipping_data = {
-                    'full_name': default_address.full_name,
-                    'address_line1': default_address.address_line1,
-                    'address_line2': default_address.address_line2,
-                    'city': default_address.city,
-                    'email': default_address.email,
-                    'phone_number': default_address.phone_number,
+                    "full_name": default_address.full_name,
+                    "address_line1": default_address.address_line1,
+                    "address_line2": default_address.address_line2,
+                    "city": default_address.city,
+                    "email": default_address.email,
+                    "phone_number": default_address.phone_number,
                 }
 
-    shipping_form = ShippingAddressForm(request.POST or None, initial=initial_shipping_data)
+    shipping_form = ShippingAddressForm(
+        request.POST or None, initial=initial_shipping_data
+    )
     payment_form = PaymentForm(request.POST or None)
 
     shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)  # <-- Add this
-    if request.method == 'POST':
-        selected_address_id = request.POST.get('selected_address')
-        if selected_address_id == 'new' or not user_shipping_addresses.exists():
+    if request.method == "POST":
+        selected_address_id = request.POST.get("selected_address")
+        if selected_address_id == "new" or not user_shipping_addresses.exists():
             # New address or no saved addresses
             if shipping_form.is_valid() and payment_form.is_valid():
                 return process_order(request, cart, shipping_form, payment_form)
             else:
-                messages.error(request, _("Please correct the errors in your shipping and/or payment details."))
+                messages.error(
+                    request,
+                    _(
+                        "Please correct the errors in your shipping and/or payment details."
+                    ),
+                )
         else:
             # Existing address selected
             if not request.user.is_authenticated:
-                messages.error(request, _("You must be logged in to use an existing address."))
-                return redirect('shop:checkout')
+                messages.error(
+                    request, _("You must be logged in to use an existing address.")
+                )
+                return redirect("shop:checkout")
             try:
-                selected_address = get_object_or_404(ShippingAddress, id=selected_address_id, order__user=request.user)
+                selected_address = get_object_or_404(
+                    ShippingAddress, id=selected_address_id, order__user=request.user
+                )
             except ShippingAddress.DoesNotExist:
-                messages.error(request, _("Selected shipping address not found or does not belong to you."))
-                return redirect('shop:checkout')
+                messages.error(
+                    request,
+                    _("Selected shipping address not found or does not belong to you."),
+                )
+                return redirect("shop:checkout")
 
             if payment_form.is_valid():
-                return process_order(request, cart, payment_form=payment_form, existing_address=selected_address)
+                return process_order(
+                    request,
+                    cart,
+                    payment_form=payment_form,
+                    existing_address=selected_address,
+                )
             else:
-                messages.error(request, _("Please correct the errors in your payment details."))
+                messages.error(
+                    request, _("Please correct the errors in your payment details.")
+                )
 
     context = {
-        'cart': cart,
-        'shipping_form': shipping_form,
-        'payment_form': payment_form,
-        'user_shipping_addresses': user_shipping_addresses,
-        'shipping_fee': shipping_fee,  # <-- Pass to template
-        'grand_total': cart.total_price_field + shipping_fee  # <-- Optional precomputed total
+        "cart": cart,
+        "shipping_form": shipping_form,
+        "payment_form": payment_form,
+        "user_shipping_addresses": user_shipping_addresses,
+        "shipping_fee": shipping_fee,  # <-- Pass to template
+        "grand_total": cart.total_price_field
+        + shipping_fee,  # <-- Optional precomputed total
     }
-    return render(request, 'shop/checkout.html', context)
+    return render(request, "shop/checkout.html", context)
+
 
 @transaction.atomic
-def process_order(request, cart, shipping_form=None, payment_form=None, existing_address=None):
+def process_order(
+    request, cart, shipping_form=None, payment_form=None, existing_address=None
+):
     try:
         if not shipping_form and not existing_address:
             messages.error(request, _("Shipping information is required."))
-            return redirect('shop:checkout')
+            return redirect("shop:checkout")
 
         if not payment_form:
             messages.error(request, _("Payment information is required."))
-            return redirect('shop:checkout')
+            return redirect("shop:checkout")
 
         # Create order
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
-            full_name=shipping_form.cleaned_data['full_name'] if shipping_form else existing_address.full_name,
-            email=request.user.email if request.user.is_authenticated else '',  # Optional
-            phone_number=shipping_form.cleaned_data['phone_number'] if shipping_form else existing_address.phone_number,
-            subtotal=Decimal('0.00'),
+            full_name=(
+                shipping_form.cleaned_data["full_name"]
+                if shipping_form
+                else existing_address.full_name
+            ),
+            email=(
+                request.user.email if request.user.is_authenticated else ""
+            ),  # Optional
+            phone_number=(
+                shipping_form.cleaned_data["phone_number"]
+                if shipping_form
+                else existing_address.phone_number
+            ),
+            subtotal=Decimal("0.00"),
             shipping_cost=Decimal(config.SHIPPING_RATE_CAIRO),  # Using your config
-            grand_total=Decimal('0.00'),
-            status='pending',
-            payment_status='pending',
+            grand_total=Decimal("0.00"),
+            status="pending",
+            payment_status="pending",
         )
 
         # Save shipping address
@@ -947,7 +1572,7 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
             shipping_address.save()
         else:
             shipping_address = shipping_form.save(commit=False)
-            if hasattr(shipping_address, 'user') and request.user.is_authenticated:
+            if hasattr(shipping_address, "user") and request.user.is_authenticated:
                 shipping_address.user = request.user
             shipping_address.order = order
             shipping_address.save()
@@ -959,15 +1584,15 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
         payment_data = payment_form.cleaned_data
         payment = Payment.objects.create(
             order=order,
-            payment_method=payment_data.get('payment_method'),
-            amount=Decimal('0.00'),  # Will update later
+            payment_method=payment_data.get("payment_method"),
+            amount=Decimal("0.00"),  # Will update later
             transaction_id=f"TXN-{uuid.uuid4().hex[:10]}",
             is_success=False,
         )
 
         # Process cart items
-        subtotal = Decimal('0.00')
-        for cart_item in cart.items.select_related('product_variant').all():
+        subtotal = Decimal("0.00")
+        for cart_item in cart.items.select_related("product_variant").all():
             variant = cart_item.product_variant
             if variant.stock_quantity < cart_item.quantity:
                 raise ValueError(
@@ -982,7 +1607,7 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
                 order=order,
                 product_variant=variant,
                 quantity=cart_item.quantity,
-                price_at_purchase=price
+                price_at_purchase=price,
             )
             variant.stock_quantity -= cart_item.quantity
             variant.save()
@@ -999,8 +1624,8 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
         payment.save()
 
         # Finalize order
-        order.status = 'processing'
-        order.payment_status = 'paid'
+        order.status = "processing"
+        order.payment_status = "paid"
         order.save()
 
         # Clear cart
@@ -1008,35 +1633,38 @@ def process_order(request, cart, shipping_form=None, payment_form=None, existing
         cart.update_totals()
         if not request.user.is_authenticated:
             cart.delete()
-        request.session['cart_count'] = 0
+        request.session["cart_count"] = 0
 
-        messages.success(request, _(f"Your order {order.order_number} has been placed successfully!"))
-        return redirect('shop:order_confirmation', order_number=order.order_number)
+        messages.success(
+            request, _(f"Your order {order.order_number} has been placed successfully!")
+        )
+        return redirect("shop:order_confirmation", order_number=order.order_number)
 
     except ValueError as e:
         messages.error(request, _(f"Order failed: {e}"))
-        return redirect('shop:checkout')
+        return redirect("shop:checkout")
     except Exception as e:
         logger.exception(f"Order processing failed for user {request.user}: {e}")
         messages.error(request, _(f"An unexpected error occurred during checkout: {e}"))
-        return redirect('shop:checkout')
+        return redirect("shop:checkout")
+
 
 def order_confirmation(request, order_number):
     order = get_object_or_404(Order, order_number=order_number)
 
     if order.user != request.user and order.user is not None:
-        return render(request, 'shop/order_not_found.html', status=403)
+        return render(request, "shop/order_not_found.html", status=403)
 
     order_items = order.items.select_related(
-        'product_variant__product',
-        'product_variant__color',
-        'product_variant__size'
+        "product_variant__product", "product_variant__color", "product_variant__size"
     )
 
-    return render(request, 'shop/order_confirmation.html', {
-        'order': order,
-        'order_items': order_items
-    })
+    return render(
+        request,
+        "shop/order_confirmation.html",
+        {"order": order, "order_items": order_items},
+    )
+
 
 def order_detail(request, order_number):
     if request.user.is_authenticated:
@@ -1044,25 +1672,31 @@ def order_detail(request, order_number):
     else:
         order = get_object_or_404(Order, order_number=order_number, user=None)
     order_items = order.items.select_related(
-        'product_variant__product', 'product_variant__color', 'product_variant__size'
+        "product_variant__product", "product_variant__color", "product_variant__size"
     ).all()
-    return render(request, 'shop/order_detail.html', {'order': order, 'order_items': order_items})
+    return render(
+        request, "shop/order_detail.html", {"order": order, "order_items": order_items}
+    )
 
 
 @login_required
 def order_history(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    orders = Order.objects.filter(user=request.user).order_by("-created_at")
     paginator = Paginator(orders, 10)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    return render(request, 'shop/order_history.html', {'orders': page_obj})
+    return render(request, "shop/order_history.html", {"orders": page_obj})
+
 
 def get_available_sizes_ajax(request, product_id):
     """
     AJAX endpoint to get available sizes based on product and selected color.
     """
-    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        color_id = request.GET.get('color_id')
+    if (
+        request.method == "GET"
+        and request.headers.get("x-requested-with") == "XMLHttpRequest"
+    ):
+        color_id = request.GET.get("color_id")
         try:
             # You should have a Product model with a method like get_available_sizes
             product = get_object_or_404(Product, id=product_id)
@@ -1070,12 +1704,16 @@ def get_available_sizes_ajax(request, product_id):
 
             # Convert queryset to a list of dictionaries for JSON response
             # Change 'available_sizes' to 'sizes' to match JavaScript
-            available_sizes_data = list(available_sizes_query.values('id', 'name'))
+            available_sizes_data = list(available_sizes_query.values("id", "name"))
 
-            return JsonResponse({'success': True, 'sizes': available_sizes_data})
+            return JsonResponse({"success": True, "sizes": available_sizes_data})
         except Product.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Product not found.'}, status=404)
-    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+            return JsonResponse(
+                {"success": False, "message": "Product not found."}, status=404
+            )
+    return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
+
+
 def vendor_detail(request, slug):
     # 1. Get the VendorProfile instance
     vendor_profile = get_object_or_404(VendorProfile, slug=slug)
@@ -1086,16 +1724,22 @@ def vendor_detail(request, slug):
     vendor_user_instance = vendor_profile.user
 
     # Get products for this vendor, filtered by the MnoryUser instance
-    products_queryset = Product.objects.filter(vendor=vendor_user_instance, is_active=True)
+    products_queryset = Product.objects.filter(
+        vendor=vendor_user_instance, is_active=True
+    )
 
     # Apply filters
-    price_min = request.GET.get('price_min')
-    price_max = request.GET.get('price_max')
-    category_id = request.GET.get('category')
-    brand_id = request.GET.get('brand')
-    colors_ids = request.GET.getlist('colors') # request.GET.getlist returns a list of selected IDs
-    sizes_ids = request.GET.getlist('sizes')   # request.GET.getlist returns a list of selected IDs
-    sort_by = request.GET.get('sort', '-created_at') # Default sort to newest first
+    price_min = request.GET.get("price_min")
+    price_max = request.GET.get("price_max")
+    category_id = request.GET.get("category")
+    brand_id = request.GET.get("brand")
+    colors_ids = request.GET.getlist(
+        "colors"
+    )  # request.GET.getlist returns a list of selected IDs
+    sizes_ids = request.GET.getlist(
+        "sizes"
+    )  # request.GET.getlist returns a list of selected IDs
+    sort_by = request.GET.get("sort", "-created_at")  # Default sort to newest first
 
     # Apply price filters
     if price_min:
@@ -1114,19 +1758,23 @@ def vendor_detail(request, slug):
     # Apply colors filter (ManyToManyField through ProductColor)
     if colors_ids:
         # Filter products that have at least one of the selected colors through the ProductColor intermediate model
-        products_queryset = products_queryset.filter(productcolor__color__id__in=colors_ids).distinct()
+        products_queryset = products_queryset.filter(
+            productcolor__color__id__in=colors_ids
+        ).distinct()
 
     # Apply sizes filter (ManyToManyField through ProductSize)
     if sizes_ids:
         # Filter products that have at least one of the selected sizes through the ProductSize intermediate model
-        products_queryset = products_queryset.filter(productsize__size__id__in=sizes_ids).distinct()
+        products_queryset = products_queryset.filter(
+            productsize__size__id__in=sizes_ids
+        ).distinct()
 
     # Apply sorting
     products_queryset = products_queryset.order_by(sort_by)
 
     # Pagination
-    paginator = Paginator(products_queryset, 9) # Show 9 products per page
-    page = request.GET.get('page')
+    paginator = Paginator(products_queryset, 9)  # Show 9 products per page
+    page = request.GET.get("page")
     try:
         products_page = paginator.page(page)
     except PageNotAnInteger:
@@ -1134,45 +1782,128 @@ def vendor_detail(request, slug):
     except EmptyPage:
         products_page = paginator.page(paginator.num_pages)
 
-
     # Get filter options relevant to this vendor's active products
     # CORRECTED based on your models.py:
     # - Category and Brand use related_name='products' on Product model
     # - Color and Size use through models ProductColor and ProductSize respectively.
 
     # Filter Categories that have active products from this vendor
-    categories = Category.objects.filter(products__vendor=vendor_user_instance, products__is_active=True).distinct()
-    
+    categories = Category.objects.filter(
+        products__vendor=vendor_user_instance, products__is_active=True
+    ).distinct()
+
     # Filter Brands that have active products from this vendor
-    brands = Brand.objects.filter(products__vendor=vendor_user_instance, products__is_active=True).distinct()
-    
+    brands = Brand.objects.filter(
+        products__vendor=vendor_user_instance, products__is_active=True
+    ).distinct()
+
     # Filter Colors that are associated with active products from this vendor via ProductColor
-    colors = Color.objects.filter(productcolor__product__vendor=vendor_user_instance, productcolor__product__is_active=True).distinct()
-    
+    colors = Color.objects.filter(
+        productcolor__product__vendor=vendor_user_instance,
+        productcolor__product__is_active=True,
+    ).distinct()
+
     # Filter Sizes that are associated with active products from this vendor via ProductSize
-    sizes = Size.objects.filter(productsize__product__vendor=vendor_user_instance, productsize__product__is_active=True).distinct()
+    sizes = Size.objects.filter(
+        productsize__product__vendor=vendor_user_instance,
+        productsize__product__is_active=True,
+    ).distinct()
 
     # Get min/max price for the vendor's products (for filter range)
-    price_range = Product.objects.filter(vendor=vendor_user_instance, is_active=True).aggregate(Min('price'), Max('price'))
+    price_range = Product.objects.filter(
+        vendor=vendor_user_instance, is_active=True
+    ).aggregate(Min("price"), Max("price"))
     # Ensure price_range has a default if no products exist
-    min_price_val = price_range['price__min'] if price_range['price__min'] is not None else 0
-    max_price_val = price_range['price__max'] if price_range['price__max'] is not None else 0
+    min_price_val = (
+        price_range["price__min"] if price_range["price__min"] is not None else 0
+    )
+    max_price_val = (
+        price_range["price__max"] if price_range["price__max"] is not None else 0
+    )
 
     # Vendor stats
     vendor_stats = {
-        'total_products': Product.objects.filter(vendor=vendor_user_instance, is_active=True).count(),
+        "total_products": Product.objects.filter(
+            vendor=vendor_user_instance, is_active=True
+        ).count(),
         # Count categories that have active products from this vendor
-        'categories_count': categories.count(), # We already filtered `categories` above
+        "categories_count": categories.count(),  # We already filtered `categories` above
     }
 
     context = {
-        'vendor': vendor_profile, # Pass the VendorProfile instance to the template
-        'products': products_page,
-        'categories': categories,
-        'brands': brands,
-        'colors': colors,
-        'sizes': sizes,
-        'price_range': {'price__min': min_price_val, 'price__max': max_price_val}, # Pass adjusted price_range
-        'vendor_stats': vendor_stats,
+        "vendor": vendor_profile,  # Pass the VendorProfile instance to the template
+        "products": products_page,
+        "categories": categories,
+        "brands": brands,
+        "colors": colors,
+        "sizes": sizes,
+        "price_range": {
+            "price__min": min_price_val,
+            "price__max": max_price_val,
+        },  # Pass adjusted price_range
+        "vendor_stats": vendor_stats,
     }
-    return render(request, 'shop/vendor_detail.html', context)
+    return render(request, "shop/vendor_detail.html", context)
+
+
+# --- Advertisement Tracking Views ---
+@require_POST
+def track_ad_view(request):
+    """Track advertisement view count via AJAX."""
+    try:
+        import json
+        from .models import Advertisement
+
+        data = json.loads(request.body)
+        ad_id = data.get("ad_id")
+
+        if not ad_id:
+            return JsonResponse({"error": "Ad ID required"}, status=400)
+
+        ad = Advertisement.objects.filter(id=ad_id, is_active=True).first()
+        if not ad:
+            return JsonResponse({"error": "Advertisement not found"}, status=404)
+
+        # Increment view count
+        ad.increment_view_count()
+
+        # Refresh from database to get actual count
+        ad.refresh_from_db()
+
+        return JsonResponse({"success": True, "view_count": ad.view_count})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_POST
+def track_ad_click(request):
+    """Track advertisement click count via AJAX."""
+    try:
+        import json
+        from .models import Advertisement
+
+        data = json.loads(request.body)
+        ad_id = data.get("ad_id")
+
+        if not ad_id:
+            return JsonResponse({"error": "Ad ID required"}, status=400)
+
+        ad = Advertisement.objects.filter(id=ad_id, is_active=True).first()
+        if not ad:
+            return JsonResponse({"error": "Advertisement not found"}, status=404)
+
+        # Increment click count
+        ad.increment_click_count()
+
+        # Refresh from database to get actual count
+        ad.refresh_from_db()
+
+        return JsonResponse({"success": True, "click_count": ad.click_count})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

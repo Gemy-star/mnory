@@ -1,0 +1,349 @@
+{% load static %}
+{% load i18n %}
+
+{% comment %}
+Advertisement Carousel Partial Template
+Displays active ads with Swiper carousel
+Supports GIF and static images with click tracking
+
+Usage:
+{% include 'partials/_ads_carousel.html' with ads=home_ads carousel_id="home-ads" %}
+{% endcomment %}
+
+{% if ads %}
+<section class="ads-carousel-section section pt-4" data-placement="{{ placement|default:'home' }}">
+    <div class="container">
+        <div class="ads-carousel swiper" id="{{ carousel_id|default:'ads-carousel' }}">
+            <div class="swiper-wrapper">
+                {% for ad in ads %}
+                <div class="swiper-slide ad-slide"
+                     data-ad-id="{{ ad.id }}"
+                     data-ad-url="{{ ad.link_url }}"
+                     {% if ad.link_url %}style="cursor: pointer;"{% endif %}>
+
+                    {% if ad.link_url %}
+                    <a href="{{ ad.link_url }}"
+                       class="ad-link"
+                       onclick="trackAdClick({{ ad.id }}); return true;"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                    {% endif %}
+
+                    <div class="ad-image-container">
+                        <img src="{{ ad.image.url }}"
+                             alt="{% if LANGUAGE_CODE == 'ar' and ad.title_ar %}{{ ad.title_ar }}{% else %}{{ ad.title }}{% endif %}"
+                             class="ad-image img-fluid w-100"
+                             loading="lazy"
+                             style="object-fit: cover; border-radius: 8px; max-height: 500px;">
+
+                        {% comment %} Optional overlay with title and description {% endcomment %}
+                        {% if ad.title or ad.description %}
+                        <div class="ad-overlay">
+                            <div class="ad-content">
+                                {% if ad.title or ad.title_ar %}
+                                <h3 class="ad-title">
+                                    {% if LANGUAGE_CODE == 'ar' and ad.title_ar %}
+                                        {{ ad.title_ar }}
+                                    {% else %}
+                                        {{ ad.title }}
+                                    {% endif %}
+                                </h3>
+                                {% endif %}
+
+                                {% if ad.description or ad.description_ar %}
+                                <p class="ad-description">
+                                    {% if LANGUAGE_CODE == 'ar' and ad.description_ar %}
+                                        {{ ad.description_ar }}
+                                    {% else %}
+                                        {{ ad.description }}
+                                    {% endif %}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if ad.link_url %}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            {% comment %} Swiper controls {% endcomment %}
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+</section>
+
+{% comment %} Inline JavaScript for this carousel instance {% endcomment %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Swiper for ads carousel
+    const adsCarousel = new Swiper('#{{ carousel_id|default:"ads-carousel" }}', {
+        loop: {{ ads|length|yesno:"true,false" }},
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true
+        },
+        pagination: {
+            el: '#{{ carousel_id|default:"ads-carousel" }} .swiper-pagination',
+            clickable: true,
+            dynamicBullets: true
+        },
+        navigation: {
+            nextEl: '#{{ carousel_id|default:"ads-carousel" }} .swiper-button-next',
+            prevEl: '#{{ carousel_id|default:"ads-carousel" }} .swiper-button-prev',
+        },
+        effect: 'fade',
+        fadeEffect: {
+            crossFade: true
+        },
+        speed: 800,
+        lazy: {
+            loadPrevNext: true,
+        },
+        on: {
+            slideChange: function() {
+                // Track ad view when slide changes
+                const activeSlide = this.slides[this.activeIndex];
+                if (activeSlide) {
+                    const adId = activeSlide.dataset.adId;
+                    if (adId) {
+                        trackAdView(adId);
+                    }
+                }
+            }
+        }
+    });
+
+    // Track initial view
+    setTimeout(function() {
+        const firstSlide = document.querySelector('#{{ carousel_id|default:"ads-carousel" }} .swiper-slide-active');
+        if (firstSlide && firstSlide.dataset.adId) {
+            trackAdView(firstSlide.dataset.adId);
+        }
+    }, 500);
+});
+
+// Track ad view (called when ad is displayed)
+function trackAdView(adId) {
+    // Only track once per session
+    const viewedKey = 'ad_viewed_' + adId;
+    if (sessionStorage.getItem(viewedKey)) {
+        return; // Already tracked in this session
+    }
+
+    fetch('{% url "shop:track_ad_view" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ ad_id: adId })
+    }).then(response => {
+        if (response.ok) {
+            sessionStorage.setItem(viewedKey, 'true');
+        }
+    }).catch(error => {
+        console.error('Error tracking ad view:', error);
+    });
+}
+
+// Track ad click (called when ad is clicked)
+function trackAdClick(adId) {
+    fetch('{% url "shop:track_ad_click" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ ad_id: adId })
+    }).catch(error => {
+        console.error('Error tracking ad click:', error);
+    });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% comment %} Inline CSS for ads carousel {% endcomment %}
+<style>
+.ads-carousel-section {
+    margin-bottom: 2rem;
+}
+
+.ads-carousel {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ad-slide {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+}
+
+.ad-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+}
+
+.ad-link:hover {
+    transform: scale(1.01);
+}
+
+.ad-image-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.ad-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s ease;
+}
+
+.ad-slide:hover .ad-image {
+    transform: scale(1.05);
+}
+
+.ad-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    padding: 2rem 1.5rem 1.5rem;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.ad-slide:hover .ad-overlay {
+    opacity: 1;
+}
+
+.ad-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.ad-description {
+    font-size: 1rem;
+    margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Swiper controls styling */
+.ads-carousel .swiper-button-next,
+.ads-carousel .swiper-button-prev {
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.ads-carousel .swiper-button-next:after,
+.ads-carousel .swiper-button-prev:after {
+    font-size: 20px;
+}
+
+.ads-carousel .swiper-button-next:hover,
+.ads-carousel .swiper-button-prev:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.ads-carousel .swiper-pagination-bullet {
+    background: white;
+    opacity: 0.7;
+}
+
+.ads-carousel .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: var(--bs-primary, #007bff);
+}
+
+/* Dark mode support */
+body[data-theme="dark"] .ads-carousel {
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
+}
+
+body[data-theme="dark"] .ad-overlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ad-title {
+        font-size: 1.2rem;
+    }
+
+    .ad-description {
+        font-size: 0.875rem;
+    }
+
+    .ad-image {
+        max-height: 300px !important;
+    }
+
+    .ads-carousel .swiper-button-next,
+    .ads-carousel .swiper-button-prev {
+        width: 32px;
+        height: 32px;
+    }
+
+    .ads-carousel .swiper-button-next:after,
+    .ads-carousel .swiper-button-prev:after {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .ad-overlay {
+        padding: 1.5rem 1rem 1rem;
+    }
+
+    .ad-title {
+        font-size: 1rem;
+    }
+
+    .ad-description {
+        font-size: 0.75rem;
+    }
+
+    .ad-image {
+        max-height: 200px !important;
+    }
+}
+</style>
+{% endif %}

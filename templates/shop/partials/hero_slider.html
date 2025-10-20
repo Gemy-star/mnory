@@ -1,183 +1,144 @@
 {% load i18n %}
 {% if sliders %}
-<style>
-    :root {
-        --dark-blue: #000000;
-        --accent-color: #e0e0e0;
-        --white: #F9FAFB;
-    }
+<!-- Hero Slider Section -->
+<section class="hero-slider-section">
+    <div class="swiper hero-swiper">
+        <div class="swiper-wrapper">
+            {% for slider in sliders %}
+            <div class="swiper-slide">
+                <div class="hero-slide-container">
+                    <!-- Background Image with Overlay -->
+                    <div class="hero-slide-image" style="background-image: url('{{ slider.image_resized.url }}');">
+                        <div class="hero-overlay"></div>
+                    </div>
 
-    /*
-     * Main slider image styling:
-     * - Removed max-height for full flexibility on larger screens.
-     * - object-fit: cover ensures image fills the space without distortion.
-     * - filter: brightness for subtle effect.
-     */
-    .slider-image {
-        width: 100%; /* Ensure image always takes full width of its container */
-        height: auto; /* Allow height to adjust naturally based on aspect ratio */
-        object-fit: cover;
-        filter: brightness(0.92);
-        display: block; /* Remove any extra spacing below images */
-    }
+                    <!-- Content -->
+                    <div class="container hero-content-wrapper">
+                        <div class="row align-items-center min-vh-70">
+                            <div class="col-lg-7 col-md-8">
+                                <div class="hero-content">
+                                    <!-- Badge -->
+                                    <div class="hero-badge" data-aos="fade-down" data-aos-delay="100">
+                                        <span class="material-icons">auto_awesome</span>
+                                        <span>{% trans "Featured Collection" %}</span>
+                                    </div>
 
-    /*
-     * For responsiveness on smaller screens:
-     * - Instead of fixed height, use a viewport height (vh) or
-     * consider a padding-bottom trick for true aspect ratio control.
-     * - 50vh is a good starting point for mobile, allowing it to adapt.
-     */
-    @media (max-width: 768px) {
-        .slider-image {
-            height: 50vh; /* Use viewport height for a flexible mobile height */
-            /* max-height: 300px; is now redundant if using vh effectively,
-               but keep if you want an absolute upper limit on mobile.
-               I'll comment it out for a more "removed fixed height" approach. */
-            /* max-height: 300px; */
-        }
-    }
+                                    <!-- Heading -->
+                                    <h1 class="hero-heading" data-aos="fade-up" data-aos-delay="200">
+                                        {{ slider.heading }}
+                                    </h1>
 
-    /* Aspect Ratio Box (Alternative for strict aspect ratio)
-    * If you wanted to strictly maintain an aspect ratio (e.g., 16:9)
-    * for all slider images regardless of screen size, you'd use this:
-    .swiper-slide {
-        position: relative;
-        padding-bottom: 56.25%; // For a 16:9 aspect ratio (9/16 = 0.5625)
-        height: 0; // Essential for the padding-bottom trick
-        overflow: hidden;
-    }
-    .slider-image {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: brightness(0.92);
-    }
-    */
+                                    <!-- Subheading -->
+                                    <p class="hero-subtext" data-aos="fade-up" data-aos-delay="300">
+                                        {{ slider.subheading }}
+                                    </p>
 
-    .btn-hero-transparent {
-        background-color: var(--dark-blue);
-        color: var(--white);
-        border: 2px solid var(--dark-blue);
-        transition: all 0.3s ease;
-        font-size: 1rem;
-        padding: 0.5rem 1.2rem;
-    }
-
-    .btn-hero-transparent:hover {
-        background-color: #000000;
-        border-color: #000000;
-        color: white;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-    }
-
-    .hero-heading {
-        color: white !important;
-        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.25);
-        /* Use fluid typography for responsive font sizes */
-        font-size: clamp(2rem, 5vw, 4rem); /* min, viewport-based, max */
-    }
-
-    .hero-subtext {
-        color: var(--white) !important;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        /* Use fluid typography for responsive font sizes */
-        font-size: clamp(1rem, 2.5vw, 1.5rem); /* min, viewport-based, max */
-    }
-
-    .hero-swiper {
-        margin-top: 0 !important; /* remove gap from navbar */
-    }
-
-    .hero-overlay {
-        background: linear-gradient(to bottom right, rgba(10, 31, 68, 0.4), rgba(0, 0, 0, 0.4)); /* softer overlay */
-    }
-
-    @media (max-width: 768px) {
-        .hero-heading {
-            font-size: 1.8rem !important; /* Slightly larger base for mobile */
-            text-align: left;
-        }
-
-        .hero-subtext {
-            font-size: 0.95rem !important; /* Slightly larger base for mobile */
-            text-align: left;
-            max-width: 95%;
-            line-height: 1.4;
-        }
-
-        .btn-hero-transparent {
-            font-size: 0.85rem;
-            padding: 0.4rem 0.9rem;
-        }
-
-        .hero-button-wrapper {
-            text-align: left !important;
-        }
-    }
-
-    /* Optional: Remove top spacing from body if any */
-    body {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-
-</style>
-
-<div class="swiper hero-swiper mb-5">
-    <div class="swiper-wrapper">
-        {% for slider in sliders %}
-        <div class="swiper-slide position-relative">
-            <img src="{{ slider.image_resized.url }}" alt="{{ slider.alt_text }}" class="img-fluid w-100 slider-image">
-
-            <div class="container position-absolute top-50 start-50 translate-middle text-center text-md-start px-3 px-md-5" style="z-index: 2;">
-                <h1 class="fw-bold hero-heading">{{ slider.heading }}</h1>
-                <p class="hero-subtext col-lg-6 mx-auto mx-md-0">{{ slider.subheading }}</p>
-                <div class="hero-button-wrapper">
-                    <a href="{{ slider.button_url_name }}" class="btn btn-dark btn-lg rounded-pill mt-3">
-                        {{ slider.button_text }} <i class="fas fa-arrow-right ms-2"></i>
-                    </a>
+                                    <!-- Button -->
+                                    <div class="hero-actions" data-aos="fade-up" data-aos-delay="400">
+                                        <a href="{{ slider.button_url_name }}" class="btn-hero-primary">
+                                            <span>{{ slider.button_text }}</span>
+                                            <span class="material-icons">arrow_forward</span>
+                                        </a>
+                                        <a href="{% url 'shop:search_products' %}" class="btn-hero-secondary">
+                                            <span>{% trans "Explore More" %}</span>
+                                            <span class="material-icons">explore</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;"></div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
 
-    <div class="swiper-pagination mt-3"></div>
-</div>
+        <!-- Navigation -->
+        <div class="swiper-button-next hero-nav-btn">
+            <span class="material-icons">chevron_right</span>
+        </div>
+        <div class="swiper-button-prev hero-nav-btn">
+            <span class="material-icons">chevron_left</span>
+        </div>
+
+        <!-- Pagination -->
+        <div class="swiper-pagination hero-pagination"></div>
+    </div>
+</section>
 
 {% else %}
-<div class="p-5 mb-4 bg-light rounded-3 shadow-sm intro" style="margin-top: 60px;">
-    <div class="container-fluid py-5 text-start">
-        <h1 class="display-5 fw-bold">{% trans "Discover Your Style" %}</h1>
-        <p class="col-md-8 justify-content-start fs-4">
-            {% trans "Explore our latest collections and find the perfect products for you." %}
-        </p>
-        <a href="{% url 'shop:category_detail' slug='all' %}" class="btn btn-primary btn-lg rounded-pill">
-            {% trans "Shop Now" %} <i class="fas fa-arrow-right ms-2"></i>
-        </a>
+<!-- Default Hero Banner -->
+<section class="default-hero-section">
+    <div class="container">
+        <div class="default-hero-content" data-aos="fade-up">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-text-content">
+                        <span class="hero-subtitle" data-aos="fade-down" data-aos-delay="100">
+                            <span class="material-icons">trending_up</span>
+                            {% trans "New Arrivals" %}
+                        </span>
+                        <h1 class="display-3 fw-bold hero-title" data-aos="fade-up" data-aos-delay="200">
+                            {% trans "Discover Your Style" %}
+                        </h1>
+                        <p class="hero-description" data-aos="fade-up" data-aos-delay="300">
+                            {% trans "Explore our latest collections and find the perfect products for you." %}
+                        </p>
+                        <div class="hero-actions mt-4" data-aos="fade-up" data-aos-delay="400">
+                            <a href="{% url 'shop:category_detail' slug='all' %}" class="btn-hero-primary">
+                                <span>{% trans "Shop Now" %}</span>
+                                <span class="material-icons">shopping_bag</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="hero-illustration" data-aos="fade-left" data-aos-delay="500">
+                        <!-- Decorative elements -->
+                        <div class="hero-decoration-circle"></div>
+                        <div class="hero-decoration-square"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 {% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    new Swiper('.hero-swiper', {
-        loop: true,
-        autoplay: {
-            delay: 5000,
-            disableOnInteraction: false,
-        },
-        effect: 'fade',
-        fadeEffect: { crossFade: true },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-    });
+    const heroSwiper = document.querySelector('.hero-swiper');
+    if (heroSwiper) {
+        new Swiper('.hero-swiper', {
+            loop: true,
+            speed: 1000,
+            autoplay: {
+                delay: 6000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+            },
+            effect: 'fade',
+            fadeEffect: {
+                crossFade: true
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+                dynamicBullets: true,
+            },
+            on: {
+                slideChangeTransitionStart: function() {
+                    // Re-trigger AOS animations on slide change
+                    if (typeof AOS !== 'undefined') {
+                        AOS.refresh();
+                    }
+                }
+            }
+        });
+    }
 });
 </script>

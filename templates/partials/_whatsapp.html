@@ -1,40 +1,5 @@
 {% load i18n %}
-<style>
-  #whatsappBtn {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: white;
-    border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-    z-index: 9999;
-    position: fixed;
-    bottom: env(safe-area-inset-bottom, 20px);
-    left: 20px;
-    text-decoration: none !important;
-  }
-
-  #whatsappIcon {
-    font-size: 28px;
-    color: #25D366 !important;
-    transition: color 0.3s ease;
-  }
-
-  #whatsappBtn:hover #whatsappIcon {
-    color: #000 !important;
-  }
-
-  /* Prevent blue underline in some mobile browsers */
-  #whatsappBtn:focus, #whatsappBtn:active, #whatsappBtn i {
-    outline: none !important;
-    box-shadow: none !important;
-    text-decoration: none !important;
-    border: none !important;
-  }
-</style>
+<!-- WhatsApp widget styles moved to style.css -->
 
 <a href="https://wa.me/{{ config.WHATSAPP_NUMBER|cut:'+' }}"
    id="whatsappBtn"

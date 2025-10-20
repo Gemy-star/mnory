@@ -53,7 +53,7 @@
                     <h1 class="mb-3">{{ product.name }}</h1>
                     <p class="lead">{{ product.short_description }}</p>
                     <div class="d-flex align-items-baseline mb-3">
-                        <span class="price fs-3 me-2" id="display-price"> 
+                        <span class="price fs-3 me-2" id="display-price">
                           {% if currency == 'EGP' %}
                 {{ product.price_egp_no_sale|floatformat:2 }} EGP
             {% else %}
@@ -61,7 +61,7 @@
             {% endif %}
           </span>
                         {% if product.is_on_sale %}
-                    <span class="text-decoration-line-through text-muted me-2"> 
+                    <span class="text-decoration-line-through text-muted me-2">
                       {% if currency == 'EGP' %}
                 {{ product.price_egp|floatformat:2 }} EGP
             {% else %}
@@ -71,28 +71,28 @@
                         <span class="badge bg-danger">{% trans 'SALE' %} -{{ product.get_discount_percentage }}%</span>
                         {% endif %}
                     </div>
-                    
+
                     <div class="product-meta mb-4">
                         <p><strong>{% trans "Brand:" %}</strong>
                             {% if product.brand %}
-                            <a href="{{ product.brand.get_absolute_url }}" class="text-dark">{{ product.brand.name }}</a>
+                            <a href="{{ product.brand.get_absolute_url }}">{{ product.brand.name }}</a>
                             {% else %}
                             <span class="text-muted">{% trans "Not specified" %}</span>
                             {% endif %}
                         </p>
                         <p><strong>{% trans "Vendor:" %}</strong>
                             {% if product.vendor %}
-                            <a href="{{ product.vendor.get_absolute_url }}" class="text-dark">{{ product.vendor.store_name }}</a>
+                            <a href="{{ product.vendor.get_absolute_url }}">{{ product.vendor.store_name }}</a>
                             {% else %}
                             <span class="text-muted">{% trans "Not specified" %}</span>
                             {% endif %}
                         </p>
                         <p><strong>{% trans "Category:" %}</strong>
-                            <a href="{{ product.category.get_absolute_url }}" class="text-dark">{{ product.category.name }}</a>
+                            <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
                         </p>
                         <p><strong>{% trans "Fit Type:" %}</strong>
                             {% if product.fit_type %}
-                            <span class="text-dark">{{ product.fit_type.name }}</span>
+                            <span>{{ product.fit_type.name }}</span>
                             {% else %}
                             <span class="text-muted">{% trans "Not specified" %}</span>
                             {% endif %}
@@ -108,38 +108,36 @@
 
                     {% if available_colors %}
                     <div class="mb-4">
-                        <h6 class="text-dark">{% trans "Available Colors:" %}</h6>
+                        <h6>{% trans "Available Colors:" %}</h6>
                         <div class="d-flex flex-wrap color-buttons gap-2">
                             {% for color in available_colors %}
                             <button type="button"
-                                class="btn btn-light border rounded-pill text-body px-3 py-2 d-flex align-items-center shadow-sm color-select"
-                                style="font-weight: 500;"
+                                class="btn btn-light border rounded-pill px-3 py-2 d-flex align-items-center shadow-sm color-select"
                                 data-color-id="{{ color.id }}"
                                 data-color-name="{{ color.name }}">
-                                <span style="display: inline-block; width: 16px; height: 16px; background-color: {{ color.hex_code }}; border: 1px solid #aaa; border-radius: 50%; margin-right: 8px;"></span>
+                                <span style="display: inline-block; width: 16px; height: 16px; background-color: {{ color.hex_code }}; border: 1px solid var(--theme-border); border-radius: 50%; margin-right: 8px;"></span>
                                 {{ color.name }}
                             </button>
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
-                    
+
                     {% if available_sizes %}
                     <div class="mb-4">
-                        <h6 class="text-dark">{% trans "Select Size:" %}</h6>
+                        <h6>{% trans "Select Size:" %}</h6>
                         <div class="size-buttons d-flex flex-wrap gap-2">
                             </div>
                     </div>
                     <div class="row d-flex justify-content-start">
                         <div class="mb-4 col-12 col-lg-4">
-                            <button class="btn btn-light border rounded-pill text-body px-4 py-2 shadow-sm size-select"
+                            <button class="btn btn-light border rounded-pill px-4 py-2 shadow-sm size-select"
                                 type="button"
                                 data-bs-toggle="collapse"
                                 data-bs-target="#sizeChartCollapse"
                                 aria-expanded="false"
                                 id="size_btn"
-                                aria-controls="sizeChartCollapse"
-                                style="color: #000; background: transparent; border: none; font-weight: 500; font-size: 1rem; cursor: pointer;">
+                                aria-controls="sizeChartCollapse">
                                 <i class="fa-solid fa-plus me-2"></i> {% trans "Size Chart" %}
                             </button>
                         </div>
@@ -175,11 +173,10 @@
                             </div>
                         </div>
                         <div class="mb-4 col-12 col-lg-6">
-                            <button class="btn btn-light border rounded-pill text-body px-4 py-2 shadow-sm"
+                            <button class="btn btn-light border rounded-pill px-4 py-2 shadow-sm"
                                 type="button"
                                 data-bs-toggle="modal"
-                                data-bs-target="#deliveryReturnModal"
-                                style="color: #000; background: transparent; border: none; font-weight: 500; font-size: 1rem; cursor: pointer;">
+                                data-bs-target="#deliveryReturnModal">
                                 <i class="fa-solid fa-truck-fast me-2"></i> {% trans "Delivery & Return" %}
                             </button>
                         </div>
@@ -215,14 +212,14 @@
                         </div>
                     </div>
                     {% endif %}
-                    
+
                     <div class="mb-3">
                         <h6>{% trans "Quantity:" %}</h6>
                         <div class="d-inline-flex align-items-center border rounded px-2">
                             <button id="decrease-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
                                 <i class="fa-solid fa-minus"></i>
                             </button>
-                            <span id="quantity-display" class="mx-2 fw-bold" style="min-width: 24px; text-align: center;">1</span>
+                            <span id="quantity-display" class="mx-2 fw-bold">1</span>
                             <button id="increase-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
@@ -393,7 +390,7 @@
             buyNowColorInput.value = selectedColorId;
             updateSizes(selectedColorId);
         }
-        
+
         wishlistBtn?.addEventListener('click', function () {
             const productId = this.dataset.productId;
             const url = isWishlisted ? '{% url "shop:remove_from_wishlist" %}' : '{% url "shop:add_to_wishlist" %}';
@@ -498,11 +495,10 @@
                     data.sizes.forEach(size => {
                         const button = document.createElement('button');
                         button.type = 'button';
-                        button.className = 'btn btn-light border rounded-pill text-body px-4 py-2 shadow-sm size-select';
-                        button.style = 'font-weight: 500;';
+                        button.className = 'btn btn-light border rounded-pill px-4 py-2 shadow-sm size-select';
                         button.dataset.sizeId = size.id;
                         button.dataset.sizeName = size.name;
-                        button.innerHTML = `<i class="fa-solid fa-ruler me-1 text-muted small"></i> ${size.name}`;
+                        button.innerHTML = `<i class="fa-solid fa-ruler me-1 small"></i> ${size.name}`;
                         sizeButtonsContainer.appendChild(button);
                     });
                     // Re-attach event listeners to new buttons
