@@ -65,7 +65,7 @@ function initCategoryProductsSwiper() {
     if (!swiperContainer) return null;
 
     return new Swiper(swiperContainer, {
-        slidesPerView: 1,
+        slidesPerView: 2,
         spaceBetween: 15,
         loop: false,
         autoplay: false,
