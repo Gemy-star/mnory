@@ -457,44 +457,101 @@
 
         <!-- Drawer Body -->
         <div class="categories-drawer-body">
-            <!-- Search Box -->
-            <div class="categories-drawer-search position-relative">
-                <input type="text"
-                       id="categorySearchInput"
-                       class="form-control"
-                       placeholder="{% trans 'Search categories...' %}"
-                       autocomplete="off">
-                <span class="material-icons">search</span>
+            <!-- Tab Navigation -->
+            <div class="categories-drawer-tabs">
+                <button class="categories-tab active" data-tab="search">
+                    <span class="material-icons">search</span>
+                    {% trans "Search" %}
+                </button>
+                <button class="categories-tab" data-tab="categories">
+                    <span class="material-icons">apps</span>
+                    {% trans "Categories" %}
+                </button>
             </div>
 
-            <!-- Category Grid -->
-            {% if categories %}
-                <div class="category-grid">
-                    {% for cat in categories %}
-                        <a href="{{ cat.get_absolute_url }}"
-                           class="category-card category-item"
-                           data-name="{{ cat.name|lower }}">
-                            {% if cat.image %}
-                                <img src="{{ cat.image.url }}"
-                                     alt="{{ cat.name }}"
-                                     class="category-card-image">
-                            {% else %}
-                                <div class="category-card-placeholder">
-                                    {{ cat.name|slice:":1" }}
-                                </div>
-                            {% endif %}
-                            <div class="category-card-name">
-                                {{ cat.name }}
+            <!-- Tab Content -->
+            <div class="categories-tab-content">
+                <!-- Search Tab -->
+                <div class="categories-tab-pane active" id="searchTab">
+                    <!-- Search Box -->
+                    <div class="categories-drawer-search">
+                        <form class="d-flex position-relative" onsubmit="return false;">
+                            <input type="text"
+                                   id="categorySearchInput"
+                                   class="form-control"
+                                   placeholder="{% trans 'Search categories...' %}"
+                                   autocomplete="off"
+                                   aria-label="{% trans 'Search categories' %}">
+                            <button type="button" class="btn-theme position-absolute" style="right: 5px; top: 50%; transform: translateY(-50%);">
+                                <span class="material-icons">search</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Search Results List -->
+                    <div class="category-search-list" id="searchResults">
+                        {% if categories %}
+                            {% for cat in categories %}
+                                <a href="{{ cat.get_absolute_url }}"
+                                   class="category-search-item category-item"
+                                   data-name="{{ cat.name|lower }}">
+                                    <span class="category-search-icon">
+                                        {% if cat.image %}
+                                            <img src="{{ cat.image.url }}"
+                                                 alt="{{ cat.name }}"
+                                                 class="category-search-image">
+                                        {% else %}
+                                            <div class="category-search-placeholder">
+                                                {{ cat.name|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </span>
+                                    <div class="category-search-content">
+                                        <span class="category-search-title">{{ cat.name }}</span>
+                                        <span class="category-search-subtitle">{% trans "Browse products" %}</span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-categories">
+                                <span class="material-icons">search_off</span>
+                                <p>{% trans "No categories found." %}</p>
                             </div>
-                        </a>
-                    {% endfor %}
+                        {% endif %}
+                    </div>
                 </div>
-            {% else %}
-                <div class="no-categories">
-                    <span class="material-icons">inventory_2</span>
-                    <p>{% trans "No categories available." %}</p>
+
+                <!-- Categories Tab -->
+                <div class="categories-tab-pane" id="categoriesTab">
+                    <!-- Category Grid -->
+                    {% if categories %}
+                        <div class="category-grid">
+                            {% for cat in categories %}
+                                <a href="{{ cat.get_absolute_url }}"
+                                   class="category-card">
+                                    {% if cat.image %}
+                                        <img src="{{ cat.image.url }}"
+                                             alt="{{ cat.name }}"
+                                             class="category-card-image">
+                                    {% else %}
+                                        <div class="category-card-placeholder">
+                                            {{ cat.name|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="category-card-name">
+                                        {{ cat.name }}
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-categories">
+                            <span class="material-icons">inventory_2</span>
+                            <p>{% trans "No categories available." %}</p>
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>

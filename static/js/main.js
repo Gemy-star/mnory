@@ -595,6 +595,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!drawer || !drawerBtn) return;
 
+        // Initialize tab functionality
+        initCategoriesDrawerTabs(drawer);
+
         // Open drawer
         drawerBtn.addEventListener('click', function() {
             drawer.classList.add('active');
@@ -629,6 +632,84 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(closeDrawer, 300);
             });
         });
+    }
+
+    // Categories Drawer Tab Functionality
+    function initCategoriesDrawerTabs(drawer) {
+        const tabs = drawer.querySelectorAll('.categories-tab');
+        const tabPanes = drawer.querySelectorAll('.categories-tab-pane');
+        const searchInput = drawer.querySelector('#categorySearchInput');
+        const categoryItems = drawer.querySelectorAll('.category-item');
+
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+
+                // Remove active class from all tabs and panes
+                tabs.forEach(t => t.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+
+                // Add active class to clicked tab
+                this.classList.add('active');
+
+                // Show corresponding tab pane
+                const targetPane = drawer.querySelector(`#${targetTab}Tab`);
+                if (targetPane) {
+                    targetPane.classList.add('active');
+                }
+
+                // Clear search if switching away from search tab
+                if (targetTab !== 'search' && searchInput) {
+                    searchInput.value = '';
+                    // Show all categories
+                    categoryItems.forEach(item => {
+                        item.style.display = '';
+                    });
+                }
+            });
+        });
+
+        // Search functionality (only for search tab)
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+
+                categoryItems.forEach(item => {
+                    const categoryName = item.getAttribute('data-name') || '';
+                    if (categoryName.includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Show/hide no results message
+                const searchResults = drawer.querySelector('#searchResults');
+                if (searchResults) {
+                    const visibleItems = Array.from(categoryItems).filter(item =>
+                        item.style.display !== 'none'
+                    );
+
+                    let noResultsMsg = searchResults.querySelector('.no-search-results');
+
+                    if (visibleItems.length === 0 && searchTerm.length > 0) {
+                        if (!noResultsMsg) {
+                            noResultsMsg = document.createElement('div');
+                            noResultsMsg.className = 'no-categories no-search-results';
+                            noResultsMsg.innerHTML = `
+                                <span class="material-icons">search_off</span>
+                                <p>No categories found for "${searchTerm}"</p>
+                            `;
+                            searchResults.appendChild(noResultsMsg);
+                        }
+                        noResultsMsg.style.display = 'block';
+                    } else if (noResultsMsg) {
+                        noResultsMsg.style.display = 'none';
+                    }
+                }
+            });
+        }
     }
 
     // Pages Drawer (Desktop Menu)
