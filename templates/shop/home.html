@@ -18,7 +18,7 @@
 <section class="product-section featured-section">
     <div class="container">
         <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up">
+        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="50">
             <h2 class="section-title-tabs">
                 <span class="material-icons">star</span>
                 {% trans "Featured Products" %}
@@ -27,7 +27,7 @@
         </div>
 
         <!-- Products Swiper -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="150">
             <div class="swiper featured-swiper">
                 <div class="swiper-wrapper">
                     {% for product in featured_products %}
@@ -62,7 +62,7 @@
 <section class="product-section newarrivals-section">
     <div class="container">
         <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up">
+        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="100">
             <h2 class="section-title-tabs">
                 <span class="material-icons">new_releases</span>
                 {% trans "New Arrivals" %}
@@ -71,7 +71,7 @@
         </div>
 
         <!-- Products Swiper -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="200">
             <div class="swiper newarrivals-swiper">
                 <div class="swiper-wrapper">
                     {% for product in new_arrivals %}
@@ -106,7 +106,7 @@
 <section class="product-section bestseller-section">
     <div class="container">
         <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up">
+        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="150">
             <h2 class="section-title-tabs">
                 <span class="material-icons">trending_up</span>
                 {% trans "Best Sellers" %}
@@ -115,7 +115,7 @@
         </div>
 
         <!-- Products Swiper -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="250">
             <div class="swiper bestseller-swiper">
                 <div class="swiper-wrapper">
                     {% for product in best_sellers %}
@@ -150,7 +150,7 @@
 <section class="product-section sale-section">
     <div class="container">
         <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up">
+        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="200">
             <h2 class="section-title-tabs sale-title">
                 <span class="material-icons sale-icon">local_offer</span>
                 {% trans "On Sale!" %}
@@ -159,7 +159,7 @@
         </div>
 
         <!-- Products Swiper -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="100">
+        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="300">
             <div class="swiper onsale-swiper">
                 <div class="swiper-wrapper">
                     {% for product in sale_products %}
@@ -193,7 +193,7 @@
 <section class="product-section home-categories-section">
     <div class="container">
         <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up">
+        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="250">
             <h2 class="section-title-tabs">
                 <span class="material-icons">category</span>
                 {% trans "Shop Categories" %}
@@ -201,7 +201,7 @@
             <p class="section-subtitle-tabs">{% trans "Explore our diverse product categories" %}</p>
         </div>
 
-        <div data-aos="fade-up" data-aos-delay="100">
+        <div data-aos="fade-up" data-aos-delay="350">
             {% include 'shop/partials/_home_categories.html' %}
         </div>
     </div>
@@ -211,7 +211,7 @@
 <section class="product-section freelance-categories-section">
     <div class="container">
         <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up">
+        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="300">
             <h2 class="section-title-tabs">
                 <span class="material-icons">work</span>
                 {% trans "Freelance Services" %}
@@ -219,7 +219,7 @@
             <p class="section-subtitle-tabs">{% trans "Professional services by skilled freelancers" %}</p>
         </div>
 
-        <div data-aos="fade-up" data-aos-delay="100">
+        <div data-aos="fade-up" data-aos-delay="400">
             {% include 'freelance/partials/_home_categories.html' %}
         </div>
     </div>

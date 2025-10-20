@@ -1,6 +1,30 @@
 {% load static %}
 <div id="page-loader">
-  <img src="{% static 'images/logo.png' %}" alt="Loading..." class="loader-logo" loading="lazy" />
+  <div class="loader-content">
+    <div class="loader-logo-container">
+      <img src="{% static 'images/logo-black.png' %}"
+           alt="Loading..."
+           class="loader-logo light-theme-logo"
+           loading="eager" />
+      <img src="{% static 'images/logo.png' %}"
+           alt="Loading..."
+           class="loader-logo dark-theme-logo"
+           loading="eager" />
+    </div>
+    <div class="loader-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <div class="loader-text">
+      <span class="loading-text">Loading</span>
+      <span class="loading-dots">
+        <span class="dot">.</span>
+        <span class="dot">.</span>
+        <span class="dot">.</span>
+      </span>
+    </div>
+  </div>
 </div>
 
 <!-- Loader styles moved to style.css -->
@@ -9,6 +33,6 @@
   window.addEventListener('load', function () {
     const loader = document.getElementById('page-loader');
     loader.classList.add('hidden');
-    setTimeout(() => loader.style.display = 'none', 700); // Hide after fade out
+    setTimeout(() => loader.style.display = 'none', 800); // Hide after fade out
   });
 </script>

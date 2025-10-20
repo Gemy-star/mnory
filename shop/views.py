@@ -113,12 +113,21 @@ def _filter_and_sort_products(products_queryset, request_get_params):
 # --- Core Product & Category Views ---
 def home(request):
     """Homepage view"""
-    # Optimized initial product queries to reduce database hits
+    # Optimized initial product queries to reduce database hits - excluding obvious dummy/test products
     # Use prefetch_related for images and select_related for foreign keys
     base_products = (
         Product.objects.filter(is_active=True, is_available=True)
+        .exclude(name__icontains="test product")
+        .exclude(name__icontains="dummy product")
+        .exclude(name__icontains="sample product")
+        .exclude(name__startswith="Test")
+        .exclude(name__startswith="Dummy")
+        .exclude(description__icontains="this is a test")
+        .exclude(description__icontains="dummy description")
+        .exclude(description__icontains="sample description")
         .prefetch_related("images")
         .select_related("category", "subcategory", "brand")
+        .distinct()
     )
 
     featured_products = base_products.filter(is_featured=True).distinct()[:8]
@@ -151,21 +160,51 @@ def home(request):
     # Prepare initial category products data for the tabs
     initial_category_products = []
     for product in all_products_recent:
-        # Get primary image
-        primary_image = product.images.filter(is_main=True).first()
-        if not primary_image:
-            primary_image = product.images.first()
+        # Get primary and hover images using model methods (same as API)
+        primary_image = product.get_main_image()
+        hover_image = product.get_hover_image()
 
         image_url = (
             primary_image.image.url if primary_image else "/static/img/placeholder.jpg"
+        )
+        hover_image_url = (
+            hover_image.image.url
+            if hover_image and hover_image != primary_image
+            else image_url
         )
 
         # Calculate price based on session currency
         currency = request.session.get("currency", "USD")
         if currency == "EGP":
-            display_price = f"EGP {product.price_egp if product.is_on_sale and hasattr(product, 'price_egp') else product.price}"
+            if product.is_on_sale and hasattr(product, "price_egp"):
+                display_price = f"{product.price_egp} EGP"
+                original_price = (
+                    f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
+                )
+            else:
+                display_price = (
+                    f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
+                )
+                original_price = None
         else:
-            display_price = f"USD {product.price_usd if product.is_on_sale and hasattr(product, 'price_usd') else product.price}"
+            if product.is_on_sale and hasattr(product, "price_usd"):
+                display_price = f"{product.price_usd} USD"
+                original_price = (
+                    f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
+                )
+            else:
+                display_price = (
+                    f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
+                )
+                original_price = None
+
+        # Get discount percentage safely
+        discount_percentage = None
+        try:
+            if hasattr(product, "get_discount_percentage"):
+                discount_percentage = product.get_discount_percentage()
+        except:
+            pass
 
         initial_category_products.append(
             {
@@ -173,11 +212,16 @@ def home(request):
                 "name": product.name,
                 "slug": product.slug,
                 "price": display_price,
+                "original_price": original_price,
                 "image": image_url,
+                "hover_image": hover_image_url,
                 "url": product.get_absolute_url(),
                 "is_on_sale": product.is_on_sale,
                 "is_featured": product.is_featured,
                 "is_new_arrival": product.is_new_arrival,
+                "is_best_seller": getattr(product, "is_best_seller", False),
+                "is_in_stock": product.is_in_stock,
+                "discount_percentage": discount_percentage,
                 "in_wishlist": product.id in products_in_wishlist_ids,
                 "vendor_name": (
                     product.vendor.vendorprofile.store_name
@@ -189,6 +233,8 @@ def home(request):
                     if product.vendor and hasattr(product.vendor, "vendorprofile")
                     else None
                 ),
+                "brand": product.brand.name if product.brand else None,
+                "category": product.category.name if product.category else None,
             }
         )
 
@@ -202,9 +248,12 @@ def home(request):
         "home_ads": home_ads,  # Add advertisements to context
         "all_products": all_products_recent,  # Renamed for clarity
         "products_in_wishlist_ids": products_in_wishlist_ids,
-        "initial_category_products": json.dumps(
+        "initial_category_products": all_products_recent[
+            :12
+        ],  # Pass raw products for template iteration
+        "initial_category_products_json": json.dumps(
             initial_category_products
-        ),  # JSON serialize for template
+        ),  # JSON serialize for JavaScript
         "currency": request.session.get("currency", "USD"),  # Add currency for template
     }
 
@@ -214,102 +263,142 @@ def home(request):
 @require_GET
 def get_category_products_api(request):
     """API endpoint to get products by category for AJAX filtering"""
-    category_slug = request.GET.get("category", "all")
+    try:
+        category_slug = request.GET.get("category", "all")
 
-    # Base query for active products
-    base_products = (
-        Product.objects.filter(is_active=True, is_available=True)
-        .prefetch_related("images")
-        .select_related("category", "subcategory", "brand", "vendor__vendorprofile")
-    )
-
-    # Filter by category if not 'all'
-    if category_slug and category_slug != "all":
-        try:
-            category = Category.objects.get(slug=category_slug, is_active=True)
-            products = base_products.filter(category=category)[
-                :12
-            ]  # Limit to 12 products
-        except Category.DoesNotExist:
-            return JsonResponse({"error": "Category not found"}, status=404)
-    else:
-        products = base_products.order_by("-created_at")[:12]  # Show recent products
-
-    # Get user's wishlist items if authenticated
-    products_in_wishlist_ids = []
-    if request.user.is_authenticated:
-        try:
-            wishlist = Wishlist.objects.only("id").get(user=request.user)
-            products_in_wishlist_ids = list(
-                wishlist.items.values_list("product_id", flat=True)
-            )
-        except Wishlist.DoesNotExist:
-            pass
-
-    # Build product data
-    products_data = []
-    currency = request.session.get("currency", "USD")
-
-    for product in products:
-        # Get primary image
-        primary_image = product.images.filter(is_main=True).first()
-        if not primary_image:
-            primary_image = product.images.first()
-
-        image_url = (
-            primary_image.image.url if primary_image else "/static/img/placeholder.jpg"
+        # Base query for active products - excluding obvious dummy/test products
+        base_products = (
+            Product.objects.filter(is_active=True, is_available=True)
+            .exclude(name__icontains="test product")
+            .exclude(name__icontains="dummy product")
+            .exclude(name__icontains="sample product")
+            .exclude(name__startswith="Test")
+            .exclude(name__startswith="Dummy")
+            .exclude(description__icontains="this is a test")
+            .exclude(description__icontains="dummy description")
+            .exclude(description__icontains="sample description")
+            .prefetch_related("images")
+            .select_related("category", "subcategory", "brand", "vendor")
+            .distinct()
         )
 
-        # Calculate price based on currency and sale status
-        if currency == "EGP":
-            if product.is_on_sale and hasattr(product, "price_egp"):
-                display_price = f"EGP {product.price_egp}"
-                original_price = (
-                    f"EGP {getattr(product, 'price_egp_no_sale', product.price)}"
-                )
-            else:
-                display_price = (
-                    f"EGP {getattr(product, 'price_egp_no_sale', product.price)}"
-                )
-                original_price = None
+        # Filter by category if not 'all'
+        if category_slug and category_slug != "all":
+            try:
+                category = Category.objects.get(slug=category_slug, is_active=True)
+                products = base_products.filter(category=category)[
+                    :12
+                ]  # Limit to 12 products
+            except Category.DoesNotExist:
+                return JsonResponse({"error": "Category not found"}, status=404)
         else:
-            if product.is_on_sale and hasattr(product, "price_usd"):
-                display_price = f"USD {product.price_usd}"
-                original_price = (
-                    f"USD {getattr(product, 'price_usd_no_sale', product.price)}"
+            products = base_products.order_by("-created_at")[
+                :12
+            ]  # Show recent products
+
+        # Get user's wishlist items if authenticated
+        products_in_wishlist_ids = []
+        if request.user.is_authenticated:
+            try:
+                wishlist = Wishlist.objects.only("id").get(user=request.user)
+                products_in_wishlist_ids = list(
+                    wishlist.items.values_list("product_id", flat=True)
                 )
-            else:
-                display_price = (
-                    f"USD {getattr(product, 'price_usd_no_sale', product.price)}"
+            except Wishlist.DoesNotExist:
+                pass
+
+        # Build product data
+        products_data = []
+        currency = request.session.get("currency", "USD")
+
+        for product in products:
+            try:
+                # Get primary and hover images using model methods
+                primary_image = product.get_main_image()
+                hover_image = product.get_hover_image()
+
+                image_url = (
+                    primary_image.image.url
+                    if primary_image
+                    else "/static/img/placeholder.jpg"
                 )
-                original_price = None
+                hover_image_url = (
+                    hover_image.image.url
+                    if hover_image and hover_image != primary_image
+                    else image_url
+                )
 
-        # Vendor information
-        vendor_name = None
-        vendor_slug = None
-        if product.vendor and hasattr(product.vendor, "vendorprofile"):
-            vendor_name = product.vendor.vendorprofile.store_name
-            vendor_slug = product.vendor.vendorprofile.slug
+                # Calculate price based on currency and sale status
+                if currency == "EGP":
+                    if product.is_on_sale and hasattr(product, "price_egp"):
+                        display_price = f"{product.price_egp} EGP"
+                        original_price = f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
+                    else:
+                        display_price = f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
+                        original_price = None
+                else:
+                    if product.is_on_sale and hasattr(product, "price_usd"):
+                        display_price = f"{product.price_usd} USD"
+                        original_price = f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
+                    else:
+                        display_price = f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
+                        original_price = None
 
-        products_data.append(
-            {
-                "id": product.id,
-                "name": product.name,
-                "slug": product.slug,
-                "price": display_price,
-                "original_price": original_price,
-                "image": image_url,
-                "url": product.get_absolute_url(),
-                "is_on_sale": product.is_on_sale,
-                "is_featured": product.is_featured,
-                "is_new_arrival": product.is_new_arrival,
-                "in_wishlist": product.id in products_in_wishlist_ids,
-                "vendor_name": vendor_name,
-                "vendor_slug": vendor_slug,
-            }
-        )
+                # Vendor information
+                vendor_name = None
+                vendor_slug = None
+                if product.vendor:
+                    try:
+                        vendor_profile = getattr(product.vendor, "vendorprofile", None)
+                        if vendor_profile:
+                            vendor_name = vendor_profile.store_name
+                            vendor_slug = vendor_profile.slug
+                    except:
+                        pass
 
-    return JsonResponse({"products": products_data})
+                # Brand and category info
+                brand_name = product.brand.name if product.brand else None
+                category_name = product.category.name if product.category else None
+
+                # Get discount percentage safely
+                discount_percentage = None
+                try:
+                    if hasattr(product, "get_discount_percentage"):
+                        discount_percentage = product.get_discount_percentage()
+                except:
+                    pass
+
+                products_data.append(
+                    {
+                        "id": product.pk,
+                        "name": product.name,
+                        "slug": product.slug,
+                        "price": display_price,
+                        "original_price": original_price,
+                        "image": image_url,
+                        "hover_image": hover_image_url,
+                        "url": product.get_absolute_url(),
+                        "is_on_sale": product.is_on_sale,
+                        "is_featured": product.is_featured,
+                        "is_new_arrival": product.is_new_arrival,
+                        "is_best_seller": getattr(product, "is_best_seller", False),
+                        "is_in_stock": product.is_in_stock,
+                        "discount_percentage": discount_percentage,
+                        "in_wishlist": product.pk in products_in_wishlist_ids,
+                        "vendor_name": vendor_name,
+                        "vendor_slug": vendor_slug,
+                        "brand": brand_name,
+                        "category": category_name,
+                    }
+                )
+            except Exception as product_error:
+                # Skip this product if there's an error, but log it
+                continue
+
+        return JsonResponse({"success": True, "products": products_data})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e), "products": []})
 
 
 def category_detail(request, slug):
@@ -712,6 +801,7 @@ def get_cart_and_wishlist_counts(request):
 
     return JsonResponse(
         {
+            "success": True,
             "cart_count": cart_count,
             "wishlist_count": wishlist_count,
         }

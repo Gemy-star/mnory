@@ -10,10 +10,41 @@
      data-product-variant-id="{% if product.variants.first %}{{ product.variants.first.pk }}{% endif %}">
     {% with main_image=product.get_main_image hover_image=product.get_hover_image %}
     <div class="position-relative product-image-wrapper">
-        {% if product.is_on_sale %}
-            <div class="sale-badge">{% trans "Sale" %}</div>
-        {% endif %}
-        <a href="{{ product.get_absolute_url }}">
+        <!-- Product Badges - Optimized for better visibility -->
+        <div class="product-badges">
+            {% if not product.is_in_stock %}
+                <div class="product-badge outofstock-badge">
+                    <i class="fas fa-times-circle"></i>
+                    <span>{% trans "Out" %}</span>
+                </div>
+            {% else %}
+                {% if product.is_on_sale %}
+                    <div class="product-badge sale-badge">
+                        <i class="fas fa-tag"></i>
+                        <span>{% trans "Sale" %}</span>
+                        {% if product.get_discount_percentage %}
+                            <small>-{{ product.get_discount_percentage }}%</small>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if product.is_best_seller %}
+                    <div class="product-badge bestseller-badge">
+                        <i class="fas fa-crown"></i>
+                        <span>{% trans "Best" %}</span>
+                    </div>
+                {% endif %}
+
+                {% if product.is_new_arrival %}
+                    <div class="product-badge new-badge">
+                        <i class="fas fa-sparkles"></i>
+                        <span>{% trans "New" %}</span>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <a href="{{ product.get_absolute_url }}" class="product-link">
             {% if main_image %}
                 <img src="{{ main_image.image_resized.url }}"
                      alt="{{ product.name }}"
@@ -52,47 +83,102 @@
     {% endwith %}
 
     <div class="product-info mt-2">
-        <div class="product-name">{{ product.name }}</div>
+        <!-- Product Title and Meta -->
+        <div class="product-header">
+            <div class="product-name">
+                <a href="{{ product.get_absolute_url }}" class="product-title-link">
+                    {{ product.name }}
+                </a>
+            </div>
+
+            <!-- Product Meta Info -->
+            <div class="product-meta-info">
+                {% if product.brand %}
+                    <span class="product-brand">{{ product.brand.name }}</span>
+                {% endif %}
+                {% if product.category %}
+                    <span class="product-category">{{ product.category.name }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Details Container -->
+        <div class="product-details-container">
+
+        <!-- Price Area -->
         <div class="price-area">
             {% if product.is_on_sale %}
-
-                <span class="original-price">
-                {% if currency == 'EGP' %}
-                {{ product.price_egp_no_sale|floatformat:2 }} EGP
+                <div class="price-group">
+                    <span class="sale-price">
+                        {% if currency == 'EGP' %}
+                            {{ product.price_egp|floatformat:2 }} EGP
+                        {% else %}
+                            {{ product.price_usd|floatformat:2 }} USD
+                        {% endif %}
+                    </span>
+                    <span class="original-price">
+                        {% if currency == 'EGP' %}
+                            {{ product.price_egp_no_sale|floatformat:2 }} EGP
+                        {% else %}
+                            {{ product.price_usd_no_sale|floatformat:2 }} USD
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="savings-badge">
+                    {% trans "Save" %} {{ product.get_discount_percentage }}%
+                </div>
             {% else %}
-                {{ product.price_usd_no_sale|floatformat:2 }} USD
-            {% endif %}
+                <span class="regular-price">
+                    {% if currency == 'EGP' %}
+                        {{ product.price_egp_no_sale|floatformat:2 }} EGP
+                    {% else %}
+                        {{ product.price_usd_no_sale|floatformat:2 }} USD
+                    {% endif %}
                 </span>
-            <span class="sale-price"> {% if currency == 'EGP' %}
-                {{ product.price_egp|floatformat:2 }} EGP
-            {% else %}
-                {{ product.price_usd|floatformat:2 }} USD
-            {% endif %}
-        </span>
-            {% else %}
-                <span class="regular-price"> {% if currency == 'EGP' %}
-                {{ product.price_egp_no_sale|floatformat:2 }} EGP
-            {% else %}
-                {{ product.price_usd_no_sale|floatformat:2 }} USD
-            {% endif %}
-        </span>
             {% endif %}
         </div>
-{% if product.vendor %}
-<div class="card-footer card-footer-vendor">
-    <div class="vendor-info">
-        <span class="vendor-name">{{ product.vendor.vendorprofile.store_name }}</span>
-        <span class="vendor-rating"><i class="fa-solid fa-star"></i></span>
-    </div>
-    {% if product.vendor.vendorprofile.slug %}
-    <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}"
-       class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor"
-       title="{% trans 'View Vendor Profile' %}">
-       <i class="fa-solid fa-store"></i> {% trans 'View Profile' %}
-    </a>
-    {% endif %}
-</div>
-{% endif %}
+
+        <!-- Product Rating (if available) -->
+        {% if product.average_rating %}
+        <div class="product-rating">
+            <div class="stars">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= product.average_rating %}
+                        <i class="fas fa-star"></i>
+                    {% else %}
+                        <i class="far fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <span class="rating-count">({{ product.review_count|default:"0" }})</span>
+        </div>
+        {% endif %}
+
+        <!-- Quick View Button -->
+        <div class="quick-actions">
+            <a href="{{ product.get_absolute_url }}" class="btn-quick-view">
+                <i class="fas fa-eye"></i>
+                <span>{% trans "Quick View" %}</span>
+            </a>
+        </div>
+        </div> <!-- End product-details-container -->
+
+        <!-- Vendor Footer -->
+        {% if product.vendor %}
+        <div class="card-footer card-footer-vendor">
+            <div class="vendor-info">
+                <span class="vendor-name">{{ product.vendor.vendorprofile.store_name }}</span>
+                <span class="vendor-rating"><i class="fa-solid fa-star"></i></span>
+            </div>
+            {% if product.vendor.vendorprofile.slug %}
+            <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}"
+               class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor"
+               title="{% trans 'View Vendor Profile' %}">
+               <i class="fa-solid fa-store"></i> {% trans 'View Profile' %}
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
 
     </div>
     <div class="local-toast-container"></div>

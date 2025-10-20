@@ -41,10 +41,13 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
             if (icon) icon.className = 'fas fa-spinner fa-spin';
         }
         const formData = new FormData();
+        formData.append('product_id', productId);
         formData.append('quantity', 1);
         formData.append('csrfmiddlewaretoken', getCSRFToken());
 
-        fetch(`/ajax/cart/add/${productId}/`, {
+        // Get the current language prefix from the URL
+        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        fetch(`/${langPrefix}/api/add-to-cart/`, {
             method: 'POST',
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -91,12 +94,16 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
 
     window.removeFromCart = function(itemId) {
         if (!confirm('هل أنت متأكد من حذف هذا المنتج من السلة؟')) return;
-        fetch(`/ajax/cart/remove/${itemId}/`, {
+        // Get the current language prefix from the URL
+        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        fetch(`/${langPrefix}/cart/remove/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCSRFToken(),
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
+            body: `item_id=${itemId}`,
             credentials: 'same-origin'
         })
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
@@ -130,9 +137,12 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         if (!productId) return console.error('Product ID is required');
         if (button) button.disabled = true;
         const formData = new FormData();
+        formData.append('product_id', productId);
         formData.append('csrfmiddlewaretoken', getCSRFToken());
 
-        fetch(`/ajax/wishlist/toggle/${productId}/`, {
+        // Get the current language prefix from the URL
+        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        fetch(`/${langPrefix}/api/add-to-wishlist/`, {
             method: 'POST',
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -189,18 +199,35 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
     // UPDATE COUNTS
     // ========================================
     function updateAllCounts() {
-        fetch('/ajax/cart-count/', {
+        // Get the current language prefix from the URL
+        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        const url = `/${langPrefix}/api/get-counts/`;
+
+        console.log('Updating counts from:', url);
+
+        fetch(url, {
             credentials:'same-origin',
             headers:{'X-Requested-With':'XMLHttpRequest'}
         })
-        .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+        .then(r => {
+            if(!r.ok) {
+                console.error(`Count update failed: HTTP ${r.status} for ${url}`);
+                throw new Error(`HTTP ${r.status}`);
+            }
+            return r.json();
+        })
         .then(data => {
             if(data.success){
                 updateCartBadge(data.cart_count);
                 updateWishlistBadge(data.wishlist_count);
+            } else {
+                console.error('Count update response indicates failure:', data);
             }
         })
-        .catch(e=>console.error('Count update error:',e));
+        .catch(e => {
+            console.error('Count update error for', url, ':', e);
+            // Don't show notification for count updates as they're automatic
+        });
     }
 
     function updateCartBadge(count){
@@ -279,14 +306,17 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         @keyframes heartBeat {0%,100%{transform:scale(1);}25%{transform:scale(1.3);}50%{transform:scale(1.1);}75%{transform:scale(1.25);}}
         @keyframes badgePulse {0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
         @keyframes cartBounce {0%,100%{transform:scale(1);}25%{transform:scale(1.3);}50%{transform:scale(1.1);}75%{transform:scale(1.25);}}
+        @keyframes slideInRight {0%{transform:translateX(100%);opacity:0;}100%{transform:translateX(0);opacity:1;}}
+        @keyframes notificationPulse {0%,100%{box-shadow:0 8px 30px rgba(0,0,0,0.15);}50%{box-shadow:0 12px 40px rgba(0,0,0,0.25);}}
         .action-btn.loading{opacity:0.7;cursor:not-allowed;}
-        .cart-notification{position:fixed;top:20px;right:-400px;background:var(--theme-bg,#fff);color:var(--theme-text,#000);padding:16px 24px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.15);z-index:10000;transition:right 0.3s cubic-bezier(0.175,0.885,0.32,1.275);border:1px solid var(--theme-border,#eee);min-width:300px;max-width:400px;font-family:'IBM Plex Sans Arabic',sans-serif;}
-        .cart-notification.show{right:20px;}
-        .notification-content{display:flex;align-items:center;gap:12px;font-weight:600;font-size:15px;}
-        .notification-success{border-right:4px solid #4CAF50;} .notification-success i{color:#4CAF50;font-size:20px;}
-        .notification-error{border-right:4px solid #F44336;} .notification-error i{color:#F44336;font-size:20px;}
-        .notification-info{border-right:4px solid var(--secondary-color,#A48111);} .notification-info i{color:var(--secondary-color,#A48111);font-size:20px;}
-        @media(max-width:480px){.cart-notification{right:-100%;left:10px;min-width:auto;max-width:calc(100%-20px);}.cart-notification.show{right:auto;left:10px;}}
+        .cart-notification{position:fixed;top:20px;right:-400px;background:linear-gradient(135deg,var(--theme-bg,#fff) 0%,rgba(255,255,255,0.95) 100%);color:var(--theme-text,#000);padding:20px 28px;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.15),0 6px 20px rgba(0,0,0,0.08);z-index:10000;transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);border:1px solid var(--theme-border,rgba(0,0,0,0.08));min-width:320px;max-width:420px;font-family:'IBM Plex Sans Arabic',sans-serif;backdrop-filter:blur(12px);animation:notificationPulse 2s ease-in-out infinite alternate;}
+        body.dark-mode .cart-notification{background:linear-gradient(135deg,rgba(40,40,40,0.95) 0%,rgba(60,60,60,0.9) 100%);border-color:rgba(255,255,255,0.1);box-shadow:0 12px 40px rgba(0,122,255,0.2),0 6px 20px rgba(0,0,0,0.3);}
+        .cart-notification.show{right:20px;animation:slideInRight 0.4s ease-out;}
+        .notification-content{display:flex;align-items:center;gap:14px;font-weight:600;font-size:16px;line-height:1.4;}
+        .notification-success{border-right:4px solid #4CAF50;} .notification-success i{color:#4CAF50;font-size:22px;filter:drop-shadow(0 2px 4px rgba(76,175,80,0.3));}
+        .notification-error{border-right:4px solid #F44336;} .notification-error i{color:#F44336;font-size:22px;filter:drop-shadow(0 2px 4px rgba(244,67,54,0.3));}
+        .notification-info{border-right:4px solid var(--secondary-color,#A48111);} .notification-info i{color:var(--secondary-color,#A48111);font-size:22px;filter:drop-shadow(0 2px 4px rgba(164,129,17,0.3));}
+        @media(max-width:480px){.cart-notification{right:-100%;left:10px;min-width:auto;max-width:calc(100%-20px);padding:16px 20px;}.cart-notification.show{right:auto;left:10px;}.notification-content{font-size:14px;}}
         `;
         document.head.appendChild(style);
     }

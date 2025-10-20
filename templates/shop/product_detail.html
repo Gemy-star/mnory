@@ -9,70 +9,140 @@
 {% endblock %}
 
 {% block content %}
-<main class="container my-5">
-    <section class="section pb-4" style="height: fit-content !important;">
-        <div class="container-fluid">
-            <div class="row pt-4 gx-4 gy-4">
-                <div class="col-md-6">
-                    <div class="col-12">
-                        <div class="swiper product-detail-swiper mb-3">
-                            <div class="swiper-wrapper">
-                                {% for image in product_images %}
-                                <div class="swiper-slide">
-                                    <div class="swiper-zoom-container">
-                                        <img src="{{ image.thumb_resized.url }}" loading="lazy" alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}" class="img-fluid rounded">
+<main class="container-fluid my-5">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}">{% trans "Home" %}</a></li>
+            <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Main Product Section -->
+    <section class="product-detail-section">
+        <div class="product-detail-container">
+            <div class="row g-5 align-items-start">
+                <!-- Product Images Section -->
+                <div class="col-lg-6">
+                    <div class="product-gallery-container">
+                    <div class="product-gallery-container">
+                        <!-- Main Product Image Swiper -->
+                        <div class="product-images-wrapper">
+                            <div class="swiper product-detail-swiper mb-3">
+                                <div class="swiper-wrapper">
+                                    {% for image in product_images %}
+                                    <div class="swiper-slide">
+                                        <div class="swiper-zoom-container">
+                                            <img src="{{ image.thumb_resized.url }}"
+                                                 loading="lazy"
+                                                 alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}"
+                                                 class="product-detail-img">
+                                        </div>
                                     </div>
-                                </div>
-                                {% empty %}
-                                <div class="swiper-slide">
-                                    <div class="swiper-zoom-container">
-                                        <img loading="lazy" src="https://placehold.co/600x500/e0e0e0/555555?text=No+Image" alt="{% trans 'No image available' %}" class="img-fluid rounded">
+                                    {% empty %}
+                                    <div class="swiper-slide">
+                                        <div class="swiper-zoom-container">
+                                            <img loading="lazy"
+                                                 src="https://placehold.co/600x500/e0e0e0/555555?text=No+Image"
+                                                 alt="{% trans 'No image available' %}"
+                                                 class="product-detail-img">
+                                        </div>
                                     </div>
+                                    {% endfor %}
                                 </div>
-                                {% endfor %}
+                                <div class="swiper-pagination"></div>
+                                <div class="swiper-button-next"></div>
+                                <div class="swiper-button-prev"></div>
                             </div>
-                            <div class="swiper-pagination"></div>
-                            <div class="swiper-button-next"></div>
-                            <div class="swiper-button-prev"></div>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="swiper product-detail-thumbs mt-2">
-                            <div class="swiper-wrapper">
-                                {% for image in product_images %}
-                                <div class="swiper-slide">
-                                    <img src="{{ image.thumb_resized.url }}" alt="{% trans "Thumbnail of" %} {{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}" class="img-fluid rounded">
+
+                        <!-- Thumbnail Images -->
+                        <div class="product-thumbnails-wrapper">
+                            <div class="swiper product-detail-thumbs">
+                                <div class="swiper-wrapper">
+                                    {% for image in product_images %}
+                                    <div class="swiper-slide">
+                                        <img src="{{ image.thumb_resized.url }}"
+                                             alt="{% trans "Thumbnail of" %} {{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}"
+                                             class="product-thumbnail-img">
+                                    </div>
+                                    {% endfor %}
                                 </div>
-                                {% endfor %}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6 pt-5">
-                    <h1 class="mb-3">{{ product.name }}</h1>
-                    <p class="lead">{{ product.short_description }}</p>
-                    <div class="d-flex align-items-baseline mb-3">
-                        <span class="price fs-3 me-2" id="display-price">
-                          {% if currency == 'EGP' %}
-                {{ product.price_egp_no_sale|floatformat:2 }} EGP
-            {% else %}
-                {{ product.price_usd_no_sale|floatformat:2 }} USD
-            {% endif %}
-          </span>
-                        {% if product.is_on_sale %}
-                    <span class="text-decoration-line-through text-muted me-2">
-                      {% if currency == 'EGP' %}
-                {{ product.price_egp|floatformat:2 }} EGP
-            {% else %}
-                {{ product.price_usd|floatformat:2 }} USD
-            {% endif %}
-          </span>
-                        <span class="badge bg-danger">{% trans 'SALE' %} -{{ product.get_discount_percentage }}%</span>
-                        {% endif %}
-                    </div>
+                <!-- Product Information Section -->
+                <div class="col-lg-6">
+                    <div class="product-info-section">
+                    <div class="product-info-section">
+                        <!-- Product Header -->
+                        <div class="product-header mb-4">
+                            <h1 class="product-title">{{ product.name }}</h1>
+                            {% if product.short_description %}
+                            <p class="product-subtitle">{{ product.short_description }}</p>
+                            {% endif %}
+                        </div>
 
-                    <div class="product-meta mb-4">
+                        <!-- Product Badges -->
+                        <div class="product-detail-badges mb-4">
+                            {% if product.is_on_sale %}
+                                <span class="badge badge-sale">
+                                    <i class="fas fa-tag"></i>
+                                    {% trans "Sale" %} -{{ product.get_discount_percentage }}%
+                                </span>
+                            {% endif %}
+                            {% if product.is_new_arrival %}
+                                <span class="badge badge-new">
+                                    <i class="fas fa-sparkles"></i>
+                                    {% trans "New" %}
+                                </span>
+                            {% endif %}
+                            {% if product.is_best_seller %}
+                                <span class="badge badge-bestseller">
+                                    <i class="fas fa-crown"></i>
+                                    {% trans "Best Seller" %}
+                                </span>
+                            {% endif %}
+                            {% if not product.is_in_stock %}
+                                <span class="badge badge-out-of-stock">
+                                    <i class="fas fa-times-circle"></i>
+                                    {% trans "Out of Stock" %}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Price Section -->
+                        <div class="price-section mb-4">
+                            <div class="current-price" id="display-price">
+                                {% if currency == 'EGP' %}
+                                    {{ product.price_egp_no_sale|floatformat:2 }} EGP
+                                {% else %}
+                                    {{ product.price_usd_no_sale|floatformat:2 }} USD
+                                {% endif %}
+                            </div>
+                            {% if product.is_on_sale %}
+                            <div class="price-comparison">
+                                <span class="original-price">
+                                    {% if currency == 'EGP' %}
+                                        {{ product.price_egp|floatformat:2 }} EGP
+                                    {% else %}
+                                        {{ product.price_usd|floatformat:2 }} USD
+                                    {% endif %}
+                                </span>
+                                <span class="savings-amount">
+                                    {% trans "You save" %} {{ product.get_discount_percentage }}%
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        </div>
+
+                        <!-- Product Meta Information -->
+                        <div class="product-meta mb-4">
                         <p><strong>{% trans "Brand:" %}</strong>
                             {% if product.brand %}
                             <a href="{{ product.brand.get_absolute_url }}">{{ product.brand.name }}</a>

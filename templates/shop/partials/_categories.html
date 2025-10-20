@@ -74,7 +74,20 @@
 
             <!-- Products Grid -->
             <div class="products-grid" id="categoryProductsGrid">
-                <!-- Initial products will be loaded here -->
+                <!-- Initial products loaded server-side -->
+                {% if initial_category_products %}
+                    {% for product in initial_category_products %}
+                        <div data-aos="fade-up" data-aos-delay="{% cycle 0 50 100 150 200 250 300 350 400 450 500 550 %}">
+                            {% include "partials/_product.html" with product=product %}
+                        </div>
+                    {% endfor %}
+                {% elif products %}
+                    {% for product in products %}
+                        <div data-aos="fade-up" data-aos-delay="{% cycle 0 50 100 150 200 250 300 350 400 450 500 550 %}">
+                            {% include "partials/_product.html" with product=product %}
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
 
             <!-- Empty State -->
@@ -121,22 +134,42 @@ document.addEventListener('DOMContentLoaded', function () {
     const prevArrow = document.querySelector('.tab-nav-prev');
     const nextArrow = document.querySelector('.tab-nav-next');
 
-    // Store all products by category
-    let productsByCategory = {};
+    // Store cached products HTML by category
+    let cachedProductsHTML = {};
     let currentCategory = 'all';
 
-    // Get initial products data from Django context
-    const initialProducts = JSON.parse('{{ initial_category_products|escapejs }}');
-    const currency = "{{ currency|default:'USD' }}";
+    // Cache the initial server-rendered products
+    const hasInitialProducts = productsGrid.children.length > 0;
+    if (hasInitialProducts) {
+        cachedProductsHTML['all'] = productsGrid.innerHTML;
+        console.log('Cached initial products for "all" category');
+    }
 
-    // Initialize with initial products data
-    if (initialProducts && initialProducts.length > 0) {
-        productsByCategory['all'] = initialProducts;
-        displayProducts(initialProducts, 'all');
-    } else {
-        // Fallback: Load all products via AJAX
-        loadProducts('all');
-    }    // Tab Click Handler
+    // Also cache initial products data for potential API usage
+    let initialProductsData = [];
+    try {
+        initialProductsData = {% if initial_category_products_json %}{{ initial_category_products_json|safe }}{% else %}[]{% endif %};
+        console.log('Initial products data loaded:', initialProductsData.length, 'products');
+    } catch (e) {
+        console.error('Error parsing initial products data:', e);
+        initialProductsData = [];
+    }
+
+    // Initialize product interactions for server-rendered products
+    initializeProductInteractions();
+
+    // Show appropriate state on page load
+    setTimeout(() => {
+        if (productsGrid.children.length === 0) {
+            console.warn('No products found, showing empty state');
+            showEmptyState();
+        } else {
+            console.log('Products found:', productsGrid.children.length);
+            showProducts();
+        }
+    }, 100);
+
+    // Tab Click Handler
     tabButtons.forEach(btn => {
         btn.addEventListener('click', function() {
             const category = this.getAttribute('data-category');
@@ -152,18 +185,25 @@ document.addEventListener('DOMContentLoaded', function () {
             // Update category title
             updateCategoryTitle(category, categoryName);
 
+            // Update view all link
+            const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+            const categorySlug = category === 'all' ? 'all' : category;
+            viewAllLink.href = `/${langPrefix}/category/${categorySlug}/`;
+
             // Load products for this category
-            if (productsByCategory[category]) {
-                // Use cached data
-                displayProducts(productsByCategory[category], category);
+            if (category === 'all' && cachedProductsHTML['all']) {
+                // Special handling for "All" category - use cached initial products
+                console.log('Using cached initial products for "all" category');
+                displayCachedProducts('all');
+            } else if (cachedProductsHTML[category]) {
+                // Use cached HTML for other categories
+                console.log('Using cached products for:', category);
+                displayCachedProducts(category);
             } else {
                 // Load from server
+                console.log('Loading products from server for:', category);
                 loadProducts(category);
             }
-
-            // Update view all link
-            const categorySlug = category === 'all' ? 'all' : category;
-            viewAllLink.href = `/category/${categorySlug}/`;
         });
     });
 
@@ -208,138 +248,264 @@ document.addEventListener('DOMContentLoaded', function () {
         updateArrows();
     }
 
+    // Display Cached Products
+    function displayCachedProducts(category) {
+        productsGrid.innerHTML = cachedProductsHTML[category];
+        showProducts();
+
+        // Refresh AOS animations
+        if (typeof AOS !== 'undefined') {
+            AOS.refresh();
+        }
+
+        // Re-initialize interactions
+        initializeProductInteractions();
+    }
+
     // Load Products Function
     function loadProducts(category) {
         currentCategory = category;
+        showLoading();
 
-        // Show loading state
-        loadingState.style.display = 'flex';
-        productsGrid.style.display = 'none';
-        emptyState.style.display = 'none';
+        // Get language prefix from current URL
+        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
 
-        fetch(`/api/products/?category=${category}`)
-            .then(response => response.json())
+        console.log('Loading products for category:', category, 'with language prefix:', langPrefix);
+
+        // Try the correct API endpoint with language prefix
+        fetch(`/${langPrefix}/api/products/?category=${category}`)
+            .then(response => {
+                console.log('API response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Products loaded:', data);
                 if (data.error) {
-                    console.error('Error:', data.error);
-                    displayProducts([]);
+                    console.error('API Error:', data.error);
+                    displayProductsJSON([]);
                 } else {
-                    // Cache the data
-                    productsByCategory[category] = data.products;
-                    displayProducts(data.products, category);
+                    // Cache the data and display
+                    const products = data.products || data;
+                    console.log('Processing', products.length, 'products');
+                    displayProductsJSON(products, category);
                 }
             })
             .catch(error => {
                 console.error('Error loading products:', error);
-                displayProducts([]);
+                showEmptyState();
             });
     }
 
-    // Display Products Function
-    function displayProducts(products, category = 'all') {
-        loadingState.style.display = 'none';
+    // Display Products JSON
+    function displayProductsJSON(products, category) {
+        console.log('displayProductsJSON called with', products.length, 'products for category:', category);
 
-        if (products.length === 0) {
-            productsGrid.style.display = 'none';
-            emptyState.style.display = 'flex';
+        if (!products || products.length === 0) {
+            showEmptyState();
         } else {
-            emptyState.style.display = 'none';
-            productsGrid.style.display = 'grid';
-
-            // Clear existing products
             productsGrid.innerHTML = '';
 
-            // Add products
             products.forEach((product, index) => {
+                console.log('Creating card for product:', product.name, 'with image:', product.image);
                 const productCard = createProductCard(product);
                 productCard.setAttribute('data-aos', 'fade-up');
                 productCard.setAttribute('data-aos-delay', (index * 50).toString());
                 productsGrid.appendChild(productCard);
             });
 
+            // Cache the generated HTML
+            cachedProductsHTML[category] = productsGrid.innerHTML;
+
+            showProducts();
+
             // Refresh AOS
             if (typeof AOS !== 'undefined') {
                 AOS.refresh();
             }
+
+            // Initialize interactions
+            initializeProductInteractions();
         }
     }
 
-    // Create Product Card - Enhanced version matching Django template
+    // Create Product Card from JSON
     function createProductCard(product) {
         const div = document.createElement('div');
-        div.className = 'product-card text-center';
-        div.setAttribute('data-product-id', product.id);
+        div.className = 'product-card';
+        div.setAttribute('data-product-id', product.id || product.pk);
 
-        // Sale badge
-        const saleBadge = product.is_on_sale ? '<div class="sale-badge">{% trans "Sale" %}</div>' : '';
+        // Define translated strings (these will be processed by Django template engine)
+        const translations = {
+            out: '{% trans "Out" %}',
+            sale: '{% trans "Sale" %}',
+            best: '{% trans "Best" %}',
+            new: '{% trans "New" %}',
+            save: '{% trans "Save" %}',
+            addToWishlist: '{% trans "Add to Wishlist" %}',
+            addToCart: '{% trans "Add to Cart" %}',
+            quickView: '{% trans "Quick View" %}'
+        };
+
+        // Product badges
+        let badgesHtml = '<div class="product-badges">';
+        if (!product.is_in_stock) {
+            badgesHtml += `<div class="product-badge outofstock-badge"><i class="fas fa-times-circle"></i><span>${translations.out}</span></div>`;
+        } else {
+            if (product.is_on_sale) {
+                const discountText = product.discount_percentage ? `-${product.discount_percentage}%` : '';
+                badgesHtml += `<div class="product-badge sale-badge"><i class="fas fa-tag"></i><span>${translations.sale}</span>${discountText ? `<small>${discountText}</small>` : ''}</div>`;
+            }
+            if (product.is_best_seller) {
+                badgesHtml += `<div class="product-badge bestseller-badge"><i class="fas fa-crown"></i><span>${translations.best}</span></div>`;
+            }
+            if (product.is_new_arrival) {
+                badgesHtml += `<div class="product-badge new-badge"><i class="fas fa-sparkles"></i><span>${translations.new}</span></div>`;
+            }
+        }
+        badgesHtml += '</div>';
 
         // Price HTML
-        let priceHtml = '';
+        let priceHtml = '<div class="price-area">';
         if (product.is_on_sale && product.original_price) {
-            priceHtml = `
-                <span class="original-price">${product.original_price}</span>
-                <span class="sale-price">${product.price}</span>
-            `;
+            priceHtml += '<div class="price-group">';
+            priceHtml += `<span class="sale-price">${product.price}</span>`;
+            priceHtml += `<span class="original-price">${product.original_price}</span>`;
+            priceHtml += '</div>';
+            if (product.discount_percentage) {
+                priceHtml += `<div class="savings-badge">${translations.save} ${product.discount_percentage}%</div>`;
+            }
         } else {
-            priceHtml = `<span class="regular-price">${product.price}</span>`;
+            priceHtml += `<span class="regular-price">${product.price}</span>`;
         }
+        priceHtml += '</div>';
 
-        // Wishlist icon
-        const wishlistIcon = product.in_wishlist ? 'favorite' : 'favorite_border';
+        // Wishlist state
+        const wishlistIcon = product.in_wishlist ? 'fas fa-heart' : 'far fa-heart';
         const wishlistClass = product.in_wishlist ? 'active' : '';
 
-        // Vendor info
-        const vendorHtml = product.vendor_name ? `
-            <div class="card-footer card-footer-vendor">
-                <div class="vendor-info">
-                    <span class="vendor-name">${product.vendor_name}</span>
-                    <span class="vendor-rating"><span class="material-icons">star</span></span>
-                </div>
-                ${product.vendor_slug ? `
-                    <a href="/vendor/${product.vendor_slug}/"
-                       class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor"
-                       title="{% trans 'View Vendor Profile' %}">
-                       <span class="material-icons">store</span> {% trans 'View Profile' %}
-                    </a>
-                ` : ''}
-            </div>
-        ` : '';
+        // Images - updated to match API field names
+        const mainImage = product.image || '/static/img/placeholder.jpg';
+        const hoverImage = product.hover_image || mainImage;
+
+        console.log(`Product ${product.name}: main=${mainImage}, hover=${hoverImage}`);
 
         div.innerHTML = `
             <div class="position-relative product-image-wrapper">
-                ${saleBadge}
-                <a href="${product.url}">
-                    <img src="${product.image}"
+                ${badgesHtml}
+                <a href="${product.url || '#'}" class="product-link">
+                    <img src="${mainImage}"
                          alt="${product.name}"
                          loading="lazy"
                          class="product-img">
+                    ${hoverImage !== mainImage ? `
+                    <img src="${hoverImage}"
+                         alt="${product.name}"
+                         loading="lazy"
+                         class="product-img hover-switch-img">
+                    ` : ''}
                 </a>
                 <div class="product-icons">
                     <button type="button"
                             class="wishlist-btn btn-icon-action ${wishlistClass}"
                             data-action="wishlist-toggle"
-                            data-product-id="${product.id}"
-                            title="{% trans 'Add to Wishlist' %}">
-                        <span class="material-icons">${wishlistIcon}</span>
+                            data-product-id="${product.id || product.pk}"
+                            title="${translations.addToWishlist}">
+                        <i class="${wishlistIcon}"></i>
                     </button>
                     <button type="button"
                             class="cart-btn btn-icon-action"
                             data-action="cart-add"
-                            data-product-id="${product.id}"
-                            title="{% trans 'Add to Cart' %}">
-                        <span class="material-icons">shopping_cart</span>
+                            data-product-id="${product.id || product.pk}"
+                            title="${translations.addToCart}">
+                        <i class="fas fa-shopping-cart"></i>
                     </button>
                 </div>
             </div>
             <div class="product-info mt-2">
-                <div class="product-name">${product.name}</div>
-                <div class="price-area">${priceHtml}</div>
-                ${vendorHtml}
+                <div class="product-header">
+                    <div class="product-name">
+                        <a href="${product.url || '#'}" class="product-title-link">
+                            ${product.name}
+                        </a>
+                    </div>
+                    ${product.brand || product.category ? `
+                    <div class="product-meta-info">
+                        ${product.brand ? `<span class="product-brand">${product.brand}</span>` : ''}
+                        ${product.category ? `<span class="product-category">${product.category}</span>` : ''}
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="product-details-container">
+                    ${priceHtml}
+                    <div class="quick-actions">
+                        <a href="${product.url || '#'}" class="btn-quick-view">
+                            <i class="fas fa-eye"></i>
+                            <span>${translations.quickView}</span>
+                        </a>
+                    </div>
+                </div>
             </div>
             <div class="local-toast-container"></div>
         `;
 
         return div;
+    }
+
+    // Initialize Product Interactions
+    function initializeProductInteractions() {
+        // Wishlist buttons
+        const wishlistBtns = productsGrid.querySelectorAll('.wishlist-btn[data-action="wishlist-toggle"]');
+        wishlistBtns.forEach(btn => {
+            // Remove old listeners by cloning
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof handleWishlistToggle === 'function') {
+                    handleWishlistToggle(this);
+                }
+            });
+        });
+
+        // Cart buttons
+        const cartBtns = productsGrid.querySelectorAll('.cart-btn[data-action="cart-add"]');
+        cartBtns.forEach(btn => {
+            // Remove old listeners by cloning
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof handleCartAdd === 'function') {
+                    handleCartAdd(this);
+                }
+            });
+        });
+    }
+
+    // State Management Functions
+    function showLoading() {
+        loadingState.style.display = 'flex';
+        productsGrid.style.display = 'none';
+        emptyState.style.display = 'none';
+    }
+
+    function showProducts() {
+        loadingState.style.display = 'none';
+        productsGrid.style.display = 'grid';
+        emptyState.style.display = 'none';
+    }
+
+    function showEmptyState() {
+        loadingState.style.display = 'none';
+        productsGrid.style.display = 'none';
+        emptyState.style.display = 'flex';
     }
 
     // Mobile Touch Scroll for Tabs
@@ -349,16 +515,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     tabsNav.addEventListener('mousedown', (e) => {
         isDown = true;
+        tabsNav.style.cursor = 'grabbing';
         startX = e.pageX - tabsNav.offsetLeft;
         scrollLeft = tabsNav.scrollLeft;
     });
 
     tabsNav.addEventListener('mouseleave', () => {
         isDown = false;
+        tabsNav.style.cursor = 'grab';
     });
 
     tabsNav.addEventListener('mouseup', () => {
         isDown = false;
+        tabsNav.style.cursor = 'grab';
     });
 
     tabsNav.addEventListener('mousemove', (e) => {
