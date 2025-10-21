@@ -129,7 +129,6 @@ def home(request):
         .select_related("category", "subcategory", "brand")
         .distinct()
     )
-
     featured_products = base_products.filter(is_featured=True).distinct()[:8]
     new_arrivals = base_products.filter(is_new_arrival=True).distinct()[:8]
     best_sellers = base_products.filter(is_best_seller=True).distinct()[:8]
@@ -439,7 +438,14 @@ def category_detail(request, slug):
     price_range = products_queryset.aggregate(Min("price"), Max("price"))
 
     # Pagination
-    paginator = Paginator(products_queryset, 12)  # 12 products per page
+    per_page = request.GET.get("per_page")
+    try:
+        per_page = int(per_page)
+        if per_page not in [12, 24, 48]:
+            per_page = 12
+    except (TypeError, ValueError):
+        per_page = 12
+    paginator = Paginator(products_queryset, per_page)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -533,7 +539,14 @@ def subcategory_detail(request, category_slug, slug):
     price_range = products_queryset.aggregate(Min("price"), Max("price"))
 
     # Pagination
-    paginator = Paginator(products_queryset, 12)
+    per_page = request.GET.get("per_page")
+    try:
+        per_page = int(per_page)
+        if per_page not in [12, 24, 48]:
+            per_page = 12
+    except (TypeError, ValueError):
+        per_page = 12
+    paginator = Paginator(products_queryset, per_page)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -625,21 +638,14 @@ def product_detail(request, slug):
         )
         .exclude(id=product.id)
         .distinct()
-        .prefetch_related("images")
+        .prefetch_related("images", "variants__color", "variants__size")
         .select_related("category", "subcategory", "brand")[:8]
     )
 
     variants = product.variants.filter(is_available=True, stock_quantity__gt=0)
 
-    available_colors = (
-        Color.objects.filter(productvariant__in=variants, is_active=True)
-        .distinct()
-        .order_by("name")
-    )  # Keep this if you want colors sorted alphabetically by name
-
-    available_sizes = Size.objects.filter(
-        productvariant__in=variants, is_active=True
-    ).distinct()  # REMOVE .order_by('name') to use Size model's Meta.ordering
+    available_colors = product.get_available_colors()
+    available_sizes = product.get_available_sizes()
 
     product_images = product.images.all().order_by("order")
 
@@ -819,7 +825,7 @@ def wishlist_view(request):
             products_qs = (
                 Product.objects.filter(wishlistitem__wishlist=wishlist)
                 .select_related("category", "subcategory", "brand")
-                .prefetch_related("images")
+                .prefetch_related("images", "variants__color", "variants__size")
                 .order_by("name")
             )
             products_in_wishlist_ids = set(
@@ -874,6 +880,8 @@ def add_to_cart(request):
             data = request.POST
         product_variant_id = data.get("product_variant_id")
         product_id = data.get("product_id")
+        color_id = data.get("color_id")
+        size_id = data.get("size_id")
         quantity = int(data.get("quantity", 1))
     except (ValueError, TypeError):
         message = "Invalid data provided." if lang == "en" else "بيانات غير صالحة."
@@ -881,7 +889,36 @@ def add_to_cart(request):
 
     product_variant = None
     product = None
-    if product_variant_id:
+
+    # If color and size are provided, find the variant
+    if color_id and size_id and product_id:
+        try:
+            product = Product.objects.get(
+                id=product_id, is_active=True, is_available=True
+            )
+            product_variant = ProductVariant.objects.filter(
+                product=product,
+                color_id=color_id,
+                size_id=size_id,
+                is_available=True,
+                stock_quantity__gt=0,
+            ).first()
+
+            if not product_variant:
+                message = (
+                    "This color and size combination is not available."
+                    if lang == "en"
+                    else "هذا المزيج من اللون والحجم غير متاح."
+                )
+                return JsonResponse({"success": False, "message": message}, status=400)
+        except Product.DoesNotExist:
+            message = (
+                "Product not found or not available."
+                if lang == "en"
+                else "المنتج غير موجود أو غير متوفر."
+            )
+            return JsonResponse({"success": False, "message": message}, status=404)
+    elif product_variant_id:
         try:
             product_variant = ProductVariant.objects.get(
                 id=product_variant_id, is_available=True

@@ -29,7 +29,7 @@
                 <button class="category-tab-btn" data-category="{{ cat.slug }}" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:150 }}">
                     <span class="tab-icon">
                         {% if cat.image %}
-                            <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="tab-image">
+                            <img src="{{ cat.image_resized.url }}" alt="{{ cat.name }}" class="tab-image">
                         {% else %}
                             <span class="material-icons">folder_open</span>
                         {% endif %}

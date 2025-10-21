@@ -6,13 +6,22 @@ from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 from faker import Faker
 from django.db.models.signals import post_save
-from django.contrib.auth import get_user_model # Import get_user_model
+from django.contrib.auth import get_user_model  # Import get_user_model
 
 # Import your models
 from shop.models import (
-    VendorProfile, Category, SubCategory,
-    FitType, Brand, Color, Size,
-    Product, ProductImage, ProductVariant, ProductColor, ProductSize
+    VendorProfile,
+    Category,
+    SubCategory,
+    FitType,
+    Brand,
+    Color,
+    Size,
+    Product,
+    ProductImage,
+    ProductVariant,
+    ProductColor,
+    ProductSize,
 )
 
 # Import the specific signal handler function
@@ -23,43 +32,108 @@ fake = Faker()
 # Get the custom user model
 MnoryUser = get_user_model()
 
+
 class Command(BaseCommand):
     help = "Seed test data for the eCommerce app"
 
     GENDER_CATEGORIES = {
-        "Men": ["T-Shirts", "Pants", "Shoes", "Jackets", "Sweaters", "Jeans", "Shorts", "Hoodies"],
-        "Women": ["Dresses", "Blouses", "Heels", "Skirts", "Leggings", "Cardigans", "Sandals", "Coats"],
-        "Kids": ["T-Shirts", "Shorts", "Sneakers", "Hoodies", "Pajamas", "Dungarees", "Boots", "Dresses"]
+        "Men": [
+            "T-Shirts",
+            "Pants",
+            "Shoes",
+            "Jackets",
+            "Sweaters",
+            "Jeans",
+            "Shorts",
+            "Hoodies",
+        ],
+        "Women": [
+            "Dresses",
+            "Blouses",
+            "Heels",
+            "Skirts",
+            "Leggings",
+            "Cardigans",
+            "Sandals",
+            "Coats",
+        ],
+        "Kids": [
+            "T-Shirts",
+            "Shorts",
+            "Sneakers",
+            "Hoodies",
+            "Pajamas",
+            "Dungarees",
+            "Boots",
+            "Dresses",
+        ],
     }
 
     PRODUCT_TYPES = [
-        "Cotton", "Silk", "Denim", "Leather", "Sport", "Classic", "Casual", "Formal",
-        "Wool", "Linen", "Synthetic", "Blend", "Activewear", "Outerwear"
+        "Cotton",
+        "Silk",
+        "Denim",
+        "Leather",
+        "Sport",
+        "Classic",
+        "Casual",
+        "Formal",
+        "Wool",
+        "Linen",
+        "Synthetic",
+        "Blend",
+        "Activewear",
+        "Outerwear",
     ]
 
     # Define realistic colors with hex codes
     COLOR_DATA = [
-        ("Red", "#FF0000"), ("Blue", "#0000FF"), ("Green", "#008000"),
-        ("Black", "#000000"), ("White", "#FFFFFF"), ("Gray", "#808080"),
-        ("Navy", "#000080"), ("Pink", "#FFC0CB"), ("Brown", "#8B4513"),
-        ("Yellow", "#FFFF00"), ("Purple", "#800080"), ("Orange", "#FFA500"),
-        ("Beige", "#F5F5DC"), ("Maroon", "#800000"), ("Olive", "#808000"),
-        ("Cyan", "#00FFFF"), ("Magenta", "#FF00FF"), ("Teal", "#008080"),
-        ("Silver", "#C0C0C0"), ("Gold", "#FFD700"), ("Khaki", "#F0E68C"),
-        ("Turquoise", "#40E0D0")
+        ("Red", "#FF0000"),
+        ("Blue", "#0000FF"),
+        ("Green", "#008000"),
+        ("Black", "#000000"),
+        ("White", "#FFFFFF"),
+        ("Gray", "#808080"),
+        ("Navy", "#000080"),
+        ("Pink", "#FFC0CB"),
+        ("Brown", "#8B4513"),
+        ("Yellow", "#FFFF00"),
+        ("Purple", "#800080"),
+        ("Orange", "#FFA500"),
+        ("Beige", "#F5F5DC"),
+        ("Maroon", "#800000"),
+        ("Olive", "#808000"),
+        ("Cyan", "#00FFFF"),
+        ("Magenta", "#FF00FF"),
+        ("Teal", "#008080"),
+        ("Silver", "#C0C0C0"),
+        ("Gold", "#FFD700"),
+        ("Khaki", "#F0E68C"),
+        ("Turquoise", "#40E0D0"),
     ]
 
     # Define realistic sizes.
     # Each tuple now contains (name, size_type, order_for_sorting_if_needed).
     # Removed the 'description' element since the model no longer has it.
     SIZE_DATA = [
-        ("XS", "clothing", 10), ("S", "clothing", 20), ("M", "clothing", 30),
-        ("L", "clothing", 40), ("XL", "clothing", 50), ("XXL", "clothing", 60),
+        ("XS", "clothing", 10),
+        ("S", "clothing", 20),
+        ("M", "clothing", 30),
+        ("L", "clothing", 40),
+        ("XL", "clothing", 50),
+        ("XXL", "clothing", 60),
         ("XXXL", "clothing", 70),
-        ("28", "clothing", 280), ("30", "clothing", 300), ("32", "clothing", 320),
-        ("34", "clothing", 340), ("36", "clothing", 360),
-        ("6", "shoes", 600), ("7", "shoes", 700), ("8", "shoes", 800),
-        ("9", "shoes", 900), ("10", "shoes", 1000), ("11", "shoes", 1100),
+        ("28", "clothing", 280),
+        ("30", "clothing", 300),
+        ("32", "clothing", 320),
+        ("34", "clothing", 340),
+        ("36", "clothing", 360),
+        ("6", "shoes", 600),
+        ("7", "shoes", 700),
+        ("8", "shoes", 800),
+        ("9", "shoes", 900),
+        ("10", "shoes", 1000),
+        ("11", "shoes", 1100),
         ("12", "shoes", 1200),
         # Example for accessories (if you add more):
         # ("One Size", "accessories", 100),
@@ -69,13 +143,15 @@ class Command(BaseCommand):
         self.stdout.write(self.style.WARNING("Clearing existing data..."))
         self.clear_data()
 
-        fake.unique.clear() # Clear Faker's unique cache
+        fake.unique.clear()  # Clear Faker's unique cache
         self.stdout.write(self.style.SUCCESS("Seeding data..."))
 
         # Temporarily disconnect the signal to prevent duplicate VendorProfile creation
         # when creating users with user_type='vendor'
         post_save.disconnect(create_vendor_profile, sender=MnoryUser)
-        self.stdout.write(self.style.NOTICE("Disconnected create_vendor_profile signal."))
+        self.stdout.write(
+            self.style.NOTICE("Disconnected create_vendor_profile signal.")
+        )
 
         # Call seeding methods
         self.create_users_and_vendors(10)
@@ -85,7 +161,9 @@ class Command(BaseCommand):
 
         # Reconnect the signal so it works normally after seeding
         post_save.connect(create_vendor_profile, sender=MnoryUser)
-        self.stdout.write(self.style.NOTICE("Reconnected create_vendor_profile signal."))
+        self.stdout.write(
+            self.style.NOTICE("Reconnected create_vendor_profile signal.")
+        )
 
         self.stdout.write(self.style.SUCCESS("Data seeded successfully."))
 
@@ -98,7 +176,7 @@ class Command(BaseCommand):
         Product.objects.all().delete()
         VendorProfile.objects.all().delete()
         # Fix: Filter by user_type='vendor' instead of is_vendor=True
-        MnoryUser.objects.filter(user_type='vendor').delete()
+        MnoryUser.objects.filter(user_type="vendor").delete()
         SubCategory.objects.all().delete()
         Category.objects.all().delete()
         FitType.objects.all().delete()
@@ -111,15 +189,17 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE("Creating users and vendor profiles..."))
         for i in range(count):
             email = fake.unique.email()
-            username = fake.unique.user_name() # Generate a unique username for AbstractUser
+            username = (
+                fake.unique.user_name()
+            )  # Generate a unique username for AbstractUser
             user = MnoryUser.objects.create_user(
-                username=username, # Pass username
+                username=username,  # Pass username
                 email=email,
                 password="test1234",
-                user_type='vendor', # Fix: Use user_type instead of is_vendor
-                phone_number=fake.numerify('##########'),
+                user_type="vendor",  # Fix: Use user_type instead of is_vendor
+                phone_number=fake.numerify("##########"),
                 first_name=fake.first_name(),
-                last_name=fake.last_name()
+                last_name=fake.last_name(),
             )
 
             store_name = fake.unique.company()
@@ -138,43 +218,72 @@ class Command(BaseCommand):
                 store_description=fake.text(max_nb_chars=200),
                 website=fake.url(),
                 country_of_operation=fake.country(),
-                profile_type=random.choice(['free', 'premium']),
+                profile_type=random.choice(["free", "premium"]),
                 is_approved=random.choice([True, False]),
             )
-            self.stdout.write(f"  Created vendor user: {user.email} and profile: {store_name}")
-        self.stdout.write(self.style.SUCCESS(f"Created {count} users and vendor profiles."))
-
+            self.stdout.write(
+                f"  Created vendor user: {user.email} and profile: {store_name}"
+            )
+        self.stdout.write(
+            self.style.SUCCESS(f"Created {count} users and vendor profiles.")
+        )
 
     def create_categories(self):
         self.stdout.write(self.style.NOTICE("Creating categories and subcategories..."))
+        # Map gender to image filename
+        gender_images = {"Men": "man.jpg", "Women": "woman.jpg", "Kids": "kids.jpg"}
         for gender, subcategories in self.GENDER_CATEGORIES.items():
+            image_filename = gender_images.get(gender)
+            image_path = f"images/{image_filename}" if image_filename else None
             cat = Category.objects.create(
                 name=gender,
-                description=f"{gender} fashion and apparel for all occasions"
+                description=f"{gender} fashion and apparel for all occasions",
+                image=image_path,
             )
-            self.stdout.write(f"  Created category: {cat.name}")
+            self.stdout.write(f"  Created category: {cat.name} (Image: {image_path})")
             for sub in subcategories:
                 SubCategory.objects.create(
-                    category=cat,
-                    name=sub,
-                    description=fake.sentence(nb_words=8)
+                    category=cat, name=sub, description=fake.sentence(nb_words=8)
                 )
                 self.stdout.write(f"    Created subcategory: {sub}")
         self.stdout.write(self.style.SUCCESS("Categories and subcategories created."))
 
     def create_fittypes_brands_colors_sizes(self):
-        self.stdout.write(self.style.NOTICE("Creating fit types, brands, colors, and sizes..."))
+        self.stdout.write(
+            self.style.NOTICE("Creating fit types, brands, colors, and sizes...")
+        )
 
         # Create FitTypes
-        fit_types = ["Slim", "Regular", "Loose", "Tight", "Athletic", "Relaxed", "Oversized"]
+        fit_types = [
+            "Slim",
+            "Regular",
+            "Loose",
+            "Tight",
+            "Athletic",
+            "Relaxed",
+            "Oversized",
+        ]
         for fit_type in fit_types:
             FitType.objects.get_or_create(name=fit_type)
         self.stdout.write("  FitTypes created.")
 
         # Create Brands
         brands = [
-            "Nike", "Adidas", "Zara", "H&M", "Uniqlo", "Puma", "Levi's", "Tommy Hilfiger",
-            "Gucci", "Prada", "Calvin Klein", "Ralph Lauren", "Gap", "Forever 21", "ASOS"
+            "Nike",
+            "Adidas",
+            "Zara",
+            "H&M",
+            "Uniqlo",
+            "Puma",
+            "Levi's",
+            "Tommy Hilfiger",
+            "Gucci",
+            "Prada",
+            "Calvin Klein",
+            "Ralph Lauren",
+            "Gap",
+            "Forever 21",
+            "ASOS",
         ]
         for brand in brands:
             Brand.objects.get_or_create(name=brand)
@@ -183,8 +292,7 @@ class Command(BaseCommand):
         # Create Colors with hex codes
         for color_name, color_code in self.COLOR_DATA:
             Color.objects.get_or_create(
-                name=color_name,
-                defaults={'hex_code': color_code}
+                name=color_name, defaults={"hex_code": color_code}
             )
         self.stdout.write("  Colors created.")
 
@@ -193,10 +301,16 @@ class Command(BaseCommand):
             Size.objects.get_or_create(
                 name=size_name,
                 size_type=size_type,
-                defaults={'order': order} # 'order' goes into defaults if not used in primary lookup
+                defaults={
+                    "order": order
+                },  # 'order' goes into defaults if not used in primary lookup
             )
         self.stdout.write("  Sizes created.")
-        self.stdout.write(self.style.SUCCESS("Static data (fit types, brands, colors, sizes) created."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Static data (fit types, brands, colors, sizes) created."
+            )
+        )
 
     def create_products(self, product_count):
         self.stdout.write(self.style.NOTICE(f"Creating {product_count} products..."))
@@ -208,24 +322,35 @@ class Command(BaseCommand):
         sizes = list(Size.objects.all())
 
         if not vendor_profiles:
-            self.stdout.write(self.style.ERROR("No vendor profiles found. Cannot create products."))
+            self.stdout.write(
+                self.style.ERROR("No vendor profiles found. Cannot create products.")
+            )
             return
         if not categories:
-            self.stdout.write(self.style.ERROR("No categories found. Cannot create products."))
+            self.stdout.write(
+                self.style.ERROR("No categories found. Cannot create products.")
+            )
             return
         if not fittypes:
-            self.stdout.write(self.style.ERROR("No fit types found. Cannot create products."))
+            self.stdout.write(
+                self.style.ERROR("No fit types found. Cannot create products.")
+            )
             return
         if not brands:
-            self.stdout.write(self.style.ERROR("No brands found. Cannot create products."))
+            self.stdout.write(
+                self.style.ERROR("No brands found. Cannot create products.")
+            )
             return
         if not colors:
-            self.stdout.write(self.style.ERROR("No colors found. Cannot create products."))
+            self.stdout.write(
+                self.style.ERROR("No colors found. Cannot create products.")
+            )
             return
         if not sizes:
-            self.stdout.write(self.style.ERROR("No sizes found. Cannot create products."))
+            self.stdout.write(
+                self.style.ERROR("No sizes found. Cannot create products.")
+            )
             return
-
 
         for i in range(product_count):
             vendor_profile = random.choice(vendor_profiles)
@@ -233,12 +358,16 @@ class Command(BaseCommand):
             # vendor = vendor_profile.user # This line is no longer needed
             category = random.choice(categories)
             subcategories = SubCategory.objects.filter(category=category)
-            subcategory = random.choice(subcategories) if subcategories.exists() else None
+            subcategory = (
+                random.choice(subcategories) if subcategories.exists() else None
+            )
 
             # Construct a realistic product name
             type_name = random.choice(self.PRODUCT_TYPES)
             product_base = subcategory.name if subcategory else "Generic Item"
-            product_name = f"{category.name} {type_name} {product_base} {fake.word().capitalize()}"
+            product_name = (
+                f"{category.name} {type_name} {product_base} {fake.word().capitalize()}"
+            )
 
             # Create base price and sale price
             base_price = round(random.uniform(50, 500), 2)
@@ -255,7 +384,7 @@ class Command(BaseCommand):
                 slug_counter += 1
 
             product = Product.objects.create(
-                vendor=vendor_profile, # Fix: Pass the vendor_profile instance here
+                vendor=vendor_profile,  # Fix: Pass the vendor_profile instance here
                 category=category,
                 subcategory=subcategory,
                 fit_type=random.choice(fittypes),
@@ -269,7 +398,7 @@ class Command(BaseCommand):
                 is_best_seller=random.choice([True, False, False]),
                 is_new_arrival=random.choice([True, False]),
                 is_featured=random.choice([True, False, False]),
-                slug=current_product_slug
+                slug=current_product_slug,
             )
 
             # Create product images
@@ -278,35 +407,38 @@ class Command(BaseCommand):
                     product=product,
                     image=f"products/sample.jpg",
                     alt_text=f"{product.name} image {j+1}",
-                    is_main=(j == 0)
+                    is_main=(j == 0),
                 )
                 ProductImage.objects.create(
                     product=product,
                     image=f"products/hover.jpg",
                     alt_text=f"{product.name} image {j+1}",
-                    is_hover=(j == 0)
+                    is_hover=(j == 0),
                 )
 
             # Add colors to product through ProductColor
-            selected_colors = random.sample(colors, k=min(random.randint(1, 4), len(colors)))
+            selected_colors = random.sample(
+                colors, k=min(random.randint(1, 4), len(colors))
+            )
             product_colors_instances = []
             for color in selected_colors:
                 pc = ProductColor.objects.create(
                     product=product,
                     color=color,
-                    is_available=random.choice([True, True, False])
+                    is_available=random.choice([True, True, False]),
                 )
                 product_colors_instances.append(pc)
 
-
             # Add sizes to product through ProductSize
-            selected_sizes = random.sample(sizes, k=min(random.randint(2, 6), len(sizes)))
+            selected_sizes = random.sample(
+                sizes, k=min(random.randint(2, 6), len(sizes))
+            )
             product_sizes_instances = []
             for size in selected_sizes:
                 ps = ProductSize.objects.create(
                     product=product,
                     size=size,
-                    is_available=random.choice([True, True, False])
+                    is_available=random.choice([True, True, False]),
                 )
                 product_sizes_instances.append(ps)
 
@@ -325,7 +457,7 @@ class Command(BaseCommand):
                         color=product_color.color,
                         size=product_size.size,
                         stock_quantity=variant_stock,
-                        is_available=variant_stock > 0
+                        is_available=variant_stock > 0,
                     )
                     total_product_stock += variant_stock
 
@@ -333,6 +465,7 @@ class Command(BaseCommand):
             product.stock_quantity = total_product_stock
             product.save()
 
-            self.stdout.write(f"  Created product ({i+1}/{product_count}): {product.name} (Stock: {product.stock_quantity})")
+            self.stdout.write(
+                f"  Created product ({i+1}/{product_count}): {product.name} (Stock: {product.stock_quantity})"
+            )
         self.stdout.write(self.style.SUCCESS(f"Created {product_count} products."))
-

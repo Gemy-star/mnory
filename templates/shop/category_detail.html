@@ -2,186 +2,341 @@
 {% load static i18n %}
 
 {% block title %}
-    {% if category %}{{ category.name }}{% else %}{% trans "All Products" %}{% endif %} - {% trans "Reverse" %}
+    {% if category %}{{ category.name }}{% else %}{% trans "All Products" %}{% endif %} - {% trans "Mnory" %}
 {% endblock %}
 
 {% block content %}
+
+<!-- Category Detail Section -->
+<section class="category-detail-section">
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav" aria-label="breadcrumb" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}">
+                        <span class="material-icons">home</span>
+                        {% trans "Home" %}
+                    </a>
+                </li>
+                {% if category %}
+                <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+                {% else %}
+                <li class="breadcrumb-item active" aria-current="page">{% trans "All Products" %}</li>
+                {% endif %}
+            </ol>
+        </nav>
+    </div>
+</section>
+
 <!-- Category Advertisements Carousel -->
 {% include 'partials/_ads_carousel.html' with ads=category_ads carousel_id="category-ads-carousel" placement="category" %}
 
-<section class="section pt-4">
-<div class="container my-4 pt-4 pt-lg-4">
-    <div class="row pt-4">
-        <!-- Sidebar for Categories and Filters -->
-<div class="col-lg-3 mb-4 pt-4 pt-lg-2">
-    <div class="accordion" id="filterAccordion">
-        <!-- Filters Header -->
-        <div class="accordion-item border-theme">
-            <h2 class="accordion-header" id="headingFilters">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
-                    <i class="fas fa-filter me-2"></i>{% trans "Filters" %}
-                </button>
-            </h2>
-            <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilters" data-bs-parent="#filterAccordion">
-                <div class="accordion-body">
+<!-- Category Content Section -->
+<section class="category-content-section">
+    <div class="container">
 
-                    <!-- Categories -->
-                    <div class="mb-4">
-                        <h6>{% trans "Categories" %}</h6>
-                        <div class="list-group list-group-flush category-list">
-                            <a href="{% url 'shop:home' %}" class="list-group-item {% if not category %}active{% endif %}">
-                                <i class="fas fa-th-large"></i> {% trans "All Products" %}
-                            </a>
-                            {% for cat in categories %}
-                                <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="list-group-item {% if category and category.slug == cat.slug %}active{% endif %}">
-                                    <i class="fas fa-folder"></i> {{ cat.name }}
-                                </a>
-                                {% if category and category.slug == cat.slug %}
-                                    {% for subcat in subcategories %}
-                                        <a href="{% url 'shop:subcategory_detail' category_slug=cat.slug slug=subcat.slug %}" class="list-group-item ps-4 {% if current_filters.subcategory == subcat.slug %}active{% endif %}">
-                                            <i class="fas fa-angle-right"></i> {{ subcat.name }}
-                                        </a>
-                                    {% endfor %}
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
+        <!-- Category Header -->
+        <div class="category-header" data-aos="fade-up">
+            <div class="category-header-content">
+                <h1 class="category-title">
+                    <span class="material-icons">category</span>
+                    {% if category %}{{ category.name }}{% else %}{% trans "All Products" %}{% endif %}
+                </h1>
+                {% if category.description %}
+                <p class="category-description">{{ category.description }}</p>
+                {% else %}
+                <p class="category-description">{% trans "Discover our curated collection of quality products" %}</p>
+                {% endif %}
+            </div>
+        </div>
 
-                    <!-- Filter Form -->
-                    <form id="filter-form">
-                        <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
-                        <input type="hidden" name="subcategory_slug" value="{{ current_filters.subcategory|default:'' }}">
+        <!-- Category Tabs Navigation (Main Categories) -->
+        <div class="category-tabs-nav-wrapper" data-aos="fade-up" data-aos-delay="100">
+            <div class="category-tabs-nav">
+                <!-- All Categories Tab -->
+                <a href="{% url 'shop:home' %}" class="category-tab-btn {% if not category %}active{% endif %}" data-aos="zoom-in" data-aos-delay="150">
+                    <span class="tab-icon">
+                        <span class="material-icons">apps</span>
+                    </span>
+                    <span class="tab-label">{% trans "All" %}</span>
+                    <span class="tab-indicator"></span>
+                </a>
 
-                        <!-- Fit Type -->
-                        <div class="mb-3">
-                            <h6>{% trans "Fit Type" %}</h6>
-                            {% for fit_type in fit_types %}
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" name="fit_type" value="{{ fit_type.slug }}" id="fitType{{ fit_type.slug }}" {% if fit_type.slug == current_filters.fit_type %}checked{% endif %}>
-                                    <label class="form-check-label" for="fitType{{ fit_type.slug }}">{{ fit_type.name }}</label>
-                                </div>
-                            {% endfor %}
-                        </div>
+                {% for cat in categories %}
 
-                        <!-- Brand -->
-                        <div class="mb-3">
-                            <h6>{% trans "Brand" %}</h6>
-                            {% for brand in brands %}
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" name="brand" value="{{ brand.slug }}" id="brand{{ brand.slug }}" {% if brand.slug == current_filters.brand %}checked{% endif %}>
-                                    <label class="form-check-label" for="brand{{ brand.slug }}">{{ brand.name }}</label>
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- Color -->
-                        <div class="mb-3">
-                            <h6>{% trans "Color" %}</h6>
-                            {% for color in colors %}
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" name="color" value="{{ color.name }}" id="color{{ color.name }}" {% if color.name == current_filters.color %}checked{% endif %}>
-                                    <label class="form-check-label" for="color{{ color.name }}">
-                                        <span style="display: inline-block; width: 15px; height: 15px; background-color: {{ color.hex_code }}; border: 1px solid #ccc; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                                        {{ color.name }}
-                                    </label>
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- Size -->
-                        <div class="mb-3">
-                            <h6>{% trans "Size" %}</h6>
-                            {% for size in sizes %}
-                                <div class="form-check">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" name="size" value="{{ size.name }}" id="size{{ size.name }}" {% if size.name == current_filters.size %}checked{% endif %}>
-                                    <label class="form-check-label" for="size{{ size.name }}">
-                                        {{ size.name }} ({{ size.get_size_type_display }})
-                                    </label>
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- Price Range -->
-                        <div class="mb-3">
-                            <h6>{% trans "Price Range" %}</h6>
-                            <div class="d-flex mb-2">
-                                <input type="number" class="form-control me-2" name="min_price" placeholder="{% trans 'Min' %}" value="{{ current_filters.min_price|default:'' }}">
-                                <input type="number" class="form-control" name="max_price" placeholder="{% trans 'Max' %}" value="{{ current_filters.max_price|default:'' }}">
+                    <span class="tab-icon">
+                        {% if cat.image %}
+                            <div class="tab-image-container">
+                                <img src="{{ cat.image_resized.url }}" alt="{{ cat.name }}" class="tab-image">
+                                <span class="tab-image-label">{{ cat.name }}</span>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-sm w-100">{% trans "Apply Price" %}</button>
-                        </div>
+                        {% else %}
+                            <span class="material-icons">folder_open</span>
+                            <span class="tab-label">{{ cat.name }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="tab-indicator"></span>
+                </a>
+                {% endfor %}
+            </div>
 
-                        <!-- Sort -->
-                        <div class="mb-3">
-                            <h6>{% trans "Sort By" %}</h6>
-                            <select class="form-select" name="sort">
-                                <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
-                                <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>{% trans "Price (Low to High)" %}</option>
-                                <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>{% trans "Price (High to Low)" %}</option>
-                                <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
-                                <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>{% trans "Popular" %}</option>
-                            </select>
-                        </div>
+            <!-- Navigation Arrows -->
+            <button class="tab-nav-arrow tab-nav-prev" aria-label="Previous">
+                <span class="material-icons">chevron_left</span>
+            </button>
+            <button class="tab-nav-arrow tab-nav-next" aria-label="Next">
+                <span class="material-icons">chevron_right</span>
+            </button>
+        </div>
 
-                        <!-- Flags -->
-                        <div class="mb-3">
-                            <h6>{% trans "Flags" %}</h6>
-                            <div class="form-check">
-                                <input class="form-check-input filter-checkbox" type="checkbox" name="is_best_seller" value="true" id="isBestseller" {% if current_filters.is_best_seller %}checked{% endif %}>
-                                <label class="form-check-label" for="isBestseller"><i class="fas fa-star text-warning me-1"></i> {% trans "Best Seller" %}</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input filter-checkbox" type="checkbox" name="is_new_arrival" value="true" id="isNewArrival" {% if current_filters.is_new_arrival %}checked{% endif %}>
-                                <label class="form-check-label" for="isNewArrival"><i class="fas fa-tag text-info me-1"></i> {% trans "New Arrival" %}</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input filter-checkbox" type="checkbox" name="is_on_sale" value="true" id="onSale" {% if current_filters.is_on_sale %}checked{% endif %}>
-                                <label class="form-check-label" for="onSale"><i class="fas fa-fire text-danger me-1"></i> {% trans "On Sale" %}</label>
-                            </div>
-                        </div>
-                    </form>
-
+        <!-- Subcategories Tabs (Collapsible on Mobile) -->
+        {% if subcategories %}
+        <div class="subcategory-tabs-collapsible" data-aos="fade-up" data-aos-delay="200">
+            <button class="collapsible-toggle-btn" id="toggleSubcategories">
+                <span class="material-icons">view_list</span>
+                <span>{% trans "Subcategories" %}</span>
+                <span class="material-icons toggle-arrow">expand_more</span>
+            </button>
+            <div class="subcategory-tabs-wrapper collapsible-content" id="subcategoriesPanel">
+                <div class="subcategory-tabs">
+                    <a href="{% url 'shop:category_detail' slug=category.slug %}" class="subcategory-tab-btn {% if not current_filters.subcategory %}active{% endif %}">
+                        <span class="material-icons">all_inclusive</span>
+                        {% trans "All" %} {{ category.name }}
+                    </a>
+                    {% for subcat in subcategories %}
+                    <a href="{% url 'shop:subcategory_detail' category_slug=category.slug slug=subcat.slug %}" class="subcategory-tab-btn {% if current_filters.subcategory == subcat.slug %}active{% endif %}">
+                        <span class="material-icons">label</span>
+                        {{ subcat.name }}
+                    </a>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
-</div>
+        {% endif %}
 
-        <!-- Product Listing Area -->
-        <div class="col-lg-9">
-            <h2 class="mb-4">
-                {% if subcategory %}
-                    {{ subcategory.name }} {% trans "Products" %}
-                {% elif category %}
-                    {{ category.name }} {% trans "Products" %}
-                {% else %}
-                    {% trans "All Products" %}
-                {% endif %}
-            </h2>
+        <!-- Horizontal Filters Bar (Collapsible on Mobile) -->
+        <div class="horizontal-filters-collapsible" data-aos="fade-up" data-aos-delay="250">
+            <button class="collapsible-toggle-btn" id="toggleFilters">
+                <span class="material-icons">filter_alt</span>
+                <span>{% trans "Filters" %}</span>
+                <span class="material-icons toggle-arrow">expand_more</span>
+            </button>
+            <div class="horizontal-filters-wrapper collapsible-content" id="filtersPanel">
+                <div class="horizontal-filters">
+                    <!-- Filter Form -->
+                    <form id="filter-form" class="horizontal-filters-form">
+                        <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
+                        <input type="hidden" name="subcategory_slug" value="{{ current_filters.subcategory|default:'' }}">
+                        <!-- Filter Chips Container -->
+                        <div class="filter-chips-container">
+                            <!-- Sort Filter -->
+                            <div class="filter-chip-group">
+                                <span class="filter-chip-icon">
+                                    <span class="material-icons">sort</span>
+                                </span>
+                                <select class="filter-chip-select" name="sort">
+                                    <option value="">{% trans "Sort By" %}</option>
+                                    <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
+                                    <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>{% trans "Price (Low to High)" %}</option>
+                                    <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>{% trans "Price (High to Low)" %}</option>
+                                    <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
+                                    <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>{% trans "Popular" %}</option>
+                                </select>
+                            </div>
 
-            <div id="product-list-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                            <!-- Brand Filter -->
+                            {% if brands %}
+                            <div class="filter-chip-group">
+                                <span class="filter-chip-icon">
+                                    <span class="material-icons">sell</span>
+                                </span>
+                                <select class="filter-chip-select" name="brand">
+                                    <option value="">{% trans "Brand" %}</option>
+                                    {% for brand in brands %}
+                                    <option value="{{ brand.slug }}" {% if brand.slug == current_filters.brand %}selected{% endif %}>{{ brand.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+
+                            <!-- Fit Type Filter -->
+                            {% if fit_types %}
+                            <div class="filter-chip-group">
+                                <span class="filter-chip-icon">
+                                    <span class="material-icons">checkroom</span>
+                                </span>
+                                <select class="filter-chip-select" name="fit_type">
+                                    <option value="">{% trans "Fit Type" %}</option>
+                                    {% for fit_type in fit_types %}
+                                    <option value="{{ fit_type.slug }}" {% if fit_type.slug == current_filters.fit_type %}selected{% endif %}>{{ fit_type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+
+                            <!-- Color Filter -->
+                            {% if colors %}
+                            <div class="filter-chip-group">
+                                <span class="filter-chip-icon">
+                                    <span class="material-icons">palette</span>
+                                </span>
+                                <select class="filter-chip-select" name="color">
+                                    <option value="">{% trans "Color" %}</option>
+                                    {% for color in colors %}
+                                    <option value="{{ color.name }}" {% if color.name == current_filters.color %}selected{% endif %}>{{ color.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+
+                            <!-- Size Filter -->
+                            {% if sizes %}
+                            <div class="filter-chip-group">
+                                <span class="filter-chip-icon">
+                                    <span class="material-icons">straighten</span>
+                                </span>
+                                <select class="filter-chip-select" name="size">
+                                    <option value="">{% trans "Size" %}</option>
+                                    {% for size in sizes %}
+                                    <option value="{{ size.name }}" {% if size.name == current_filters.size %}selected{% endif %}>{{ size.name }} ({{ size.get_size_type_display }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+
+                            <!-- Price Range Filter -->
+                            <div class="filter-chip-group filter-price-group">
+                                <span class="filter-chip-icon">
+                                    <span class="material-icons">payments</span>
+                                </span>
+                                <input type="number" class="filter-price-input" name="min_price" placeholder="{% trans 'Min' %}" value="{{ current_filters.min_price|default:'' }}">
+                                <span class="price-separator">—</span>
+                                <input type="number" class="filter-price-input" name="max_price" placeholder="{% trans 'Max' %}" value="{{ current_filters.max_price|default:'' }}">
+                            </div>
+
+                            <!-- Special Flags -->
+                            <div class="filter-chip-group filter-flags-group">
+                                <button type="button" class="filter-flag-btn {% if current_filters.is_best_seller %}active{% endif %}" data-filter="is_best_seller">
+                                    <span class="material-icons">stars</span>
+                                    <span class="flag-label">{% trans "Best Seller" %}</span>
+                                    <input type="checkbox" name="is_best_seller" value="true" {% if current_filters.is_best_seller %}checked{% endif %} hidden>
+                                </button>
+                                <button type="button" class="filter-flag-btn {% if current_filters.is_new_arrival %}active{% endif %}" data-filter="is_new_arrival">
+                                    <span class="material-icons">new_releases</span>
+                                    <span class="flag-label">{% trans "New" %}</span>
+                                    <input type="checkbox" name="is_new_arrival" value="true" {% if current_filters.is_new_arrival %}checked{% endif %} hidden>
+                                </button>
+                                <button type="button" class="filter-flag-btn {% if current_filters.is_on_sale %}active{% endif %}" data-filter="is_on_sale">
+                                    <span class="material-icons">local_offer</span>
+                                    <span class="flag-label">{% trans "Sale" %}</span>
+                                    <input type="checkbox" name="is_on_sale" value="true" {% if current_filters.is_on_sale %}checked{% endif %} hidden>
+                                </button>
+                            </div>
+
+                            <!-- Clear Filters Button -->
+                            <button type="button" class="filter-clear-btn" id="clearFiltersBtn">
+                                <span class="material-icons">clear</span>
+                                <span>{% trans "Clear All" %}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div class="category-products-section" data-aos="fade-up" data-aos-delay="300">
+            <!-- Products Header: left=title/count, right=controls -->
+            <div class="products-header">
+                <div class="products-header-left">
+                    <h2 class="products-title">
+                        <span class="material-icons">inventory</span>
+                        {% if subcategory %}
+                            {{ subcategory.name }}
+                        {% elif category %}
+                            {{ category.name }}
+                        {% else %}
+                            {% trans "All Products" %}
+                        {% endif %}
+                    </h2>
+                    <p class="products-count" aria-live="polite">
+                        {% if products %}
+                            <span id="productsCount">{{ products.paginator.count }}</span> {% trans "products found" %}
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="products-header-right">
+                    <div class="view-controls" role="toolbar" aria-label="View controls">
+                        <button type="button" class="view-btn view-grid active" aria-pressed="true" title="Grid view">
+                            <span class="material-icons">grid_view</span>
+                        </button>
+                        <button type="button" class="view-btn view-list" aria-pressed="false" title="List view">
+                            <span class="material-icons">view_list</span>
+                        </button>
+                    </div>
+
+                    <div class="per-page-control">
+                        <label for="perPageSelect" class="sr-only">{% trans "Items per page" %}</label>
+                        <select id="perPageSelect" class="per-page-select">
+                            <option value="12" {% if request.GET.per_page == '12' %}selected{% endif %}>12</option>
+                            <option value="24" {% if request.GET.per_page == '24' %}selected{% endif %}>24</option>
+                            <option value="48" {% if request.GET.per_page == '48' %}selected{% endif %}>48</option>
+                        </select>
+                    </div>
+
+                    <!-- Mobile filters quick-open -->
+                    <button id="openFiltersMobile" class="btn btn-outline filters-open-mobile" aria-hidden="true" title="{% trans 'Filters' %}">
+                        <span class="material-icons">filter_alt</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading placeholder (used by JS when refetching) -->
+            <div id="productsLoading" class="products-loading" aria-hidden="true" style="display:none">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="product-list-container" class="products-grid grid-view" role="list">
                 {% for product in products %}
-                    <div class="col">
-                 {% include "partials/_product.html" with product=product section="category" %}
+                    <div class="product-card-wrapper" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:50 }}" role="listitem">
+                        {% include "partials/_product.html" with product=product section="category" %}
                     </div>
                 {% empty %}
-                    <div class="col-12">
-                        <div class="alert alert-info" role="alert">
-                            {% trans "No products found in this category or with the selected filters." %}
+                    <div class="empty-products-state">
+                        <div class="empty-illustration">
+                            <span class="material-icons empty-icon">inventory_2</span>
+                        </div>
+                        <h4 class="empty-title">{% trans "No products found" %}</h4>
+                        <p class="empty-message">{% trans "No products found in this category or with the selected filters." %}</p>
+                        <div class="empty-actions">
+                            <a href="{% url 'shop:home' %}" class="btn-back-home btn btn-primary">
+                                <span class="material-icons">home</span>
+                                {% trans "Back to Home" %}
+                            </a>
+                            <a href="{% url 'shop:home' %}?sort=popular" class="btn-suggest btn btn-outline">
+                                <span class="material-icons">star</span>
+                                {% trans "View popular products" %}
+                            </a>
                         </div>
                     </div>
                 {% endfor %}
             </div>
 
+            <!-- Pagination -->
             {% if products.has_other_pages %}
-                <nav aria-label="{% trans 'Page navigation' %}" class="mt-4">
-                    <ul class="pagination justify-content-center">
+            <div class="pagination-wrapper">
+                <nav aria-label="{% trans 'Page navigation' %}" class="pagination-nav">
+                    <ul class="pagination">
                         {% if products.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans "Previous" %}</a>
+                                <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <span class="material-icons">chevron_left</span>
+                                    {% trans "Previous" %}
+                                </a>
                             </li>
-                        {% else %}
-                            <li class="page-item disabled"><span class="page-link">{% trans "Previous" %}</span></li>
                         {% endif %}
 
                         {% for i in products.paginator.page_range %}
@@ -196,120 +351,186 @@
 
                         {% if products.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{% trans "Next" %}</a>
+                                <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    {% trans "Next" %}
+                                    <span class="material-icons">chevron_right</span>
+                                </a>
                             </li>
-                        {% else %}
-                            <li class="page-item disabled"><span class="page-link">{% trans "Next" %}</span></li>
                         {% endif %}
                     </ul>
                 </nav>
+            </div>
             {% endif %}
         </div>
     </div>
-</div>
 </section>
-    <!-- Toast Container -->
-<div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
-
 
 {% endblock content %}
 
 {% block js %}
-
+<!-- Category detail functionality with collapsible filters/subcategories -->
 <script>
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.innerText = message;
-        toast.style.background = '#333';
-        toast.style.color = '#fff';
-        toast.style.padding = '10px 16px';
-        toast.style.borderRadius = '8px';
-        toast.style.marginTop = '10px';
-        toast.style.fontSize = '14px';
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease';
-
-        const container = document.getElementById('toast-container');
-        container.appendChild(toast);
-
-        requestAnimationFrame(() => {
-            toast.style.opacity = '1';
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab navigation arrows
+    const tabsNav = document.querySelector('.category-tabs-nav');
+    const prevArrow = document.querySelector('.tab-nav-prev');
+    const nextArrow = document.querySelector('.tab-nav-next');
+    if (tabsNav && prevArrow && nextArrow) {
+        function updateArrows() {
+            const scrollLeft = tabsNav.scrollLeft;
+            const scrollWidth = tabsNav.scrollWidth;
+            const clientWidth = tabsNav.clientWidth;
+            if (scrollLeft > 0) {
+                prevArrow.style.opacity = '1';
+                prevArrow.style.pointerEvents = 'auto';
+            } else {
+                prevArrow.style.opacity = '0';
+                prevArrow.style.pointerEvents = 'none';
+            }
+            if (scrollLeft < scrollWidth - clientWidth - 10) {
+                nextArrow.style.opacity = '1';
+                nextArrow.style.pointerEvents = 'auto';
+            } else {
+                nextArrow.style.opacity = '0';
+                nextArrow.style.pointerEvents = 'none';
+            }
+        }
+        prevArrow.addEventListener('click', () => {
+            tabsNav.scrollBy({ left: -200, behavior: 'smooth' });
         });
-
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => container.removeChild(toast), 300);
-        }, 2500);
+        nextArrow.addEventListener('click', () => {
+            tabsNav.scrollBy({ left: 200, behavior: 'smooth' });
+        });
+        tabsNav.addEventListener('scroll', updateArrows);
+        window.addEventListener('resize', updateArrows);
+        updateArrows();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.product-icons a').forEach(icon => {
-            icon.addEventListener('click', (e) => {
-                e.preventDefault();
-                const iconClass = icon.querySelector('i').classList;
-                if (iconClass.contains('fa-heart')) {
-                    showToast("{{ _('Added to Wishlist') }}");
-                } else if (iconClass.contains('fa-shopping-cart')) {
-                    showToast("{{ _('Please select a color and size from the product page.') }}");
-                }
-            });
+    // Collapsible panels for filters and subcategories (mobile)
+    function setupCollapsible(toggleBtnId, panelId) {
+        const toggleBtn = document.getElementById(toggleBtnId);
+        const panel = document.getElementById(panelId);
+        if (!toggleBtn || !panel) return;
+        toggleBtn.addEventListener('click', function() {
+            const expanded = panel.classList.toggle('expanded');
+            toggleBtn.classList.toggle('expanded', expanded);
+            // Animate arrow
+            const arrow = toggleBtn.querySelector('.toggle-arrow');
+            if (arrow) {
+                arrow.style.transform = expanded ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
         });
-    });
-</script>
-<script>
-    $(document).ready(function() {
-        // Function to update URL parameters and reload page
+        // Auto-collapse on desktop
+        function handleResize() {
+            if (window.innerWidth > 768) {
+                panel.classList.add('expanded');
+                toggleBtn.classList.add('expanded');
+            } else {
+                panel.classList.remove('expanded');
+                toggleBtn.classList.remove('expanded');
+            }
+        }
+        window.addEventListener('resize', handleResize);
+        handleResize();
+    }
+    setupCollapsible('toggleFilters', 'filtersPanel');
+    setupCollapsible('toggleSubcategories', 'subcategoriesPanel');
+
+    // Horizontal filter form handling (unchanged)
+    const filterForm = document.getElementById('filter-form');
+    if (filterForm) {
         function updateUrlAndReload() {
             const currentUrl = new URL(window.location.href);
             const params = new URLSearchParams(currentUrl.search);
-
-            // Clear existing filter parameters to avoid duplication
-            params.delete('fit_type');
-            params.delete('brand');
-            params.delete('color');
-            params.delete('size');
-            params.delete('min_price');
-            params.delete('max_price');
-            params.delete('sort');
-            params.delete('is_best_seller');
-            params.delete('is_new_arrival');
-            params.delete('is_on_sale');
-            params.delete('page'); // Reset page on filter change
-
-            // Add selected filters from checkboxes and select
-            $('#filter-form').find('input[type="checkbox"]:checked, select').each(function() {
-                const name = $(this).attr('name');
-                const value = $(this).val();
+            ['fit_type', 'brand', 'color', 'size', 'min_price', 'max_price', 'sort', 'is_best_seller', 'is_new_arrival', 'is_on_sale', 'page'].forEach(param => {
+                params.delete(param);
+            });
+            filterForm.querySelectorAll('select').forEach(select => {
+                const name = select.getAttribute('name');
+                const value = select.value;
                 if (name && value) {
-                    params.append(name, value);
+                    params.set(name, value);
                 }
             });
-
-            // Add price range inputs
-            const minPrice = $('input[name="min_price"]').val();
-            const maxPrice = $('input[name="max_price"]').val();
+            const minPrice = filterForm.querySelector('input[name="min_price"]').value;
+            const maxPrice = filterForm.querySelector('input[name="max_price"]').value;
             if (minPrice) params.set('min_price', minPrice);
             if (maxPrice) params.set('max_price', maxPrice);
-
-            // Reconstruct the URL
+            filterForm.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                const name = checkbox.getAttribute('name');
+                if (name) {
+                    params.set(name, 'true');
+                }
+            });
             currentUrl.search = params.toString();
             window.location.href = currentUrl.toString();
         }
-
-        // Event listeners for filter changes
-        $('#filter-form input[type="checkbox"], #filter-form select').on('change', function() {
-            updateUrlAndReload();
+        filterForm.querySelectorAll('select, input[type="number"]').forEach(input => {
+            input.addEventListener('change', updateUrlAndReload);
         });
-
-        // Event listener for price range apply button
-        $('#filter-form button[type="submit"]').on('click', function(e) {
-            e.preventDefault(); // Prevent default form submission
-            updateUrlAndReload();
+        filterForm.querySelectorAll('.filter-flag-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('active');
+                updateUrlAndReload();
+            });
         });
+        const clearBtn = document.getElementById('clearFiltersBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const currentUrl = new URL(window.location.href);
+                const categorySlug = filterForm.querySelector('input[name="category_slug"]').value;
+                const subcategorySlug = filterForm.querySelector('input[name="subcategory_slug"]').value;
+                let newUrl = currentUrl.origin + currentUrl.pathname;
+                if (categorySlug || subcategorySlug) {
+                    newUrl += currentUrl.search.split('?')[0];
+                }
+                window.location.href = newUrl;
+            });
+        }
+    }
 
-        // Note: Category and Subcategory links already trigger full page reloads
-        // which will apply the filters via Django's view logic.
-    });
+    // View toggle handlers and mobile filter opener
+    const viewGridBtn = document.querySelector('.view-grid');
+    const viewListBtn = document.querySelector('.view-list');
+    const productsGrid = document.getElementById('product-list-container');
+    if (viewGridBtn && viewListBtn && productsGrid) {
+        viewGridBtn.addEventListener('click', function() {
+            viewGridBtn.classList.add('active');
+            viewGridBtn.setAttribute('aria-pressed', 'true');
+            viewListBtn.classList.remove('active');
+            viewListBtn.setAttribute('aria-pressed', 'false');
+            productsGrid.classList.remove('list-view');
+            productsGrid.classList.add('grid-view');
+        });
+        viewListBtn.addEventListener('click', function() {
+            viewListBtn.classList.add('active');
+            viewListBtn.setAttribute('aria-pressed', 'true');
+            viewGridBtn.classList.remove('active');
+            viewGridBtn.setAttribute('aria-pressed', 'false');
+            productsGrid.classList.remove('grid-view');
+            productsGrid.classList.add('list-view');
+        });
+    }
+
+    const openFiltersMobile = document.getElementById('openFiltersMobile');
+    const filtersPanel = document.getElementById('filtersPanel');
+    if (openFiltersMobile && filtersPanel) {
+        openFiltersMobile.addEventListener('click', function() {
+            // ensure filters panel is expanded on mobile
+            filtersPanel.classList.add('expanded');
+            const toggle = document.getElementById('toggleFilters');
+            if (toggle) toggle.classList.add('expanded');
+            const arrow = toggle ? toggle.querySelector('.toggle-arrow') : null;
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+            // focus first input inside filters
+            const firstInput = filtersPanel.querySelector('select, input');
+            if (firstInput) firstInput.focus();
+        });
+    }
+});
 </script>
-
-{% endblock js  %}
+{% endblock js %}

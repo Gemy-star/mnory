@@ -11,7 +11,7 @@ Usage:
 {% endcomment %}
 
 {% if ads %}
-<section class="ads-carousel-section section pt-4" data-placement="{{ placement|default:'home' }}">
+<section class="ads-carousel-section" data-placement="{{ placement|default:'home' }}">
     <div class="container">
         <div class="ads-carousel swiper" id="{{ carousel_id|default:'ads-carousel' }}">
             <div class="swiper-wrapper">
@@ -33,8 +33,7 @@ Usage:
                         <img src="{{ ad.image.url }}"
                              alt="{% if LANGUAGE_CODE == 'ar' and ad.title_ar %}{{ ad.title_ar }}{% else %}{{ ad.title }}{% endif %}"
                              class="ad-image img-fluid w-100"
-                             loading="lazy"
-                             style="object-fit: cover; border-radius: 8px; max-height: 500px;">
+                             loading="lazy">
 
                         {% comment %} Optional overlay with title and description {% endcomment %}
                         {% if ad.title or ad.description %}
@@ -71,10 +70,8 @@ Usage:
                 {% endfor %}
             </div>
 
-            {% comment %} Swiper controls {% endcomment %}
+            {% comment %} Swiper pagination only (no arrows) {% endcomment %}
             <div class="swiper-pagination"></div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
         </div>
     </div>
 </section>
@@ -94,10 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
             el: '#{{ carousel_id|default:"ads-carousel" }} .swiper-pagination',
             clickable: true,
             dynamicBullets: true
-        },
-        navigation: {
-            nextEl: '#{{ carousel_id|default:"ads-carousel" }} .swiper-button-next',
-            prevEl: '#{{ carousel_id|default:"ads-carousel" }} .swiper-button-prev',
         },
         effect: 'fade',
         fadeEffect: {

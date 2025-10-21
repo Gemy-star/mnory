@@ -3,13 +3,13 @@
 {% load mathfilters %}
 {% load dict_filters %}
 
-<!-- Product card styles moved to style.css -->
+<!-- Enhanced Product Card Template -->
 
-<div class="product-card text-center"
-     data-product-id="{{ product.pk }}"
-     data-product-variant-id="{% if product.variants.first %}{{ product.variants.first.pk }}{% endif %}">
+<div class="product-card fixed-card-height"
+    data-product-id="{{ product.pk }}"
+    data-product-variant-id="{% if product.variants.first %}{{ product.variants.first.pk }}{% endif %}">
     {% with main_image=product.get_main_image hover_image=product.get_hover_image %}
-    <div class="position-relative product-image-wrapper">
+    <div class="product-image-wrapper">
         <!-- Product Badges - Optimized for better visibility -->
         <div class="product-badges">
             {% if not product.is_in_stock %}
@@ -44,142 +44,209 @@
             {% endif %}
         </div>
 
+        <!-- Stock Indicator -->
+        {% if product.is_in_stock %}
+            {% if product.stock_quantity %}
+                {% if product.stock_quantity <= 5 %}
+                <div class="stock-indicator low-stock">
+                    <span class="material-icons">inventory_2</span>
+                    <span>{% trans "Only" %} {{ product.stock_quantity }} {% trans "left" %}</span>
+                </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+
         <a href="{{ product.get_absolute_url }}" class="product-link">
             {% if main_image %}
                 <img src="{{ main_image.image_resized.url }}"
                      alt="{{ product.name }}"
                      loading="lazy"
-                     class="product-img">
+                     class="product-img main-img">
                 <img src="{% if hover_image %}{{ hover_image.image_resized.url }}{% else %}{{ main_image.image_resized.url }}{% endif %}"
-                     alt="{{ product.name }}"
+                     alt="{{ product.name }} - {% trans 'Alternate view' %}"
                      loading="lazy"
-                     class="product-img hover-switch-img">
+                     class="product-img hover-img">
             {% else %}
-                <img src="{% static 'shop/images/no_image.png' %}"
+                <img src="https://placehold.co/400x400/e0e0e0/555555?text=No+Image"
                      alt="{% trans 'No Image' %}"
                      loading="lazy"
-                     class="product-img">
+                     class="product-img main-img">
             {% endif %}
         </a>
-        <div class="product-icons">
+
+        <!-- Quick Action Buttons -->
+        <div class="product-quick-actions">
              <button type="button"
-                class="wishlist-btn btn-icon-action {% if product.id in products_in_wishlist_ids %}active{% endif %}"
+                class="action-btn wishlist-btn {% if product.id in products_in_wishlist_ids %}active{% endif %}"
                 data-action="wishlist-toggle"
                 data-product-id="{{ product.id }}"
-                title="{% if product.id in products_in_wishlist_ids %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
-                <i class="{% if product.id in products_in_wishlist_ids %}fas fa-heart{% else %}far fa-heart{% endif %}"></i>
+                title="{% if product.id in products_in_wishlist_ids %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
+                aria-label="{% if product.id in products_in_wishlist_ids %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
+                <span class="material-icons">{% if product.id in products_in_wishlist_ids %}favorite{% else %}favorite_border{% endif %}</span>
             </button>
 
-            {# Cart button - use data-action for event delegation #}
             <button type="button"
-               class="cart-btn btn-icon-action"
+               class="action-btn cart-btn"
                data-action="cart-add"
                data-product-id="{{ product.id }}"
-               title="{% trans 'Add to Cart' %}">
-               <i class="fas fa-shopping-cart"></i>
+               title="{% trans 'Add to Cart' %}"
+               aria-label="{% trans 'Add to Cart' %}">
+               <span class="material-icons">shopping_cart</span>
             </button>
+
+            <a href="{{ product.get_absolute_url }}"
+               class="action-btn view-btn"
+               title="{% trans 'Quick View' %}"
+               aria-label="{% trans 'Quick View' %}">
+               <span class="material-icons">visibility</span>
+            </a>
         </div>
     </div>
     {% endwith %}
 
-    <div class="product-info mt-2">
-        <!-- Product Title and Meta -->
-        <div class="product-header">
-            <div class="product-name">
-                <a href="{{ product.get_absolute_url }}" class="product-title-link">
-                    {{ product.name }}
-                </a>
-            </div>
+    <!-- Product Content -->
+    <div class="product-content">
+        <!-- Product Title -->
+        <h3 class="product-title">
+            <a href="{{ product.get_absolute_url }}" class="product-title-link">
+                {{ product.name }}
+            </a>
+        </h3>
 
-            <!-- Product Meta Info -->
-            <div class="product-meta-info">
-                {% if product.brand %}
-                    <span class="product-brand">{{ product.brand.name }}</span>
-                {% endif %}
-                {% if product.category %}
-                    <span class="product-category">{{ product.category.name }}</span>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Product Details Container -->
-        <div class="product-details-container">
-
-        <!-- Price Area -->
-        <div class="price-area">
-            {% if product.is_on_sale %}
-                <div class="price-group">
-                    <span class="sale-price">
-                        {% if currency == 'EGP' %}
-                            {{ product.price_egp|floatformat:2 }} EGP
-                        {% else %}
-                            {{ product.price_usd|floatformat:2 }} USD
-                        {% endif %}
-                    </span>
-                    <span class="original-price">
-                        {% if currency == 'EGP' %}
-                            {{ product.price_egp_no_sale|floatformat:2 }} EGP
-                        {% else %}
-                            {{ product.price_usd_no_sale|floatformat:2 }} USD
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="savings-badge">
-                    {% trans "Save" %} {{ product.get_discount_percentage }}%
-                </div>
-            {% else %}
-                <span class="regular-price">
-                    {% if currency == 'EGP' %}
-                        {{ product.price_egp_no_sale|floatformat:2 }} EGP
-                    {% else %}
-                        {{ product.price_usd_no_sale|floatformat:2 }} USD
-                    {% endif %}
+        <!-- Available Colors -->
+            {% with colors=product.get_available_colors %}
+            {% if colors %}
+            <div class="product-colors-preview">
+                <span class="colors-label">
+                    <span class="material-icons">palette</span>
+                    {% trans "Colors" %}:
                 </span>
+                <div class="color-swatches">
+                    {% for color in colors|slice:":5" %}
+                    <span class="color-dot"
+                          style="background-color: {{ color.hex_code }};"
+                          title="{{ color.name }}"></span>
+                    {% endfor %}
+                    {% if colors|length > 5 %}
+                    <span class="more-colors">+{{ colors|length|add:"-5" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="product-colors-preview">
+                <span class="colors-label">
+                    <span class="material-icons">palette</span>
+                    {% trans "Colors" %}:
+                </span>
+                <span class="text-muted">{% trans "Not specified" %}</span>
+            </div>
             {% endif %}
-        </div>
+            {% endwith %}
 
-        <!-- Product Rating (if available) -->
+        <!-- Available Sizes -->
+            {% with sizes=product.get_available_sizes %}
+            {% if sizes %}
+            <div class="product-sizes-preview">
+                <span class="sizes-label">
+                    <span class="material-icons">straighten</span>
+                    {% trans "Sizes" %}:
+                </span>
+                <div class="size-tags">
+                    {% for size in sizes|slice:":4" %}
+                    <span class="size-tag">{{ size.name }}</span>
+                    {% endfor %}
+                    {% if sizes|length > 4 %}
+                    <span class="more-sizes">+{{ sizes|length|add:"-4" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="product-sizes-preview">
+                <span class="sizes-label">
+                    <span class="material-icons">straighten</span>
+                    {% trans "Sizes" %}:
+                </span>
+                <span class="text-muted">{% trans "Not specified" %}</span>
+            </div>
+            {% endif %}
+            {% endwith %}
+
+        <!-- Product Rating -->
         {% if product.average_rating %}
         <div class="product-rating">
             <div class="stars">
                 {% for i in "12345" %}
                     {% if forloop.counter <= product.average_rating %}
-                        <i class="fas fa-star"></i>
+                        <span class="material-icons star filled">star</span>
                     {% else %}
-                        <i class="far fa-star"></i>
+                        <span class="material-icons star">star_border</span>
                     {% endif %}
                 {% endfor %}
             </div>
+            <span class="rating-text">{{ product.average_rating|floatformat:1 }}</span>
             <span class="rating-count">({{ product.review_count|default:"0" }})</span>
         </div>
         {% endif %}
 
-        <!-- Quick View Button -->
-        <div class="quick-actions">
-            <a href="{{ product.get_absolute_url }}" class="btn-quick-view">
-                <i class="fas fa-eye"></i>
-                <span>{% trans "Quick View" %}</span>
-            </a>
-        </div>
-        </div> <!-- End product-details-container -->
-
-        <!-- Vendor Footer -->
-        {% if product.vendor %}
-        <div class="card-footer card-footer-vendor">
-            <div class="vendor-info">
-                <span class="vendor-name">{{ product.vendor.vendorprofile.store_name }}</span>
-                <span class="vendor-rating"><i class="fa-solid fa-star"></i></span>
-            </div>
-            {% if product.vendor.vendorprofile.slug %}
-            <a href="{% url 'shop:vendor_detail' slug=product.vendor.vendorprofile.slug %}"
-               class="btn btn-light btn-sm rounded-pill ms-2 btn-view-vendor"
-               title="{% trans 'View Vendor Profile' %}">
-               <i class="fa-solid fa-store"></i> {% trans 'View Profile' %}
-            </a>
+        <!-- Price Section -->
+        <div class="product-price-wrapper">
+            {% if product.is_on_sale %}
+                <div class="price-group">
+                    <span class="current-price sale">
+                        {% if currency == 'EGP' %}
+                            {{ product.price_egp|floatformat:2 }} <span class="currency">EGP</span>
+                        {% else %}
+                            ${{ product.price_usd|floatformat:2 }}
+                        {% endif %}
+                    </span>
+                    <span class="old-price">
+                        {% if currency == 'EGP' %}
+                            {{ product.price_egp_no_sale|floatformat:2 }}
+                        {% else %}
+                            ${{ product.price_usd_no_sale|floatformat:2 }}
+                        {% endif %}
+                    </span>
+                </div>
+                <span class="discount-badge">
+                    -{{ product.get_discount_percentage }}%
+                </span>
+            {% else %}
+                <span class="current-price">
+                    {% if currency == 'EGP' %}
+                        {{ product.price_egp_no_sale|floatformat:2 }} <span class="currency">EGP</span>
+                    {% else %}
+                        ${{ product.price_usd_no_sale|floatformat:2 }}
+                    {% endif %}
+                </span>
             {% endif %}
         </div>
-        {% endif %}
 
+        <!-- Availability Status -->
+        <div class="availability-status">
+            {% if product.is_in_stock %}
+                <span class="status in-stock">
+                    <span class="material-icons">check_circle</span>
+                    {% trans "In Stock" %}
+                </span>
+            {% else %}
+                <span class="status out-of-stock">
+                    <span class="material-icons">cancel</span>
+                    {% trans "Out of Stock" %}
+                </span>
+            {% endif %}
+        </div>
+
+        <!-- Vendor Info -->
+            <div class="vendor-info-compact">
+                <span class="material-icons">store</span>
+                {% if product.vendor and product.vendor.vendorprofile.store_name %}
+                <span class="vendor-name">{{ product.vendor.vendorprofile.store_name|truncatewords:3 }}</span>
+                {% else %}
+                <span class="vendor-name text-muted">{% trans "Not specified" %}</span>
+                {% endif %}
+            </div>
     </div>
+
+    <!-- Toast Container -->
     <div class="local-toast-container"></div>
 </div>

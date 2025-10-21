@@ -18,35 +18,80 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         return cookieMatch ? cookieMatch[1] : '';
     }
 
+    function getLangPrefix() {
+        return window.location.pathname.split('/')[1] || 'en';
+    }
+
+    function isArabic() {
+        return getLangPrefix() === 'ar';
+    }
+
+    // Bilingual messages
+    const messages = {
+        addedToCart: { ar: 'تمت إضافة المنتج إلى السلة', en: 'Added to cart successfully!' },
+        failedToAddCart: { ar: 'فشل إضافة المنتج إلى السلة', en: 'Failed to add to cart' },
+        wishlistUpdated: { ar: 'تم تحديث قائمة الأمنيات', en: 'Wishlist updated successfully!' },
+        wishlistFailed: { ar: 'فشل تحديث قائمة الأمنيات', en: 'Failed to update wishlist' },
+        connectionError: { ar: 'حدث خطأ في الاتصال. حاول مرة أخرى.', en: 'Connection error. Please try again.' },
+        removedFromCart: { ar: 'تمت إزالة المنتج من السلة', en: 'Removed from cart successfully' },
+        removeCartFailed: { ar: 'فشل إزالة المنتج', en: 'Failed to remove from cart' },
+        confirmRemove: { ar: 'هل أنت متأكد من حذف هذا المنتج من السلة؟', en: 'Are you sure you want to remove this item from cart?' },
+        selectColorSize: { ar: 'الرجاء اختيار اللون والحجم أولاً', en: 'Please select color and size first' },
+        errorOccurred: { ar: 'حدث خطأ. حاول مرة أخرى.', en: 'An error occurred. Please try again.' }
+    };
+
+    function getMessage(key) {
+        const lang = isArabic() ? 'ar' : 'en';
+        return messages[key] ? messages[key][lang] : key;
+    }
+
+    // Expose getMessage globally for use in other scripts
+    window.getCartMessage = getMessage;
+
     function showNotification(message, type = 'info') {
         document.querySelectorAll('.cart-notification').forEach(n => n.remove());
         const notification = document.createElement('div');
         notification.className = `cart-notification notification-${type}`;
-        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle', warning: 'fa-exclamation-triangle' };
         notification.innerHTML = `<div class="notification-content"><i class="fas ${icons[type]}"></i><span>${message}</span></div>`;
         document.body.appendChild(notification);
         requestAnimationFrame(() => notification.classList.add('show'));
         setTimeout(() => { notification.classList.remove('show'); setTimeout(() => notification.remove(), 300); }, 3000);
     }
 
+    // Expose showNotification globally for use in other scripts
+    window.showNotification = showNotification;
+
     // ========================================
     // CART FUNCTIONS
     // ========================================
-    window.addToCart = function(productId, button = null) {
+    window.addToCart = function(productId, options = {}) {
         if (!productId) return console.error('Product ID is required');
+
+        const button = options.button || null;
+        const quantity = options.quantity || 1;
+        const colorId = options.colorId || options.color_id || null;
+        const sizeId = options.sizeId || options.size_id || null;
+
         if (button) {
             button.disabled = true;
             button.classList.add('loading');
-            const icon = button.querySelector('i');
-            if (icon) icon.className = 'fas fa-spinner fa-spin';
+            const icon = button.querySelector('i') || button.querySelector('.material-icons');
+            if (icon) {
+                icon.className = 'material-icons';
+                icon.textContent = 'hourglass_empty';
+            }
         }
+
         const formData = new FormData();
         formData.append('product_id', productId);
-        formData.append('quantity', 1);
+        formData.append('quantity', quantity);
+        if (colorId) formData.append('color_id', colorId);
+        if (sizeId) formData.append('size_id', sizeId);
         formData.append('csrfmiddlewaretoken', getCSRFToken());
 
         // Get the current language prefix from the URL
-        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        const langPrefix = window.location.pathname.split('/')[1] || 'en';
         fetch(`/${langPrefix}/api/add-to-cart/`, {
             method: 'POST',
             body: formData,
@@ -56,44 +101,56 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
         .then(data => {
             if (data.success) {
-                showNotification(data.message || 'تمت إضافة المنتج إلى السلة', 'success');
+                showNotification(data.message || getMessage('addedToCart'), 'success');
                 updateAllCounts();
                 if (button) {
                     button.classList.add('active');
-                    const icon = button.querySelector('i');
-                    if (icon) icon.className = 'fas fa-check';
+                    const icon = button.querySelector('i') || button.querySelector('.material-icons');
+                    if (icon) {
+                        icon.className = 'material-icons';
+                        icon.textContent = 'check_circle';
+                    }
                     button.style.animation = 'cartBounce 0.6s ease-in-out';
                     setTimeout(() => {
-                        if (icon) icon.className = 'fas fa-shopping-cart';
+                        if (icon) {
+                            icon.className = 'material-icons';
+                            icon.textContent = 'shopping_cart';
+                        }
                         button.style.animation = '';
                         button.classList.remove('loading');
                         button.disabled = false;
                     }, 1500);
                 }
             } else {
-                showNotification(data.message || 'حدث خطأ أثناء الإضافة', 'error');
+                showNotification(data.message || getMessage('failedToAddCart'), 'error');
                 if (button) {
                     button.disabled = false;
                     button.classList.remove('loading');
-                    const icon = button.querySelector('i');
-                    if (icon) icon.className = 'fas fa-shopping-cart';
+                    const icon = button.querySelector('i') || button.querySelector('.material-icons');
+                    if (icon) {
+                        icon.className = 'material-icons';
+                        icon.textContent = 'shopping_cart';
+                    }
                 }
             }
         })
         .catch(error => {
             console.error('Cart Error:', error);
-            showNotification('حدث خطأ في الاتصال', 'error');
+            showNotification(getMessage('connectionError'), 'error');
             if (button) {
                 button.disabled = false;
                 button.classList.remove('loading');
-                const icon = button.querySelector('i');
-                if (icon) icon.className = 'fas fa-shopping-cart';
+                const icon = button.querySelector('i') || button.querySelector('.material-icons');
+                if (icon) {
+                    icon.className = 'material-icons';
+                    icon.textContent = 'shopping_cart';
+                }
             }
         });
     };
 
     window.removeFromCart = function(itemId) {
-        if (!confirm('هل أنت متأكد من حذف هذا المنتج من السلة؟')) return;
+        if (!confirm(getMessage('confirmRemove'))) return;
         // Get the current language prefix from the URL
         const langPrefix = window.location.pathname.split('/')[1] || 'ar';
         fetch(`/${langPrefix}/cart/remove/`, {
@@ -119,14 +176,14 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
                     }, 300);
                 }
                 updateAllCounts();
-                showNotification(data.message || 'تمت الإزالة من السلة', 'success');
+                showNotification(data.message || getMessage('removedFromCart'), 'success');
             } else {
-                showNotification(data.message || 'حدث خطأ', 'error');
+                showNotification(data.message || getMessage('removeCartFailed'), 'error');
             }
         })
         .catch(e => {
             console.error('Remove cart error:', e);
-            showNotification('حدث خطأ في الاتصال', 'error');
+            showNotification(getMessage('connectionError'), 'error');
         });
     };
 
@@ -151,46 +208,56 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
         .then(data => {
             if (data.success) {
-                showNotification(data.message || 'تم التحديث بنجاح', 'success');
+                showNotification(data.message || getMessage('wishlistUpdated'), 'success');
                 updateAllCounts();
                 if (button) {
-                    const icon = button.querySelector('i');
+                    const icon = button.querySelector('i') || button.querySelector('.material-icons');
                     const card = button.closest('.product-card');
                     const isWishlistPage = card && card.dataset.context === 'wishlist';
 
                     if (data.in_wishlist || data.added) {
                         button.classList.add('active');
+                        button.setAttribute('aria-pressed', 'true');
                         if (icon) {
-                            icon.classList.remove('far');
-                            icon.classList.add('fas');
-                            icon.style.animation='heartBeat 0.5s ease';
-                            setTimeout(()=>{icon.style.animation='';},500);
+                            if (icon.classList.contains('material-icons')) {
+                                icon.textContent = 'favorite';
+                            } else {
+                                icon.classList.remove('far', 'fa-heart');
+                                icon.classList.add('fas', 'fa-heart');
+                            }
+                            icon.style.animation = 'heartBeat 0.5s ease';
+                            setTimeout(() => { icon.style.animation = ''; }, 500);
                         }
                     } else {
                         if (isWishlistPage) {
                             card.classList.add('removing');
-                            setTimeout(()=>{
+                            setTimeout(() => {
                                 card.remove();
-                                if(!document.querySelectorAll('.product-card[data-context="wishlist"]').length)
-                                    setTimeout(()=>location.reload(),500);
-                            },300);
+                                if (!document.querySelectorAll('.product-card[data-context="wishlist"]').length)
+                                    setTimeout(() => location.reload(), 500);
+                            }, 300);
                         } else {
                             button.classList.remove('active');
-                            if(icon){
-                                icon.classList.remove('fas');
-                                icon.classList.add('far');
+                            button.setAttribute('aria-pressed', 'false');
+                            if (icon) {
+                                if (icon.classList.contains('material-icons')) {
+                                    icon.textContent = 'favorite_border';
+                                } else {
+                                    icon.classList.remove('fas', 'fa-heart');
+                                    icon.classList.add('far', 'fa-heart');
+                                }
                             }
                         }
                     }
                 }
             } else {
-                showNotification(data.message || 'حدث خطأ', 'error');
+                showNotification(data.message || getMessage('wishlistFailed'), 'error');
             }
             if (button && !button.closest('.product-card.removing')) button.disabled = false;
         })
         .catch(e => {
             console.error('Wishlist Error:', e);
-            showNotification('حدث خطأ في الاتصال', 'error');
+            showNotification(getMessage('connectionError'), 'error');
             if(button) button.disabled=false;
         });
     };

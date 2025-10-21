@@ -9,44 +9,76 @@
 {% endblock %}
 
 {% block content %}
-<main class="container-fluid my-5">
+<main class="product-detail-main">
     <!-- Breadcrumb Navigation -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}">{% trans "Home" %}</a></li>
-            <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
-        </ol>
-    </nav>
+    <div class="container">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav" data-aos="fade-down" data-aos-delay="50">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}">
+                        <span class="material-icons">home</span>
+                        {% trans "Home" %}
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+            </ol>
+        </nav>
+    </div>
 
     <!-- Main Product Section -->
-    <section class="product-detail-section">
-        <div class="product-detail-container">
-            <div class="row g-5 align-items-start">
-                <!-- Product Images Section -->
-                <div class="col-lg-6">
-                    <div class="product-gallery-container">
-                    <div class="product-gallery-container">
-                        <!-- Main Product Image Swiper -->
-                        <div class="product-images-wrapper">
-                            <div class="swiper product-detail-swiper mb-3">
+    <article class="product-detail-section" itemscope itemtype="https://schema.org/Product">
+        <!-- Structured Data for SEO -->
+        <meta itemprop="name" content="{{ product.name }}">
+        <meta itemprop="description" content="{{ product.description|striptags|truncatewords:30 }}">
+        <meta itemprop="sku" content="{{ product.id }}">
+        {% if product.brand %}
+        <meta itemprop="brand" content="{{ product.brand.name }}">
+        {% endif %}
+        <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <meta itemprop="url" content="{{ request.build_absolute_uri }}">
+            <meta itemprop="priceCurrency" content="{% if currency == 'EGP' %}EGP{% else %}USD{% endif %}">
+            <meta itemprop="price" content="{% if currency == 'EGP' %}{{ product.price_egp_no_sale }}{% else %}{{ product.price_usd_no_sale }}{% endif %}">
+            <meta itemprop="availability" content="{% if product.is_in_stock %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}">
+            <meta itemprop="itemCondition" content="https://schema.org/NewCondition">
+        </div>
+
+        <!-- Product Content - Side by Side Layout -->
+        <div class="product-content-wrapper">
+            <div class="container-fluid">
+                <div class="row g-4 align-items-stretch">
+                    <!-- Left Column: Product Images Swiper -->
+                    <div class="col-lg-5 col-xl-5" data-aos="fade-right" data-aos-delay="100">
+                        <div class="product-gallery-container">
+                            <!-- Main Product Image Swiper -->
+                            <div class="product-images-wrapper">
+                                <div class="swiper product-detail-swiper">
                                 <div class="swiper-wrapper">
                                     {% for image in product_images %}
                                     <div class="swiper-slide">
                                         <div class="swiper-zoom-container">
-                                            <img src="{{ image.thumb_resized.url }}"
-                                                 loading="lazy"
-                                                 alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}"
-                                                 class="product-detail-img">
+                                    <img src="{{ image.image_resized.url }}"
+                                        {% if forloop.first %}itemprop="image"{% endif %}
+                                        loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                                        alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %} {{ forloop.counter }}{% endif %}"
+                                        class="product-detail-img"
+                                        width="600"
+                                        height="600"
+                                        style="cursor: zoom-in;">
                                         </div>
                                     </div>
                                     {% empty %}
                                     <div class="swiper-slide">
                                         <div class="swiper-zoom-container">
-                                            <img loading="lazy"
-                                                 src="https://placehold.co/600x500/e0e0e0/555555?text=No+Image"
-                                                 alt="{% trans 'No image available' %}"
-                                                 class="product-detail-img">
+                                    <img loading="eager"
+                                        src="https://placehold.co/600x600/e0e0e0/555555?text=No+Image"
+                                        alt="{% trans 'No image available' %}"
+                                        class="product-detail-img"
+                                        width="600"
+                                        height="600"
+                                        style="cursor: zoom-in;">
                                         </div>
                                     </div>
                                     {% endfor %}
@@ -54,32 +86,43 @@
                                 <div class="swiper-pagination"></div>
                                 <div class="swiper-button-next"></div>
                                 <div class="swiper-button-prev"></div>
+                                <!-- Zoom indicator -->
+                                <div class="zoom-indicator">
+                                    <span class="material-icons">zoom_in</span>
+                                    <span class="zoom-text">{% trans "Click to zoom" %}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Thumbnail Images -->
-                        <div class="product-thumbnails-wrapper">
-                            <div class="swiper product-detail-thumbs">
-                                <div class="swiper-wrapper">
-                                    {% for image in product_images %}
-                                    <div class="swiper-slide">
-                                        <img src="{{ image.thumb_resized.url }}"
-                                             alt="{% trans "Thumbnail of" %} {{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}"
-                                             class="product-thumbnail-img">
+                            <!-- Thumbnail Images -->
+                            <div class="product-thumbnails-wrapper">
+                                <div class="swiper product-detail-thumbs">
+                                    <div class="swiper-wrapper">
+                                        {% for image in product_images %}
+                                        <div class="swiper-slide">
+                                            <img src="{{ image.thumb_resized.url }}"
+                                                 alt="{% trans "Thumbnail of" %} {{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans "Image" %}{% endif %}"
+                                                 class="product-thumbnail-img"
+                                                 loading="lazy">
+                                        </div>
+                                        {% empty %}
+                                        <div class="swiper-slide">
+                                            <img src="https://placehold.co/80x80/e0e0e0/555555?text=No+Image"
+                                                 alt="{% trans 'No thumbnail available' %}"
+                                                 class="product-thumbnail-img">
+                                        </div>
+                                        {% endfor %}
                                     </div>
-                                    {% endfor %}
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Product Information Section -->
-                <div class="col-lg-6">
-                    <div class="product-info-section">
-                    <div class="product-info-section">
+                    <!-- Right Column: Product Information -->
+                    <div class="col-lg-7 col-xl-7" data-aos="fade-left" data-aos-delay="150">
+                        <div class="product-info-section">
                         <!-- Product Header -->
-                        <div class="product-header mb-4">
+                        <div class="product-header">
                             <h1 class="product-title">{{ product.name }}</h1>
                             {% if product.short_description %}
                             <p class="product-subtitle">{{ product.short_description }}</p>
@@ -87,36 +130,36 @@
                         </div>
 
                         <!-- Product Badges -->
-                        <div class="product-detail-badges mb-4">
+                        <div class="product-detail-badges">
                             {% if product.is_on_sale %}
-                                <span class="badge badge-sale">
-                                    <i class="fas fa-tag"></i>
+                                <span class="product-badge badge-sale">
+                                    <span class="material-icons">local_offer</span>
                                     {% trans "Sale" %} -{{ product.get_discount_percentage }}%
                                 </span>
                             {% endif %}
                             {% if product.is_new_arrival %}
-                                <span class="badge badge-new">
-                                    <i class="fas fa-sparkles"></i>
+                                <span class="product-badge badge-new">
+                                    <span class="material-icons">new_releases</span>
                                     {% trans "New" %}
                                 </span>
                             {% endif %}
                             {% if product.is_best_seller %}
-                                <span class="badge badge-bestseller">
-                                    <i class="fas fa-crown"></i>
+                                <span class="product-badge badge-bestseller">
+                                    <span class="material-icons">stars</span>
                                     {% trans "Best Seller" %}
                                 </span>
                             {% endif %}
                             {% if not product.is_in_stock %}
-                                <span class="badge badge-out-of-stock">
-                                    <i class="fas fa-times-circle"></i>
+                                <span class="product-badge badge-out-of-stock">
+                                    <span class="material-icons">cancel</span>
                                     {% trans "Out of Stock" %}
                                 </span>
                             {% endif %}
                         </div>
 
                         <!-- Price Section -->
-                        <div class="price-section mb-4">
-                            <div class="current-price" id="display-price">
+                        <div class="product-price-section">
+                            <div class="product-price-current" id="display-price">
                                 {% if currency == 'EGP' %}
                                     {{ product.price_egp_no_sale|floatformat:2 }} EGP
                                 {% else %}
@@ -124,141 +167,296 @@
                                 {% endif %}
                             </div>
                             {% if product.is_on_sale %}
-                            <div class="price-comparison">
-                                <span class="original-price">
+                            <div class="product-price-comparison">
+                                <span class="product-price-original">
                                     {% if currency == 'EGP' %}
                                         {{ product.price_egp|floatformat:2 }} EGP
                                     {% else %}
                                         {{ product.price_usd|floatformat:2 }} USD
                                     {% endif %}
                                 </span>
-                                <span class="savings-amount">
+                                <span class="product-price-savings">
                                     {% trans "You save" %} {{ product.get_discount_percentage }}%
                                 </span>
                             </div>
                             {% endif %}
                         </div>
 
-                        </div>
-
                         <!-- Product Meta Information -->
-                        <div class="product-meta mb-4">
-                        <p><strong>{% trans "Brand:" %}</strong>
-                            {% if product.brand %}
-                            <a href="{{ product.brand.get_absolute_url }}">{{ product.brand.name }}</a>
-                            {% else %}
-                            <span class="text-muted">{% trans "Not specified" %}</span>
-                            {% endif %}
-                        </p>
-                        <p><strong>{% trans "Vendor:" %}</strong>
-                            {% if product.vendor %}
-                            <a href="{{ product.vendor.get_absolute_url }}">{{ product.vendor.store_name }}</a>
-                            {% else %}
-                            <span class="text-muted">{% trans "Not specified" %}</span>
-                            {% endif %}
-                        </p>
-                        <p><strong>{% trans "Category:" %}</strong>
-                            <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
-                        </p>
-                        <p><strong>{% trans "Fit Type:" %}</strong>
-                            {% if product.fit_type %}
-                            <span>{{ product.fit_type.name }}</span>
-                            {% else %}
-                            <span class="text-muted">{% trans "Not specified" %}</span>
-                            {% endif %}
-                        </p>
-                        {% if product.is_in_stock %}
-                        <p class="text-success fw-bold">{% trans "Status: In Stock" %}</p>
-                        {% else %}
-                        <p class="text-danger fw-bold">{% trans "Status: Out of Stock" %}</p>
-                        {% endif %}
-                    </div>
-
-                    <p>{{ product.description|linebreaksbr }}</p>
-
-                    {% if available_colors %}
-                    <div class="mb-4">
-                        <h6>{% trans "Available Colors:" %}</h6>
-                        <div class="d-flex flex-wrap color-buttons gap-2">
-                            {% for color in available_colors %}
-                            <button type="button"
-                                class="btn btn-light border rounded-pill px-3 py-2 d-flex align-items-center shadow-sm color-select"
-                                data-color-id="{{ color.id }}"
-                                data-color-name="{{ color.name }}">
-                                <span style="display: inline-block; width: 16px; height: 16px; background-color: {{ color.hex_code }}; border: 1px solid var(--theme-border); border-radius: 50%; margin-right: 8px;"></span>
-                                {{ color.name }}
-                            </button>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if available_sizes %}
-                    <div class="mb-4">
-                        <h6>{% trans "Select Size:" %}</h6>
-                        <div class="size-buttons d-flex flex-wrap gap-2">
-                            </div>
-                    </div>
-                    <div class="row d-flex justify-content-start">
-                        <div class="mb-4 col-12 col-lg-4">
-                            <button class="btn btn-light border rounded-pill px-4 py-2 shadow-sm size-select"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#sizeChartCollapse"
-                                aria-expanded="false"
-                                id="size_btn"
-                                aria-controls="sizeChartCollapse">
-                                <i class="fa-solid fa-plus me-2"></i> {% trans "Size Chart" %}
-                            </button>
-                        </div>
-                        <div class="col-12 pt-2 pb-2 d-none" id="size_container">
-                            <div class="collapse mt-3" id="sizeChartCollapse">
-                                <div class="table-responsive">
-                                    {% if product.size_chart %}
-                                    {{ product.size_chart|safe }}
+                        <div class="product-meta-section">
+                            <div class="product-meta-item">
+                                <span class="material-icons">sell</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Brand:" %}</strong>
+                                    {% if product.brand %}
+                                    <a href="{{ product.brand.get_absolute_url }}" class="product-meta-link">{{ product.brand.name }}</a>
                                     {% else %}
-                                    <table class="table table-bordered align-middle text-center small mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>{% trans "Size" %}</th>
-                                                <th>{% trans "Chest/Bust (in)" %}</th>
-                                                <th>{% trans "Chest/Bust (cm)" %}</th>
-                                                <th>{% trans "Waist (in)" %}</th>
-                                                <th>{% trans "Waist (cm)" %}</th>
-                                                <th>{% trans "Hips (in)" %}</th>
-                                                <th>{% trans "Hips (cm)" %}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr><td>XS</td><td>32–34</td><td>81–86</td><td>26–27</td><td>66–69</td><td>33–34</td><td>84–86</td></tr>
-                                            <tr><td>S</td><td>35–37</td><td>89–94</td><td>28–29</td><td>71–74</td><td>35–37</td><td>89–94</td></tr>
-                                            <tr><td>M</td><td>38–40</td><td>97–102</td><td>30–32</td><td>76–81</td><td>38–40</td><td>97–102</td></tr>
-                                            <tr><td>L</td><td>41–43</td><td>104–109</td><td>33–35</td><td>84–89</td><td>41–43</td><td>104–109</td></tr>
-                                            <tr><td>XL</td><td>44–46</td><td>112–117</td><td>36–38</td><td>91–97</td><td>44–46</td><td>112–117</td></tr>
-                                            <tr><td>XXL</td><td>47–49</td><td>119–124</td><td>39–41</td><td>99–104</td><td>47–49</td><td>119–124</td></tr>
-                                        </tbody>
-                                    </table>
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">store</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Vendor:" %}</strong>
+                                    {% if product.vendor %}
+                                    <a href="{{ product.vendor.get_absolute_url }}" class="product-meta-link">{{ product.vendor.store_name }}</a>
+                                    {% else %}
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">category</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Category:" %}</strong>
+                                    <a href="{{ product.category.get_absolute_url }}" class="product-meta-link">{{ product.category.name }}</a>
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">checkroom</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Fit Type:" %}</strong>
+                                    {% if product.fit_type %}
+                                    <span>{{ product.fit_type.name }}</span>
+                                    {% else %}
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">{% if product.is_in_stock %}inventory{% else %}remove_shopping_cart{% endif %}</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Status:" %}</strong>
+                                    {% if product.is_in_stock %}
+                                    <span class="product-status product-in-stock">{% trans "In Stock" %}</span>
+                                    {% else %}
+                                    <span class="product-status product-out-of-stock">{% trans "Out of Stock" %}</span>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-4 col-12 col-lg-6">
-                            <button class="btn btn-light border rounded-pill px-4 py-2 shadow-sm"
-                                type="button"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deliveryReturnModal">
-                                <i class="fa-solid fa-truck-fast me-2"></i> {% trans "Delivery & Return" %}
+
+                        <!-- Product Description -->
+                        <div class="product-description-wrapper">
+                            <h6 class="product-section-title">
+                                <span class="material-icons">description</span>
+                                {% trans "Product Description" %}
+                            </h6>
+                            <div class="product-description">
+                                {{ product.description|linebreaksbr }}
+                            </div>
+                        </div>
+
+                        <!-- Color Selection -->
+                        {% if product.get_available_colors %}
+                        <div class="product-option-section">
+                            <h6 class="product-option-title">
+                                <span class="material-icons">palette</span>
+                                {% trans "Select Color:" %}
+                            </h6>
+                            <div class="color-buttons" role="group" aria-label="{% trans 'Color selection' %}">
+                                {% for color in product.get_available_colors %}
+                                <button type="button"
+                                        class="color-select btn btn-light border"
+                                        data-color-id="{{ color.id }}"
+                                        data-color-name="{{ color.name }}"
+                                        aria-label="{% trans 'Select color' %} {{ color.name }}"
+                                        title="{{ color.name }}">
+                                    <span class="color-swatch"
+                                          style="background-color: {{ color.hex_code }};"
+                                          aria-hidden="true"></span>
+                                    <span class="color-name">{{ color.name }}</span>
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Size Selection -->
+                        <div class="product-option-section">
+                            <h6 class="product-option-title">
+                                <span class="material-icons text-white">straighten</span>
+                                {% trans "Select Size:" %}
+                            </h6>
+                            <div class="product-size-options size-buttons" role="group" aria-label="{% trans 'Size selection' %}"></div>
+                        </div>
+
+                        <!-- Quantity Selector -->
+                        <div class="product-quantity-section" data-aos="fade-up" data-aos-delay="250">
+                            <div class="quantity-header">
+                                <h6 class="product-option-title">
+                                    <span class="material-icons" aria-hidden="true">shopping_basket</span>
+                                    <span>{% trans "Quantity" %}</span>
+                                </h6>
+                                <div class="quantity-stock-info">
+                                    {% if product.is_in_stock %}
+                                    <span class="stock-available">
+                                        <span class="material-icons">check_circle</span>
+                                        <span>{% trans "In Stock" %}</span>
+                                    </span>
+                                    {% else %}
+                                    <span class="stock-unavailable">
+                                        <span class="material-icons">cancel</span>
+                                        <span>{% trans "Out of Stock" %}</span>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="product-quantity-selector">
+                                <button id="decrease-quantity"
+                                        class="product-qty-btn qty-decrease"
+                                        type="button"
+                                        aria-label="{% trans 'Decrease quantity' %}"
+                                        title="{% trans 'Decrease' %}">
+                                    <span class="material-icons" aria-hidden="true">remove</span>
+                                </button>
+                                <div class="quantity-display-wrapper">
+                                    <input type="number"
+                                           id="quantity-input"
+                                           class="product-qty-input"
+                                           value="1"
+                                           min="1"
+                                           max="99"
+                                           aria-label="{% trans 'Quantity' %}"
+                                           readonly>
+                                    <span id="quantity-display" class="product-qty-display">1</span>
+                                    <span class="quantity-label">{% trans "Items" %}</span>
+                                </div>
+                                <button id="increase-quantity"
+                                        class="product-qty-btn qty-increase"
+                                        type="button"
+                                        aria-label="{% trans 'Increase quantity' %}"
+                                        title="{% trans 'Increase' %}">
+                                    <span class="material-icons" aria-hidden="true">add</span>
+                                </button>
+                            </div>
+                            <div class="quantity-limits-info">
+                                <span class="material-icons">info</span>
+                                <span>{% trans "Min: 1 | Max: 99 items per order" %}</span>
+                            </div>
+                        </div>
+
+                        <!-- Primary Action Buttons -->
+                        <div class="product-actions-main" role="group" aria-label="{% trans 'Product actions' %}">
+                            <button class="product-btn product-btn-primary"
+                                    id="add-to-cart-btn"
+                                    {% if not product.is_in_stock %}disabled{% endif %}
+                                    title="{% trans 'Add to Cart' %}"
+                                    aria-label="{% trans 'Add to Cart' %}"
+                                    aria-describedby="{% if not product.is_in_stock %}out-of-stock-msg{% endif %}">
+                                <span class="material-icons" aria-hidden="true">shopping_cart</span>
+                                <span class="btn-text">{% trans "Add to Cart" %}</span>
+                                <span class="btn-loading" style="display:none;" aria-hidden="true">
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                </span>
+                            </button>
+
+                            <!-- Buy Now Form -->
+                            <form id="buy-now-form"
+                                  action="{% url 'shop:buy_now' %}"
+                                  method="post"
+                                  class="product-buy-form"
+                                  autocomplete="off">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="color_id" id="buy-now-color-id">
+                                <input type="hidden" name="size_id" id="buy-now-size-id">
+                                <input type="hidden" name="quantity" id="buy-now-quantity-input" value="1">
+                                <button type="submit"
+                                        class="product-btn product-btn-success"
+                                        title="{% trans 'Buy Now' %}"
+                                        aria-label="{% trans 'Buy Now - Quick checkout' %}"
+                                        {% if not product.is_in_stock %}disabled{% endif %}>
+                                    <span class="material-icons" aria-hidden="true">bolt</span>
+                                    <span class="btn-text">{% trans "Buy Now" %}</span>
+                                    <span id="buy-now-loading" class="btn-loading" style="display:none" aria-hidden="true">
+                                        <span class="spinner-border spinner-border-sm"></span>
+                                    </span>
+                                </button>
+                            </form>
+
+                            <!-- Wishlist Button -->
+                            <button class="product-btn product-btn-wishlist {% if is_in_wishlist %}active{% endif %}"
+                                    id="add-to-wishlist-btn"
+                                    data-product-id="{{ product.id }}"
+                                    title="{% if is_in_wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
+                                    aria-label="{% if is_in_wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
+                                    aria-pressed="{% if is_in_wishlist %}true{% else %}false{% endif %}">
+                                <span class="material-icons" aria-hidden="true">{% if is_in_wishlist %}favorite{% else %}favorite_border{% endif %}</span>
+                                <span class="btn-text">{% trans "Wishlist" %}</span>
                             </button>
                         </div>
-                    </div>
-                    <div class="modal fade" id="deliveryReturnModal" tabindex="-1" aria-labelledby="deliveryReturnModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deliveryReturnModalLabel">{% trans "Delivery & Return Policy" %}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                        <!-- Secondary Action Buttons -->
+                        <div class="product-actions-row" role="group" aria-label="{% trans 'Additional product information' %}">
+                            <button class="product-action-btn product-action-secondary"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#sizeChartCollapse"
+                                    aria-expanded="false"
+                                    aria-controls="sizeChartCollapse"
+                                    id="size_btn">
+                                <span class="material-icons" aria-hidden="true">straighten</span>
+                                <span>{% trans "Size Chart" %}</span>
+                            </button>
+                            <button class="product-action-btn product-action-secondary"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deliveryReturnModal"
+                                    aria-label="{% trans 'View delivery and return information' %}">
+                                <span class="material-icons" aria-hidden="true">local_shipping</span>
+                                <span>{% trans "Delivery & Return" %}</span>
+                            </button>
+                        </div>
+
+                        <!-- Size Chart Collapse -->
+                        <div class="product-collapse-container d-none" id="size_container">
+                            <div class="collapse" id="sizeChartCollapse">
+                                <div class="product-size-chart">
+                                    {% if product.size_chart %}
+                                    {{ product.size_chart|safe }}
+                                    {% else %}
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered align-middle text-center" role="table" aria-label="{% trans 'Size chart' %}">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">{% trans "Size" %}</th>
+                                                    <th scope="col">{% trans "Chest/Bust (in)" %}</th>
+                                                    <th scope="col">{% trans "Chest/Bust (cm)" %}</th>
+                                                    <th scope="col">{% trans "Waist (in)" %}</th>
+                                                    <th scope="col">{% trans "Waist (cm)" %}</th>
+                                                    <th scope="col">{% trans "Hips (in)" %}</th>
+                                                    <th scope="col">{% trans "Hips (cm)" %}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><th scope="row">XS</th><td>32–34</td><td>81–86</td><td>26–27</td><td>66–69</td><td>33–34</td><td>84–86</td></tr>
+                                                <tr><th scope="row">S</th><td>35–37</td><td>89–94</td><td>28–29</td><td>71–74</td><td>35–37</td><td>89–94</td></tr>
+                                                <tr><th scope="row">M</th><td>38–40</td><td>97–102</td><td>30–32</td><td>76–81</td><td>38–40</td><td>97–102</td></tr>
+                                                <tr><th scope="row">L</th><td>41–43</td><td>104–109</td><td>33–35</td><td>84–89</td><td>41–43</td><td>104–109</td></tr>
+                                                <tr><th scope="row">XL</th><td>44–46</td><td>112–117</td><td>36–38</td><td>91–97</td><td>44–46</td><td>112–117</td></tr>
+                                                <tr><th scope="row">XXL</th><td>47–49</td><td>119–124</td><td>39–41</td><td>99–104</td><td>47–49</td><td>119–124</td></tr>
+                                            </tbody>
+                                        </table>
+                                    {% endif %}
+                                    </div>
                                 </div>
-                                <div class="modal-body">
+                            </div>
+                        </div>
+
+                        <!-- Delivery & Return Modal -->
+                        <div class="modal fade" id="deliveryReturnModal" tabindex="-1" aria-labelledby="deliveryReturnModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deliveryReturnModalLabel">
+                                            <span class="material-icons" aria-hidden="true">local_shipping</span>
+                                            {% trans "Delivery & Return Policy" %}
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+                                    </div>
+                                    <div class="modal-body">
                                     {% if product.delivery_return %}
                                     {{ product.delivery_return|safe }}
                                     {% else %}
@@ -274,447 +472,123 @@
                                         <li>{% trans "Phone:" %} {{ config.WHATSAPP_NUMBER }}</li>
                                     </ul>
                                     {% endif %}
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    {% endif %}
 
-                    <div class="mb-3">
-                        <h6>{% trans "Quantity:" %}</h6>
-                        <div class="d-inline-flex align-items-center border rounded px-2">
-                            <button id="decrease-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
-                                <i class="fa-solid fa-minus"></i>
-                            </button>
-                            <span id="quantity-display" class="mx-2 fw-bold">1</span>
-                            <button id="increase-quantity" class="btn btn-outline-dark btn-sm px-2 py-1" type="button">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
+                        <!-- Share Section -->
+                        <div class="product-share-inline" role="region" aria-label="{% trans 'Share product' %}">
+                            <h6 class="share-inline-title">
+                                <span class="material-icons" aria-hidden="true">share</span>
+                                {% trans "Share this Product" %}
+                            </h6>
+                            <div class="share-inline-buttons" role="group" aria-label="{% trans 'Social media sharing options' %}">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-facebook"
+                                   title="{% trans 'Share on Facebook' %}"
+                                   aria-label="{% trans 'Share on Facebook' %}">
+                                    <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "Facebook" %}</span>
+                                </a>
+                                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ product.name|urlencode }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-twitter"
+                                   title="{% trans 'Share on X' %}"
+                                   aria-label="{% trans 'Share on X (Twitter)' %}">
+                                    <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "X (Twitter)" %}</span>
+                                </a>
+                                <a href="https://wa.me/?text={{ product.name|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-whatsapp"
+                                   title="{% trans 'Share on WhatsApp' %}"
+                                   aria-label="{% trans 'Share on WhatsApp' %}">
+                                    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "WhatsApp" %}</span>
+                                </a>
+                                <a href="https://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&description={{ product.name|urlencode }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-pinterest"
+                                   title="{% trans 'Share on Pinterest' %}"
+                                   aria-label="{% trans 'Share on Pinterest' %}">
+                                    <i class="fa-brands fa-pinterest" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "Pinterest" %}</span>
+                                </a>
+                                <a href="mailto:?subject={{ product.name|urlencode }}&body={% trans 'Check out this product' %}%20{{ request.build_absolute_uri|urlencode }}"
+                                   class="share-inline-btn share-email"
+                                   title="{% trans 'Share via Email' %}"
+                                   aria-label="{% trans 'Share via Email' %}">
+                                    <span class="material-icons" aria-hidden="true">email</span>
+                                    <span class="visually-hidden">{% trans "Email" %}</span>
+                                </a>
+                                <button class="share-inline-btn share-copy"
+                                        type="button"
+                                        onclick="copyProductLink()"
+                                        title="{% trans 'Copy Link' %}"
+                                        aria-label="{% trans 'Copy product link to clipboard' %}">
+                                    <span class="material-icons" aria-hidden="true">content_copy</span>
+                                    <span class="visually-hidden">{% trans "Copy Link" %}</span>
+                                </button>
+                            </div>
                         </div>
-                        <input type="hidden" id="quantity-input" value="1" min="1">
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </article>
 
-                    <div class="d-flex align-items-stretch gap-2">
-                        <button class="btn btn-outline-dark rounded-pill py-2 px-3 fw-bold fs-6 flex-grow-1 d-flex align-items-center justify-content-center" id="add-to-cart-btn" {% if not product.is_in_stock %}disabled{% endif %}>
-                            <i class="fa-solid fa-cart-plus me-2"></i> {% trans "Add to Cart" %}
+    <!-- Related Products Section -->
+    <section class="related-products-section" data-aos="fade-up" data-aos-delay="250">
+            <div class="container">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <span class="material-icons">favorite</span>
+                        {% trans "Related Products" %}
+                    </h3>
+                    <div class="section-nav-buttons">
+                        <button class="nav-btn related-prev" aria-label="Previous">
+                            <span class="material-icons">chevron_left</span>
                         </button>
-                        <form id="buy-now-form" action="{% url 'shop:buy_now' %}" method="post" class="d-flex">
-                            {% csrf_token %}
-                            <input type="hidden" name="product_id" value="{{ product.id }}">
-                            <input type="hidden" name="color_id" id="buy-now-color-id">
-                            <input type="hidden" name="size_id" id="buy-now-size-id">
-                            <input type="hidden" name="quantity" id="buy-now-quantity-input" value="1">
-                            <button type="submit" class="btn btn-outline-success rounded-pill px-3 d-flex align-items-center justify-content-center" title="{% trans 'Buy Now' %}" {% if not product.is_in_stock %}disabled{% endif %}>
-                                <i class="fa-solid fa-bolt me-2"></i> {% trans 'Buy Now' %}
-                            </button>
-                        </form>
-                        <button class="btn btn-outline-danger rounded-pill px-3 d-flex align-items-center justify-content-center" id="add-to-wishlist-btn" data-product-id="{{ product.id }}" title="{% if is_in_wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
-                            <i class="fa-solid {% if is_in_wishlist %}fa-times{% else %}fa-heart{% endif %}"></i>
+                        <button class="nav-btn related-next" aria-label="Next">
+                            <span class="material-icons">chevron_right</span>
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section pt-5 mt-5">
-        <div class="container-fluid">
-            <h3 class="mb-3">{% trans "Share this Product" %}</h3>
-            <div class="d-flex flex-wrap gap-3">
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-primary" style="background-color: #3b5998; border-color: #3b5998;" title="{% trans 'Share on Facebook' %}">
-                    <i class="fa-brands fa-facebook-f me-2"></i> {% trans 'Facebook' %}
-                </a>
-                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ product.name }}" target="_blank" class="btn btn-dark" title="{% trans 'Share on X' %}">
-                    <i class="fa-brands fa-x-twitter me-2"></i> {% trans 'X' %}
-                </a>
-                <a href="https://www.instagram.com/" target="_blank" class="btn" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: #fff;" title="{% trans 'Share on Instagram' %}">
-                    <i class="fa-brands fa-instagram me-2"></i> {% trans 'Instagram' %}
-                </a>
-                <a href="https://www.tiktok.com/tag/{{ product.name|slugify }}" target="_blank" class="btn" style="background-color: #000; color: #fff;" title="{% trans 'Share on TikTok' %}">
-                    <i class="fa-brands fa-tiktok me-2"></i> {% trans 'TikTok' %}
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section class="section pt-5 mt-5">
-        <div class="container-fluid pt-5">
-            <div class="section-header d-flex justify-content-between align-items-center mb-3">
-                <h3>{% trans "Related Products" %}</h3>
-                <div>
-                    <button class="btn btn-outline-secondary btn-sm related-prev me-2"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm related-next"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="swiper related_products-swiper">
-                <div class="swiper-wrapper">
-                    {% for related_product in related_products %}
-                    <div class="swiper-slide">
-                        {% include "partials/_product.html" with product=related_product section="related_products" %}
+                <div class="swiper related_products-swiper">
+                    <div class="swiper-wrapper">
+                        {% for related_product in related_products %}
+                        <div class="swiper-slide">
+                            {% include "partials/_product.html" with product=related_product section="related_products" %}
+                        </div>
+                        {% empty %}
+                        <div class="no-products-message">
+                            <span class="material-icons">inventory_2</span>
+                            <p>{% trans "No related products available." %}</p>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <div class="text-muted">{% trans "No products available." %}</div>
-                    {% endfor %}
                 </div>
             </div>
-        </div>
     </section>
 
-    <div id="toast-popup" class="toast align-items-center text-white border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" style="z-index:1055;">
-        <div class="d-flex">
+    <!-- Toast Notification -->
+    <div id="toast-popup" class="toast-notification" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-content">
             <div class="toast-body" id="toast-message"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="toast-close" data-bs-dismiss="toast" aria-label="Close">
+                <span class="material-icons">close</span>
+            </button>
         </div>
     </div>
 </main>
 {% endblock %}
-
-{% block js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        function updateGlobalCounts(nav_id = "nav1") {
-            fetch("{% url 'shop:get_cart_and_wishlist_counts' %}", {
-                method: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.json())
-            .then(data => {
-                const cartCountEl = document.getElementById(`cart-count-${nav_id}`);
-                const wishCountEl = document.getElementById(`wishlist-count-${nav_id}`);
-                if (cartCountEl && data.cart_count !== undefined) {
-                    cartCountEl.textContent = data.cart_count;
-                }
-                if (wishCountEl && data.wishlist_count !== undefined) {
-                    wishCountEl.textContent = data.wishlist_count;
-                }
-            })
-            .catch(error => {
-                console.error("Failed to fetch cart/wishlist counts:", error);
-            });
-        }
-
-        const increaseBtn = document.getElementById('increase-quantity');
-        const decreaseBtn = document.getElementById('decrease-quantity');
-        const quantityInput = document.getElementById('quantity-input');
-        const quantityDisplay = document.getElementById('quantity-display');
-        const wishlistBtn = document.getElementById('add-to-wishlist-btn');
-        const toastElement = document.getElementById('toast-popup');
-        const toastMessage = document.getElementById('toast-message');
-        const addToCartBtn = document.getElementById('add-to-cart-btn');
-        const buyNowForm = document.getElementById('buy-now-form');
-        const buyNowColorInput = document.getElementById('buy-now-color-id');
-        const buyNowSizeInput = document.getElementById('buy-now-size-id');
-        const buyNowQuantityInput = document.getElementById('buy-now-quantity-input');
-
-        let isWishlisted = wishlistBtn.querySelector('i').classList.contains('fa-times');
-        let selectedColorId = null;
-        let selectedSizeId = null;
-
-        function updateDisplay(value) {
-            quantityInput.value = value;
-            quantityDisplay.textContent = value;
-            buyNowQuantityInput.value = value;
-        }
-
-        increaseBtn?.addEventListener('click', () => {
-            let current = parseInt(quantityInput.value) || 1;
-            updateDisplay(current + 1);
-        });
-
-        decreaseBtn?.addEventListener('click', () => {
-            let current = parseInt(quantityInput.value) || 1;
-            if (current > 1) updateDisplay(current - 1);
-        });
-
-        function showToast(message, type = 'success') {
-            toastMessage.textContent = message;
-            toastElement.classList.remove('bg-success', 'bg-danger', 'bg-primary');
-            toastElement.classList.add(type === 'success' ? 'bg-success' : (type === 'error' ? 'bg-danger' : 'bg-primary'));
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let cookie of cookies) {
-                    cookie = cookie.trim();
-                    if (cookie.startsWith(name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        const csrftoken = getCookie('csrftoken');
-
-        const firstColorBtn = document.querySelector('.color-select');
-        if (firstColorBtn) {
-            firstColorBtn.classList.add('active');
-            selectedColorId = firstColorBtn.getAttribute('data-color-id');
-            buyNowColorInput.value = selectedColorId;
-            updateSizes(selectedColorId);
-        }
-
-        wishlistBtn?.addEventListener('click', function () {
-            const productId = this.dataset.productId;
-            const url = isWishlisted ? '{% url "shop:remove_from_wishlist" %}' : '{% url "shop:add_to_wishlist" %}';
-            wishlistBtn.disabled = true;
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ product_id: productId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    updateGlobalCounts("nav1");
-                    isWishlisted = !isWishlisted;
-                    const icon = wishlistBtn.querySelector('i');
-                    if (isWishlisted) {
-                        icon.classList.remove('fa-heart');
-                        icon.classList.add('fa-times');
-                        wishlistBtn.title = '{% trans "Remove from Wishlist" %}';
-                        showToast('{% trans "Added to Wishlist!" %}', 'success');
-                    } else {
-                        icon.classList.remove('fa-times');
-                        icon.classList.add('fa-heart');
-                        wishlistBtn.title = '{% trans "Add to Wishlist" %}';
-                        showToast('{% trans "Removed from Wishlist" %}', 'success');
-                    }
-                } else {
-                    showToast(data.message || '{% trans "Action failed." %}', 'error');
-                }
-            })
-            .catch(() => {
-                showToast('{% trans "An unexpected error occurred. Please try again." %}', 'error');
-            })
-            .finally(() => {
-                wishlistBtn.disabled = false;
-            });
-        });
-
-        addToCartBtn?.addEventListener('click', () => {
-            if (!selectedColorId || !selectedSizeId) {
-                showToast("{% trans 'Please select color and size first.' %}", 'error');
-                return;
-            }
-            const productId = wishlistBtn.dataset.productId;
-            const quantity = quantityInput.value;
-            addToCartBtn.disabled = true;
-
-            fetch('{% url "shop:add_to_cart" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ product_id: productId, quantity: quantity, color_id: selectedColorId, size_id: selectedSizeId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    updateGlobalCounts("nav1");
-                    showToast(data.message || '{% trans "Added to cart." %}', 'success');
-                } else {
-                    showToast(data.message || '{% trans "Failed to add to cart." %}', 'error');
-                }
-            })
-            .catch(() => {
-                showToast('{% trans "An unexpected error occurred. Please try again." %}', 'error');
-            })
-            .finally(() => {
-                addToCartBtn.disabled = false;
-            });
-        });
-
-        document.querySelectorAll('.color-select').forEach(button => {
-            button.addEventListener('click', function () {
-                document.querySelectorAll('.color-select').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                selectedColorId = this.getAttribute('data-color-id');
-                buyNowColorInput.value = selectedColorId;
-                updateSizes(selectedColorId);
-            });
-        });
-
-        function updateSizes(colorId) {
-            const productId = '{{ product.id }}';
-            fetch(`{% url "shop:get_available_sizes_ajax" product.id %}?color_id=${colorId}`, {
-                method: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.json())
-            .then(data => {
-                const sizeButtonsContainer = document.querySelector('.size-buttons');
-                sizeButtonsContainer.innerHTML = '';
-                selectedSizeId = null; // Reset selected size
-                buyNowSizeInput.value = ''; // Clear hidden input
-                if (data.sizes && data.sizes.length > 0) {
-                    data.sizes.forEach(size => {
-                        const button = document.createElement('button');
-                        button.type = 'button';
-                        button.className = 'btn btn-light border rounded-pill px-4 py-2 shadow-sm size-select';
-                        button.dataset.sizeId = size.id;
-                        button.dataset.sizeName = size.name;
-                        button.innerHTML = `<i class="fa-solid fa-ruler me-1 small"></i> ${size.name}`;
-                        sizeButtonsContainer.appendChild(button);
-                    });
-                    // Re-attach event listeners to new buttons
-                    document.querySelectorAll('.size-select').forEach(button => {
-                        button.addEventListener('click', function () {
-                            document.querySelectorAll('.size-select').forEach(btn => btn.classList.remove('active'));
-                            this.classList.add('active');
-                            selectedSizeId = this.getAttribute('data-size-id');
-                            buyNowSizeInput.value = selectedSizeId;
-                        });
-                    });
-                    // Auto-select the first available size
-                    const newFirstSizeBtn = document.querySelector('.size-select');
-                    if (newFirstSizeBtn) {
-                        newFirstSizeBtn.classList.add('active');
-                        selectedSizeId = newFirstSizeBtn.getAttribute('data-size-id');
-                        buyNowSizeInput.value = selectedSizeId;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error("Failed to fetch sizes:", error);
-            });
-        }
-
-        document.querySelectorAll('.size-select').forEach(button => {
-            button.addEventListener('click', function () {
-                document.querySelectorAll('.size-select').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                selectedSizeId = this.getAttribute('data-size-id');
-                buyNowSizeInput.value = selectedSizeId;
-            });
-        });
-
-        buyNowForm?.addEventListener('submit', function(e) {
-            if (!selectedColorId || !selectedSizeId) {
-                e.preventDefault();
-                showToast("{% trans 'Please select color and size first for Buy Now.' %}", 'error');
-            } else {
-                buyNowQuantityInput.value = quantityInput.value;
-            }
-        });
-
-        document.querySelectorAll('.wishlist-btn').forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                const productId = this.dataset.productId;
-                fetch('{% url "shop:add_to_wishlist" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ product_id: productId })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        updateGlobalCounts("nav1");
-                        showToast('{% trans "Added to Wishlist" %}', 'success');
-                    } else {
-                        showToast(data.message || '{% trans "Action failed." %}', 'error');
-                    }
-                })
-                .catch(() => {
-                    showToast('{% trans "An unexpected error occurred. Please try again." %}', 'error');
-                });
-            });
-        });
-
-        const sizeButtonToggle = document.getElementById('size_btn');
-        const sizeContainer = document.getElementById('size_container');
-
-        if (sizeButtonToggle && sizeContainer) {
-            sizeButtonToggle.addEventListener('click', function() {
-                sizeContainer.classList.toggle('d-none');
-            });
-        }
-
-        document.querySelectorAll('.cart-btn').forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                showToast('{% trans "Please select a color and size from the product page." %}', 'primary');
-            });
-        });
-    });
-</script>
-
-<script>
-    const productThumbsSwiper = new Swiper('.product-detail-thumbs', {
-        spaceBetween: 10,
-        slidesPerView: 4,
-        freeMode: true,
-        watchSlidesProgress: true,
-        breakpoints: {
-            640: { slidesPerView: 5 },
-            768: { slidesPerView: 6 },
-            1024: { slidesPerView: 7 },
-        }
-    });
-
-    const productMainSwiper = new Swiper('.product-detail-swiper', {
-        spaceBetween: 10,
-        zoom: {
-            maxRatio: 3,
-            toggle: true,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-        thumbs: {
-            swiper: productThumbsSwiper,
-        },
-    });
-
-    document.querySelectorAll('.product-detail-swiper .swiper-slide img').forEach((img) => {
-        img.addEventListener('click', () => {
-            if (productMainSwiper.zoom) {
-                if (productMainSwiper.zoom.isScaling) {
-                    productMainSwiper.zoom.out();
-                } else {
-                    productMainSwiper.zoom.in();
-                }
-            }
-        });
-    });
-
-    const relatedProductsSwiper = new Swiper('.related_products-swiper', {
-        slidesPerView: 2,
-        spaceBetween: 15,
-        loop: true,
-        navigation: {
-            nextEl: '.related-next',
-            prevEl: '.related-prev',
-        },
-        breakpoints: {
-            576: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            992: { slidesPerView: 4 },
-        }
-    });
-</script>
-{% endblock js %}
