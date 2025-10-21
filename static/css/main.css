@@ -13,6 +13,8 @@
    CSS VARIABLES - Theme Support
 ======================================== */
 :root {
+  --loader-primary: #000;
+  --loader-accent: #007aff;
   /* Brand colors */
   --mnory-accent: var(--accent-color, #007aff);
   --mnory-accent-2: var(--accent-secondary, #007aff);
@@ -37,6 +39,21 @@
 
 /* Dark theme overrides */
 body.dark-mode {
+  --loader-primary: #fff;
+  --loader-accent: #007aff;
+/* Loader color usage example */
+.loading-spinner {
+  border: 4px solid var(--loader-primary);
+  border-top: 4px solid var(--loader-accent);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   --theme-bg: #1a1a1a;
   --theme-bg-secondary: #2d2d2d;
   --theme-bg-tertiary: #3a3a3a;
