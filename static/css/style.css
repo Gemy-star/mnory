@@ -605,15 +605,19 @@ body.dark-mode .tab-label {
 }
 
 .product-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: var(--theme-bg-primary, #fff);
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  transition: box-shadow 0.2s;
-  padding: 1.2rem 1rem;
-  min-height: 690px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    padding: 1.5rem 1rem;
+    margin: 0.5rem 0;
+    transition: box-shadow 0.3s, transform 0.3s, background 0.3s;
+    min-width: 220px;
+    max-width: 420px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeInUp 0.8s cubic-bezier(.39,.575,.565,1) both;
 }
 
 .product-card .product-image-wrapper {

@@ -18,23 +18,18 @@
       <div class="col-lg-8">
         <div class="row">
           {% for item in items %}
-          <div class="col col-lg-4 mb-4 cart-item" data-item-id="{{ item.id }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:1|mul:50 }}">
-            <div class="card h-100 shadow-sm border-0 product-card">
-              <div class="card-body">
-                {% include "partials/_product.html" with product=item.variant.product section="cart" %}
-
-                <div class="mt-2 small text-muted">
-                  <div><strong>{% trans "Color" %}:</strong> {{ item.variant.color.name }}</div>
-                  <div><strong>{% trans "Size" %}:</strong> {{ item.variant.size.name }}</div>
-                  <div><strong>{% trans "Quantity" %}:</strong> {{ item.quantity }}</div>
-                  <div><strong>{% trans "Total" %}:</strong> {{ item.total|floatformat:2 }}</div>
-                </div>
-              </div>
-              <div class="card-footer bg-white border-0 text-end">
-                <a href="#" class="remove-from-cart btn btn-danger btn-lg" data-id="{{ item.id }}" title="{% trans 'Remove from cart' %}">
-                  <span class="material-icons">delete</span>
-                </a>
-              </div>
+          <div class="col-lg-4 mb-4 cart-item" data-item-id="{{ item.id }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:1 }}0">
+            {% include "partials/_product.html" with product=item.variant.product section="cart" %}
+            <div class="cart-item-details d-flex flex-column gap-1 mt-2">
+              <span><span class="material-icons align-middle me-1">palette</span><strong>{% trans "Color" %}:</strong> {{ item.variant.color.name }}</span>
+              <span><span class="material-icons align-middle me-1">straighten</span><strong>{% trans "Size" %}:</strong> {{ item.variant.size.name }}</span>
+              <span><span class="material-icons align-middle me-1">numbers</span><strong>{% trans "Quantity" %}:</strong> {{ item.quantity }}</span>
+              <span><span class="material-icons align-middle me-1">attach_money</span><strong>{% trans "Total" %}:</strong> {{ item.total|floatformat:2 }}</span>
+            </div>
+            <div class="text-end mt-2">
+              <a href="#" class="remove-from-cart btn btn-danger btn-lg" data-id="{{ item.id }}" title="{% trans 'Remove from cart' %}">
+                <span class="material-icons">delete</span>
+              </a>
             </div>
           </div>
           {% endfor %}
