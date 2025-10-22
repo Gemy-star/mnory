@@ -231,13 +231,23 @@
         const swiperEl = document.querySelector(`.${className}`);
         if (swiperEl) {
             new Swiper(`.${className}`, {
-                slidesPerView: 2,
-                spaceBetween: 15,
-                breakpoints: {
-                    576: { slidesPerView: 2, spaceBetween: 15 },
-                    768: { slidesPerView: 3, spaceBetween: 20 },
-                    992: { slidesPerView: 3, spaceBetween: 20 }, // Desktop: 3 cards
-                    1200: { slidesPerView: 3, spaceBetween: 25 } // Desktop large: 3 cards
+                // Use a fractional slidesPerView on very small screens so
+                // the next slide peeks in and a visible gap appears.
+                slidesPerView: 3,
+                spaceBetween: 12,
+                   breakpoints: {
+                    // Very small phones
+                    0: { slidesPerView: 1, spaceBetween: 25 },
+                    // Small phones
+                    375: { slidesPerView: 1, spaceBetween: 30 },
+                    // Large phones / small tablets
+                    576: { slidesPerView: 2, spaceBetween: 35 },
+                    // Tablets
+                    768: { slidesPerView: 3, spaceBetween: 25 },
+                    // Desktops
+                    992: { slidesPerView: 3, spaceBetween: 25 },
+                    // Large desktops
+                    1200: { slidesPerView: 3, spaceBetween: 25 }
                 },
                 navigation: {
                     nextEl: `.${next}`,
@@ -273,7 +283,7 @@
         // Add hover effects for swiper navigation
         document.querySelectorAll('.swiper-nav-btn').forEach(btn => {
             btn.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px) scale(1.05)';
+                this.style.transform = 'translateY(-2px) scale(1)';
             });
 
             btn.addEventListener('mouseleave', function() {

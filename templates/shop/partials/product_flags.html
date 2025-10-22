@@ -1,16 +1,16 @@
 {% load i18n %}
 {% if is_showed %}
 {% if product.is_featured %}
-    <span class="badge badge-featured"><i class="fas fa-star"></i> {% trans "Featured" %}</span>
+    <span class="badge badge-featured"><span class="material-icons" aria-hidden="true">star</span> {% trans "Featured" %}</span>
 {% endif %}
 {% if product.is_best_seller %}
-    <span class="badge badge-bestseller"><i class="fas fa-star"></i> {% trans "Best Seller" %}</span>
+    <span class="badge badge-bestseller"><span class="material-icons" aria-hidden="true">star</span> {% trans "Best Seller" %}</span>
 {% endif %}
 {% if product.is_new_arrival %}
-    <span class="badge badge-new-arrival"><i class="fas fa-tag"></i> {% trans "New Arrival" %}</span>
+    <span class="badge badge-new-arrival"><span class="material-icons" aria-hidden="true">local_offer</span> {% trans "New Arrival" %}</span>
 {% endif %}
 {% if product.is_on_sale %}
-    <span class="badge badge-on-sale"><i class="fas fa-fire"></i> {% trans "On Sale" %}</span>
+    <span class="badge badge-on-sale"><span class="material-icons" aria-hidden="true">local_fire_department</span> {% trans "On Sale" %}</span>
     {% if product.get_discount_percentage > 0 %}
         <span class="badge bg-success badge-flag">{{ product.get_discount_percentage }}% {% trans "Off" %}</span>
     {% endif %}

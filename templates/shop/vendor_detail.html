@@ -1,244 +1,524 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
+
+{% block title %}{{ vendor.store_name }} - {% trans "Vendor" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/vendor_detail.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="section-header">
-    <h2 class="section-title">
-      <span class="material-icons">storefront</span>
-      {{ vendor.store_name }}
-    </h2>
-    <span class="badge badge-flag badge-bestseller">{% trans "Vendor" %}</span>
-  </div>
-  <div class="row">
-    <div class="col-lg-3 mb-4">
-      <aside class="filter-section position-sticky" style="top: 90px; z-index: 10;">
-        <div class="accordion" id="filterAccordion">
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingFilters">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
-                <span class="material-icons">filter_list</span> {% trans "Filters" %}
-              </button>
-            </h2>
-            <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilters" data-bs-parent="#filterAccordion">
-              <div class="accordion-body">
-                <div class="mb-4">
-                  <h5><span class="material-icons">category</span> {% trans "Categories" %}</h5>
-                  <div class="list-group category-list">
-                    <a href="{% url 'shop:home' %}" class="list-group-item {% if not category %}active{% endif %}">
-                      <span class="material-icons">apps</span> {% trans "All Products" %}
-                    </a>
-                    {% for cat in categories %}
-                      <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="list-group-item {% if category and category.slug == cat.slug %}active{% endif %}">
-                        <span class="material-icons">folder_open</span> {{ cat.name }}
-                      </a>
-                      {% if category and category.slug == cat.slug %}
-                        {% for subcat in subcategories %}
-                          <a href="{% url 'shop:subcategory_detail' category_slug=cat.slug slug=subcat.slug %}" class="list-group-item ps-4 {% if current_filters.subcategory == subcat.slug %}active{% endif %}">
-                            <span class="material-icons">chevron_right</span> {{ subcat.name }}
-                          </a>
-                        {% endfor %}
-                      {% endif %}
-                    {% endfor %}
-                  </div>
-                </div>
-                <form id="filterForm">
-                  <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
-                  <input type="hidden" name="subcategory_slug" value="{{ current_filters.subcategory|default:'' }}">
-                  <div class="mb-3">
-                    <h5><span class="material-icons">straighten</span> {% trans "Fit Type" %}</h5>
-                    {% for fit_type in fit_types %}
-                      <div class="form-check">
-                        <input class="form-check-input filter-checkbox" type="checkbox" name="fit_type" value="{{ fit_type.slug }}" id="fitType{{ fit_type.slug }}" {% if fit_type.slug == current_filters.fit_type %}checked{% endif %}>
-                        <label class="form-check-label" for="fitType{{ fit_type.slug }}">{{ fit_type.name }}</label>
-                      </div>
-                    {% endfor %}
-                  </div>
-                  <div class="mb-3">
-                    <h5><span class="material-icons">branding_watermark</span> {% trans "Brand" %}</h5>
-                    {% for brand in brands %}
-                      <div class="form-check">
-                        <input class="form-check-input filter-checkbox" type="checkbox" name="brand" value="{{ brand.slug }}" id="brand{{ brand.slug }}" {% if brand.slug == current_filters.brand %}checked{% endif %}>
-                        <label class="form-check-label" for="brand{{ brand.slug }}">{{ brand.name }}</label>
-                      </div>
-                    {% endfor %}
-                  </div>
-                  <div class="mb-3">
-                    <h5><span class="material-icons">palette</span> {% trans "Color" %}</h5>
-                    {% for color in colors %}
-                      <div class="form-check">
-                        <input class="form-check-input filter-checkbox" type="checkbox" name="color" value="{{ color.name }}" id="color{{ color.name }}" {% if color.name == current_filters.color %}checked{% endif %}>
-                        <label class="form-check-label" for="color{{ color.name }}">
-                          <span style="display: inline-block; width: 15px; height: 15px; background-color: {{ color.hex_code }}; border: 1px solid #ccc; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                          {{ color.name }}
-                        </label>
-                      </div>
-                    {% endfor %}
-                  </div>
-                  <div class="mb-3">
-                    <h5><span class="material-icons">straighten</span> {% trans "Size" %}</h5>
-                    {% for size in sizes %}
-                      <div class="form-check">
-                        <input class="form-check-input filter-checkbox" type="checkbox" name="size" value="{{ size.name }}" id="size{{ size.name }}" {% if size.name == current_filters.size %}checked{% endif %}>
-                        <label class="form-check-label" for="size{{ size.name }}">{{ size.name }} ({{ size.get_size_type_display }})</label>
-                      </div>
-                    {% endfor %}
-                  </div>
-                  <div class="mb-3">
-                    <h5><span class="material-icons">attach_money</span> {% trans "Price Range" %}</h5>
-                    <div class="d-flex mb-2">
-                      <input type="number" class="form-control me-2" name="min_price" placeholder="{% trans 'Min' %}" value="{{ current_filters.min_price|default:'' }}">
-                      <input type="number" class="form-control" name="max_price" placeholder="{% trans 'Max' %}" value="{{ current_filters.max_price|default:'' }}">
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-primary w-100">
-                      <span class="material-icons">filter_alt</span> {% trans "Apply Price" %}
-                    </button>
-                  </div>
-                  <div class="mb-3">
-                    <h5><span class="material-icons">sort</span> {% trans "Sort By" %}</h5>
-                    <select class="form-select" name="sort">
-                      <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
-                      <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>{% trans "Price (Low to High)" %}</option>
-                      <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>{% trans "Price (High to Low)" %}</option>
-                      <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
-                      <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>{% trans "Popular" %}</option>
-                    </select>
-                  </div>
-                  <div class="mb-3">
-                    <h5><span class="material-icons">flag</span> {% trans "Flags" %}</h5>
-                    <div class="form-check">
-                      <input class="form-check-input filter-checkbox" type="checkbox" name="is_best_seller" value="true" id="isBestseller" {% if current_filters.is_best_seller %}checked{% endif %}>
-                      <label class="form-check-label" for="isBestseller">
-                        <span class="badge badge-flag badge-bestseller">
-                          <span class="material-icons">star</span> {% trans "Best Seller" %}
-                        </span>
-                      </label>
-                    </div>
-                    <div class="form-check">
-                      <input class="form-check-input filter-checkbox" type="checkbox" name="is_new_arrival" value="true" id="isNewArrival" {% if current_filters.is_new_arrival %}checked{% endif %}>
-                      <label class="form-check-label" for="isNewArrival">
-                        <span class="badge badge-flag badge-new-arrival">
-                          <span class="material-icons">new_releases</span> {% trans "New Arrival" %}
-                        </span>
-                      </label>
-                    </div>
-                    <div class="form-check">
-                      <input class="form-check-input filter-checkbox" type="checkbox" name="is_on_sale" value="true" id="onSale" {% if current_filters.is_on_sale %}checked{% endif %}>
-                      <label class="form-check-label" for="onSale">
-                        <span class="badge badge-flag badge-on-sale">
-                          <span class="material-icons">local_fire_department</span> {% trans "On Sale" %}
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                </form>
+<section class="vendor-section modern-vendor-section">
+  <div class="container">
+    <div class="modern-vendor-header" data-aos="fade-down" data-aos-duration="700" data-aos-easing="ease-out-cubic">
+      <div class="vendor-header-card card modern-card">
+        <div class="card-body">
+          <div class="vendor-header-inner d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <div class="vendor-avatar me-3 aos-init aos-animate" data-aos="zoom-in" data-aos-delay="100">
+            {% if vendor.logo %}
+              <img src="{{ vendor.logo.url }}" alt="{{ vendor.store_name }}" class="vendor-logo rounded-circle"/>
+            {% else %}
+              <span class="material-icons storefront">storefront</span>
+            {% endif %}
+          </div>
+          <div>
+            <h1 class="vendor-name mb-1 aos-init aos-animate" data-aos="fade-left" data-aos-delay="150">{{ vendor.store_name }}</h1>
+            <div class="vendor-meta text-muted small aos-init aos-animate" data-aos="fade-left" data-aos-delay="180">
+              <!-- collapsible description (clamped on mobile) -->
+              <div class="vendor-description-wrapper">
+                <div class="vendor-description text-muted pt-2 mb-2">{{ vendor.store_description }}</div>
+                <button class="btn btn-link btn-sm readmore-btn d-lg-none" type="button" aria-expanded="false">{% trans "Read more" %}</button>
+              </div>
+              <div class="mt-2">
+                <span class="badge badge-flag badge-bestseller">{% trans "Vendor" %}</span>
+                {% if vendor_location %}
+                  <span class="ms-2">• {{ vendor_location }}</span>
+                {% endif %}
+                {% if vendor.location %}
+                  <span class="ms-2">• {{ vendor.location }}</span>
+                {% endif %}
               </div>
             </div>
           </div>
         </div>
-      </aside>
+        <div class="vendor-header-right d-flex align-items-center" data-aos="fade-up" data-aos-delay="250">
+          <!-- compact badges: product count & categories count -->
+          <div class="vendor-badges d-flex align-items-center me-3">
+            <span class="vendor-badge d-flex align-items-center">
+              <span class="material-icons md-18">inventory_2</span>
+              <span class="badge-text ms-1">{{ products.paginator.count }}</span>
+            </span>
+            <span class="vendor-badge d-flex align-items-center ms-2">
+              <span class="material-icons md-18">category</span>
+              <span class="badge-text ms-1">{{ categories|length }}</span>
+            </span>
+          </div>
+
+          <div class="vendor-header-actions d-flex align-items-center">
+            <a href="#" class="btn btn-light me-2" title="Share">
+              <span class="material-icons">share</span>
+            </a>
+            <a href="#" class="btn btn-outline-secondary me-2" title="Follow">
+              <span class="material-icons">star_border</span>
+            </a>
+            <a href="mailto:{{ vendor.user.email }}" class="btn btn-outline-primary" title="Contact">
+              <span class="material-icons">email</span>
+            </a>
+          </div>
+        </div>
+        </div>
+      </div>
     </div>
-    <div class="col-lg-9 mb-4">
-      <div class="mb-4">
-        <h2 class="h5 mb-4">
-          <span class="material-icons text-primary">inventory_2</span>
-          {% if subcategory %}
-            {{ subcategory.name }} {% trans "Products" %}
-          {% elif category %}
-            {{ category.name }} {% trans "Products" %}
-          {% else %}
-            {% trans "All Products" %}
-          {% endif %}
-        </h2>
-        <div class="products-grid grid-view">
-          {% for product in products %}
-            <div class="product-card">
-              {% include "partials/_product.html" with product=product section="category" %}
-            </div>
-          {% empty %}
-            <div class="col-12">
-              <div class="alert alert-info">
-                <span class="material-icons">info</span>
-                {% trans "No products found in this category or with the selected filters." %}
+
+    <!-- primary card removed: header now contains the compact vendor card to avoid duplication -->
+
+    <div class="row mt-4">
+      <div class="col-lg-3 mb-4">
+        <!-- Sidebar: on desktop we show a sticky panel with vendor contact CTA, related vendors and recent reviews -->
+        <aside class="vendor-sidebar">
+          <div class="vendor-sidebar-inner">
+            <!-- Related vendors -->
+            {% if related_vendors %}
+            <div class="card mt-3 sidebar-widget related-vendors">
+              <div class="card-body">
+                <h6 class="widget-title mb-2">{% trans "Related Sellers" %}</h6>
+                <ul class="list-unstyled related-vendors-list mb-0">
+                  {% for rv in related_vendors %}
+                    <li class="d-flex align-items-center py-2">
+                      <a href="{% url 'shop:vendor_detail' rv.slug %}" class="d-flex align-items-center text-decoration-none w-100">
+                        <div class="me-2 small-avatar">
+                          {% if rv.logo_url %}
+                            <img src="{{ rv.logo_url }}" alt="{{ rv.store_name }}" class="rounded-circle" width="36" height="36" />
+                          {% else %}
+                            <span class="material-icons">store</span>
+                          {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                          <div class="small text-truncate">{{ rv.store_name }}</div>
+                          <div class="text-muted small">{{ rv.safe_location }}</div>
+                        </div>
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
               </div>
             </div>
-          {% endfor %}
-        </div>
-        {% if products.has_other_pages %}
-          <nav aria-label="{% trans 'Page navigation' %}" class="pagination-wrapper mt-4">
-            <ul class="pagination justify-content-center">
-              {% if products.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                    <span class="material-icons">chevron_left</span> {% trans "Previous" %}
-                  </a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span class="material-icons">chevron_left</span> {% trans "Previous" %}
-                  </span>
-                </li>
-              {% endif %}
-              {% for i in products.paginator.page_range %}
-                {% if products.number == i %}
-                  <li class="page-item active">
-                    <span class="page-link">{{ i }}</span>
+            {% endif %}
+
+            <!-- Recent reviews -->
+            {% if vendor_reviews %}
+            <div class="card mt-3 sidebar-widget vendor-reviews">
+              <div class="card-body">
+                <h6 class="widget-title mb-2">{% trans "Recent Reviews" %}</h6>
+                <ul class="list-unstyled mb-0">
+                  {% for review in vendor_reviews %}
+                  <li class="py-2">
+                    <div class="d-flex align-items-start">
+                      <div class="me-2">
+                        <span class="material-icons">person</span>
+                      </div>
+                      <div>
+                        <div class="small">{{ review.reviewer.get_full_name|default:review.reviewer.email }}</div>
+                        <div class="text-muted small">{{ review.comment|truncatechars:80 }}</div>
+                      </div>
+                    </div>
                   </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact CTA for mobile (visible below lg) -->
+            <div class="d-lg-none mt-3">
+              <a href="mailto:{{ vendor.user.email }}" class="btn btn-primary w-100">
+                <span class="material-icons">email</span>
+                <span class="ms-1">{% trans "Contact Seller" %}</span>
+              </a>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="col-lg-9 mb-4">
+        <div class="vendor-products-area">
+          <div class="mb-3 d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0 me-2"><span class="material-icons text-primary">inventory_2</span> {% trans "Products" %}</h2>
+            <div id="productsCount" class="products-count text-muted small" aria-live="polite">{{ products.paginator.count }} {% trans "items" %}</div>
+
+            </div>
+          </div>
+
+      <!-- Horizontal Filters Bar (Collapsible on Mobile) -->
+      <div class="horizontal-filters-collapsible" data-aos="fade-up" data-aos-delay="250">
+      <button class="collapsible-toggle-btn" id="toggleFilters" type="button" aria-controls="filtersPanel" aria-expanded="false">
+        <span class="material-icons">filter_alt</span>
+        <span>{% trans "Filters" %}</span>
+        <span class="material-icons toggle-arrow">expand_more</span>
+      </button>
+      <div class="horizontal-filters-wrapper collapsible-content" id="filtersPanel" role="region" aria-hidden="true">
+        <div class="horizontal-filters">
+        <!-- Filter Form -->
+        <form id="filter-form" class="horizontal-filters-form">
+          <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
+          <input type="hidden" name="subcategory_slug" value="{{ current_filters.subcategory|default:'' }}">
+          <!-- Filter Chips Container -->
+          <div class="filter-chips-container">
+            <!-- Sort Filter -->
+            <div class="filter-chip-group">
+              <span class="filter-chip-icon">
+                <span class="material-icons">sort</span>
+              </span>
+              <select class="filter-chip-select" name="sort">
+                <option value="">{% trans "Sort By" %}</option>
+                <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
+                <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>{% trans "Price (Low to High)" %}</option>
+                <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>{% trans "Price (High to Low)" %}</option>
+                <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
+                <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>{% trans "Popular" %}</option>
+              </select>
+            </div>
+
+            <!-- Brand Filter -->
+            {% if brands %}
+            <div class="filter-chip-group">
+              <span class="filter-chip-icon">
+                <span class="material-icons">sell</span>
+              </span>
+              <select class="filter-chip-select" name="brand">
+                <option value="">{% trans "Brand" %}</option>
+                {% for brand in brands %}
+                <option value="{{ brand.slug }}" {% if brand.slug == current_filters.brand %}selected{% endif %}>{{ brand.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <!-- Fit Type Filter -->
+            {% if fit_types %}
+            <div class="filter-chip-group">
+              <span class="filter-chip-icon">
+                <span class="material-icons">checkroom</span>
+              </span>
+              <select class="filter-chip-select" name="fit_type">
+                <option value="">{% trans "Fit Type" %}</option>
+                {% for fit_type in fit_types %}
+                <option value="{{ fit_type.slug }}" {% if fit_type.slug == current_filters.fit_type %}selected{% endif %}>{{ fit_type.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <!-- Color Filter -->
+            {% if colors %}
+            <div class="filter-chip-group">
+              <span class="filter-chip-icon">
+                <span class="material-icons">palette</span>
+              </span>
+              <select class="filter-chip-select" name="color">
+                <option value="">{% trans "Color" %}</option>
+                {% for color in colors %}
+                <option value="{{ color.name }}" {% if color.name == current_filters.color %}selected{% endif %}>{{ color.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <!-- Size Filter -->
+            {% if sizes %}
+            <div class="filter-chip-group">
+              <span class="filter-chip-icon">
+                <span class="material-icons">straighten</span>
+              </span>
+              <select class="filter-chip-select" name="size">
+                <option value="">{% trans "Size" %}</option>
+                {% for size in sizes %}
+                <option value="{{ size.name }}" {% if size.name == current_filters.size %}selected{% endif %}>{{ size.name }} ({{ size.get_size_type_display }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <!-- Price Range Filter -->
+            <div class="filter-chip-group filter-price-group">
+              <span class="filter-chip-icon">
+                <span class="material-icons">payments</span>
+              </span>
+              <input type="number" class="filter-price-input" name="min_price" placeholder="{% trans 'Min' %}" value="{{ current_filters.min_price|default:'' }}">
+              <span class="price-separator">—</span>
+              <input type="number" class="filter-price-input" name="max_price" placeholder="{% trans 'Max' %}" value="{{ current_filters.max_price|default:'' }}">
+            </div>
+
+            <!-- Special Flags -->
+            <div class="filter-chip-group filter-flags-group">
+              <button type="button" class="filter-flag-btn {% if current_filters.is_best_seller %}active{% endif %}" data-filter="is_best_seller">
+                <span class="material-icons">stars</span>
+                <span class="flag-label">{% trans "Best Seller" %}</span>
+                <input type="checkbox" name="is_best_seller" value="true" {% if current_filters.is_best_seller %}checked{% endif %} hidden>
+              </button>
+              <button type="button" class="filter-flag-btn {% if current_filters.is_new_arrival %}active{% endif %}" data-filter="is_new_arrival">
+                <span class="material-icons">new_releases</span>
+                <span class="flag-label">{% trans "New" %}</span>
+                <input type="checkbox" name="is_new_arrival" value="true" {% if current_filters.is_new_arrival %}checked{% endif %} hidden>
+              </button>
+              <button type="button" class="filter-flag-btn {% if current_filters.is_on_sale %}active{% endif %}" data-filter="is_on_sale">
+                <span class="material-icons">local_offer</span>
+                <span class="flag-label">{% trans "Sale" %}</span>
+                <input type="checkbox" name="is_on_sale" value="true" {% if current_filters.is_on_sale %}checked{% endif %} hidden>
+              </button>
+            </div>
+
+            <!-- Clear Filters Button -->
+            <button type="button" class="filter-clear-btn" id="clearFiltersBtn">
+              <span class="material-icons">clear</span>
+              <span>{% trans "Clear All" %}</span>
+            </button>
+          </div>
+        </form>
+        </div>
+      </div>
+      </div>
+
+          <div class="products-grid modern-grid">
+            {% for product in products %}
+                {% include "partials/_product.html" with product=product section="vendor" %}
+            {% empty %}
+              <div class="alert alert-info">
+                <span class="material-icons">info</span>
+                {% trans "No products found for this vendor." %}
+              </div>
+            {% endfor %}
+          </div>
+
+          {% if products.has_other_pages %}
+            <nav aria-label="{% trans 'Page navigation' %}" class="pagination-wrapper mt-4">
+              <ul class="pagination justify-content-center">
+                {% if products.has_previous %}
+                  <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">&laquo; {% trans "Previous" %}</a></li>
                 {% else %}
-                  <li class="page-item">
-                    <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-                  </li>
+                  <li class="page-item disabled"><span class="page-link">&laquo; {% trans "Previous" %}</span></li>
                 {% endif %}
-              {% endfor %}
-              {% if products.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                    {% trans "Next" %} <span class="material-icons">chevron_right</span>
-                  </a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    {% trans "Next" %} <span class="material-icons">chevron_right</span>
-                  </span>
-                </li>
-              {% endif %}
-            </ul>
-          </nav>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-lg-4 mb-4">
-      <div class="card">
-        <div class="card-header bg-light border-0 d-flex align-items-center">
-          <span class="material-icons me-2" style="font-size: 2rem; color: var(--accent-color, #333);">receipt_long</span>
-          <h5 class="mb-0 fw-bold">Order Summary</h5>
-        </div>
-        <div class="card-body">
-          <ul class="list-unstyled mb-4" id="order-summary">
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span><span class="material-icons align-middle me-1" style="color: #888;">attach_money</span> Subtotal</span>
-              <span id="cart-subtotal">325.83</span>
-            </li>
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span><span class="material-icons align-middle me-1" style="color: #888;">local_shipping</span> Shipping</span>
-              <span id="cart-shipping">60.00</span>
-            </li>
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span class="fw-bold"><span class="material-icons align-middle me-1" style="color: var(--accent-color, #333);">payments</span> Total</span>
-              <span class="fw-bold" id="cart-total">385.83</span>
-            </li>
-          </ul>
-          <a href="/en/checkout/" class="btn btn-lg w-100 text-white d-flex justify-content-center align-items-center" style="background: linear-gradient(90deg, #111 60%, var(--accent-color, #ff9800) 100%); box-shadow: 0 4px 16px rgba(0,0,0,0.12); transition: box-shadow 0.3s;">
-            Proceed to Checkout
-            <span class="material-icons ms-2" style="font-size: 1.7rem;">arrow_forward</span>
-          </a>
+                {% for i in products.paginator.page_range %}
+                  {% if products.number == i %}
+                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                  {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if products.has_next %}
+                  <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">{% trans "Next" %} &raquo;</a></li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link">{% trans "Next" %} &raquo;</span></li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
         </div>
       </div>
     </div>
+
   </div>
-</div>
+</section>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  AOS.init({ duration: 700, easing: 'ease-out-cubic', once: true, offset: 60 });
+});
+</script>
+<script>
+// Read more toggle for vendor description on small screens
+document.addEventListener('DOMContentLoaded', function() {
+  const wrappers = document.querySelectorAll('.vendor-description-wrapper');
+  wrappers.forEach(function(wrapper) {
+    const btn = wrapper.querySelector('.readmore-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      const expanded = wrapper.classList.toggle('expanded');
+      btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      btn.textContent = expanded ? '{% trans "Show less" %}' : '{% trans "Read more" %}';
+    });
+  });
+});
+</script>
+<script>
+// Vendor filters: mirror category_detail behaviour (build URL and reload)
+document.addEventListener('DOMContentLoaded', function() {
+  const vendorForm = document.getElementById('vendorFilterForm');
+  if (!vendorForm) return;
+
+  function updateUrlAndReload() {
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+    // remove existing filter params we control
+    ['fit_type','brand','color','size','min_price','max_price','sort','is_best_seller','is_new_arrival','is_on_sale','page'].forEach(p => params.delete(p));
+
+    // collect checked checkboxes (allow multiple values)
+    const checkboxGroups = {};
+    vendorForm.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      if (!cb.name) return;
+      if (!checkboxGroups[cb.name]) checkboxGroups[cb.name] = [];
+      if (cb.checked) checkboxGroups[cb.name].push(cb.value);
+    });
+    Object.keys(checkboxGroups).forEach(name => {
+      checkboxGroups[name].forEach(val => params.append(name, val));
+    });
+
+    // selects
+    vendorForm.querySelectorAll('select').forEach(sel => {
+      if (!sel.name) return;
+      if (sel.value) params.set(sel.name, sel.value);
+    });
+
+    // price
+    const min = vendorForm.querySelector('input[name="min_price"]');
+    const max = vendorForm.querySelector('input[name="max_price"]');
+    if (min && min.value) params.set('min_price', min.value);
+    if (max && max.value) params.set('max_price', max.value);
+
+    // keep category/subcategory hidden values if present
+    const cat = vendorForm.querySelector('input[name="category_slug"]');
+    const sub = vendorForm.querySelector('input[name="subcategory_slug"]');
+    if (cat && cat.value) params.set('category_slug', cat.value);
+    if (sub && sub.value) params.set('subcategory_slug', sub.value);
+
+    currentUrl.search = params.toString();
+    // announce update for screen readers
+    const productsCountEl = document.getElementById('productsCount');
+    if (productsCountEl) productsCountEl.textContent = '{% trans "Updating..." %}';
+    window.location.href = currentUrl.toString();
+  }
+
+  // Attach change handlers
+  vendorForm.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', updateUrlAndReload));
+  vendorForm.querySelectorAll('select, input[type="number"]').forEach(el => el.addEventListener('change', updateUrlAndReload));
+
+  // intercept submit (apply price)
+  vendorForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    updateUrlAndReload();
+  });
+
+  // provide a clear filters button behaviour if present
+  const clearBtn = document.getElementById('clearFiltersBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const currentUrl = new URL(window.location.href);
+      // clear filter params but preserve path
+      window.location.href = currentUrl.origin + currentUrl.pathname;
+    });
+  }
+});
+</script>
+<script>
+// Wire the horizontal filter form (#filter-form) to the same URL-building logic
+document.addEventListener('DOMContentLoaded', function() {
+  const hf = document.getElementById('filter-form');
+  if (!hf) return;
+
+  function buildAndReloadFromForm(form) {
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+    ['fit_type','brand','color','size','min_price','max_price','sort','is_best_seller','is_new_arrival','is_on_sale','page'].forEach(p => params.delete(p));
+
+    // selects
+    form.querySelectorAll('select').forEach(sel => { if (sel.name && sel.value) params.set(sel.name, sel.value); });
+
+    // price
+    const min = form.querySelector('input[name="min_price"]');
+    const max = form.querySelector('input[name="max_price"]');
+    if (min && min.value) params.set('min_price', min.value);
+    if (max && max.value) params.set('max_price', max.value);
+
+    // hidden category/subcategory
+    const cat = form.querySelector('input[name="category_slug"]');
+    const sub = form.querySelector('input[name="subcategory_slug"]');
+    if (cat && cat.value) params.set('category_slug', cat.value);
+    if (sub && sub.value) params.set('subcategory_slug', sub.value);
+
+    // flags (checkbox inputs that are hidden inside buttons)
+    form.querySelectorAll('input[type="checkbox"]').forEach(cb => { if (cb.name && cb.checked) params.append(cb.name, cb.value); });
+
+    currentUrl.search = params.toString();
+    const productsCountEl = document.getElementById('productsCount');
+    if (productsCountEl) productsCountEl.textContent = '{% trans "Updating..." %}';
+    window.location.href = currentUrl.toString();
+  }
+
+  // select and price change handlers
+  hf.querySelectorAll('select, input[type="number"]').forEach(el => el.addEventListener('change', function() { buildAndReloadFromForm(hf); }));
+
+  // flag button toggles (toggle hidden checkbox and reload)
+  hf.querySelectorAll('.filter-flag-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const cb = this.querySelector('input[type="checkbox"]');
+      if (!cb) return;
+      cb.checked = !cb.checked;
+      this.classList.toggle('active', cb.checked);
+      buildAndReloadFromForm(hf);
+    });
+  });
+
+  const clearBtn = document.getElementById('clearFiltersBtn');
+  if (clearBtn) clearBtn.addEventListener('click', function(e) { e.preventDefault(); const u = new URL(window.location.href); window.location.href = u.origin + u.pathname; });
+});
+</script>
+<script>
+// Setup collapsible toggle for horizontal filters (mobile collapse / desktop expanded)
+document.addEventListener('DOMContentLoaded', function() {
+  function setupCollapsible(toggleBtnId, panelId) {
+    const toggleBtn = document.getElementById(toggleBtnId);
+    const panel = document.getElementById(panelId);
+    if (!toggleBtn || !panel) return;
+
+    toggleBtn.setAttribute('aria-expanded', 'false');
+
+    function toggleHandler() {
+      const expanded = panel.classList.toggle('expanded');
+      toggleBtn.classList.toggle('expanded', expanded);
+      toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      panel.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+      // focus the first control inside when opening
+      if (expanded) {
+        const firstControl = panel.querySelector('select, input, button');
+        if (firstControl) {
+          firstControl.focus();
+        }
+      }
+    }
+    toggleBtn.addEventListener('click', toggleHandler);
+    // keyboard support: Enter and Space
+    toggleBtn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        toggleHandler();
+      }
+    });
+
+    function handleResize() {
+      if (window.innerWidth > 768) {
+        panel.classList.add('expanded');
+        toggleBtn.classList.add('expanded');
+        const arrow = toggleBtn.querySelector('.toggle-arrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+        toggleBtn.setAttribute('aria-expanded', 'true');
+      } else {
+        panel.classList.remove('expanded');
+        toggleBtn.classList.remove('expanded');
+        const arrow = toggleBtn.querySelector('.toggle-arrow');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+  }
+
+  setupCollapsible('toggleFilters', 'filtersPanel');
+});
+</script>
 {% endblock %}

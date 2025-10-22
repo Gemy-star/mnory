@@ -4,46 +4,294 @@
 {% block title %}{% trans "Wishlist" %}{% endblock %}
 
 {% block content %}
-<main class="wishlist-main">
+<section class="modern-wishlist-section">
   <div class="container">
-    <!-- Breadcrumb Navigation -->
-    <nav aria-label="breadcrumb" class="breadcrumb-nav" data-aos="fade-down" data-aos-delay="50">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <a href="{% url 'shop:home' %}">
-            <span class="material-icons">home</span>
-            {% trans "Home" %}
-          </a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">{% trans "Wishlist" %}</li>
-      </ol>
-    </nav>
-  </div>
 
-  <section class="wishlist-section" aria-label="{% trans 'Wishlist products' %}">
-    <div class="container">
-      <div class="section-header" data-aos="fade-up" data-aos-delay="50">
-        <h2 class="section-title">
-          <span class="material-icons">favorite</span>
-          {% trans "Wishlist" %}
-        </h2>
+    <!-- Modern Wishlist Header with Animation -->
+    <div class="modern-wishlist-header"
+         data-aos="fade-down"
+         data-aos-duration="800"
+         data-aos-easing="ease-out-cubic">
+      <div class="wishlist-header-content">
+        <div class="wishlist-icon-wrapper">
+          <span class="material-icons wishlist-icon">favorite</span>
+          <span class="wishlist-badge" id="wishlist-items-badge">{{ products|length }}</span>
+        </div>
+        <h1 class="wishlist-title">{% trans "My Wishlist" %}</h1>
+        <p class="wishlist-subtitle">{% trans "Save your favorite items and never lose track" %}</p>
       </div>
-      <div class="wishlist-gallery-container" role="region" aria-label="{% trans 'Wishlist gallery' %}">
-        <div class="swiper wishlist-swiper" tabindex="0" aria-roledescription="carousel" aria-label="{% trans 'Wishlist products' %}">
-          <div class="swiper-wrapper ">
-            {% for product in products %}
-                  <div class="swiper-slide" aria-label="{% trans 'Product' %} {{ forloop.counter }}">
-              {% include 'partials/_product.html' with product=product %}
-            </div>
-            {% empty %}
-            <div class="empty-state" data-aos="fade-up">
-              <span class="material-icons">favorite_border</span>
-              <p>{% trans "Your wishlist is empty." %}</p>
-            </div>
-            {% endfor %}
-          </div>
-      </div>
+      <div class="wishlist-divider"></div>
     </div>
-  </section>
-</main>
+
+    {% if products %}
+    <div class="modern-wishlist-container" id="wishlist-items-container">
+
+      <!-- Wishlist Items Grid -->
+      <div class="wishlist-items-wrapper">
+        <div class="wishlist-items-grid">
+          {% for product in products %}
+          <div class="modern-wishlist-item wishlist-item"
+               data-product-id="{{ product.id }}"
+               data-aos="zoom-in-up"
+               data-aos-delay="{{ forloop.counter|add:'0'|add:'0' }}"
+               data-aos-duration="600"
+               data-aos-easing="ease-out-back">
+
+            <div class="wishlist-item-horizontal-layout">
+              <!-- Product Card -->
+              <div class="wishlist-item-card">
+                {% include "partials/_product.html" with product=product section="wishlist" %}
+              </div>
+
+              <!-- Item Details with Modern Design -->
+              <div class="wishlist-item-info">
+                <div class="item-details">
+                  <div class="detail-item" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'1'|add:'0'|add:'0' }}">
+                    <span class="detail-icon material-icons">category</span>
+                    <div class="detail-content">
+                      <span class="detail-label">{% trans "Category" %}</span>
+                      <span class="detail-value">{{ product.category.name|default:"N/A" }}</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-item" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'1'|add:'5'|add:'0' }}">
+                    <span class="detail-icon material-icons">inventory_2</span>
+                    <div class="detail-content">
+                      <span class="detail-label">{% trans "Availability" %}</span>
+                      {% if product.is_in_stock %}
+                        <span class="detail-value in-stock">{% trans "In Stock" %}</span>
+                      {% else %}
+                        <span class="detail-value out-of-stock">{% trans "Out of Stock" %}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="detail-item" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'2'|add:'0'|add:'0' }}">
+                    <span class="detail-icon material-icons">palette</span>
+                    <div class="detail-content">
+                      <span class="detail-label">{% trans "Colors" %}</span>
+                      <span class="detail-value">{{ product.get_available_colors.count }} {% trans "available" %}</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-item detail-item-price" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'2'|add:'5'|add:'0' }}">
+                    <span class="detail-icon material-icons">sell</span>
+                    <div class="detail-content">
+                      <span class="detail-label">{% trans "Price" %}</span>
+                      {% if product.is_on_sale %}
+                        <div class="price-wrapper">
+                          <span class="detail-value-price sale-price">{{ product.price_egp|floatformat:2 }} EGP</span>
+                          <span class="original-price">{{ product.price_egp_no_sale|floatformat:2 }}</span>
+                        </div>
+                      {% else %}
+                        <span class="detail-value-price">{{ product.price_egp_no_sale|floatformat:2 }} EGP</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="wishlist-actions">
+                  <button class="modern-add-to-cart-btn add-to-cart-from-wishlist"
+                          data-product-id="{{ product.id }}"
+                          data-aos="fade-up"
+                          data-aos-delay="{{ forloop.counter|add:'3'|add:'0'|add:'0' }}"
+                          title="{% trans 'Add to Cart' %}">
+                    <span class="material-icons">shopping_cart</span>
+                    <span class="btn-text">{% trans "Add to Cart" %}</span>
+                  </button>
+
+                  <button class="modern-remove-wishlist-btn remove-from-wishlist"
+                          data-product-id="{{ product.id }}"
+                          data-aos="fade-up"
+                          data-aos-delay="{{ forloop.counter|add:'3'|add:'5'|add:'0' }}"
+                          title="{% trans 'Remove from wishlist' %}">
+                    <span class="material-icons">favorite_border</span>
+                    <span class="btn-text">{% trans "Remove" %}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Wishlist Summary -->
+      <div class="wishlist-summary-wrapper">
+        <div class="modern-wishlist-summary sticky-summary"
+             data-aos="fade-left"
+             data-aos-duration="800"
+             data-aos-delay="200">
+
+          <div class="summary-header">
+            <span class="material-icons summary-icon">favorite</span>
+            <h3 class="summary-title">{% trans "Wishlist Summary" %}</h3>
+          </div>
+
+          <div class="summary-body">
+            <div class="summary-stat"
+                 data-aos="fade-left"
+                 data-aos-delay="300">
+              <span class="stat-icon material-icons">inventory</span>
+              <div class="stat-content">
+                <span class="stat-label">{% trans "Total Items" %}</span>
+                <span class="stat-value" id="wishlist-total-items">{{ products|length }}</span>
+              </div>
+            </div>
+
+            <div class="summary-stat"
+                 data-aos="fade-left"
+                 data-aos-delay="350">
+              <span class="stat-icon material-icons">check_circle</span>
+              <div class="stat-content">
+                <span class="stat-label">{% trans "In Stock" %}</span>
+                <span class="stat-value">{{ products|length }}</span>
+              </div>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-actions">
+              <a href="{% url 'shop:home' %}"
+                 class="continue-browsing-btn"
+                 data-aos="fade-up"
+                 data-aos-delay="400">
+                <span class="material-icons">storefront</span>
+                <span class="btn-text">{% trans "Continue Browsing" %}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    {% else %}
+    <div class="empty-wishlist-container"
+         id="empty-wishlist-message"
+         data-aos="zoom-in"
+         data-aos-duration="800">
+      <div class="empty-wishlist-icon-wrapper">
+        <span class="material-icons empty-wishlist-icon">favorite_border</span>
+      </div>
+      <h3 class="empty-wishlist-title">{% trans "Your wishlist is empty" %}</h3>
+      <p class="empty-wishlist-text">{% trans "Start adding items to your wishlist to save them for later." %}</p>
+      <a href="{% url 'shop:home' %}" class="empty-wishlist-btn">
+        <span class="material-icons">storefront</span>
+        {% trans "Browse Products" %}
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}
+
+{% block js %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Initialize AOS
+  AOS.init({
+    duration: 800,
+    easing: 'ease-out-cubic',
+    once: false,
+    mirror: true,
+    offset: 50
+  });
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  // Remove from wishlist with animation
+  const wishlistContainer = document.getElementById('wishlist-items-container');
+  if (wishlistContainer) {
+    wishlistContainer.addEventListener('click', function(e) {
+      if (e.target.closest('.remove-from-wishlist')) {
+        e.preventDefault();
+        const btn = e.target.closest('.remove-from-wishlist');
+        const productId = btn.dataset.productId;
+        const wishlistItemElem = document.querySelector(`.wishlist-item[data-product-id="${productId}"]`);
+
+        // Add removing animation
+        if (wishlistItemElem) {
+          wishlistItemElem.style.animation = 'wishlistItemRemove 0.5s ease-out forwards';
+        }
+
+        setTimeout(() => {
+          // Toggle wishlist via existing functionality
+          const wishlistToggleBtn = wishlistItemElem.querySelector('[data-action="wishlist-toggle"]');
+          if (wishlistToggleBtn) {
+            wishlistToggleBtn.click();
+          }
+
+          setTimeout(() => {
+            if (wishlistItemElem) {
+              wishlistItemElem.remove();
+            }
+
+            // Update counter
+            const remainingItems = document.querySelectorAll('.wishlist-item').length;
+            const badge = document.getElementById('wishlist-items-badge');
+            const totalItems = document.getElementById('wishlist-total-items');
+
+            if (badge) {
+              badge.style.animation = 'pulse 0.5s ease';
+              badge.textContent = remainingItems;
+            }
+            if (totalItems) {
+              totalItems.style.animation = 'pulse 0.5s ease';
+              totalItems.textContent = remainingItems;
+            }
+
+            // Show empty state if no items left
+            if (remainingItems === 0) {
+              const container = document.getElementById('wishlist-items-container');
+              if (container) {
+                container.style.animation = 'fadeOut 0.5s ease forwards';
+                setTimeout(() => {
+                  container.style.display = 'none';
+                  const emptyMsg = document.getElementById('empty-wishlist-message');
+                  if (emptyMsg) {
+                    emptyMsg.style.display = 'flex';
+                    emptyMsg.style.animation = 'fadeInScale 0.6s ease forwards';
+                  } else {
+                    // Create empty message if it doesn't exist
+                    location.reload();
+                  }
+                }, 500);
+              }
+            }
+          }, 100);
+        }, 400);
+      }
+    });
+  }
+
+  // Add hover animations to wishlist items
+  const wishlistItems = document.querySelectorAll('.modern-wishlist-item');
+  wishlistItems.forEach(item => {
+    item.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px)';
+    });
+    item.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+});
+</script>
 {% endblock %}

@@ -106,9 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 // static/js/main.js
 // ========================================
-// MNORY - Unified JavaScript Functionality
-// All inline scripts consolidated here
-// ========================================
 
 // ========================================
 // EARLY INITIALIZATION (Before DOM Ready)
@@ -221,25 +218,20 @@ function initCategoryProductsSwiper() {
         },
 
         // Responsive breakpoints
-        breakpoints: {
-            480: {
-                slidesPerView: 2,
-                spaceBetween: 15,
-            },
-            768: {
-                slidesPerView: 3,
-                spaceBetween: 20,
-            },
-            1024: {
-                slidesPerView: 3,
-                spaceBetween: 25,
-            },
-            1200: {
-                slidesPerView: 3,
-                spaceBetween: 30,
-            }
-        },
-
+           breakpoints: {
+                    // Very small phones
+                    0: { slidesPerView: 1, spaceBetween: 25 },
+                    // Small phones
+                    375: { slidesPerView: 1, spaceBetween: 30 },
+                    // Large phones / small tablets
+                    576: { slidesPerView: 2, spaceBetween: 35 },
+                    // Tablets
+                    768: { slidesPerView: 3, spaceBetween: 25 },
+                    // Desktops
+                    992: { slidesPerView: 3, spaceBetween: 25 },
+                    // Large desktops
+                    1200: { slidesPerView: 3, spaceBetween: 25 }
+                },
         // Effects and animations
         on: {
             init: function() {
@@ -1508,11 +1500,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 nextEl: '.related-next',
                 prevEl: '.related-prev',
             },
-            breakpoints: {
-                576: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                992: { slidesPerView: 4 },
-            }
+               breakpoints: {
+                    // Very small phones
+                    0: { slidesPerView: 1, spaceBetween: 25 },
+                    // Small phones
+                    375: { slidesPerView: 1, spaceBetween: 30 },
+                    // Large phones / small tablets
+                    576: { slidesPerView: 2, spaceBetween: 35 },
+                    // Tablets
+                    768: { slidesPerView: 3, spaceBetween: 25 },
+                    // Desktops
+                    992: { slidesPerView: 3, spaceBetween: 25 },
+                    // Large desktops
+                    1200: { slidesPerView: 3, spaceBetween: 25 }
+                },
         });
     }
 
@@ -1545,12 +1546,20 @@ document.addEventListener('DOMContentLoaded', function() {
         new Swiper('.wishlist-swiper', {
             slidesPerView: 2,
             spaceBetween: 15,
-            breakpoints: {
-                576: { slidesPerView: 2, spaceBetween: 15 },
-                768: { slidesPerView: 3, spaceBetween: 20 },
-                992: { slidesPerView: 3, spaceBetween: 20 },
-                1200: { slidesPerView: 3, spaceBetween: 25 }
-            },
+              breakpoints: {
+                    // Very small phones
+                    0: { slidesPerView: 1, spaceBetween: 25 },
+                    // Small phones
+                    375: { slidesPerView: 1, spaceBetween: 30 },
+                    // Large phones / small tablets
+                    576: { slidesPerView: 2, spaceBetween: 35 },
+                    // Tablets
+                    768: { slidesPerView: 3, spaceBetween: 25 },
+                    // Desktops
+                    992: { slidesPerView: 3, spaceBetween: 25 },
+                    // Large desktops
+                    1200: { slidesPerView: 3, spaceBetween: 25 }
+                },
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev'
@@ -1581,12 +1590,20 @@ document.addEventListener('DOMContentLoaded', function() {
         new Swiper('.checkout-swiper', {
             slidesPerView: 2,
             spaceBetween: 15,
-            breakpoints: {
-                576: { slidesPerView: 2, spaceBetween: 15 },
-                768: { slidesPerView: 3, spaceBetween: 20 },
-                992: { slidesPerView: 3, spaceBetween: 20 },
-                1200: { slidesPerView: 3, spaceBetween: 25 }
-            },
+               breakpoints: {
+                    // Very small phones
+                    0: { slidesPerView: 1, spaceBetween: 25 },
+                    // Small phones
+                    375: { slidesPerView: 1, spaceBetween: 30 },
+                    // Large phones / small tablets
+                    576: { slidesPerView: 2, spaceBetween: 35 },
+                    // Tablets
+                    768: { slidesPerView: 3, spaceBetween: 25 },
+                    // Desktops
+                    992: { slidesPerView: 3, spaceBetween: 25 },
+                    // Large desktops
+                    1200: { slidesPerView: 3, spaceBetween: 25 }
+                },
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev'

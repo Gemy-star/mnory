@@ -35,6 +35,7 @@ import uuid
 import logging
 from django.utils.translation import gettext as _
 from constance import config
+from freelancing.models import Review
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -1865,10 +1866,8 @@ def vendor_detail(request, slug):
     # which points to settings.AUTH_USER_MODEL (your MnoryUser).
     vendor_user_instance = vendor_profile.user
 
-    # Get products for this vendor, filtered by the MnoryUser instance
-    products_queryset = Product.objects.filter(
-        vendor=vendor_user_instance, is_active=True
-    )
+    # Get products for this vendor, filtered by the VendorProfile instance
+    products_queryset = Product.objects.filter(vendor=vendor_profile, is_active=True)
 
     # Apply filters
     price_min = request.GET.get("price_min")
@@ -1931,29 +1930,29 @@ def vendor_detail(request, slug):
 
     # Filter Categories that have active products from this vendor
     categories = Category.objects.filter(
-        products__vendor=vendor_user_instance, products__is_active=True
+        products__vendor=vendor_profile, products__is_active=True
     ).distinct()
 
     # Filter Brands that have active products from this vendor
     brands = Brand.objects.filter(
-        products__vendor=vendor_user_instance, products__is_active=True
+        products__vendor=vendor_profile, products__is_active=True
     ).distinct()
 
     # Filter Colors that are associated with active products from this vendor via ProductColor
     colors = Color.objects.filter(
-        productcolor__product__vendor=vendor_user_instance,
+        productcolor__product__vendor=vendor_profile,
         productcolor__product__is_active=True,
     ).distinct()
 
     # Filter Sizes that are associated with active products from this vendor via ProductSize
     sizes = Size.objects.filter(
-        productsize__product__vendor=vendor_user_instance,
+        productsize__product__vendor=vendor_profile,
         productsize__product__is_active=True,
     ).distinct()
 
     # Get min/max price for the vendor's products (for filter range)
     price_range = Product.objects.filter(
-        vendor=vendor_user_instance, is_active=True
+        vendor=vendor_profile, is_active=True
     ).aggregate(Min("price"), Max("price"))
     # Ensure price_range has a default if no products exist
     min_price_val = (
@@ -1966,11 +1965,62 @@ def vendor_detail(request, slug):
     # Vendor stats
     vendor_stats = {
         "total_products": Product.objects.filter(
-            vendor=vendor_user_instance, is_active=True
+            vendor=vendor_profile, is_active=True
         ).count(),
         # Count categories that have active products from this vendor
         "categories_count": categories.count(),  # We already filtered `categories` above
     }
+
+    # Related vendors: other vendors producing in the same categories
+    related_qs = (
+        VendorProfile.objects.filter(
+            products__category__in=categories, products__is_active=True
+        )
+        .exclude(id=vendor_profile.id)
+        .distinct()[:6]
+    )
+
+    # Ensure we have a safe vendor_location string for templates (some VendorProfile instances may not have `location`)
+    vendor_location = getattr(vendor_profile, "location", "") or ""
+
+    # Build a safe list of small dicts for related vendors to avoid missing attribute errors in templates
+    related_vendors = []
+    for rv in related_qs:
+        # logo url if present
+        logo_url = None
+        try:
+            if getattr(rv, "logo", None):
+                logo_url = rv.logo.url
+        except Exception:
+            logo_url = None
+
+        # safe location (use get_location_display if available)
+        if hasattr(rv, "get_location_display"):
+            try:
+                safe_location = rv.get_location_display() or ""
+            except Exception:
+                safe_location = getattr(rv, "location", "") or ""
+        else:
+            safe_location = getattr(rv, "location", "") or ""
+
+        related_vendors.append(
+            {
+                "slug": getattr(rv, "slug", ""),
+                "store_name": getattr(rv, "store_name", ""),
+                "logo_url": logo_url,
+                "safe_location": safe_location,
+            }
+        )
+
+    # Vendor reviews (if freelancing.Review exists) where the reviewee is the vendor's user
+    vendor_reviews = []
+    try:
+        if vendor_user_instance:
+            vendor_reviews = Review.objects.filter(
+                reviewee=vendor_user_instance, is_public=True
+            ).order_by("-created_at")[:5]
+    except Exception:
+        vendor_reviews = []
 
     context = {
         "vendor": vendor_profile,  # Pass the VendorProfile instance to the template
@@ -1984,6 +2034,9 @@ def vendor_detail(request, slug):
             "price__max": max_price_val,
         },  # Pass adjusted price_range
         "vendor_stats": vendor_stats,
+        "related_vendors": related_vendors,
+        "vendor_location": vendor_location,
+        "vendor_reviews": vendor_reviews,
     }
     return render(request, "shop/vendor_detail.html", context)
 

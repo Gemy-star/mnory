@@ -14,7 +14,7 @@
         <div class="product-badges">
             {% if not product.is_in_stock %}
                 <div class="product-badge outofstock-badge">
-                    <i class="fas fa-times-circle"></i>
+                    <span class="material-icons" aria-hidden="true">cancel</span>
                     <span>{% trans "Out" %}</span>
                 </div>
             {% else %}
@@ -239,10 +239,10 @@
         <!-- Vendor Info -->
             <div class="vendor-info-compact">
                 <span class="material-icons">store</span>
-                {% if product.vendor and product.vendor.vendorprofile.store_name %}
-                <span class="vendor-name">{{ product.vendor.vendorprofile.store_name|truncatewords:3 }}</span>
+                {% if product.vendor and product.vendor.store_name %}
+                    <a href="{{ product.vendor.get_absolute_url }}" class="vendor-name" title="{{ product.vendor.store_name }}">{{ product.vendor.store_name|truncatewords:3 }}</a>
                 {% else %}
-                <span class="vendor-name text-muted">{% trans "Not specified" %}</span>
+                    <span class="vendor-name text-muted">{% trans "Not specified" %}</span>
                 {% endif %}
             </div>
     </div>

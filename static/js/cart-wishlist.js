@@ -230,12 +230,11 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
                         button.classList.add('active');
                         button.setAttribute('aria-pressed', 'true');
                         if (icon) {
-                            if (icon.classList.contains('material-icons')) {
-                                icon.textContent = 'favorite';
-                            } else {
-                                icon.classList.remove('far', 'fa-heart');
-                                icon.classList.add('fas', 'fa-heart');
+                            // Prefer material icons; convert if a FontAwesome <i> was used
+                            if (!icon.classList.contains('material-icons')) {
+                                icon.className = 'material-icons';
                             }
+                            icon.textContent = 'favorite';
                             icon.style.animation = 'heartBeat 0.5s ease';
                             setTimeout(() => { icon.style.animation = ''; }, 500);
                         }
@@ -251,12 +250,10 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
                             button.classList.remove('active');
                             button.setAttribute('aria-pressed', 'false');
                             if (icon) {
-                                if (icon.classList.contains('material-icons')) {
-                                    icon.textContent = 'favorite_border';
-                                } else {
-                                    icon.classList.remove('fas', 'fa-heart');
-                                    icon.classList.add('far', 'fa-heart');
+                                if (!icon.classList.contains('material-icons')) {
+                                    icon.className = 'material-icons';
                                 }
+                                icon.textContent = 'favorite_border';
                             }
                         }
                     }

@@ -400,17 +400,17 @@ document.addEventListener('DOMContentLoaded', function () {
         // Product badges
         let badgesHtml = '<div class="product-badges">';
         if (!product.is_in_stock) {
-            badgesHtml += `<div class="product-badge outofstock-badge"><i class="fas fa-times-circle"></i><span>${translations.out}</span></div>`;
+            badgesHtml += `<div class="product-badge outofstock-badge"><span class="material-icons" aria-hidden="true">cancel</span><span>${translations.out}</span></div>`;
         } else {
             if (product.is_on_sale) {
                 const discountText = product.discount_percentage ? `-${product.discount_percentage}%` : '';
-                badgesHtml += `<div class="product-badge sale-badge"><i class="fas fa-tag"></i><span>${translations.sale}</span>${discountText ? `<small>${discountText}</small>` : ''}</div>`;
+                badgesHtml += `<div class="product-badge sale-badge"><span class="material-icons" aria-hidden="true">local_offer</span><span>${translations.sale}</span>${discountText ? `<small>${discountText}</small>` : ''}</div>`;
             }
             if (product.is_best_seller) {
-                badgesHtml += `<div class="product-badge bestseller-badge"><i class="fas fa-crown"></i><span>${translations.best}</span></div>`;
+                badgesHtml += `<div class="product-badge bestseller-badge"><span class="material-icons" aria-hidden="true">workspace_premium</span><span>${translations.best}</span></div>`;
             }
             if (product.is_new_arrival) {
-                badgesHtml += `<div class="product-badge new-badge"><i class="fas fa-sparkles"></i><span>${translations.new}</span></div>`;
+                badgesHtml += `<div class="product-badge new-badge"><span class="material-icons" aria-hidden="true">new_releases</span><span>${translations.new}</span></div>`;
             }
         }
         badgesHtml += '</div>';
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
         priceHtml += '</div>';
 
         // Wishlist state
-        const wishlistIcon = product.in_wishlist ? 'fas fa-heart' : 'far fa-heart';
+    const wishlistIcon = product.in_wishlist ? 'favorite' : 'favorite_border';
         const wishlistClass = product.in_wishlist ? 'active' : '';
 
         // Images - updated to match API field names
@@ -461,14 +461,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             data-action="wishlist-toggle"
                             data-product-id="${product.id || product.pk}"
                             title="${translations.addToWishlist}">
-                        <i class="${wishlistIcon}"></i>
+                        <span class="material-icons" aria-hidden="true">${wishlistIcon}</span>
                     </button>
-                    <button type="button"
+                        <button type="button"
                             class="cart-btn btn-icon-action"
                             data-action="cart-add"
                             data-product-id="${product.id || product.pk}"
                             title="${translations.addToCart}">
-                        <i class="fas fa-shopping-cart"></i>
+                        <span class="material-icons" aria-hidden="true">shopping_cart</span>
                     </button>
                 </div>
             </div>
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${priceHtml}
                     <div class="quick-actions">
                         <a href="${product.url || '#'}" class="btn-quick-view">
-                            <i class="fas fa-eye"></i>
+                            <span class="material-icons" aria-hidden="true">visibility</span>
                             <span>${translations.quickView}</span>
                         </a>
                     </div>
