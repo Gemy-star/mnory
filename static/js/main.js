@@ -1353,19 +1353,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function initializeProductSwiper() {
-        const productThumbsSwiper = new Swiper('.product-detail-thumbs', {
-            spaceBetween: 10,
-            slidesPerView: 4,
-            freeMode: true,
-            watchSlidesProgress: true,
-            breakpoints: {
-                640: { slidesPerView: 5 },
-                768: { slidesPerView: 6 },
-                1024: { slidesPerView: 7 },
-            }
-        });
+        // Wait for Swiper to be available
+        if (typeof Swiper === 'undefined') {
+            console.error('Swiper library not loaded');
+            return;
+        }
 
-        const productMainSwiper = new Swiper('.product-detail-swiper', {
+        // Initialize thumbnails swiper first
+        const thumbsElement = document.querySelector('.product-detail-thumbs');
+        let productThumbsSwiper = null;
+
+        if (thumbsElement) {
+            productThumbsSwiper = new Swiper('.product-detail-thumbs', {
+                spaceBetween: 10,
+                slidesPerView: 4,
+                freeMode: true,
+                watchSlidesProgress: true,
+                breakpoints: {
+                    640: { slidesPerView: 5 },
+                    768: { slidesPerView: 6 },
+                    1024: { slidesPerView: 7 },
+                }
+            });
+        }
+
+        // Initialize main product swiper
+        const mainSwiperConfig = {
             spaceBetween: 10,
             zoom: {
                 maxRatio: 5,
@@ -1373,16 +1386,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggle: true,
             },
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '.product-detail-swiper .swiper-button-next',
+                prevEl: '.product-detail-swiper .swiper-button-prev',
             },
             pagination: {
-                el: '.swiper-pagination',
+                el: '.product-detail-swiper .swiper-pagination',
                 clickable: true,
                 dynamicBullets: true,
-            },
-            thumbs: {
-                swiper: productThumbsSwiper,
             },
             keyboard: {
                 enabled: true,
@@ -1390,7 +1400,21 @@ document.addEventListener('DOMContentLoaded', function() {
             mousewheel: {
                 invert: false,
             },
-        });
+            on: {
+                init: function() {
+                    console.log('Product detail swiper initialized');
+                },
+            }
+        };
+
+        // Add thumbs only if thumbs swiper exists
+        if (productThumbsSwiper) {
+            mainSwiperConfig.thumbs = {
+                swiper: productThumbsSwiper,
+            };
+        }
+
+        const productMainSwiper = new Swiper('.product-detail-swiper', mainSwiperConfig);
 
         // Enhanced zoom functionality
         const zoomIndicator = document.querySelector('.zoom-indicator');
@@ -1408,38 +1432,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Click to zoom
-        document.querySelectorAll('.product-detail-swiper .swiper-slide img').forEach((img) => {
-            img.addEventListener('click', () => {
-                if (productMainSwiper.zoom) {
-                    if (productMainSwiper.zoom.scale > 1) {
-                        productMainSwiper.zoom.out();
-                    } else {
-                        productMainSwiper.zoom.in();
+        setTimeout(() => {
+            document.querySelectorAll('.product-detail-swiper .swiper-slide img').forEach((img) => {
+                img.addEventListener('click', () => {
+                    if (productMainSwiper.zoom) {
+                        if (productMainSwiper.zoom.scale > 1) {
+                            productMainSwiper.zoom.out();
+                        } else {
+                            productMainSwiper.zoom.in();
+                        }
                     }
-                }
-            });
+                });
 
-            img.style.cursor = 'zoom-in';
+                img.style.cursor = 'zoom-in';
 
-            img.parentElement.addEventListener('mouseenter', () => {
-                if (productMainSwiper.zoom && productMainSwiper.zoom.scale > 1) {
-                    img.style.cursor = 'zoom-out';
-                }
-            });
-        });
-
-        // Double click to zoom
-        document.querySelectorAll('.product-detail-swiper .swiper-slide').forEach((slide) => {
-            slide.addEventListener('dblclick', () => {
-                if (productMainSwiper.zoom) {
-                    if (productMainSwiper.zoom.scale > 1) {
-                        productMainSwiper.zoom.out();
-                    } else {
-                        productMainSwiper.zoom.in();
+                img.parentElement.addEventListener('mouseenter', () => {
+                    if (productMainSwiper.zoom && productMainSwiper.zoom.scale > 1) {
+                        img.style.cursor = 'zoom-out';
                     }
-                }
+                });
             });
-        });
+
+            // Double click to zoom
+            document.querySelectorAll('.product-detail-swiper .swiper-slide').forEach((slide) => {
+                slide.addEventListener('dblclick', () => {
+                    if (productMainSwiper.zoom) {
+                        if (productMainSwiper.zoom.scale > 1) {
+                            productMainSwiper.zoom.out();
+                        } else {
+                            productMainSwiper.zoom.in();
+                        }
+                    }
+                });
+            });
+        }, 100);
     }
 
     // Initialize related products swiper
