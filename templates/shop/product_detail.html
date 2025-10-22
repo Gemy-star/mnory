@@ -50,8 +50,7 @@
             <div class="container-fluid">
                 <div class="row g-4 align-items-stretch">
                     <!-- Left Column: Product Images Swiper -->
-                                 <!-- Left Column: Product Images Swiper -->
-                    <div class="col-lg-6 col-xl-6" data-aos="fade-right" data-aos-delay="100">
+                    <div class="col-lg-5 col-xl-5" data-aos="fade-right" data-aos-delay="100">
                         <div class="product-gallery-container">
                             <!-- Main Product Image Swiper -->
                             <div class="product-images-wrapper" role="region" aria-label="{% trans 'Product images gallery' %}">
@@ -65,7 +64,11 @@
                                                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                                                alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans 'Image' %} {{ forloop.counter }}{% endif %}"
                                                class="product-detail-img"
-                                               aria-describedby="global-zoom-indicator">
+                                               aria-describedby="zoom-indicator">
+                                                <div class="zoom-indicator" id="zoom-indicator" aria-live="polite">
+                                              <span class="material-icons" aria-hidden="true">zoom_in</span>
+                                              <span class="zoom-text">{% trans "Click to zoom" %}</span>
+                                                </div>
                                             </div>
                                         </div>
                                         {% empty %}
@@ -75,7 +78,11 @@
                                            src="https://placehold.co/600x600/e0e0e0/555555?text=No+Image"
                                            alt="{% trans 'No image available' %}"
                                            class="product-detail-img"
-                                           aria-describedby="global-zoom-indicator">
+                                           aria-describedby="zoom-indicator">
+                                                <div class="zoom-indicator" id="zoom-indicator" aria-live="polite">
+                                                    <span class="material-icons" aria-hidden="true">zoom_in</span>
+                                                    <span class="zoom-text">{% trans "Click to zoom" %}</span>
+                                                </div>
                                             </div>
                                         </div>
                                         {% endfor %}
@@ -83,8 +90,8 @@
                                     <div class="swiper-pagination" aria-label="{% trans 'Gallery pagination' %}"></div>
                                     <button class="swiper-button-prev" aria-label="{% trans 'Previous image' %}"></button>
                                     <button class="swiper-button-next" aria-label="{% trans 'Next image' %}"></button>
-                                    <!-- Single Zoom indicator outside slides -->
-                                    <div class="zoom-indicator" id="global-zoom-indicator" aria-live="polite">
+                                    <!-- Zoom indicator -->
+                                    <div class="zoom-indicator" id="zoom-indicator" aria-live="polite">
                                         <span class="material-icons" aria-hidden="true">zoom_in</span>
                                         <span class="zoom-text">{% trans "Click to zoom" %}</span>
                                     </div>
@@ -114,8 +121,6 @@
                             </div>
                         </div>
                     </div>
-
-
 
                     <!-- Right Column: Product Information -->
                     <div class="col-lg-7 col-xl-7" data-aos="fade-left" data-aos-delay="150">

@@ -4,10 +4,10 @@
 {% block title %}{% trans "Shopping Cart" %}{% endblock %}
 
 {% block content %}
-<section class="section pt-4">
+<section class="section pt-4 cart-section">
   <div class="container my-5 pt-4">
 
-    <div class="section-header text-center mb-5">
+    <div class="section-header text-center mb-5" data-aos="fade-up" data-aos-delay="50">
       <h2 class="fw-bold">{% trans "Shopping Cart" %}</h2>
       <p class="text-muted">{% trans "Review the items in your cart before checkout." %}</p>
     </div>
@@ -18,8 +18,8 @@
       <div class="col-lg-8">
         <div class="row">
           {% for item in items %}
-          <div class="col col-lg-4 mb-4 cart-item" data-item-id="{{ item.id }}">
-            <div class="card h-100 shadow-sm border-0">
+          <div class="col col-lg-4 mb-4 cart-item" data-item-id="{{ item.id }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:1|mul:50 }}">
+            <div class="card h-100 shadow-sm border-0 product-card">
               <div class="card-body">
                 {% include "partials/_product.html" with product=item.variant.product section="cart" %}
 
@@ -32,7 +32,7 @@
               </div>
               <div class="card-footer bg-white border-0 text-end">
                 <a href="#" class="remove-from-cart btn btn-danger btn-lg" data-id="{{ item.id }}" title="{% trans 'Remove from cart' %}">
-                  <i class="fas fa-trash-alt text-white"></i>
+                  <span class="material-icons">delete</span>
                 </a>
               </div>
             </div>
@@ -43,27 +43,27 @@
 
       <!-- Invoice-style summary -->
       <div class="col-lg-4">
-        <div class="card shadow-sm sticky-top" style="top: 90px;">
+        <div class="card shadow-sm sticky-top checkout-summary-section" style="top: 90px;" data-aos="fade-left" data-aos-delay="150">
           <div class="card-header bg-light border-0">
             <h5 class="mb-0 fw-bold">{% trans "Order Summary" %}</h5>
           </div>
           <div class="card-body">
-            <ul class="list-unstyled mb-4" id="order-summary">
-  <li class="d-flex justify-content-between py-2 border-bottom">
-    <span>{% trans "Subtotal" %}</span>
-    <span id="cart-subtotal">{{ total|floatformat:2 }}</span>
-  </li>
-  <li class="d-flex justify-content-between py-2 border-bottom">
-    <span>{% trans "Shipping" %}</span>
-    <span id="cart-shipping">{{ shipping_fee|floatformat:2 }}</span>
-  </li>
-  <li class="d-flex justify-content-between py-2 border-bottom">
-    <span class="fw-bold">{% trans "Total" %}</span>
-    <span class="fw-bold" id="cart-total">{{ grand_total|floatformat:2 }}</span>
-  </li>
-</ul>
-            <a href="{% url 'shop:checkout' %}" class="btn btn-lg bg-black w-100 text-white">
-              {% trans "Proceed to Checkout" %} <i class="fas fa-arrow-right ms-1"></i>
+            <ul class="list-unstyled mb-4 checkout-summary-list" id="order-summary">
+              <li class="d-flex justify-content-between py-2 border-bottom">
+                <span>{% trans "Subtotal" %}</span>
+                <span id="cart-subtotal">{{ total|floatformat:2 }}</span>
+              </li>
+              <li class="d-flex justify-content-between py-2 border-bottom">
+                <span>{% trans "Shipping" %}</span>
+                <span id="cart-shipping">{{ shipping_fee|floatformat:2 }}</span>
+              </li>
+              <li class="d-flex justify-content-between py-2 border-bottom">
+                <span class="fw-bold">{% trans "Total" %}</span>
+                <span class="fw-bold" id="cart-total">{{ grand_total|floatformat:2 }}</span>
+              </li>
+            </ul>
+            <a href="{% url 'shop:checkout' %}" class="btn btn-lg checkout-btn-place-order w-100 text-white" style="background: var(--accent-color, #111);">
+              {% trans "Proceed to Checkout" %} <span class="material-icons ms-1">arrow_forward</span>
             </a>
           </div>
         </div>
@@ -71,7 +71,7 @@
     </div>
 
     {% else %}
-    <div class="text-center text-muted mt-5" id="empty-cart-message" style="display:none;">
+    <div class="text-center text-muted mt-5" id="empty-cart-message" style="display:none;" data-aos="fade-up">
       <h5>{% trans "Your cart is empty." %}</h5>
       <a href="{% url 'shop:home' %}" class="btn btn-outline-primary mt-3">
         {% trans "Continue Shopping" %}
