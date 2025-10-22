@@ -1,225 +1,49 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load i18n %}
+
+{% block title %}{% trans "Wishlist" %}{% endblock %}
 
 {% block content %}
-<section class="section pt-2">
-    <div class="container my-5 pt-4">
+<main class="wishlist-main">
+  <div class="container">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav" data-aos="fade-down" data-aos-delay="50">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{% url 'shop:home' %}">
+            <span class="material-icons">home</span>
+            {% trans "Home" %}
+          </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{% trans "Wishlist" %}</li>
+      </ol>
+    </nav>
+  </div>
 
-        <div class="section-header pt-2">
-            <h2>{% trans "My Wishlist" %}</h2>
-        </div>
-
-        {% if products %}
-        <div class="products-grid">
+  <section class="wishlist-section" aria-label="{% trans 'Wishlist products' %}">
+    <div class="container">
+      <div class="section-header" data-aos="fade-up" data-aos-delay="50">
+        <h2 class="section-title">
+          <span class="material-icons">favorite</span>
+          {% trans "Wishlist" %}
+        </h2>
+      </div>
+      <div class="wishlist-gallery-container" role="region" aria-label="{% trans 'Wishlist gallery' %}">
+        <div class="swiper wishlist-swiper" tabindex="0" aria-roledescription="carousel" aria-label="{% trans 'Wishlist products' %}">
+          <div class="swiper-wrapper ">
             {% for product in products %}
-                {% include "partials/_product.html" with product=product section="wishlist" %}
+                  <div class="swiper-slide" aria-label="{% trans 'Product' %} {{ forloop.counter }}">
+              {% include 'partials/_product.html' with product=product %}
+            </div>
+            {% empty %}
+            <div class="empty-state" data-aos="fade-up">
+              <span class="material-icons">favorite_border</span>
+              <p>{% trans "Your wishlist is empty." %}</p>
+            </div>
             {% endfor %}
-        </div>
-        {% else %}
-            <div class="text-muted">{% trans "No products available." %}</div>
-        {% endif %}
-<div class="pagination">
-  {% if products.has_previous %}
-    <a href="?page={{ products.previous_page_number }}" aria-label="{% trans 'Previous page' %}">
-      <i class="fa-solid fa-chevron-left"></i> {% trans "Previous" %}
-    </a>
-  {% endif %}
-
-  {% for page_num in products.paginator.page_range %}
-    {% if page_num == products.number %}
-      <span class="current-page">{{ page_num }}</span>
-    {% else %}
-      <a href="?page={{ page_num }}">{{ page_num }}</a>
-    {% endif %}
-  {% endfor %}
-
-  {% if products.has_next %}
-    <a href="?page={{ products.next_page_number }}" aria-label="{% trans 'Next page' %}">
-      {% trans "Next" %} <i class="fa-solid fa-chevron-right"></i>
-    </a>
-  {% endif %}
-</div>
-
+          </div>
+      </div>
     </div>
-</section>
-{% endblock %}
-
-{% block css %}
-<style>
-    /* Remove swiper-slide styles */
-    /* Keep your product card styles */
-    .current-page {
-    color: #000000; /* primary color */
-    font-weight: 700;
-    background-color: #f4f4f4; /* secondary background */
-    padding: 0.2em 0.5em;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    font-family: Arial, sans-serif;
-    font-size: 1rem;
-}
-
-.pagination a, .pagination span {
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
-    font-weight: 600;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    user-select: none;
-}
-
-.pagination a {
-    background-color: #000000; /* primary background */
-    color: #f4f4f4; /* secondary text */
-    text-decoration: none;
-    border: 2px solid transparent;
-}
-
-.pagination a:hover {
-    background-color: #222222;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border-color: #444444;
-    color: #ffffff;
-}
-
-.pagination span {
-    background-color: #f4f4f4; /* secondary background */
-    color: #000000; /* primary text */
-    border: 2px solid #dcdcdc;
-    cursor: default;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.pagination a:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px #555555;
-}
-/* Simple grid for products */
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-}
-    .product-card {
-        border: none;
-        background: transparent;
-        transition: transform 0.2s ease-in-out;
-        position: relative;
-    }
-
-    .product-card:hover {
-        transform: scale(1.02);
-    }
-
-    .product-card img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-    }
-
-    .product-name {
-        margin-top: 0.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        color: #000;
-    }
-
-    .product-name,
-    .product-card a {
-        text-decoration: none !important;
-        color: inherit;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .section-header h2 {
-        font-size: 1.5rem;
-    }
-
-    .product-icons {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        z-index: 3;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .product-icons a {
-        color: black;
-        background-color: transparent;
-        border: 1.5px solid black;
-        padding: 6px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        font-size: 1.1rem;
-    }
-
-    .product-icons a:hover {
-        background-color: black;
-        color: white;
-    }
-</style>
-{% endblock %}
-
-{% block javascript %}
-<script>
-    function addToCart(variantId) {
-        const url = `{% url 'add_to_cart' 0 %}`.replace(0, variantId);
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert("تمت إضافة المنتج إلى السلة");
-            } else {
-                alert("حدث خطأ أثناء الإضافة");
-            }
-        });
-    }
-
-    function addToWishlist(productId) {
-        const url = `{% url 'add_to_wishlist' 0 %}`.replace(0, productId);
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert("تمت إضافة المنتج إلى المفضلة");
-            } else {
-                alert("حدث خطأ أثناء الإضافة");
-            }
-        });
-    }
-</script>
-
-<!-- Removed SwiperJS script and initialization -->
+  </section>
+</main>
 {% endblock %}

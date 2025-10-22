@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -25,21 +26,21 @@ from shop.admin_sites import shop_admin_site
 from freelancing.admin_sites import freelancing_admin_site
 
 urlpatterns = [
-    path('i18n/', include('django.conf.urls.i18n')),  # For language switching
+    path("i18n/", include("django.conf.urls.i18n")),
 ]
 
 urlpatterns += i18n_patterns(
-    path('', include('shop.urls')),  # Your main app
-    path('jobs/', include('freelancing.urls')),  # Your freelancer app
-    path('admin/', admin.site.urls),
-
+    path("", include("shop.urls")),  # Your main app
+    path("jobs/", include("freelancing.urls")),  # Your freelancer app
+    path("admin/", admin.site.urls),
     # Custom admin sites for different user types
-    path('shop-admin/', shop_admin_site.urls),
-    path('freelancing-admin/', freelancing_admin_site.urls),
+    path("shop-admin/", shop_admin_site.urls),
+    path("freelancing-admin/", freelancing_admin_site.urls),
 )
 
 if settings.DEBUG:
     import silk
+
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]

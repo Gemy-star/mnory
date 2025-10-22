@@ -1,4 +1,4 @@
-// static/js/cart-wishlist.js - Cart & Wishlist Module
+// static/js/cart-wishlist.js - Cart & Wishlist Module (FIXED)
 // ========================================
 // Prevents double initialization
 // ========================================
@@ -63,15 +63,26 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
     window.showNotification = showNotification;
 
     // ========================================
-    // CART FUNCTIONS
+    // CART FUNCTIONS (FIXED)
     // ========================================
     window.addToCart = function(productId, options = {}) {
         if (!productId) return console.error('Product ID is required');
 
-        const button = options.button || null;
-        const quantity = options.quantity || 1;
-        const colorId = options.colorId || options.color_id || null;
-        const sizeId = options.sizeId || options.size_id || null;
+        // FIXED: Handle both button object and options object properly
+        let button = null;
+        let quantity = 1;
+        let colorId = null;
+        let sizeId = null;
+
+        // Check if options is actually the button element (for backward compatibility)
+        if (options instanceof HTMLElement) {
+            button = options;
+        } else {
+            button = options.button || null;
+            quantity = options.quantity || 1;
+            colorId = options.colorId || options.color_id || null;
+            sizeId = options.sizeId || options.size_id || null;
+        }
 
         if (button) {
             button.disabled = true;
@@ -90,8 +101,8 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         if (sizeId) formData.append('size_id', sizeId);
         formData.append('csrfmiddlewaretoken', getCSRFToken());
 
-        // Get the current language prefix from the URL
-        const langPrefix = window.location.pathname.split('/')[1] || 'en';
+        // FIXED: Get the current language prefix from the URL, default to 'en' not 'ar'
+        const langPrefix = getLangPrefix();
         fetch(`/${langPrefix}/api/add-to-cart/`, {
             method: 'POST',
             body: formData,
@@ -151,8 +162,8 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
 
     window.removeFromCart = function(itemId) {
         if (!confirm(getMessage('confirmRemove'))) return;
-        // Get the current language prefix from the URL
-        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        // FIXED: Get the current language prefix from the URL, default to 'en' not 'ar'
+        const langPrefix = getLangPrefix();
         fetch(`/${langPrefix}/cart/remove/`, {
             method: 'POST',
             headers: {
@@ -188,7 +199,7 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
     };
 
     // ========================================
-    // WISHLIST FUNCTIONS
+    // WISHLIST FUNCTIONS (FIXED)
     // ========================================
     window.toggleWishlist = function(productId, button = null) {
         if (!productId) return console.error('Product ID is required');
@@ -197,8 +208,8 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         formData.append('product_id', productId);
         formData.append('csrfmiddlewaretoken', getCSRFToken());
 
-        // Get the current language prefix from the URL
-        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        // FIXED: Get the current language prefix from the URL, default to 'en' not 'ar'
+        const langPrefix = getLangPrefix();
         fetch(`/${langPrefix}/api/add-to-wishlist/`, {
             method: 'POST',
             body: formData,
@@ -263,11 +274,11 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
     };
 
     // ========================================
-    // UPDATE COUNTS
+    // UPDATE COUNTS (FIXED)
     // ========================================
     function updateAllCounts() {
-        // Get the current language prefix from the URL
-        const langPrefix = window.location.pathname.split('/')[1] || 'ar';
+        // FIXED: Get the current language prefix from the URL, default to 'en' not 'ar'
+        const langPrefix = getLangPrefix();
         const url = `/${langPrefix}/api/get-counts/`;
 
         console.log('Updating counts from:', url);
@@ -296,6 +307,9 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
             // Don't show notification for count updates as they're automatic
         });
     }
+
+    // Expose updateAllCounts globally
+    window.updateAllCounts = updateAllCounts;
 
     function updateCartBadge(count){
         document.querySelectorAll('#cartBadge, #cart-count, #drawer-cart-count, .cart-badge, [data-cart-count]').forEach(badge=>{
@@ -333,7 +347,7 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         updateAllCounts();
         setInterval(updateAllCounts, 30000);
         if(new URLSearchParams(window.location.search).get('login_required'))
-            showNotification('يرجى تسجيل الدخول للمتابعة','info');
+            showNotification(getMessage('errorOccurred'),'info');
 
         // Global event delegation for action buttons (no inline onclicks needed)
         document.addEventListener('click', function(e){
@@ -348,7 +362,7 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
             const productId = btn.getAttribute('data-product-id');
             switch(action){
                 case 'cart-add':
-                    if(productId) window.addToCart(productId, btn);
+                    if(productId) window.addToCart(productId, {button: btn});
                     break;
                 case 'wishlist-toggle':
                     if(productId) window.toggleWishlist(productId, btn);

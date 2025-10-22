@@ -1047,22 +1047,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Sync cart and wishlist counts across all locations
+    // Sync cart and wishlist counts across all locations (FIXED)
     function syncCounts() {
-        // This function will be called by cart-wishlist.js
-        const cartCount = document.getElementById('cart-count')?.textContent || '0';
-        const wishlistCount = document.getElementById('wishlist-count')?.textContent || '0';
-
-        // Update drawer counts
-        const drawerCartCount = document.getElementById('drawer-cart-count');
-        const drawerWishlistCount = document.getElementById('drawer-wishlist-count');
-        const mobileCartCount = document.getElementById('mobile-cart-count');
-        const mobileWishlistCount = document.getElementById('mobile-wishlist-count');
-
-        if (drawerCartCount) drawerCartCount.textContent = cartCount;
-        if (drawerWishlistCount) drawerWishlistCount.textContent = wishlistCount;
-        if (mobileCartCount) mobileCartCount.textContent = cartCount;
-        if (mobileWishlistCount) mobileWishlistCount.textContent = wishlistCount;
+        // Call the updateAllCounts function from cart-wishlist.js
+        // This properly fetches counts from the API instead of just reading DOM values
+        if (typeof window.updateAllCounts === 'function') {
+            window.updateAllCounts();
+            console.log('Syncing counts via cart-wishlist.js updateAllCounts');
+        } else {
+            console.warn('updateAllCounts not available yet, will retry...');
+            // Retry after a short delay if cart-wishlist.js hasn't loaded yet
+            setTimeout(() => {
+                if (typeof window.updateAllCounts === 'function') {
+                    window.updateAllCounts();
+                }
+            }, 500);
+        }
     }
 
     // Make syncCounts globally accessible
@@ -1347,9 +1347,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // Initialize Swiper for product detail
+    // FIXED: Initialize product detail swiper with better loading check
     if (document.querySelector('.product-detail-swiper')) {
-        initializeProductSwiper();
+        // Wait for Swiper library to be loaded
+        if (typeof Swiper !== 'undefined') {
+            initializeProductSwiper();
+        } else {
+            // If Swiper not loaded yet, wait and retry
+            let retryCount = 0;
+            const checkSwiper = setInterval(() => {
+                if (typeof Swiper !== 'undefined') {
+                    clearInterval(checkSwiper);
+                    initializeProductSwiper();
+                } else if (retryCount++ > 10) {
+                    clearInterval(checkSwiper);
+                    console.error('Swiper library failed to load');
+                }
+            }, 200);
+        }
     }
 
     function initializeProductSwiper() {
@@ -1358,6 +1373,21 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Swiper library not loaded');
             return;
         }
+
+        // FIXED: Ensure all slides have proper zoom container structure
+        document.querySelectorAll('.product-detail-swiper .swiper-slide').forEach(slide => {
+            const img = slide.querySelector('img');
+            const zoomContainer = slide.querySelector('.swiper-zoom-container');
+
+            // If image exists but not inside zoom container, fix structure
+            if (img && !zoomContainer) {
+                const newZoomContainer = document.createElement('div');
+                newZoomContainer.className = 'swiper-zoom-container';
+                img.parentNode.insertBefore(newZoomContainer, img);
+                newZoomContainer.appendChild(img);
+                console.log('Fixed zoom container structure for slide');
+            }
+        });
 
         // Initialize thumbnails swiper first
         const thumbsElement = document.querySelector('.product-detail-thumbs');
@@ -1505,4 +1535,81 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
+});
+// ========================================
+// WISHLIST & CHECKOUT SWIPER INIT
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Wishlist Swiper
+    if (document.querySelector('.wishlist-swiper')) {
+        new Swiper('.wishlist-swiper', {
+            slidesPerView: 2,
+            spaceBetween: 15,
+            breakpoints: {
+                576: { slidesPerView: 2, spaceBetween: 15 },
+                768: { slidesPerView: 3, spaceBetween: 20 },
+                992: { slidesPerView: 3, spaceBetween: 20 },
+                1200: { slidesPerView: 3, spaceBetween: 25 }
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev'
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+            loop: false,
+            speed: 600,
+            watchOverflow: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            effect: 'slide',
+            touchRatio: 1,
+            touchAngle: 45,
+            simulateTouch: true,
+            allowTouchMove: true,
+            resistance: true,
+            resistanceRatio: 0.85
+        });
+    }
+    // Checkout Swiper
+    if (document.querySelector('.checkout-swiper')) {
+        new Swiper('.checkout-swiper', {
+            slidesPerView: 2,
+            spaceBetween: 15,
+            breakpoints: {
+                576: { slidesPerView: 2, spaceBetween: 15 },
+                768: { slidesPerView: 3, spaceBetween: 20 },
+                992: { slidesPerView: 3, spaceBetween: 20 },
+                1200: { slidesPerView: 3, spaceBetween: 25 }
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev'
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+            loop: false,
+            speed: 600,
+            watchOverflow: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            effect: 'slide',
+            touchRatio: 1,
+            touchAngle: 45,
+            simulateTouch: true,
+            allowTouchMove: true,
+            resistance: true,
+            resistanceRatio: 0.85
+        });
+    }
 });

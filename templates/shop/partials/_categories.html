@@ -514,8 +514,11 @@ document.addEventListener('DOMContentLoaded', function () {
             newBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                if (typeof handleWishlistToggle === 'function') {
-                    handleWishlistToggle(this);
+                const productId = this.dataset.productId;
+                if (typeof window.toggleWishlist === 'function') {
+                    window.toggleWishlist(productId, this);
+                } else {
+                    console.error('toggleWishlist function not found. Make sure cart-wishlist.js is loaded.');
                 }
             });
         });
@@ -530,8 +533,11 @@ document.addEventListener('DOMContentLoaded', function () {
             newBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                if (typeof handleCartAdd === 'function') {
-                    handleCartAdd(this);
+                const productId = this.dataset.productId;
+                if (typeof window.addToCart === 'function') {
+                    window.addToCart(productId, { button: this });
+                } else {
+                    console.error('addToCart function not found. Make sure cart-wishlist.js is loaded.');
                 }
             });
         });

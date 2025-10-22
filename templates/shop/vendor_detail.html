@@ -1,446 +1,244 @@
-{% extends 'base.html' %}
-{% load crispy_forms_tags %}
+{% extends "base.html" %}
 {% load i18n %}
 
 {% block content %}
-<style>
-  .text-primary {
-    color: #000000 !important;
-  }
-  .nav-link { 
-    color: #000000 !important;
-  }
-</style>
-<section class="section">
-<div class="container my-4">
-  <!-- Vendor Header -->
-  <div class="row mb-4 pt-2">
-    <div class="col-12">
-      <div class="card shadow-sm border-0 product-card">
-        <div class="card-body">
-          <div class="row align-items-center g-3">
-            <div class="col-md-2 text-center">
-              {% if vendor.logo %}
-                <img src="{{ vendor.logo.url }}" alt="{{ vendor.store_name }}" class="img-fluid rounded-circle shadow" style="width: 100px; height: 100px; object-fit: cover;">
-              {% else %}
-                <div class="bg-light border rounded-circle d-flex align-items-center justify-content-center text-secondary" style="width: 100px; height: 100px;">
-                  <i class="fa-solid fa-store fa-2x"></i>
+<div class="container">
+  <div class="section-header">
+    <h2 class="section-title">
+      <span class="material-icons">storefront</span>
+      {{ vendor.store_name }}
+    </h2>
+    <span class="badge badge-flag badge-bestseller">{% trans "Vendor" %}</span>
+  </div>
+  <div class="row">
+    <div class="col-lg-3 mb-4">
+      <aside class="filter-section position-sticky" style="top: 90px; z-index: 10;">
+        <div class="accordion" id="filterAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFilters">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
+                <span class="material-icons">filter_list</span> {% trans "Filters" %}
+              </button>
+            </h2>
+            <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilters" data-bs-parent="#filterAccordion">
+              <div class="accordion-body">
+                <div class="mb-4">
+                  <h5><span class="material-icons">category</span> {% trans "Categories" %}</h5>
+                  <div class="list-group category-list">
+                    <a href="{% url 'shop:home' %}" class="list-group-item {% if not category %}active{% endif %}">
+                      <span class="material-icons">apps</span> {% trans "All Products" %}
+                    </a>
+                    {% for cat in categories %}
+                      <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="list-group-item {% if category and category.slug == cat.slug %}active{% endif %}">
+                        <span class="material-icons">folder_open</span> {{ cat.name }}
+                      </a>
+                      {% if category and category.slug == cat.slug %}
+                        {% for subcat in subcategories %}
+                          <a href="{% url 'shop:subcategory_detail' category_slug=cat.slug slug=subcat.slug %}" class="list-group-item ps-4 {% if current_filters.subcategory == subcat.slug %}active{% endif %}">
+                            <span class="material-icons">chevron_right</span> {{ subcat.name }}
+                          </a>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                  </div>
                 </div>
-              {% endif %}
-            </div>
-            <div class="col-md-8">
-              <h1 class="h4 fw-semibold mb-1">{{ vendor.store_name }}</h1>
-              {% if vendor.is_premium %}
-                <span class="badge bg-warning text-dark mb-2">
-                  <i class="fa-solid fa-crown me-1"></i> {% trans "Premium Vendor" %}
-                </span>
-              {% endif %}
-              {% if vendor.store_description %}
-                <p class="text-muted small">{{ vendor.store_description|truncatewords:30 }}</p>
-              {% endif %}
-              <ul class="list-inline text-muted small">
-                <li class="list-inline-item me-3">
-                  <i class="fa-solid fa-box"></i> {{ vendor_stats.total_products }} {% trans "Products" %}
-                </li>
-                <li class="list-inline-item me-3">
-                  <i class="fa-solid fa-tags"></i> {{ vendor_stats.categories_count }} {% trans "Categories" %}
-                </li>
-                {% if vendor.country_of_operation %}
-                  <li class="list-inline-item">
-                    <i class="fa-solid fa-globe"></i> {{ vendor.country_of_operation }}
-                  </li>
-                {% endif %}
-              </ul>
-            </div>
-            <div class="col-md-2 text-end">
-              {% if vendor.website %}
-                <a href="{{ vendor.website }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                  <i class="fa-solid fa-arrow-up-right-from-square"></i> {% trans "Visit Website" %}
-                </a>
-              {% endif %}
+                <form id="filterForm">
+                  <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
+                  <input type="hidden" name="subcategory_slug" value="{{ current_filters.subcategory|default:'' }}">
+                  <div class="mb-3">
+                    <h5><span class="material-icons">straighten</span> {% trans "Fit Type" %}</h5>
+                    {% for fit_type in fit_types %}
+                      <div class="form-check">
+                        <input class="form-check-input filter-checkbox" type="checkbox" name="fit_type" value="{{ fit_type.slug }}" id="fitType{{ fit_type.slug }}" {% if fit_type.slug == current_filters.fit_type %}checked{% endif %}>
+                        <label class="form-check-label" for="fitType{{ fit_type.slug }}">{{ fit_type.name }}</label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="mb-3">
+                    <h5><span class="material-icons">branding_watermark</span> {% trans "Brand" %}</h5>
+                    {% for brand in brands %}
+                      <div class="form-check">
+                        <input class="form-check-input filter-checkbox" type="checkbox" name="brand" value="{{ brand.slug }}" id="brand{{ brand.slug }}" {% if brand.slug == current_filters.brand %}checked{% endif %}>
+                        <label class="form-check-label" for="brand{{ brand.slug }}">{{ brand.name }}</label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="mb-3">
+                    <h5><span class="material-icons">palette</span> {% trans "Color" %}</h5>
+                    {% for color in colors %}
+                      <div class="form-check">
+                        <input class="form-check-input filter-checkbox" type="checkbox" name="color" value="{{ color.name }}" id="color{{ color.name }}" {% if color.name == current_filters.color %}checked{% endif %}>
+                        <label class="form-check-label" for="color{{ color.name }}">
+                          <span style="display: inline-block; width: 15px; height: 15px; background-color: {{ color.hex_code }}; border: 1px solid #ccc; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
+                          {{ color.name }}
+                        </label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="mb-3">
+                    <h5><span class="material-icons">straighten</span> {% trans "Size" %}</h5>
+                    {% for size in sizes %}
+                      <div class="form-check">
+                        <input class="form-check-input filter-checkbox" type="checkbox" name="size" value="{{ size.name }}" id="size{{ size.name }}" {% if size.name == current_filters.size %}checked{% endif %}>
+                        <label class="form-check-label" for="size{{ size.name }}">{{ size.name }} ({{ size.get_size_type_display }})</label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="mb-3">
+                    <h5><span class="material-icons">attach_money</span> {% trans "Price Range" %}</h5>
+                    <div class="d-flex mb-2">
+                      <input type="number" class="form-control me-2" name="min_price" placeholder="{% trans 'Min' %}" value="{{ current_filters.min_price|default:'' }}">
+                      <input type="number" class="form-control" name="max_price" placeholder="{% trans 'Max' %}" value="{{ current_filters.max_price|default:'' }}">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary w-100">
+                      <span class="material-icons">filter_alt</span> {% trans "Apply Price" %}
+                    </button>
+                  </div>
+                  <div class="mb-3">
+                    <h5><span class="material-icons">sort</span> {% trans "Sort By" %}</h5>
+                    <select class="form-select" name="sort">
+                      <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
+                      <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>{% trans "Price (Low to High)" %}</option>
+                      <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>{% trans "Price (High to Low)" %}</option>
+                      <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
+                      <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>{% trans "Popular" %}</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <h5><span class="material-icons">flag</span> {% trans "Flags" %}</h5>
+                    <div class="form-check">
+                      <input class="form-check-input filter-checkbox" type="checkbox" name="is_best_seller" value="true" id="isBestseller" {% if current_filters.is_best_seller %}checked{% endif %}>
+                      <label class="form-check-label" for="isBestseller">
+                        <span class="badge badge-flag badge-bestseller">
+                          <span class="material-icons">star</span> {% trans "Best Seller" %}
+                        </span>
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input filter-checkbox" type="checkbox" name="is_new_arrival" value="true" id="isNewArrival" {% if current_filters.is_new_arrival %}checked{% endif %}>
+                      <label class="form-check-label" for="isNewArrival">
+                        <span class="badge badge-flag badge-new-arrival">
+                          <span class="material-icons">new_releases</span> {% trans "New Arrival" %}
+                        </span>
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input filter-checkbox" type="checkbox" name="is_on_sale" value="true" id="onSale" {% if current_filters.is_on_sale %}checked{% endif %}>
+                      <label class="form-check-label" for="onSale">
+                        <span class="badge badge-flag badge-on-sale">
+                          <span class="material-icons">local_fire_department</span> {% trans "On Sale" %}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
+      </aside>
+    </div>
+    <div class="col-lg-9 mb-4">
+      <div class="mb-4">
+        <h2 class="h5 mb-4">
+          <span class="material-icons text-primary">inventory_2</span>
+          {% if subcategory %}
+            {{ subcategory.name }} {% trans "Products" %}
+          {% elif category %}
+            {{ category.name }} {% trans "Products" %}
+          {% else %}
+            {% trans "All Products" %}
+          {% endif %}
+        </h2>
+        <div class="products-grid grid-view">
+          {% for product in products %}
+            <div class="product-card">
+              {% include "partials/_product.html" with product=product section="category" %}
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <div class="alert alert-info">
+                <span class="material-icons">info</span>
+                {% trans "No products found in this category or with the selected filters." %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        {% if products.has_other_pages %}
+          <nav aria-label="{% trans 'Page navigation' %}" class="pagination-wrapper mt-4">
+            <ul class="pagination justify-content-center">
+              {% if products.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <span class="material-icons">chevron_left</span> {% trans "Previous" %}
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">
+                    <span class="material-icons">chevron_left</span> {% trans "Previous" %}
+                  </span>
+                </li>
+              {% endif %}
+              {% for i in products.paginator.page_range %}
+                {% if products.number == i %}
+                  <li class="page-item active">
+                    <span class="page-link">{{ i }}</span>
+                  </li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+              {% if products.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    {% trans "Next" %} <span class="material-icons">chevron_right</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">
+                    {% trans "Next" %} <span class="material-icons">chevron_right</span>
+                  </span>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
       </div>
     </div>
   </div>
-
-  <!-- Tabs Navigation -->
   <div class="row">
-    <div class="col-12">
-      <ul class="nav nav-tabs border-0" id="vendorTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active fw-semibold" id="products-tab-btn" data-bs-toggle="tab" data-bs-target="#products-tab" type="button" role="tab" aria-controls="products-tab" aria-selected="true">
-            <i class="fa-solid fa-box-open me-1"></i> {% trans "Products" %} ({{ vendor_stats.total_products }})
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link fw-semibold" id="about-tab-btn" data-bs-toggle="tab" data-bs-target="#about-tab" type="button" role="tab" aria-controls="about-tab" aria-selected="false">
-            <i class="fa-solid fa-circle-info me-1"></i> {% trans "About Store" %}
-          </button>
-        </li>
-      </ul>
-
-      <!-- Tab Content -->
-      <div class="tab-content mt-3" id="vendorTabContent">
-
-        <!-- Products Tab -->
-        <div class="tab-pane fade show active" id="products-tab" role="tabpanel" aria-labelledby="products-tab-btn">
-          <div class="row">
-
-            <!-- Sidebar Filters -->
-            <div class="col-lg-3 mb-4">
-              <div class="position-sticky filter-section" style="top: 90px; z-index: 10;">
-                <div class="accordion" id="filterAccordion">
-                  <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingFilters">
-                      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
-                        <i class="fa-solid fa-filter me-2"></i>{% trans "Filters" %}
-                      </button>
-                    </h2>
-                    <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilters" data-bs-parent="#filterAccordion">
-                      <div class="accordion-body">
-
-                        <!-- Categories -->
-                        <div class="mb-4">
-                          <h5>{% trans "Categories" %}</h5>
-                          <div class="list-group list-group-flush category-list">
-                            <a href="{% url 'shop:home' %}" class="list-group-item {% if not category %}active{% endif %}">
-                              <i class="fa-solid fa-th-large me-1"></i> {% trans "All Products" %}
-                            </a>
-                            {% for cat in categories %}
-                              <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="list-group-item {% if category and category.slug == cat.slug %}active{% endif %}">
-                                <i class="fa-solid fa-folder me-1"></i> {{ cat.name }}
-                              </a>
-                              {% if category and category.slug == cat.slug %}
-                                {% for subcat in subcategories %}
-                                  <a href="{% url 'shop:subcategory_detail' category_slug=cat.slug slug=subcat.slug %}" class="list-group-item ps-4 {% if current_filters.subcategory == subcat.slug %}active{% endif %}">
-                                    <i class="fa-solid fa-angle-right me-1"></i> {{ subcat.name }}
-                                  </a>
-                                {% endfor %}
-                              {% endif %}
-                            {% endfor %}
-                          </div>
-                        </div>
-
-                        <!-- Filter Form -->
-                        <form id="filterForm">
-                          <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
-                          <input type="hidden" name="subcategory_slug" value="{{ current_filters.subcategory|default:'' }}">
-
-                          <!-- Fit Type -->
-                          <div class="mb-3">
-                            <h5>{% trans "Fit Type" %}</h5>
-                            {% for fit_type in fit_types %}
-                              <div class="form-check">
-                                <input class="form-check-input filter-checkbox" type="checkbox" name="fit_type" value="{{ fit_type.slug }}" id="fitType{{ fit_type.slug }}" {% if fit_type.slug == current_filters.fit_type %}checked{% endif %}>
-                                <label class="form-check-label" for="fitType{{ fit_type.slug }}">{{ fit_type.name }}</label>
-                              </div>
-                            {% endfor %}
-                          </div>
-
-                          <!-- Brand -->
-                          <div class="mb-3">
-                            <h5>{% trans "Brand" %}</h5>
-                            {% for brand in brands %}
-                              <div class="form-check">
-                                <input class="form-check-input filter-checkbox" type="checkbox" name="brand" value="{{ brand.slug }}" id="brand{{ brand.slug }}" {% if brand.slug == current_filters.brand %}checked{% endif %}>
-                                <label class="form-check-label" for="brand{{ brand.slug }}">{{ brand.name }}</label>
-                              </div>
-                            {% endfor %}
-                          </div>
-
-                          <!-- Color -->
-                          <div class="mb-3">
-                            <h5>{% trans "Color" %}</h5>
-                            {% for color in colors %}
-                              <div class="form-check">
-                                <input class="form-check-input filter-checkbox" type="checkbox" name="color" value="{{ color.name }}" id="color{{ color.name }}" {% if color.name == current_filters.color %}checked{% endif %}>
-                                <label class="form-check-label" for="color{{ color.name }}">
-                                  <span style="display: inline-block; width: 15px; height: 15px; background-color: {{ color.hex_code }}; border: 1px solid #ccc; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                                  {{ color.name }}
-                                </label>
-                              </div>
-                            {% endfor %}
-                          </div>
-
-                          <!-- Size -->
-                          <div class="mb-3">
-                            <h5>{% trans "Size" %}</h5>
-                            {% for size in sizes %}
-                              <div class="form-check">
-                                <input class="form-check-input filter-checkbox" type="checkbox" name="size" value="{{ size.name }}" id="size{{ size.name }}" {% if size.name == current_filters.size %}checked{% endif %}>
-                                <label class="form-check-label" for="size{{ size.name }}">{{ size.name }} ({{ size.get_size_type_display }})</label>
-                              </div>
-                            {% endfor %}
-                          </div>
-
-                          <!-- Price Range -->
-                          <div class="mb-3">
-                            <h5>{% trans "Price Range" %}</h5>
-                            <div class="d-flex mb-2">
-                              <input type="number" class="form-control me-2" name="min_price" placeholder="{% trans 'Min' %}" value="{{ current_filters.min_price|default:'' }}">
-                              <input type="number" class="form-control" name="max_price" placeholder="{% trans 'Max' %}" value="{{ current_filters.max_price|default:'' }}">
-                            </div>
-                            <button type="submit" class="btn btn-sm btn-primary w-100">{% trans "Apply Price" %}</button>
-                          </div>
-
-                          <!-- Sort -->
-                          <div class="mb-3">
-                            <h5>{% trans "Sort By" %}</h5>
-                            <select class="form-select" name="sort">
-                              <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
-                              <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>{% trans "Price (Low to High)" %}</option>
-                              <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>{% trans "Price (High to Low)" %}</option>
-                              <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
-                              <option value="popular" {% if current_filters.sort == 'popular' %}selected{% endif %}>{% trans "Popular" %}</option>
-                            </select>
-                          </div>
-
-                          <!-- Flags -->
-                          <div class="mb-3">
-                            <h5>{% trans "Flags" %}</h5>
-                            <div class="form-check">
-                              <input class="form-check-input filter-checkbox" type="checkbox" name="is_best_seller" value="true" id="isBestseller" {% if current_filters.is_best_seller %}checked{% endif %}>
-                              <label class="form-check-label" for="isBestseller">
-                                <span class="badge badge-flag badge-bestseller">
-                                  <i class="fa-solid fa-star me-1"></i> {% trans "Best Seller" %}
-                                </span>
-                              </label>
-                            </div>
-                            <div class="form-check">
-                              <input class="form-check-input filter-checkbox" type="checkbox" name="is_new_arrival" value="true" id="isNewArrival" {% if current_filters.is_new_arrival %}checked{% endif %}>
-                              <label class="form-check-label" for="isNewArrival">
-                                <span class="badge badge-flag badge-new-arrival">
-                                  <i class="fa-solid fa-tag me-1"></i> {% trans "New Arrival" %}
-                                </span>
-                              </label>
-                            </div>
-                            <div class="form-check">
-                              <input class="form-check-input filter-checkbox" type="checkbox" name="is_on_sale" value="true" id="onSale" {% if current_filters.is_on_sale %}checked{% endif %}>
-                              <label class="form-check-label" for="onSale">
-                                <span class="badge badge-flag badge-on-sale">
-                                  <i class="fa-solid fa-fire me-1"></i> {% trans "On Sale" %}
-                                </span>
-                              </label>
-                            </div>
-                          </div>
-
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Product Listings -->
-            <div class="col-lg-9 mb-4">
-              <div class="mb-4">
-                <h2 class="h5 mb-4">
-                  <i class="fa-solid fa-shirt me-1 text-primary"></i>
-                  {% if subcategory %}
-                    {{ subcategory.name }} {% trans "Products" %}
-                  {% elif category %}
-                    {{ category.name }} {% trans "Products" %}
-                  {% else %}
-                    {% trans "All Products" %}
-                  {% endif %}
-                </h2>
-
-                <!-- Products Grid -->
-                <div id="product-list-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                  {% for product in products %}
-                    <div class="col">
-                      {% include "partials/_product.html" with product=product section="category" %}
-                    </div>
-                  {% empty %}
-                    <div class="col-12">
-                      <div class="alert alert-info">
-                        <i class="fa-solid fa-info-circle me-2"></i>
-                        {% trans "No products found in this category or with the selected filters." %}
-                      </div>
-                    </div>
-                  {% endfor %}
-                </div>
-
-                <!-- Pagination -->
-                {% if products.has_other_pages %}
-                  <nav aria-label="{% trans 'Page navigation' %}" class="mt-4">
-                    <ul class="pagination pagination-sm justify-content-center">
-                      {% if products.has_previous %}
-                        <li class="page-item">
-                          <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            <i class="fa-solid fa-angle-left"></i> {% trans "Previous" %}
-                          </a>
-                        </li>
-                      {% else %}
-                        <li class="page-item disabled">
-                          <span class="page-link">
-                            <i class="fa-solid fa-angle-left"></i> {% trans "Previous" %}
-                          </span>
-                        </li>
-                      {% endif %}
-
-                      {% for i in products.paginator.page_range %}
-                        {% if products.number == i %}
-                          <li class="page-item active">
-                            <span class="page-link">{{ i }}</span>
-                          </li>
-                        {% else %}
-                          <li class="page-item">
-                            <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-                          </li>
-                        {% endif %}
-                      {% endfor %}
-
-                      {% if products.has_next %}
-                        <li class="page-item">
-                          <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            {% trans "Next" %} <i class="fa-solid fa-angle-right"></i>
-                          </a>
-                        </li>
-                      {% else %}
-                        <li class="page-item disabled">
-                          <span class="page-link">
-                            {% trans "Next" %} <i class="fa-solid fa-angle-right"></i>
-                          </span>
-                        </li>
-                      {% endif %}
-                    </ul>
-                  </nav>
-                {% endif %}
-              </div>
-            </div>
-
-          </div>
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-header bg-light border-0 d-flex align-items-center">
+          <span class="material-icons me-2" style="font-size: 2rem; color: var(--accent-color, #333);">receipt_long</span>
+          <h5 class="mb-0 fw-bold">Order Summary</h5>
         </div>
-
-        <!-- About Tab -->
-        <div class="tab-pane fade" id="about-tab" role="tabpanel" aria-labelledby="about-tab-btn">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="card shadow-sm product-card">
-                <div class="card-body">
-                  <h5 class="card-title">
-                    <i class="fa-solid fa-info-circle me-2"></i>{% trans "About" %} {{ vendor.store_name }}
-                  </h5>
-                  {% if vendor.store_description %}
-                    <p class="card-text">{{ vendor.store_description|linebreaks }}</p>
-                  {% else %}
-                    <p class="text-muted fst-italic">
-                      <i class="fa-solid fa-exclamation-triangle me-1"></i>
-                      {% trans "No description available for this store." %}
-                    </p>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="card shadow-sm product-card">
-                <div class="card-body">
-                  <h6 class="card-title">
-                    <i class="fa-solid fa-building me-1"></i>{% trans "Store Information" %}
-                  </h6>
-                  <ul class="list-unstyled">
-                    <li class="mb-3">
-                      <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-store me-2 text-primary"></i>
-                        <div>
-                          <strong>{% trans "Store Name:" %}</strong><br>
-                          <span class="text-muted">{{ vendor.store_name }}</span>
-                        </div>
-                      </div>
-                    </li>
-
-                    <li class="mb-3">
-                      <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-id-badge me-2 text-primary"></i>
-                        <div>
-                          <strong>{% trans "Profile Type:" %}</strong><br>
-                          {% if vendor.is_premium %}
-                            <span class="badge bg-warning text-dark">
-                              <i class="fa-solid fa-crown me-1"></i> {% trans "Premium" %}
-                            </span>
-                          {% else %}
-                            <span class="badge bg-secondary">{% trans "Free" %}</span>
-                          {% endif %}
-                        </div>
-                      </div>
-                    </li>
-
-                    <li class="mb-3">
-                      <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-box-open me-2 text-primary"></i>
-                        <div>
-                          <strong>{% trans "Total Products:" %}</strong><br>
-                          <span class="text-muted">{{ vendor_stats.total_products }}</span>
-                        </div>
-                      </div>
-                    </li>
-
-                    {% if vendor.country_of_operation %}
-                      <li class="mb-3">
-                        <div class="d-flex align-items-center">
-                          <i class="fa-solid fa-globe me-2 text-primary"></i>
-                          <div>
-                            <strong>{% trans "Country:" %}</strong><br>
-                            <span class="text-muted">{{ vendor.country_of_operation }}</span>
-                          </div>
-                        </div>
-                      </li>
-                    {% endif %}
-
-                    {% if vendor.website %}
-                      <li class="mb-3">
-                        <div class="d-flex align-items-center">
-                          <i class="fa-solid fa-link me-2 text-primary"></i>
-                          <div>
-                            <strong>{% trans "Website:" %}</strong><br>
-                            <a href="{{ vendor.website }}" target="_blank" class="text-decoration-none">
-                              {{ vendor.website }} <i class="fa-solid fa-external-link-alt ms-1"></i>
-                            </a>
-                          </div>
-                        </div>
-                      </li>
-                    {% endif %}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-4" id="order-summary">
+            <li class="d-flex justify-content-between py-2 border-bottom">
+              <span><span class="material-icons align-middle me-1" style="color: #888;">attach_money</span> Subtotal</span>
+              <span id="cart-subtotal">325.83</span>
+            </li>
+            <li class="d-flex justify-content-between py-2 border-bottom">
+              <span><span class="material-icons align-middle me-1" style="color: #888;">local_shipping</span> Shipping</span>
+              <span id="cart-shipping">60.00</span>
+            </li>
+            <li class="d-flex justify-content-between py-2 border-bottom">
+              <span class="fw-bold"><span class="material-icons align-middle me-1" style="color: var(--accent-color, #333);">payments</span> Total</span>
+              <span class="fw-bold" id="cart-total">385.83</span>
+            </li>
+          </ul>
+          <a href="/en/checkout/" class="btn btn-lg w-100 text-white d-flex justify-content-center align-items-center" style="background: linear-gradient(90deg, #111 60%, var(--accent-color, #ff9800) 100%); box-shadow: 0 4px 16px rgba(0,0,0,0.12); transition: box-shadow 0.3s;">
+            Proceed to Checkout
+            <span class="material-icons ms-2" style="font-size: 1.7rem;">arrow_forward</span>
+          </a>
         </div>
-
       </div>
     </div>
   </div>
 </div>
-
-</section>
-<!-- JavaScript -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Filter form functionality
-  const filterForm = document.getElementById('filterForm');
-  const filterInputs = filterForm.querySelectorAll('select, input[type="checkbox"]');
-
-  filterInputs.forEach(input => {
-    input.addEventListener('change', function() {
-      filterForm.submit();
-    });
-  });
-
-  // Bootstrap tab functionality (if needed for additional customization)
-  const triggerTabList = document.querySelectorAll('#vendorTabs button[data-bs-toggle="tab"]');
-  triggerTabList.forEach(triggerEl => {
-    const tabTrigger = new bootstrap.Tab(triggerEl);
-
-    triggerEl.addEventListener('click', event => {
-      event.preventDefault();
-      tabTrigger.show();
-    });
-  });
-});
-</script>
 {% endblock %}

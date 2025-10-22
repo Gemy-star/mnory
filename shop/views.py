@@ -874,16 +874,22 @@ def add_to_cart(request):
     lang = getattr(request, "LANGUAGE_CODE", "en")
 
     try:
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
+        if request.content_type and request.content_type.startswith("application/json"):
+            try:
+                data = json.loads(request.body)
+            except Exception:
+                data = {}
+        else:
             data = request.POST
         product_variant_id = data.get("product_variant_id")
         product_id = data.get("product_id")
         color_id = data.get("color_id")
         size_id = data.get("size_id")
-        quantity = int(data.get("quantity", 1))
-    except (ValueError, TypeError):
+        try:
+            quantity = int(data.get("quantity", 1))
+        except (ValueError, TypeError):
+            quantity = 1
+    except Exception:
         message = "Invalid data provided." if lang == "en" else "بيانات غير صالحة."
         return JsonResponse({"success": False, "message": message}, status=400)
 
@@ -1023,16 +1029,19 @@ def add_to_cart(request):
 def add_to_wishlist(request):
     lang = getattr(request, "LANGUAGE_CODE", "en")
     try:
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
-                },
-                status=400,
-            )
+        if request.content_type and request.content_type.startswith("application/json"):
+            try:
+                data = json.loads(request.body)
+            except Exception:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
+                    },
+                    status=400,
+                )
+        else:
+            data = request.POST
         product_id = data.get("product_id")
         if not product_id:
             return JsonResponse(
@@ -1120,16 +1129,19 @@ def add_to_wishlist(request):
 def remove_from_wishlist(request):
     lang = getattr(request, "LANGUAGE_CODE", "en")
     try:
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
-                },
-                status=400,
-            )
+        if request.content_type and request.content_type.startswith("application/json"):
+            try:
+                data = json.loads(request.body)
+            except Exception:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
+                    },
+                    status=400,
+                )
+        else:
+            data = request.POST
         product_id = data.get("product_id")
         if not product_id:
             return JsonResponse(
@@ -1237,16 +1249,19 @@ def remove_from_wishlist(request):
 def remove_from_cart(request):
     lang = getattr(request, "LANGUAGE_CODE", "en")
     try:
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
-                },
-                status=HttpResponseBadRequest.status_code,
-            )
+        if request.content_type and request.content_type.startswith("application/json"):
+            try:
+                data = json.loads(request.body)
+            except Exception:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid JSON." if lang == "en" else "نص غير صالح.",
+                    },
+                    status=HttpResponseBadRequest.status_code,
+                )
+        else:
+            data = request.POST
         cart_item_id = data.get("cart_item_id")
         if not cart_item_id:
             return JsonResponse(
