@@ -779,13 +779,13 @@ body.dark-mode .tab-label {
 @media (max-width: 576px) {
   /* slightly larger wrapper padding and gap on mobile for breathing room */
   .products-swiper-wrapper .swiper-wrapper {
-    gap: 12px;
-    padding-left: 12px;
-    padding-right: 12px;
+    gap: 20px; /* increased gap so two slides have more space */
+    padding-left: 14px;
+    padding-right: 14px;
   }
   .products-swiper-wrapper .swiper-slide {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 10px; /* slightly larger paddings for better breathing room */
+    padding-right: 10px;
   }
 }
 
@@ -818,6 +818,28 @@ body.dark-mode .tab-label {
 .product-card .product-img {
   width: 100%;
   height: auto;
+
+/* Desktop-specific: make slides flexibly sized so 3 can fit comfortably
+   We calculate a flex-basis per slide that subtracts a small total gap.
+   This avoids fighting Swiper's internal sizing and overrides width:auto
+   when necessary on larger viewports. */
+@media (min-width: 768px) {
+  .products-swiper-wrapper .swiper-wrapper {
+    padding-left: 6px; /* slightly reduce wrapper padding on desktop */
+    padding-right: 6px;
+    gap: 20px; /* ensure consistent spacing between slides */
+  }
+
+  .products-swiper-wrapper .swiper-slide {
+    padding-left: 4px; /* reduce per-slide padding so three can fit */
+    padding-right: 4px;
+    /* flex-basis calculation: take full width, subtract total gap (2 * gap)
+       then divide by 3 slides. This gives Swiper room to size three slides. */
+    flex: 0 0 calc((100% - 40px) / 3);
+    max-width: calc((100% - 40px) / 3);
+    width: calc((100% - 40px) / 3) !important;
+  }
+}
   object-fit: cover;
   border-radius: 12px;
 }
@@ -4623,7 +4645,7 @@ body.dark-mode .price-section {
   }
 
   .product-title {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .current-price {
@@ -4664,11 +4686,11 @@ body.dark-mode .price-section {
 
 @media (max-width: 576px) {
   .product-title {
-    font-size: 1.5rem;
+    font-size: 0.75rem;
   }
 
   .current-price {
-    font-size: 1.25rem;
+    font-size: 0.75rem;
   }
 
   .product-detail-img {
@@ -5411,7 +5433,7 @@ body:not(.dark-mode) .product-info-section {
 
 /* Product Title */
 .product-title {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--theme-text);
   margin-bottom: 0.75rem;
@@ -5791,11 +5813,11 @@ body:not(.dark-mode) .color-swatch {
 /* Responsive Design */
 @media (max-width: 768px) {
   .product-title {
-    font-size: 2rem;
+    font-size: 1.2rem;
   }
 
   .current-price {
-    font-size: 2rem;
+    font-size: 1.2rem;
   }
 
   .product-detail-swiper .swiper-slide img {
@@ -6730,7 +6752,7 @@ body.dark-mode .hero-nav-btn:hover {
   }
 
   .hero-heading {
-    font-size: 2rem;
+    font-size: 1.6rem;
     margin-bottom: 0.75rem;
   }
 
@@ -7020,7 +7042,7 @@ body.dark-mode .default-hero-section {
   }
 
   .hero-heading {
-    font-size: 2rem;
+    font-size: 1.6rem;
     margin-bottom: 1rem;
   }
 
@@ -7058,7 +7080,7 @@ body.dark-mode .default-hero-section {
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .hero-description {
@@ -7324,7 +7346,7 @@ body.dark-mode .category-tab-btn.active {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--theme-text);
   margin-bottom: 0.75rem;
@@ -7752,7 +7774,7 @@ body.dark-mode .product-card:hover {
 }
 
 .section-icon {
-  font-size: 2rem;
+  font-size: 1.6rem;
   color: var(--mnory-accent);
 }
 
@@ -7831,13 +7853,13 @@ body.dark-mode .sale-section {
   }
 
   .category-products-title .material-icons {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 }
 
 @media (max-width: 992px) {
   .section-title-tabs {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .section-title-tabs .material-icons {
@@ -7931,7 +7953,7 @@ body.dark-mode .sale-section {
   }
 
   .section-title-tabs .material-icons {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .section-subtitle-tabs {
@@ -8533,7 +8555,7 @@ body.dark-mode .product-section .swiper-slide .product-card:hover {
   }
 
   .section-title-tabs {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .section-title-tabs .material-icons {
@@ -8578,7 +8600,7 @@ body.dark-mode .product-section .swiper-slide .product-card:hover {
   }
 
   .section-title-tabs .material-icons {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .section-subtitle-tabs {
@@ -8800,7 +8822,7 @@ body.dark-mode .product-section .swiper-slide .product-card:hover {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--theme-text);
     margin-bottom: 1rem;
@@ -8977,7 +8999,7 @@ body.dark-mode .registration-card:hover {
     }
 
     .registration-title .material-icons {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 
     .registration-cards {
@@ -8995,7 +9017,7 @@ body.dark-mode .registration-card:hover {
     }
 
     .registration-card .card-icon .material-icons {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 }
 
@@ -9299,7 +9321,7 @@ body.dark-mode .registration-card:hover {
     }
 
     .card-icon i {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 
     .card-title {
@@ -9852,6 +9874,7 @@ body.dark-mode .card-features {
     height: auto;
     display: flex;
     align-items: stretch;
+    margin-right: 60px !important;
 }
 
 .category-products-swiper-container .product-card {
@@ -11484,7 +11507,7 @@ body.dark-mode .product-quantity-selector {
 }
 
 .product-qty-display {
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--mnory-accent);
     text-align: center;
@@ -12060,7 +12083,7 @@ body.dark-mode .product-share-section {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--theme-text);
     margin: 0;
@@ -12238,7 +12261,7 @@ body.dark-mode .product-share-section {
     }
 
     .product-title {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 
     .product-price-current {
@@ -12261,7 +12284,7 @@ body.dark-mode .product-share-section {
     }
 
     .product-title {
-        font-size: 1.75rem;
+        font-size: 1.15rem;
     }
 
     .product-price-current {
@@ -12298,15 +12321,15 @@ body.dark-mode .product-share-section {
     }
 
     .product-title {
-        font-size: 1.5rem;
+        font-size: 0.75rem;
     }
 
     .product-subtitle {
-        font-size: 0.95rem;
+        font-size: 0.65rem;
     }
 
     .product-price-current {
-        font-size: 1.5rem;
+        font-size: 0.75rem;
     }
 
     .product-detail-img {
@@ -12319,7 +12342,7 @@ body.dark-mode .product-share-section {
     }
 
     .product-option-title {
-        font-size: 1rem;
+        font-size: 0.75rem;
     }
 
     .product-color-btn,
@@ -12667,7 +12690,7 @@ body.dark-mode .filters-sidebar {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--theme-text);
     margin: 0;
@@ -12812,7 +12835,7 @@ body.dark-mode .filters-sidebar {
     }
 
     .category-title {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 
     .category-title .material-icons {
@@ -12858,7 +12881,7 @@ body.dark-mode .filters-sidebar {
     }
 
     .category-title .material-icons {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 
     .category-description {
@@ -13412,7 +13435,7 @@ body.dark-mode .ads-carousel {
 }
 
 .ad-title {
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: white;
     margin-bottom: 0.75rem;
@@ -13783,7 +13806,7 @@ body.dark-mode .cart-notification .notification-content {
     }
 
     .product-title {
-        font-size: 1.875rem !important;
+        font-size: 1.1rem !important;
     }
 }
 
@@ -13827,7 +13850,7 @@ body.dark-mode .cart-notification .notification-content {
     }
 
     .product-title {
-        font-size: 1.75rem !important;
+        font-size: 1.2rem !important;
     }
 
     .product-subtitle {
@@ -13835,7 +13858,7 @@ body.dark-mode .cart-notification .notification-content {
     }
 
     .product-price-current {
-        font-size: 1.75rem !important;
+        font-size: 0.75rem !important;
     }
 
     .product-detail-thumbs .swiper-slide img {
@@ -13872,7 +13895,7 @@ body.dark-mode .cart-notification .notification-content {
     }
 
     .product-title {
-        font-size: 1.5rem !important;
+        font-size: 0.85rem !important;
     }
 
     .product-detail-thumbs .swiper-slide img {
@@ -14357,7 +14380,7 @@ body.dark-mode .modern-order-summary {
 }
 
 .summary-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
   animation: summaryIconRotate 3s ease-in-out infinite;
 }
 
@@ -14440,7 +14463,7 @@ body.dark-mode .modern-order-summary {
 }
 
 .summary-value-total {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 800;
   background: linear-gradient(135deg,
     var(--mnory-accent, #007aff) 0%,
@@ -14606,7 +14629,7 @@ body.dark-mode .empty-cart-container {
 }
 
 .empty-cart-title {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--theme-text, #2c3e50);
   margin-bottom: 1rem;
@@ -14753,7 +14776,7 @@ body.dark-mode .empty-cart-container {
   }
 
   .cart-title {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .cart-icon {
@@ -15395,7 +15418,7 @@ body.dark-mode .modern-wishlist-summary {
 }
 
 .stat-icon {
-  font-size: 2rem;
+  font-size: 1.6rem;
   color: #ff2d55;
   animation: statIconRotate 3s ease-in-out infinite;
 }
@@ -15529,7 +15552,7 @@ body.dark-mode .empty-wishlist-container {
 }
 
 .empty-wishlist-title {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--theme-text, #2c3e50);
   margin-bottom: 1rem;
@@ -15628,7 +15651,7 @@ body.dark-mode .empty-wishlist-container {
   }
 
   .wishlist-title {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .wishlist-icon {

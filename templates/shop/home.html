@@ -231,23 +231,12 @@
         const swiperEl = document.querySelector(`.${className}`);
         if (swiperEl) {
             new Swiper(`.${className}`, {
-                // Use a fractional slidesPerView on very small screens so
-                // the next slide peeks in and a visible gap appears.
-                slidesPerView: 3,
+                // Show 2 slides on narrow screens and 3 on desktop
+                slidesPerView: 2,
                 spaceBetween: 12,
-                   breakpoints: {
-                    // Very small phones
-                    0: { slidesPerView: 1, spaceBetween: 25 },
-                    // Small phones
-                    375: { slidesPerView: 1, spaceBetween: 30 },
-                    // Large phones / small tablets
-                    576: { slidesPerView: 2, spaceBetween: 35 },
-                    // Tablets
-                    768: { slidesPerView: 3, spaceBetween: 25 },
-                    // Desktops
-                    992: { slidesPerView: 3, spaceBetween: 25 },
-                    // Large desktops
-                    1200: { slidesPerView: 3, spaceBetween: 25 }
+                breakpoints: {
+                    0:   { slidesPerView: 2, spaceBetween: 12 },
+                    768: { slidesPerView: 3, spaceBetween: 25 }
                 },
                 navigation: {
                     nextEl: `.${next}`,
