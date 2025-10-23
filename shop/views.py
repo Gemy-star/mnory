@@ -1888,13 +1888,22 @@ def vendor_detail(request, slug):
     if price_max:
         products_queryset = products_queryset.filter(price__lte=price_max)
 
-    # Apply category filter
+    # Apply category filter (accept either numeric id or slug)
     if category_id:
-        products_queryset = products_queryset.filter(category_id=category_id)
+        if str(category_id).isdigit():
+            products_queryset = products_queryset.filter(category_id=int(category_id))
+        else:
+            products_queryset = products_queryset.filter(category__slug=category_id)
 
-    # Apply brand filter
+    # Apply brand filter (accept either numeric id or slug)
     if brand_id:
-        products_queryset = products_queryset.filter(brand_id=brand_id)
+        if str(brand_id).isdigit():
+            products_queryset = products_queryset.filter(brand_id=int(brand_id))
+        else:
+            # support brand slug values (e.g., 'puma') or brand name
+            products_queryset = products_queryset.filter(
+                Q(brand__slug=brand_id) | Q(brand__name=brand_id)
+            )
 
     # Apply colors filter (ManyToManyField through ProductColor)
     if colors_ids:
