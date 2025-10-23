@@ -387,8 +387,22 @@ body.dark-mode .swiper-zoom-container {
 
 @media (max-width: 480px) {
   .products-grid.grid-view {
-    grid-template-columns: repeat(2, 1fr);
+    /* On small phones use a single column to avoid squeezed cards and horizontal overflow */
+    grid-template-columns: 1fr;
     gap: 0.75rem 0.5rem;
+  }
+
+  /* Ensure each product card fits its grid cell and doesn't overflow */
+  .products-grid.grid-view .product-card-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Stronger selector to override other theme css on very small screens */
+  .category-products-section .products-grid.grid-view {
+    grid-template-columns: 1fr !important;
   }
 }
 .products-grid.list-view {
@@ -13176,6 +13190,49 @@ body.dark-mode .horizontal-filters-wrapper {
     .filter-clear-btn {
         padding: 0.625rem 1rem;
     }
+
+  /* Mobile: ensure the horizontal filters don't cause unwanted horizontal scrolling
+     and that filter controls stack neatly and use box-sizing so padding doesn't overflow. */
+  .horizontal-filters {
+    display: block; /* stack children vertically for small screens */
+    width: 100%;
+    overflow: visible; /* allow inner elements to expand vertically instead of forcing horizontal scroll */
+    box-sizing: border-box;
+    padding: 0;
+  }
+
+  .horizontal-filters .filter-chips-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .horizontal-filters .filter-chip-group,
+  .horizontal-filters .filter-flags-group,
+  .horizontal-filters .filter-price-group {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+  }
+
+  .horizontal-filters .filter-chip-select,
+  .horizontal-filters .filter-price-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .horizontal-filters .filter-flag-btn {
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .horizontal-filters .filter-clear-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
 }
 
 @media (max-width: 400px) {
