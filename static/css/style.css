@@ -8373,7 +8373,7 @@ body.dark-mode .sale-section {
 
 /* Dark Mode Adjustments */
 body.dark-mode .product-section {
-  background: inherit;
+  background: var(--theme-bg);
 }
 
 body.dark-mode .swiper-nav-btn {
