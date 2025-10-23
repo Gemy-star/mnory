@@ -116,39 +116,7 @@
                         <!-- Product Header -->
                         <div class="product-header">
                             <h1 class="product-title">{{ product.name }}</h1>
-                            {% if product.short_description %}
-                            <p class="product-subtitle">{{ product.short_description }}</p>
-                            {% endif %}
                         </div>
-
-                        <!-- Product Badges -->
-                        <div class="product-detail-badges">
-                            {% if product.is_on_sale %}
-                                <span class="product-badge badge-sale">
-                                    <span class="material-icons">local_offer</span>
-                                    {% trans "Sale" %} -{{ product.get_discount_percentage }}%
-                                </span>
-                            {% endif %}
-                            {% if product.is_new_arrival %}
-                                <span class="product-badge badge-new">
-                                    <span class="material-icons">new_releases</span>
-                                    {% trans "New" %}
-                                </span>
-                            {% endif %}
-                            {% if product.is_best_seller %}
-                                <span class="product-badge badge-bestseller">
-                                    <span class="material-icons">stars</span>
-                                    {% trans "Best Seller" %}
-                                </span>
-                            {% endif %}
-                            {% if not product.is_in_stock %}
-                                <span class="product-badge badge-out-of-stock">
-                                    <span class="material-icons">cancel</span>
-                                    {% trans "Out of Stock" %}
-                                </span>
-                            {% endif %}
-                        </div>
-
                         <!-- Price Section -->
                         <div class="product-price-section">
                             <div class="product-price-current" id="display-price">
@@ -172,72 +140,6 @@
                                 </span>
                             </div>
                             {% endif %}
-                        </div>
-
-                        <!-- Product Meta Information -->
-                        <div class="product-meta-section">
-                            <div class="product-meta-item">
-                                <span class="material-icons">sell</span>
-                                <div class="product-meta-content">
-                                    <strong>{% trans "Brand:" %}</strong>
-                                    {% if product.brand %}
-                                    <a href="{{ product.brand.get_absolute_url }}" class="product-meta-link">{{ product.brand.name }}</a>
-                                    {% else %}
-                                    <span class="text-muted">{% trans "Not specified" %}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="product-meta-item">
-                                <span class="material-icons">store</span>
-                                <div class="product-meta-content">
-                                    <strong>{% trans "Vendor:" %}</strong>
-                                    {% if product.vendor %}
-                                    <a href="{{ product.vendor.get_absolute_url }}" class="product-meta-link">{{ product.vendor.store_name }}</a>
-                                    {% else %}
-                                    <span class="text-muted">{% trans "Not specified" %}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="product-meta-item">
-                                <span class="material-icons">category</span>
-                                <div class="product-meta-content">
-                                    <strong>{% trans "Category:" %}</strong>
-                                    <a href="{{ product.category.get_absolute_url }}" class="product-meta-link">{{ product.category.name }}</a>
-                                </div>
-                            </div>
-                            <div class="product-meta-item">
-                                <span class="material-icons">checkroom</span>
-                                <div class="product-meta-content">
-                                    <strong>{% trans "Fit Type:" %}</strong>
-                                    {% if product.fit_type %}
-                                    <span>{{ product.fit_type.name }}</span>
-                                    {% else %}
-                                    <span class="text-muted">{% trans "Not specified" %}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="product-meta-item">
-                                <span class="material-icons">{% if product.is_in_stock %}inventory{% else %}remove_shopping_cart{% endif %}</span>
-                                <div class="product-meta-content">
-                                    <strong>{% trans "Status:" %}</strong>
-                                    {% if product.is_in_stock %}
-                                    <span class="product-status product-in-stock">{% trans "In Stock" %}</span>
-                                    {% else %}
-                                    <span class="product-status product-out-of-stock">{% trans "Out of Stock" %}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Product Description -->
-                        <div class="product-description-wrapper">
-                            <h6 class="product-section-title">
-                                <span class="material-icons">description</span>
-                                {% trans "Product Description" %}
-                            </h6>
-                            <div class="product-description">
-                                {{ product.description|linebreaksbr }}
-                            </div>
                         </div>
 
                         <!-- Color Selection -->
@@ -273,6 +175,7 @@
                             </h6>
                             <div class="product-size-options size-buttons" role="group" aria-label="{% trans 'Size selection' %}"></div>
                         </div>
+
 
                         <!-- Quantity Selector -->
                         <div class="product-quantity-section" data-aos="fade-up" data-aos-delay="250">
@@ -379,6 +282,164 @@
                                 <span class="btn-text">{% trans "Wishlist" %}</span>
                             </button>
                         </div>
+ <!-- Share Section -->
+                        <div class="product-share-inline" role="region" aria-label="{% trans 'Share product' %}">
+                            <h6 class="share-inline-title">
+                                <span class="material-icons" aria-hidden="true">share</span>
+                                {% trans "Share this Product" %}
+                            </h6>
+                            <div class="share-inline-buttons" role="group" aria-label="{% trans 'Social media sharing options' %}">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-facebook"
+                                   title="{% trans 'Share on Facebook' %}"
+                                   aria-label="{% trans 'Share on Facebook' %}">
+                                    <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "Facebook" %}</span>
+                                </a>
+                                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ product.name|urlencode }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-twitter"
+                                   title="{% trans 'Share on X' %}"
+                                   aria-label="{% trans 'Share on X (Twitter)' %}">
+                                    <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "X (Twitter)" %}</span>
+                                </a>
+                                <a href="https://wa.me/?text={{ product.name|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-whatsapp"
+                                   title="{% trans 'Share on WhatsApp' %}"
+                                   aria-label="{% trans 'Share on WhatsApp' %}">
+                                    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "WhatsApp" %}</span>
+                                </a>
+                                <a href="https://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&description={{ product.name|urlencode }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="share-inline-btn share-pinterest"
+                                   title="{% trans 'Share on Pinterest' %}"
+                                   aria-label="{% trans 'Share on Pinterest' %}">
+                                    <i class="fa-brands fa-pinterest" aria-hidden="true"></i>
+                                    <span class="visually-hidden">{% trans "Pinterest" %}</span>
+                                </a>
+                                <a href="mailto:?subject={{ product.name|urlencode }}&body={% trans 'Check out this product' %}%20{{ request.build_absolute_uri|urlencode }}"
+                                   class="share-inline-btn share-email"
+                                   title="{% trans 'Share via Email' %}"
+                                   aria-label="{% trans 'Share via Email' %}">
+                                    <span class="material-icons" aria-hidden="true">email</span>
+                                    <span class="visually-hidden">{% trans "Email" %}</span>
+                                </a>
+                                <button class="share-inline-btn share-copy"
+                                        type="button"
+                                        onclick="copyProductLink()"
+                                        title="{% trans 'Copy Link' %}"
+                                        aria-label="{% trans 'Copy product link to clipboard' %}">
+                                    <span class="material-icons" aria-hidden="true">content_copy</span>
+                                    <span class="visually-hidden">{% trans "Copy Link" %}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Product Badges -->
+                        <div class="product-detail-badges">
+                            {% if product.is_on_sale %}
+                                <span class="product-badge badge-sale">
+                                    <span class="material-icons">local_offer</span>
+                                    {% trans "Sale" %} -{{ product.get_discount_percentage }}%
+                                </span>
+                            {% endif %}
+                            {% if product.is_new_arrival %}
+                                <span class="product-badge badge-new">
+                                    <span class="material-icons">new_releases</span>
+                                    {% trans "New" %}
+                                </span>
+                            {% endif %}
+                            {% if product.is_best_seller %}
+                                <span class="product-badge badge-bestseller">
+                                    <span class="material-icons">stars</span>
+                                    {% trans "Best Seller" %}
+                                </span>
+                            {% endif %}
+                            {% if not product.is_in_stock %}
+                                <span class="product-badge badge-out-of-stock">
+                                    <span class="material-icons">cancel</span>
+                                    {% trans "Out of Stock" %}
+                                </span>
+                            {% endif %}
+                        </div>
+
+
+                        <!-- Product Description -->
+                        <div class="product-description-wrapper">
+                            <h6 class="product-section-title">
+                                <span class="material-icons">description</span>
+                                {% trans "Product Description" %}
+                            </h6>
+                            <div class="product-description">
+                                {{ product.description|linebreaksbr }}
+                           {% if product.short_description %}
+                            <p class="product-subtitle">{{ product.short_description }}</p>
+                            {% endif %}
+                            </div>
+                        </div>
+
+
+                        <!-- Product Meta Information -->
+                        <div class="product-meta-section">
+                            <div class="product-meta-item">
+                                <span class="material-icons">sell</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Brand:" %}</strong>
+                                    {% if product.brand %}
+                                    <a href="{{ product.brand.get_absolute_url }}" class="product-meta-link">{{ product.brand.name }}</a>
+                                    {% else %}
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">store</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Vendor:" %}</strong>
+                                    {% if product.vendor %}
+                                    <a href="{{ product.vendor.get_absolute_url }}" class="product-meta-link">{{ product.vendor.store_name }}</a>
+                                    {% else %}
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">category</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Category:" %}</strong>
+                                    <a href="{{ product.category.get_absolute_url }}" class="product-meta-link">{{ product.category.name }}</a>
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">checkroom</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Fit Type:" %}</strong>
+                                    {% if product.fit_type %}
+                                    <span>{{ product.fit_type.name }}</span>
+                                    {% else %}
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="product-meta-item">
+                                <span class="material-icons">{% if product.is_in_stock %}inventory{% else %}remove_shopping_cart{% endif %}</span>
+                                <div class="product-meta-content">
+                                    <strong>{% trans "Status:" %}</strong>
+                                    {% if product.is_in_stock %}
+                                    <span class="product-status product-in-stock">{% trans "In Stock" %}</span>
+                                    {% else %}
+                                    <span class="product-status product-out-of-stock">{% trans "Out of Stock" %}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Secondary Action Buttons -->
                         <div class="product-actions-row" role="group" aria-label="{% trans 'Additional product information' %}">
@@ -472,66 +533,7 @@
                             </div>
                         </div>
 
-                        <!-- Share Section -->
-                        <div class="product-share-inline" role="region" aria-label="{% trans 'Share product' %}">
-                            <h6 class="share-inline-title">
-                                <span class="material-icons" aria-hidden="true">share</span>
-                                {% trans "Share this Product" %}
-                            </h6>
-                            <div class="share-inline-buttons" role="group" aria-label="{% trans 'Social media sharing options' %}">
-                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   class="share-inline-btn share-facebook"
-                                   title="{% trans 'Share on Facebook' %}"
-                                   aria-label="{% trans 'Share on Facebook' %}">
-                                    <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
-                                    <span class="visually-hidden">{% trans "Facebook" %}</span>
-                                </a>
-                                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ product.name|urlencode }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   class="share-inline-btn share-twitter"
-                                   title="{% trans 'Share on X' %}"
-                                   aria-label="{% trans 'Share on X (Twitter)' %}">
-                                    <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
-                                    <span class="visually-hidden">{% trans "X (Twitter)" %}</span>
-                                </a>
-                                <a href="https://wa.me/?text={{ product.name|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   class="share-inline-btn share-whatsapp"
-                                   title="{% trans 'Share on WhatsApp' %}"
-                                   aria-label="{% trans 'Share on WhatsApp' %}">
-                                    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
-                                    <span class="visually-hidden">{% trans "WhatsApp" %}</span>
-                                </a>
-                                <a href="https://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&description={{ product.name|urlencode }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   class="share-inline-btn share-pinterest"
-                                   title="{% trans 'Share on Pinterest' %}"
-                                   aria-label="{% trans 'Share on Pinterest' %}">
-                                    <i class="fa-brands fa-pinterest" aria-hidden="true"></i>
-                                    <span class="visually-hidden">{% trans "Pinterest" %}</span>
-                                </a>
-                                <a href="mailto:?subject={{ product.name|urlencode }}&body={% trans 'Check out this product' %}%20{{ request.build_absolute_uri|urlencode }}"
-                                   class="share-inline-btn share-email"
-                                   title="{% trans 'Share via Email' %}"
-                                   aria-label="{% trans 'Share via Email' %}">
-                                    <span class="material-icons" aria-hidden="true">email</span>
-                                    <span class="visually-hidden">{% trans "Email" %}</span>
-                                </a>
-                                <button class="share-inline-btn share-copy"
-                                        type="button"
-                                        onclick="copyProductLink()"
-                                        title="{% trans 'Copy Link' %}"
-                                        aria-label="{% trans 'Copy product link to clipboard' %}">
-                                    <span class="material-icons" aria-hidden="true">content_copy</span>
-                                    <span class="visually-hidden">{% trans "Copy Link" %}</span>
-                                </button>
-                            </div>
-                        </div>
+
                         </div>
                     </div>
                 </div>

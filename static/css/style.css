@@ -8373,7 +8373,7 @@ body.dark-mode .sale-section {
 
 /* Dark Mode Adjustments */
 body.dark-mode .product-section {
-  background: var(--theme-bg);
+  background: inherit;
 }
 
 body.dark-mode .swiper-nav-btn {
@@ -9275,11 +9275,25 @@ body.dark-mode .registration-card:hover {
 /* Services Grid */
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
     margin-bottom: 4rem;
     position: relative;
     z-index: 2;
+}
+
+/* When AOS has animated the section in, give it a subtle background so it stands out */
+.services-grid.aos-init.aos-animate,
+.services-grid.aos-animate {
+  background: linear-gradient(
+    135deg,
+    rgba(103, 58, 183, 0.03) 0%,
+    rgba(0,0,0,0.00) 50%,
+    rgba(33, 150, 243, 0.03) 100%
+  );
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
 }
 
 /* Service Card */
@@ -9418,6 +9432,16 @@ body.dark-mode .registration-card:hover {
     border-top: 1px solid var(--theme-border);
     position: relative;
     z-index: 2;
+}
+
+/* AOS-active background for the registration call-to-action */
+.freelance-registration-section.aos-init.aos-animate,
+.freelance-registration-section.aos-animate {
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.01));
+  /* keep existing padding but ensure visual separation */
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  border-radius: 10px;
 }
 
 .registration-title {
