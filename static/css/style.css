@@ -3309,7 +3309,7 @@ body.dark-mode .dropdown-item.active {
   border-radius: 50%;
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-fast);
-  z-index: 999;
+  z-index: 20010;
 }
 
 .back-to-top-btn:hover {
@@ -8473,6 +8473,26 @@ body.dark-mode .product-section .swiper-slide .product-card:hover {
 @media (max-width: 576px) {
   .product-section {
     padding: 2.5rem 0;
+  }
+
+  /* Make horizontal filters wrap on small screens */
+  .horizontal-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filter-chip-group {
+    flex: 0 0 auto;
+    margin-right: 6px;
+  }
+
+  /* Allow the tabs nav to scroll horizontally on small screens */
+  .category-tabs-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .section-title-tabs {

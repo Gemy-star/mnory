@@ -52,7 +52,7 @@
         </div>
 
         <!-- Category Tabs Navigation (Main Categories) -->
-        <div class="category-tabs-nav-wrapper" data-aos="fade-up" data-aos-delay="100">
+    <div class="category-tabs-nav-wrapper" data-aos="fade-up" data-aos-delay="100" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
             <div class="category-tabs-nav">
                 <!-- All Categories Tab -->
                 <a href="{% url 'shop:home' %}" class="category-tab-btn {% if not category %}active{% endif %}" data-aos="zoom-in" data-aos-delay="150">
@@ -64,20 +64,20 @@
                 </a>
 
                 {% for cat in categories %}
-
-                    <span class="tab-icon">
-                        {% if cat.image %}
-                            <div class="tab-image-container">
-                                <img src="{{ cat.image_resized.url }}" alt="{{ cat.name }}" class="tab-image">
-                                <span class="tab-image-label">{{ cat.name }}</span>
-                            </div>
-                        {% else %}
-                            <span class="material-icons">folder_open</span>
-                            <span class="tab-label">{{ cat.name }}</span>
-                        {% endif %}
-                    </span>
-                    <span class="tab-indicator"></span>
-                </a>
+                    <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="category-tab-btn {% if category and cat.slug == category.slug %}active{% endif %}" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:150 }}">
+                        <span class="tab-icon">
+                            {% if cat.image %}
+                                <div class="tab-image-container">
+                                    <img src="{{ cat.image_resized.url }}" alt="{{ cat.name }}" class="tab-image">
+                                    <span class="tab-image-label">{{ cat.name }}</span>
+                                </div>
+                            {% else %}
+                                <span class="material-icons">folder_open</span>
+                            {% endif %}
+                        </span>
+                        <span class="tab-label">{{ cat.name }}</span>
+                        <span class="tab-indicator"></span>
+                    </a>
                 {% endfor %}
             </div>
 
@@ -93,12 +93,12 @@
         <!-- Subcategories Tabs (Collapsible on Mobile) -->
         {% if subcategories %}
         <div class="subcategory-tabs-collapsible" data-aos="fade-up" data-aos-delay="200">
-            <button class="collapsible-toggle-btn" id="toggleSubcategories">
+            <button class="collapsible-toggle-btn expanded" id="toggleSubcategories">
                 <span class="material-icons">view_list</span>
                 <span>{% trans "Subcategories" %}</span>
                 <span class="material-icons toggle-arrow">expand_more</span>
             </button>
-            <div class="subcategory-tabs-wrapper collapsible-content" id="subcategoriesPanel">
+            <div class="subcategory-tabs-wrapper collapsible-content expanded" id="subcategoriesPanel">
                 <div class="subcategory-tabs">
                     <a href="{% url 'shop:category_detail' slug=category.slug %}" class="subcategory-tab-btn {% if not current_filters.subcategory %}active{% endif %}">
                         <span class="material-icons">all_inclusive</span>
@@ -122,8 +122,8 @@
                 <span>{% trans "Filters" %}</span>
                 <span class="material-icons toggle-arrow">expand_more</span>
             </button>
-            <div class="horizontal-filters-wrapper collapsible-content" id="filtersPanel">
-                <div class="horizontal-filters">
+            <div class="horizontal-filters-wrapper collapsible-content" id="filtersPanel" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                <div class="horizontal-filters" style="flex-wrap:wrap;">
                     <!-- Filter Form -->
                     <form id="filter-form" class="horizontal-filters-form">
                         <input type="hidden" name="category_slug" value="{{ category.slug|default:'' }}">
@@ -411,6 +411,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const toggleBtn = document.getElementById(toggleBtnId);
         const panel = document.getElementById(panelId);
         if (!toggleBtn || !panel) return;
+
+        // Preserve whether the server/template explicitly set this panel open by default.
+        const initialHadExpanded = panel.classList.contains('expanded');
+
         toggleBtn.addEventListener('click', function() {
             const expanded = panel.classList.toggle('expanded');
             toggleBtn.classList.toggle('expanded', expanded);
@@ -420,8 +424,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 arrow.style.transform = expanded ? 'rotate(180deg)' : 'rotate(0deg)';
             }
         });
-        // Auto-collapse on desktop
+
+        // Auto-collapse on mobile; on desktop panels are expanded unless the template explicitly requested a different initial state.
         function handleResize() {
+            if (initialHadExpanded) {
+                // Respect server/template intent; do not override.
+                return;
+            }
             if (window.innerWidth > 768) {
                 panel.classList.add('expanded');
                 toggleBtn.classList.add('expanded');
@@ -518,6 +527,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const openFiltersMobile = document.getElementById('openFiltersMobile');
     const filtersPanel = document.getElementById('filtersPanel');
+
+    // Activate category/subcategory tab based on URL path
+    (function activateTabsFromUrl() {
+        try {
+            const path = window.location.pathname.replace(/\/+$/, ''); // trim trailing slash
+            const pathParts = path.split('/').filter(Boolean);
+            if (!pathParts.length) return;
+
+            // Try to find a tab whose href ends with the last meaningful slug in the path
+            const candidateSlug = pathParts[pathParts.length - 1];
+            const tabAnchors = document.querySelectorAll('.category-tab-btn, .subcategory-tab-btn');
+            if (!tabAnchors || tabAnchors.length === 0) return;
+
+            tabAnchors.forEach(a => a.classList.remove('active'));
+
+            // Prefer exact matches against href or data attributes
+            let matched = Array.from(tabAnchors).find(a => {
+                try {
+                    const href = a.getAttribute('href') || '';
+                    if (!href) return false;
+                    const hrefParts = href.replace(/\/+$/, '').split('/').filter(Boolean);
+                    const last = hrefParts[hrefParts.length - 1];
+                    return last === candidateSlug;
+                } catch (e) {
+                    return false;
+                }
+            });
+
+            // Fallback: if no match found, try matching the parent category (second-to-last)
+            if (!matched && pathParts.length > 1) {
+                const parentSlug = pathParts[pathParts.length - 2];
+                matched = Array.from(tabAnchors).find(a => {
+                    const href = a.getAttribute('href') || '';
+                    const hrefParts = href.replace(/\/+$/, '').split('/').filter(Boolean);
+                    const last = hrefParts[hrefParts.length - 1];
+                    return last === parentSlug;
+                });
+            }
+
+            if (matched) matched.classList.add('active');
+        } catch (err) {
+            // noop - don't break the page if something goes wrong here
+            console.error('activateTabsFromUrl error', err);
+        }
+    })();
     if (openFiltersMobile && filtersPanel) {
         openFiltersMobile.addEventListener('click', function() {
             // ensure filters panel is expanded on mobile
