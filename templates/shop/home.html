@@ -26,20 +26,43 @@
             <p class="section-subtitle-tabs">{% trans "Hand-picked premium products just for you" %}</p>
         </div>
 
-        <!-- Products Swiper -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="150">
-            <div class="swiper featured-swiper">
-                <div class="swiper-wrapper">
-                    {% for product in featured_products %}
-                    <div class="swiper-slide">
-                        {% include "partials/_product.html" with product=product section="featured_products" %}
+        <!-- Products Container (category-style) -->
+        <div class="products-swiper-wrapper container" data-aos="fade-up" data-aos-delay="150">
+            <!-- Loading / Empty states and header are handled here like _categories -->
+            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="150">
+                <div class="products-loading" style="display:none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
                     </div>
-                    {% empty %}
-                    <div class="empty-state" data-aos="fade-up">
-                        <span class="material-icons">star_border</span>
-                        <p>{% trans "No featured products available at the moment." %}</p>
+                    <p class="loading-text">{% trans "Loading products..." %}</p>
+                </div>
+
+                <div class="category-products-swiper-container" id="featuredProductsSwiper" data-aos="fade-up" data-aos-delay="200">
+                    <div class="swiper featured-swiper">
+                        <div class="swiper-wrapper">
+                            {% for product in featured_products %}
+                                <div class="swiper-slide">
+                                    {% include "partials/_product.html" with product=product section="featured_products" %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="swiper-pagination"></div>
                     </div>
-                    {% endfor %}
+                </div>
+
+                <div class="products-empty" style="display:none;">
+                    <div class="empty-illustration">
+                        <span class="material-icons empty-icon">star_border</span>
+                        <div class="empty-rings">
+                            <div class="ring ring-1"></div>
+                            <div class="ring ring-2"></div>
+                            <div class="ring ring-3"></div>
+                        </div>
+                    </div>
+                    <h4 class="empty-title">{% trans "No products found" %}</h4>
+                    <p class="empty-message">{% trans "We couldn't find any featured products at the moment" %}</p>
                 </div>
             </div>
 
@@ -70,20 +93,42 @@
             <p class="section-subtitle-tabs">{% trans "Fresh styles and latest trends" %}</p>
         </div>
 
-        <!-- Products Swiper -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="200">
-            <div class="swiper newarrivals-swiper">
-                <div class="swiper-wrapper">
-                    {% for product in new_arrivals %}
-                    <div class="swiper-slide">
-                        {% include "partials/_product.html" with product=product section="new_arrivals" %}
+        <!-- Products Container (category-style) -->
+        <div class="category-products-container" data-aos="fade-up" data-aos-delay="200">
+            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="200">
+                <div class="products-loading" style="display:none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
                     </div>
-                    {% empty %}
-                    <div class="empty-state" data-aos="fade-up">
-                        <span class="material-icons">new_releases</span>
-                        <p>{% trans "No new arrivals available at the moment." %}</p>
+                    <p class="loading-text">{% trans "Loading products..." %}</p>
+                </div>
+
+                <div class="category-products-swiper-container" id="newarrivalsProductsSwiper" data-aos="fade-up" data-aos-delay="220">
+                    <div class="swiper newarrivals-swiper container">
+                        <div class="swiper-wrapper">
+                            {% for product in new_arrivals %}
+                                <div class="swiper-slide">
+                                    {% include "partials/_product.html" with product=product section="new_arrivals" %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="swiper-pagination"></div>
                     </div>
-                    {% endfor %}
+                </div>
+
+                <div class="products-empty" style="display:none;">
+                    <div class="empty-illustration">
+                        <span class="material-icons empty-icon">new_releases</span>
+                        <div class="empty-rings">
+                            <div class="ring ring-1"></div>
+                            <div class="ring ring-2"></div>
+                            <div class="ring ring-3"></div>
+                        </div>
+                    </div>
+                    <h4 class="empty-title">{% trans "No products found" %}</h4>
+                    <p class="empty-message">{% trans "We couldn't find any new arrivals at the moment" %}</p>
                 </div>
             </div>
 
@@ -114,20 +159,43 @@
             <p class="section-subtitle-tabs">{% trans "Most popular products loved by customers" %}</p>
         </div>
 
-        <!-- Products Swiper -->
+        <!-- Products Container (category-style) -->
         <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="250">
-            <div class="swiper bestseller-swiper">
-                <div class="swiper-wrapper">
-                    {% for product in best_sellers %}
-                    <div class="swiper-slide">
-                        {% include "partials/_product.html" with product=product section="best_sellers" %}
+            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="250">
+
+                <div class="products-loading" style="display:none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
                     </div>
-                    {% empty %}
-                    <div class="empty-state" data-aos="fade-up">
-                        <span class="material-icons">trending_up</span>
-                        <p>{% trans "No best sellers available at the moment." %}</p>
+                    <p class="loading-text">{% trans "Loading products..." %}</p>
+                </div>
+
+                <div class="category-products-swiper-container" id="bestsellerProductsSwiper" data-aos="fade-up" data-aos-delay="270">
+                    <div class="swiper bestseller-swiper container">
+                        <div class="swiper-wrapper">
+                            {% for product in best_sellers %}
+                                <div class="swiper-slide">
+                                    {% include "partials/_product.html" with product=product section="best_sellers" %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="swiper-pagination"></div>
                     </div>
-                    {% endfor %}
+                </div>
+
+                <div class="products-empty" style="display:none;">
+                    <div class="empty-illustration">
+                        <span class="material-icons empty-icon">trending_up</span>
+                        <div class="empty-rings">
+                            <div class="ring ring-1"></div>
+                            <div class="ring ring-2"></div>
+                            <div class="ring ring-3"></div>
+                        </div>
+                    </div>
+                    <h4 class="empty-title">{% trans "No products found" %}</h4>
+                    <p class="empty-message">{% trans "We couldn't find any best sellers at the moment" %}</p>
                 </div>
             </div>
 
@@ -158,20 +226,42 @@
             <p class="section-subtitle-tabs">{% trans "Don't miss these amazing deals and discounts" %}</p>
         </div>
 
-        <!-- Products Swiper -->
+        <!-- Products Container (category-style) -->
         <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="300">
-            <div class="swiper onsale-swiper">
-                <div class="swiper-wrapper">
-                    {% for product in sale_products %}
-                    <div class="swiper-slide">
-                        {% include "partials/_product.html" with product=product section="sale_products" %}
+            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="300">
+                <div class="products-loading" style="display:none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
                     </div>
-                    {% empty %}
-                    <div class="empty-state" data-aos="fade-up">
-                        <span class="material-icons">local_offer</span>
-                        <p>{% trans "No sale products available at the moment." %}</p>
+                    <p class="loading-text">{% trans "Loading products..." %}</p>
+                </div>
+
+                <div class="category-products-swiper-container" id="onsaleProductsSwiper" data-aos="fade-up" data-aos-delay="320">
+                    <div class="swiper onsale-swiper container">
+                        <div class="swiper-wrapper">
+                            {% for product in sale_products %}
+                                <div class="swiper-slide">
+                                    {% include "partials/_product.html" with product=product section="sale_products" %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="swiper-pagination"></div>
                     </div>
-                    {% endfor %}
+                </div>
+
+                <div class="products-empty" style="display:none;">
+                    <div class="empty-illustration">
+                        <span class="material-icons empty-icon">local_offer</span>
+                        <div class="empty-rings">
+                            <div class="ring ring-1"></div>
+                            <div class="ring ring-2"></div>
+                            <div class="ring ring-3"></div>
+                        </div>
+                    </div>
+                    <h4 class="empty-title">{% trans "No products found" %}</h4>
+                    <p class="empty-message">{% trans "We couldn't find any sale products at the moment" %}</p>
                 </div>
             </div>
 

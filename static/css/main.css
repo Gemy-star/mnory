@@ -1440,21 +1440,6 @@ body.dark-mode .btn-close {
   gap: 0.25rem;
 }
 
-.badge-bestseller {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: #000;
-}
-
-.badge-new-arrival {
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
-  color: #fff;
-}
-
-.badge-on-sale {
-  background: linear-gradient(135deg, #fa709a, #fee140);
-  color: #000;
-}
-
 /* ========================================
    LISTS & NAVIGATION ITEMS
 ======================================== */
@@ -2054,18 +2039,6 @@ a.btn-view-vendor:hover {
   font-size: 1rem;
 }
 
-/* Sale badge */
-.sale-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: red;
-  color: white;
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  border-radius: 4px;
-  z-index: 3;
-}
 
 /* Local Toast Styles */
 .product-card .local-toast-container {
@@ -2944,23 +2917,6 @@ body.dark-mode .btn-icon-action {
     }
 }
 
-/* Sale Badge */
-.sale-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-    z-index: 5;
-    animation: salePulse 2s ease-in-out infinite;
-}
 
 @keyframes salePulse {
     0%, 100% {

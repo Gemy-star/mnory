@@ -7570,9 +7570,8 @@ body.dark-mode .product-card:hover {
 
 .sale-badge {
   position: absolute;
-  top: 25px;
-  left: 3px;
-  background: linear-gradient(135deg, #ff6b35, #ff8c42);
+  left: 10px;
+  right: 3px;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -7832,7 +7831,6 @@ body.dark-mode .product-card:hover {
 /* Sale Section Special Styling */
 .sale-section {
   background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(255, 107, 53, 0.02));
-  border-radius: 20px;
   padding: 3rem 0 !important;
   margin: 2rem 0;
 }
@@ -8275,61 +8273,7 @@ body.dark-mode .sale-section {
 .product-section {
   padding: 4rem 0;
   background: var(--theme-bg);
-  transition: background-color 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.product-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(var(--mnory-accent-rgb), 0.02) 50%, transparent 100%);
-  pointer-events: none;
-}
-
-/* Section Variants */
-.featured-section {
-  background: linear-gradient(135deg, var(--theme-bg) 0%, rgba(var(--mnory-accent-rgb), 0.05) 100%);
-}
-
-.newarrivals-section {
-  background: linear-gradient(135deg, rgba(40, 167, 69, 0.03) 0%, var(--theme-bg) 100%);
-}
-
-.bestseller-section {
-  background: linear-gradient(135deg, var(--theme-bg) 0%, rgba(255, 193, 7, 0.03) 100%);
-}
-
-.sale-section {
-  background: linear-gradient(135deg, rgba(220, 53, 69, 0.03) 0%, var(--theme-bg) 100%);
-  position: relative;
-}
-
-.sale-section::after {
-  content: '';
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(220, 53, 69, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: pulse-sale 3s ease-in-out infinite;
-}
-
-.home-categories-section,
-.freelance-categories-section {
-  background: var(--theme-bg-secondary);
-}
-
-/* Section Animations */
-@keyframes pulse-sale {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.2); opacity: 0.8; }
+  transition: background 0.3s ease;
 }
 
 /* Products Swiper Wrapper */
@@ -8432,27 +8376,6 @@ body.dark-mode .product-section {
   background: var(--theme-bg);
 }
 
-body.dark-mode .featured-section {
-  background: linear-gradient(135deg, var(--theme-bg) 0%, rgba(var(--mnory-accent-rgb), 0.08) 100%);
-}
-
-body.dark-mode .newarrivals-section {
-  background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, var(--theme-bg) 100%);
-}
-
-body.dark-mode .bestseller-section {
-  background: linear-gradient(135deg, var(--theme-bg) 0%, rgba(255, 193, 7, 0.05) 100%);
-}
-
-body.dark-mode .sale-section {
-  background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, var(--theme-bg) 100%);
-}
-
-body.dark-mode .home-categories-section,
-body.dark-mode .freelance-categories-section {
-  background: var(--theme-bg-secondary);
-}
-
 body.dark-mode .swiper-nav-btn {
   background: var(--theme-bg-tertiary);
   border-color: var(--theme-border);
@@ -8493,47 +8416,6 @@ body.dark-mode .empty-state {
   border-color: var(--mnory-accent);
 }
 
-/* Section Transition Effects */
-.product-section {
-  opacity: 0;
-  animation: sectionFadeIn 0.8s ease-out forwards;
-}
-
-@keyframes sectionFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Loading Animation for Sections */
-.product-section.loading {
-  position: relative;
-}
-
-.product-section.loading::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--theme-border);
-  border-top: 3px solid var(--mnory-accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-}
-
-@keyframes spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
 
 /* Dark Mode Product Card Enhancements */
 body.dark-mode .product-section .swiper-slide .product-card {
@@ -8933,7 +8815,7 @@ body.dark-mode .product-section .swiper-slide .product-card:hover {
 
 /* Dark Mode Adjustments */
 body.dark-mode .modern-categories-section {
-    background: var(--theme-bg-secondary);
+    background: transparent !important;
 }
 
 body.dark-mode .category-card {
