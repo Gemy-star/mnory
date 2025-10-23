@@ -29,9 +29,7 @@
                 <button class="category-tab-btn" data-category="{{ cat.slug }}" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:150 }}">
                     <span class="tab-icon">
                         {% if cat.image %}
-                            <a href="{{ cat.get_absolute_url }}" class="tab-image-link" aria-label="{{ cat.name }}">
-                                <img src="{{ cat.image_resized.url }}" alt="{{ cat.name }}" class="tab-image">
-                            </a>
+                            <img src="{{ cat.image_resized.url }}" alt="{{ cat.name }}" class="tab-image">
                         {% else %}
                             <span class="material-icons">folder_open</span>
                         {% endif %}
@@ -119,6 +117,7 @@
             <!-- View All Button -->
             <div class="text-center mt-4" id="viewAllContainer" data-aos="fade-up" data-aos-delay="300">
                 <a href="{% url 'shop:category_detail' slug='all' %}" id="viewAllLink" class="btn-view-all-category">
+                    <span class="material-icons">category</span>
                     <span>{% trans "View All Products" %}</span>
                     <span class="material-icons">arrow_forward</span>
                 </a>
