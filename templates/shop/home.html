@@ -26,8 +26,8 @@
             <p class="section-subtitle-tabs">{% trans "Hand-picked premium products just for you" %}</p>
         </div>
 
-        <!-- Products Container (category-style) -->
-        <div class="products-swiper-wrapper container" data-aos="fade-up" data-aos-delay="150">
+    <!-- Products Container (category-style) -->
+    <div class="category-products-container" data-aos="fade-up" data-aos-delay="150">
             <!-- Loading / Empty states and header are handled here like _categories -->
             <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="150">
                 <div class="products-loading" style="display:none;">
@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="category-products-swiper-container" id="featuredProductsSwiper" data-aos="fade-up" data-aos-delay="200">
-                    <div class="swiper featured-swiper">
+                    <div class="swiper featured-swiper container">
                         <div class="swiper-wrapper">
                             {% for product in featured_products %}
                                 <div class="swiper-slide">
@@ -160,8 +160,7 @@
         </div>
 
         <!-- Products Container (category-style) -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="250">
-            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="250">
+        <div class="category-products-container" data-aos="fade-up" data-aos-delay="250">
 
                 <div class="products-loading" style="display:none;">
                     <div class="loading-spinner">
@@ -227,8 +226,7 @@
         </div>
 
         <!-- Products Container (category-style) -->
-        <div class="products-swiper-wrapper" data-aos="fade-up" data-aos-delay="300">
-            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="300">
+        <div class="category-products-container" data-aos="fade-up" data-aos-delay="300">
                 <div class="products-loading" style="display:none;">
                     <div class="loading-spinner">
                         <div class="spinner-ring"></div>
