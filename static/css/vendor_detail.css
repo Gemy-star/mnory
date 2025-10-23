@@ -404,12 +404,40 @@ body.dark-mode {
   .vendor-header-actions { gap: 6px; }
 }
 
+/* Mobile-first adjustments for header stacking and tap targets */
+@media (max-width: 768px) {
+  .modern-vendor-header { padding: 12px 0; }
+  .vendor-header-inner { flex-direction: column; align-items: stretch; text-align: left; }
+  .vendor-header-inner > div { width: 100%; }
+  .vendor-header-inner .vendor-avatar { margin-bottom: 8px; }
+  .vendor-header-inner .vendor-name { font-size: 1.15rem; }
+  .vendor-header-inner .vendor-meta { margin-bottom: 8px; }
+  .vendor-header-right { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .vendor-header-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  /* Make badges wrap and remain visible */
+  .vendor-badges { flex-wrap: wrap; gap: 6px; }
+  /* Make action buttons slightly larger for touch */
+  .vendor-header-actions .btn, .vendor-header-actions .btn-icon { width: 44px; height: 44px; }
+}
+
 /* Icon-only action buttons */
 .btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border-radius: 10px; }
 .btn-icon .material-icons { font-size: 1.05rem; }
 .btn-icon.btn-outline-primary { border: 1px solid rgba(0,122,255,0.12); color: var(--vd-accent); }
 .btn-icon.btn-light { background: var(--theme-bg-secondary); }
 .btn-icon:hover { transform: translateY(-4px); box-shadow: 0 8px 22px rgba(2,6,23,0.08); }
+
+/* Better focus styles for keyboard users */
+.btn-icon:focus, .vendor-header-actions .btn:focus, .collapsible-toggle-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0,122,255,0.12);
+  border-radius: 10px;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .vendor-header-card, .product-card, .vendor-header-actions .btn { transition: none !important; animation: none !important; }
+}
 
 /* Subtle badge pulse for verified */
 .vendor-badge-verified { position: relative; }

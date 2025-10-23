@@ -27,8 +27,8 @@
             <div class="vendor-meta text-muted small aos-init aos-animate" data-aos="fade-left" data-aos-delay="180">
               <!-- collapsible description (clamped on mobile) -->
               <div class="vendor-description-wrapper">
-                <div class="vendor-description text-muted pt-2 mb-2">{{ vendor.store_description }}</div>
-                <button class="btn btn-link btn-sm readmore-btn d-lg-none" type="button" aria-expanded="false">{% trans "Read more" %}</button>
+                <div class="vendor-description text-muted pt-2 mb-2" id="vendorDescription">{{ vendor.store_description }}</div>
+                  <button class="btn btn-link btn-sm readmore-btn d-lg-none" type="button" aria-expanded="false" aria-controls="vendorDescription">{% trans "Read more" %}</button>
               </div>
               <div class="mt-2">
                 <span class="badge badge-flag badge-bestseller">{% trans "Vendor" %}</span>
@@ -56,13 +56,13 @@
           </div>
 
           <div class="vendor-header-actions d-flex align-items-center">
-            <a href="#" class="btn btn-light me-2" title="Share">
+            <a href="#" class="btn btn-light btn-icon me-2" title="Share" aria-label="Share seller">
               <span class="material-icons">share</span>
             </a>
-            <a href="#" class="btn btn-outline-secondary me-2" title="Follow">
+            <a href="#" class="btn btn-outline-secondary btn-icon me-2" title="Follow" aria-label="Follow seller">
               <span class="material-icons">star_border</span>
             </a>
-            <a href="mailto:{{ vendor.user.email }}" class="btn btn-outline-primary" title="Contact">
+            <a href="mailto:{{ vendor.user.email }}" class="btn btn-outline-primary btn-icon" title="Contact" aria-label="Contact seller">
               <span class="material-icons">email</span>
             </a>
           </div>
