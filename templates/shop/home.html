@@ -231,12 +231,12 @@
         const swiperEl = document.querySelector(`.${className}`);
         if (swiperEl) {
             new Swiper(`.${className}`, {
-                // Show 2 slides on narrow screens and 3 on desktop
+                // Show 2 slides on narrow screens and 4 on desktop
                 slidesPerView: 2,
                 spaceBetween: 12,
                 breakpoints: {
                     0:   { slidesPerView: 2, spaceBetween: 12 },
-                    768: { slidesPerView: 3, spaceBetween: 25 }
+                    768: { slidesPerView: 4, spaceBetween: 25 }
                 },
                 navigation: {
                     nextEl: `.${next}`,

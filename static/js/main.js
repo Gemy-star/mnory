@@ -217,10 +217,10 @@ function initCategoryProductsSwiper() {
             dynamicBullets: true,
         },
 
-        // Responsive breakpoints: mobile -> 2 slides, desktop (>=768px) -> 3 slides
+        // Responsive breakpoints: mobile -> 2 slides, desktop (>=768px) -> 4 slides
         breakpoints: {
             0:   { slidesPerView: 2, spaceBetween: 15 },
-            768: { slidesPerView: 3, spaceBetween: 25 }
+            768: { slidesPerView: 4, spaceBetween: 25 }
         },
         // Effects and animations
         on: {
@@ -1492,7 +1492,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
                breakpoints: {
                     0:   { slidesPerView: 2, spaceBetween: 15 },
-                    768: { slidesPerView: 3, spaceBetween: 25 }
+                    768: { slidesPerView: 4, spaceBetween: 25 }
                 },
         });
     }
@@ -1528,7 +1528,7 @@ document.addEventListener('DOMContentLoaded', function() {
             spaceBetween: 15,
                             breakpoints: {
                                         0:   { slidesPerView: 2, spaceBetween: 15 },
-                                        768: { slidesPerView: 3, spaceBetween: 25 }
+                                        768: { slidesPerView: 4, spaceBetween: 25 }
                                 },
             navigation: {
                 nextEl: '.swiper-button-next',
@@ -1561,18 +1561,10 @@ document.addEventListener('DOMContentLoaded', function() {
             slidesPerView: 2,
             spaceBetween: 15,
                breakpoints: {
-                    // Very small phones
-                    0: { slidesPerView: 1, spaceBetween: 25 },
-                    // Small phones
-                    375: { slidesPerView: 1, spaceBetween: 30 },
-                    // Large phones / small tablets
-                    576: { slidesPerView: 2, spaceBetween: 35 },
-                    // Tablets
-                    768: { slidesPerView: 3, spaceBetween: 25 },
-                    // Desktops
-                    992: { slidesPerView: 3, spaceBetween: 25 },
-                    // Large desktops
-                    1200: { slidesPerView: 3, spaceBetween: 25 }
+                    // Mobile
+                    0: { slidesPerView: 2, spaceBetween: 15 },
+                    // Desktop
+                    768: { slidesPerView: 4, spaceBetween: 25 }
                 },
             navigation: {
                 nextEl: '.swiper-button-next',
