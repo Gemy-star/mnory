@@ -31,7 +31,12 @@
                   <button class="btn btn-link btn-sm readmore-btn d-lg-none" type="button" aria-expanded="false" aria-controls="vendorDescription">{% trans "Read more" %}</button>
               </div>
               <div class="mt-2">
-                <span class="badge badge-flag badge-bestseller">{% trans "Vendor" %}</span>
+              {% if vendor.is_approved %}
+<span class="badge badge-flag badge-verified">
+  <i class="material-icons" style="font-size: 16px; vertical-align: middle;">verified</i>
+  {% trans "Verified" %}
+</span>
+{% endif %}
                 {% if vendor_location %}
                   <span class="ms-2">• {{ vendor_location }}</span>
                 {% endif %}
@@ -43,9 +48,10 @@
           </div>
         </div>
         <div class="vendor-header-right d-flex align-items-center" data-aos="fade-up" data-aos-delay="250">
-          <!-- compact badges: product count & categories count -->
-          <div class="vendor-badges d-flex align-items-center me-3">
-            <span class="vendor-badge d-flex align-items-center">
+          <!-- compat badges: product count & categories count -->
+
+          <div class="vendor-header-actions d-flex align-items-center">
+              <span class="vendor-badge d-flex align-items-center">
               <span class="material-icons md-18">inventory_2</span>
               <span class="badge-text ms-1">{{ products.paginator.count }}</span>
             </span>
@@ -53,16 +59,13 @@
               <span class="material-icons md-18">category</span>
               <span class="badge-text ms-1">{{ categories|length }}</span>
             </span>
-          </div>
-
-          <div class="vendor-header-actions d-flex align-items-center">
-            <a href="#" class="btn btn-light btn-icon me-2" title="Share" aria-label="Share seller">
+            <a href="#" class="btn btn-primary btn-icon me-2" title="Share" aria-label="Share seller">
               <span class="material-icons">share</span>
             </a>
-            <a href="#" class="btn btn-outline-secondary btn-icon me-2" title="Follow" aria-label="Follow seller">
+            <a href="#" class="btn btn-secondary btn-icon me-2" title="Follow" aria-label="Follow seller">
               <span class="material-icons">star_border</span>
             </a>
-            <a href="mailto:{{ vendor.user.email }}" class="btn btn-outline-primary btn-icon" title="Contact" aria-label="Contact seller">
+            <a href="mailto:{{ vendor.user.email }}" class="btn btn-outline-light btn-icon" title="Contact" aria-label="Contact seller">
               <span class="material-icons">email</span>
             </a>
           </div>

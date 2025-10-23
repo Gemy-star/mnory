@@ -2998,6 +2998,12 @@ body.dark-mode .btn-close {
   animation: dropdownFadeIn 0.2s ease-out forwards;
 }
 
+.badge-verified {
+  background: linear-gradient(135deg, #007aff 0%, #0066d6 100%);
+  background-color: rgba(0, 0, 0, 0);
+  color: #fff !important;
+}
+
 @keyframes dropdownFadeIn {
   from {
     opacity: 0;
