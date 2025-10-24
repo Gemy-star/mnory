@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 from django.conf import settings  # Import settings to get AUTH_USER_MODEL
+from django.db.models import Avg
 from django.contrib.auth.models import AbstractUser
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
