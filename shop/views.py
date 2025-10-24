@@ -42,7 +42,7 @@ import logging
 from django.utils.translation import gettext as _
 from constance import config
 from django.utils import timezone
-from freelancing.models import Review
+from shop.models import Review
 
 # Set up logger
 logger = logging.getLogger(__name__)
