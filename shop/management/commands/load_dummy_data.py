@@ -21,6 +21,7 @@ from shop.models import (
     ProductImage,
     ProductVariant,
     ProductColor,
+    Review,
     ProductSize,
 )
 
@@ -154,10 +155,11 @@ class Command(BaseCommand):
         )
 
         # Call seeding methods
-        self.create_users_and_vendors(10)
+        self.create_users_and_vendors(vendor_count=10, customer_count=25)
         self.create_categories()
         self.create_fittypes_brands_colors_sizes()
         self.create_products(50)
+        self.create_reviews(150)
 
         # Reconnect the signal so it works normally after seeding
         post_save.connect(create_vendor_profile, sender=MnoryUser)
@@ -169,6 +171,7 @@ class Command(BaseCommand):
 
     def clear_data(self):
         # Delete in reverse order of foreign key dependencies to avoid integrity errors
+        Review.objects.all().delete()
         ProductVariant.objects.all().delete()
         ProductImage.objects.all().delete()
         ProductColor.objects.all().delete()
@@ -177,6 +180,7 @@ class Command(BaseCommand):
         VendorProfile.objects.all().delete()
         # Fix: Filter by user_type='vendor' instead of is_vendor=True
         MnoryUser.objects.filter(user_type="vendor").delete()
+        MnoryUser.objects.filter(user_type="customer").delete()
         SubCategory.objects.all().delete()
         Category.objects.all().delete()
         FitType.objects.all().delete()
@@ -185,9 +189,12 @@ class Command(BaseCommand):
         Size.objects.all().delete()
         self.stdout.write(self.style.SUCCESS("Existing data cleared."))
 
-    def create_users_and_vendors(self, count):
-        self.stdout.write(self.style.NOTICE("Creating users and vendor profiles..."))
-        for i in range(count):
+    def create_users_and_vendors(self, vendor_count, customer_count):
+        self.stdout.write(
+            self.style.NOTICE("Creating users, vendors, and customers...")
+        )
+        # Create Vendors
+        for i in range(vendor_count):
             email = fake.unique.email()
             username = (
                 fake.unique.user_name()
@@ -225,7 +232,25 @@ class Command(BaseCommand):
                 f"  Created vendor user: {user.email} and profile: {store_name}"
             )
         self.stdout.write(
-            self.style.SUCCESS(f"Created {count} users and vendor profiles.")
+            self.style.SUCCESS(f"Created {vendor_count} vendor profiles.")
+        )
+
+        # Create Customers
+        for i in range(customer_count):
+            email = fake.unique.email()
+            username = fake.unique.user_name()
+            MnoryUser.objects.create_user(
+                username=username,
+                email=email,
+                password="test1234",
+                user_type="customer",
+                phone_number=fake.numerify("##########"),
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+            )
+            self.stdout.write(f"  Created customer user: {email}")
+        self.stdout.write(
+            self.style.SUCCESS(f"Created {customer_count} customer users.")
         )
 
     def create_categories(self):
@@ -469,3 +494,58 @@ class Command(BaseCommand):
                 f"  Created product ({i+1}/{product_count}): {product.name} (Stock: {product.stock_quantity})"
             )
         self.stdout.write(self.style.SUCCESS(f"Created {product_count} products."))
+
+    def create_reviews(self, review_count):
+        self.stdout.write(
+            self.style.NOTICE(f"Creating {review_count} dummy reviews...")
+        )
+        products = list(Product.objects.filter(is_active=True))
+        customers = list(MnoryUser.objects.filter(user_type="customer"))
+
+        if not products or not customers:
+            self.stdout.write(
+                self.style.ERROR(
+                    "Cannot create reviews. Need at least one product and one customer."
+                )
+            )
+            return
+
+        arabic_comments = [
+            "منتج رائع! الجودة ممتازة والسعر مناسب جداً.",
+            "أعجبني كثيراً، التصميم أنيق والخامات مريحة.",
+            "وصل في الوقت المحدد والتغليف كان جيداً. شكراً لكم.",
+            "تجربة شراء ممتازة، سأعود للشراء منكم مرة أخرى.",
+            "الجودة أقل من المتوقع قليلاً، لكنه مقبول بالنسبة للسعر.",
+            "المقاس كان مناسباً تماماً، والألوان كما في الصورة.",
+            "خدمة العملاء كانت متعاونة جداً وأجابوا على كل استفساراتي.",
+            "منتج عملي ومفيد، أنصح به بشدة.",
+            "تأخر الطلب قليلاً عن الموعد المحدد، لكن المنتج يستحق الانتظار.",
+            "خامة القماش رائعة ومريحة جداً في اللبس.",
+            "التصميم فريد من نوعه ومختلف عن الموجود في السوق.",
+            "السعر مرتفع بعض الشيء مقارنة بالجودة.",
+            "كانت هدية وقد أعجبت صديقي كثيراً.",
+            "سهولة في الطلب وسرعة في التوصيل، تجربة رائعة.",
+            "الألوان زاهية وجميلة، أفضل من الصور.",
+        ]
+
+        created_reviews = 0
+        attempts = 0
+        while created_reviews < review_count and attempts < review_count * 2:
+            product = random.choice(products)
+            customer = random.choice(customers)
+            attempts += 1
+
+            # Check if this user has already reviewed this product
+            if Review.objects.filter(product=product, user=customer).exists():
+                continue
+
+            Review.objects.create(
+                product=product,
+                user=customer,
+                rating=random.randint(3, 5),
+                comment=random.choice(arabic_comments),
+                is_public=True,
+            )
+            created_reviews += 1
+
+        self.stdout.write(self.style.SUCCESS(f"Created {created_reviews} reviews."))
