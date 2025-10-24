@@ -1226,22 +1226,6 @@ html, body {
 /* ========================================
    PRODUCT CARDS
 ======================================== */
-.product-card {
-  border: 0;
-  background: var(--theme-card-bg);
-  border-radius: var(--radius-md);
-  padding: 0.6rem;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-normal) var(--transition-ease),
-              box-shadow var(--transition-normal) var(--transition-ease),
-              background var(--transition-normal) var(--transition-ease);
-}
-
-.product-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
-}
-
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -1761,24 +1745,6 @@ body.dark-mode .btn-close {
 /* ========================================
    PRODUCT CARD STYLES FROM _product.html
 ======================================== */
-.product-card {
-  border: none !important;
-  background: var(--theme-card-bg);
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  height: fit-content;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.product-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
 
 /* View Vendor Button */
 a.btn-view-vendor {

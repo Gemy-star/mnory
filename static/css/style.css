@@ -710,190 +710,9 @@ body.dark-mode .tab-label {
   text-overflow: ellipsis;
   max-width: 110px;
 }
-/* Category Detail Image Responsive */
-.category-detail-image {
-  width: 100%;
-  max-width: 420px;
-  height: auto;
-  object-fit: cover;
-  border-radius: 16px;
-  background: #f8f8f8;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-  display: block;
-  margin: 0 auto 2rem auto;
-  transition: box-shadow 0.2s;
-}
-/* Category Tab Image Responsive */
-.tab-image {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 12px;
-  background: #f8f8f8;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  display: inline-block;
-  vertical-align: middle;
-  transition: box-shadow 0.2s;
-}
 
 .category-tab-btn.active .tab-image {
   box-shadow: 0 4px 16px rgba(0,0,0,0.16);
-}
-/* ========================================
-   PRODUCT CARD HEIGHT & RESPONSIVE STYLES
-======================================== */
-.fixed-card-height {
-  min-height: 690px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: var(--theme-bg-primary, #fff);
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  transition: box-shadow 0.2s;
-}
-
-.product-card {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-    padding: 1.5rem 1rem;
-    margin: 0.5rem 0;
-    transition: box-shadow 0.3s, transform 0.3s, background 0.3s;
-    min-width: 220px;
-    max-width: 420px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    animation: fadeInUp 0.8s cubic-bezier(.39,.575,.565,1) both;
-}
-
-.product-card .product-image-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-/* Ensure Swiper slides render consistent gaps on small screens and don't clip */
-.products-swiper-wrapper .swiper-wrapper {
-  box-sizing: border-box; /* make padding included in width calculations */
-  padding-left: 8px; /* give a little room on the left so first slide isn't flush */
-  padding-right: 8px; /* same for right edge */
-}
-
-.products-swiper-wrapper .swiper-slide {
-  box-sizing: border-box;
-  padding-left: 6px;  /* internal padding to keep card from touching neighbor */
-  padding-right: 6px;
-}
-
-@media (max-width: 576px) {
-  /* slightly larger wrapper padding and gap on mobile for breathing room */
-  .products-swiper-wrapper .swiper-wrapper {
-    gap: 20px; /* increased gap so two slides have more space */
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-  .products-swiper-wrapper .swiper-slide {
-    padding-left: 10px; /* slightly larger paddings for better breathing room */
-    padding-right: 10px;
-  }
-}
-
-/* Make sure the swiper container doesn't clip peeked slides and slides size responsively */
-.products-swiper-wrapper .swiper {
-  overflow: visible; /* allow shadows / peek to be visible */
-}
-
-.products-swiper-wrapper .swiper-slide {
-  width: auto !important; /* let Swiper calculate fractional widths cleanly */
-  background: transparent; /* keep page background visible between slides */
-}
-
-/* Give product cards a subtle border/shadow so gaps are visible on dark backgrounds */
-.products-swiper-wrapper .product-card {
-  margin: 0; /* padding is handled by slide wrapper */
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-  border: 1px solid rgba(255,255,255,0.02);
-  background-clip: padding-box;
-}
-
-@media (prefers-color-scheme: light) {
-  .products-swiper-wrapper .product-card {
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-    border: 1px solid rgba(0,0,0,0.04);
-  }
-}
-
-.product-card .product-img {
-  width: 100%;
-  height: auto;
-
-/* Desktop-specific: make slides flexibly sized so 3 can fit comfortably
-   We calculate a flex-basis per slide that subtracts a small total gap.
-   This avoids fighting Swiper's internal sizing and overrides width:auto
-   when necessary on larger viewports. */
-@media (min-width: 768px) {
-  .products-swiper-wrapper .swiper-wrapper {
-    padding-left: 6px; /* slightly reduce wrapper padding on desktop */
-    padding-right: 6px;
-    gap: 20px; /* ensure consistent spacing between slides */
-  }
-
-  .products-swiper-wrapper .swiper-slide {
-    padding-left: 4px; /* reduce per-slide padding so three can fit */
-    padding-right: 4px;
-    /* flex-basis calculation: take full width, subtract total gap (2 * gap)
-       then divide by 3 slides. This gives Swiper room to size three slides. */
-    flex: 0 0 calc((100% - 40px) / 3);
-    max-width: calc((100% - 40px) / 3);
-    width: calc((100% - 40px) / 3) !important;
-  }
-}
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-@media (max-width: 1200px) {
-  .fixed-card-height,
-  .product-card {
-    min-height: 540px;
-    padding: 1rem 0.75rem;
-  }
-}
-
-@media (max-width: 992px) {
-  .fixed-card-height,
-  .product-card {
-    min-height: 440px;
-    padding: 0.75rem 0.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .fixed-card-height,
-  .product-card {
-    min-height: 340px;
-    padding: 0.5rem 0.25rem;
-  }
-  .product-card .product-title {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 576px) {
-  .fixed-card-height,
-  .product-card {
-    min-height: 220px;
-    padding: 0.25rem 0.1rem;
-  }
-  .product-card .product-title {
-    font-size: 0.9rem;
-  }
 }
 /* ========================================
    Mnory Supplemental Styles - style.css
@@ -2320,38 +2139,6 @@ html, body {
    PRODUCT CARDS - ENHANCED
 ======================================== */
 .product-card {
-  background: var(--theme-card-bg);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--theme-border);
-  position: relative;
-}
-
-.product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 122, 255, 0.15);
-  border-color: rgba(0, 122, 255, 0.3);
-}
-
-body.dark-mode .product-card {
-  background: var(--theme-bg-secondary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-body.dark-mode .product-card:hover {
-  box-shadow: 0 12px 32px rgba(0, 122, 255, 0.25);
-}
-
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  align-items: stretch;
 }
 
 /* Product Image Wrapper */
@@ -2505,7 +2292,7 @@ body.dark-mode .action-btn {
 
 /* Product Content */
 .product-content {
-  padding: 1.25rem;
+  padding: 1rem; /* Reduced padding to create more space */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -2684,11 +2471,11 @@ body.dark-mode .size-tag {
 .product-price-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
-  padding: 0.75rem 0;
+  padding: 0.35rem 0;
   border-top: 1px solid var(--theme-border);
-  margin-top: auto;
+  margin-top: 0.45rem;
 }
 
 .current-price {
@@ -4062,7 +3849,7 @@ body.dark-mode .dropdown-item.active {
   border-radius: 16px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  min-height: 480px;
+  min-height: 420px; /* Reduced min-height for more flexibility */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -4253,8 +4040,8 @@ body.dark-mode .product-image-wrapper {
 /* Product name styles */
 .product-name {
   margin-top: 0.75rem;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+  margin-bottom: 0.25rem; /* Reduced margin */
+  font-size: 0.9rem; /* Slightly reduced base font size */
   font-weight: 600;
   color: var(--theme-text);
   background: transparent !important;
@@ -4410,13 +4197,13 @@ body.dark-mode .product-image-wrapper {
 
 /* Price area */
 .price-area {
-  margin-top: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-top: 0.25rem; /* Reduced margin */
+  margin-bottom: 0.5rem; /* Reduced margin */
   padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px; /* Reduced gap */
   flex-wrap: wrap;
 }
 
@@ -4430,7 +4217,7 @@ body.dark-mode .product-image-wrapper {
 .original-price {
   text-decoration: line-through;
   color: #999;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Reduced font size */
   font-weight: 500;
   opacity: 0.8;
 }
@@ -4438,14 +4225,14 @@ body.dark-mode .product-image-wrapper {
 .sale-price {
   color: #ff3b30;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem; /* Reduced font size */
   text-shadow: 0 1px 3px rgba(255, 59, 48, 0.3);
 }
 
 .regular-price {
   color: var(--theme-text);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem; /* Reduced font size */
 }
 
 /* Product Badges Container */
@@ -4566,16 +4353,16 @@ body.dark-mode .product-image-wrapper {
 /* Responsive Product Card Styles */
 @media (min-width: 1400px) {
   .product-card {
-    max-height: 520px;
+    max-height: 480px !important; /* Set max height for desktop */
   }
 
   .product-badge {
     font-size: 0.65rem;
-    padding: 5px 7px;
+    padding: 5px 8px;
   }
 
   .product-name {
-    font-size: 1rem;
+    font-size: 0.95rem; /* Slightly reduced for desktop */
   }
 
   .price-area span {
@@ -4585,7 +4372,7 @@ body.dark-mode .product-image-wrapper {
 
 @media (max-width: 1200px) {
   .product-card {
-    max-height: 500px;
+    max-height: 480px !important; /* Set max height for desktop */
   }
 
   .product-badges {
@@ -4617,7 +4404,7 @@ body.dark-mode .product-image-wrapper {
 
 @media (max-width: 992px) {
   .product-card {
-    max-height: 480px;
+    max-height: 480px !important; /* Set max height for desktop */
   }
 
   .product-badges {
@@ -5357,8 +5144,8 @@ body.dark-mode .product-category {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin: 0.5rem 0;
-  font-size: 0.85rem;
+  margin: 0.2rem 0;
+  font-size: 0.75rem;
 }
 
 .stars {
@@ -14490,8 +14277,8 @@ body.dark-mode .cart-notification .notification-content {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  max-height:815px !important;
-  height: 100%;
+  max-height:760px !important;
+  height: 100%; /* Ensure it fills the grid cell */
 }
 
 /* ========================================
@@ -16924,3 +16711,4 @@ body.dark-mode .auth-logo-dark {
         width: 100%;
     }
 }
+sty
