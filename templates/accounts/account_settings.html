@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Account Settings" %}{% endblock %}
+
+{% block content %}
+<section class="category-detail-section">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:profile' %}">{% trans "My Account" %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Account Settings" %}</li>
+            </ol>
+        </nav>
+
+        <div class="account-layout">
+            <!-- Left Sidebar -->
+            <aside class="account-sidebar" data-aos="fade-right">
+                <div class="sidebar-profile-header">
+                    <div class="profile-avatar">
+                        <span class="material-icons">person</span>
+                    </div>
+                    <div class="profile-info">
+                        <h2 class="profile-name">{{ user.get_full_name|default:user.email }}</h2>
+                        <p class="profile-email">{{ user.email }}</p>
+                    </div>
+                </div>
+                <nav class="account-nav">
+                    <ul>
+                        <li>
+                            <a href="{% url 'shop:profile' %}" class="account-nav-link">
+                                <span class="material-icons">person_outline</span>
+                                <span>{% trans "Profile Information" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:order_history' %}" class="account-nav-link">
+                                <span class="material-icons">receipt_long</span>
+                                <span>{% trans "Order History" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:address_list' %}" class="account-nav-link">
+                                <span class="material-icons">home_work</span>
+                                <span>{% trans "My Addresses" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:account_settings' %}" class="account-nav-link active">
+                                <span class="material-icons">settings</span>
+                                <span>{% trans "Account Settings" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:wishlist_view' %}" class="account-nav-link">
+                                <span class="material-icons">favorite_border</span>
+                                <span>{% trans "My Wishlist" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-divider"></li>
+                        <li>
+                            <a href="{% url 'shop:logout' %}" class="account-nav-link logout-link">
+                                <span class="material-icons">logout</span>
+                                <span>{% trans "Logout" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Right Content Area -->
+            <div class="account-content" data-aos="fade-up" data-aos-delay="100">
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h3>{% trans "Change Password" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="material-icons">save</span> {% trans "Save Changes" %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

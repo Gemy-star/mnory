@@ -2,45 +2,398 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %} {% trans "Terms & Privacy" %} - Reverse {% endblock %}
+{% block title %}{% trans "Terms of Service" %} - Mnory{% endblock %}
+
+{% block css %}
+<style>
+    .terms-hero {
+        background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-middle) 50%, var(--gradient-end) 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .terms-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+
+    .terms-hero-content {
+        position: relative;
+        z-index: 1;
+        color: white;
+    }
+
+    .terms-icon-hero {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.9; }
+    }
+
+    .terms-card {
+        background: var(--theme-bg-secondary);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid var(--theme-border);
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .terms-card:hover {
+        transform: translateX(5px);
+        box-shadow: -5px 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .terms-card-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        position: relative;
+    }
+
+    .terms-card-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1));
+    }
+
+    .terms-card-header .material-icons {
+        font-size: 2.5rem;
+        opacity: 0.9;
+    }
+
+    .terms-card-body {
+        padding: 1.5rem;
+    }
+
+    .terms-number {
+        width: 45px;
+        height: 45px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.3rem;
+        margin-right: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .info-highlight {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-left: 4px solid #667eea;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin: 2rem 0;
+    }
+
+    .info-highlight .material-icons {
+        vertical-align: middle;
+        margin-right: 0.5rem;
+        color: #667eea;
+        font-size: 1.5rem;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .feature-list li {
+        padding: 0.75rem 0;
+        padding-left: 2.5rem;
+        position: relative;
+    }
+
+    .feature-list li::before {
+        content: 'check_circle';
+        font-family: 'Material Icons';
+        position: absolute;
+        left: 0;
+        color: #667eea;
+        font-size: 1.5rem;
+    }
+
+    .cta-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(245, 87, 108, 0.3);
+    }
+
+    .cta-card .material-icons {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .btn-home {
+        background: white;
+        color: #667eea;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-home:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        color: #667eea;
+    }
+
+    .timeline-badge {
+        background: #667eea;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: inline-block;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="policy-page-wrapper container py-5">
-    <div class="policy-card mx-auto shadow-lg rounded-4 p-4" style="max-width: 700px; background: var(--theme-bg-secondary);">
-        <div class="policy-header text-center mb-5">
-            <span class="material-icons policy-icon" style="font-size: 3rem; color: var(--primary);">gavel</span>
-            <h1 class="policy-title mt-2 mb-0">{% trans "Terms of Service" %}</h1>
-        </div>
-        <div class="policy-content">
-            <div class="policy-section mb-4">
-                <h3 class="policy-section-title"><span class="material-icons">info</span> {% trans "1. Introduction" %}</h3>
-                <p class="policy-section-text">{% trans "Welcome to Reverse. By using our platform, you agree to be bound by these Terms of Service. Please read them carefully." %}</p>
-            </div>
-            <div class="policy-section mb-4">
-                <h3 class="policy-section-title"><span class="material-icons">public</span> {% trans "2. Use of Platform" %}</h3>
-                <p class="policy-section-text">{% trans "You agree to use Reverse only for lawful purposes and in accordance with these Terms. You must not misuse the platform or interfere with its normal operation." %}</p>
-            </div>
-            <div class="policy-section mb-4">
-                <h3 class="policy-section-title"><span class="material-icons">person</span> 3. {% trans "Accounts" %}</h3>
-                <p class="policy-section-text">{% trans "You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account." %}</p>
-            </div>
-            <div class="policy-section mb-4">
-                <h3 class="policy-section-title"><span class="material-icons">shopping_bag</span> {% trans "4. Product Information" %}</h3>
-                <p class="policy-section-text">{% trans "While we strive for accuracy, product descriptions and pricing may contain errors. We reserve the right to correct any inaccuracies." %}</p>
-            </div>
-            <div class="policy-section mb-4">
-                <h3 class="policy-section-title"><span class="material-icons">warning</span> {% trans "5. Limitation of Liability" %}</h3>
-                <p class="policy-section-text">{% trans "Reverse is not liable for any indirect, incidental, or consequential damages arising from your use of the platform." %}</p>
-            </div>
-            <div class="policy-section mb-4">
-                <h3 class="policy-section-title"><span class="material-icons">update</span> {% trans "6. Changes to Terms" %}</h3>
-                <p class="policy-section-text">{% trans "We may update these Terms of Service from time to time. Continued use of the platform constitutes acceptance of the revised terms." %}</p>
-            </div>
-        </div>
-        <div class="policy-footer text-center mt-5">
-            <a href="{% url 'shop:home' %}" class="btn btn-primary btn-lg rounded-pill px-4">
-                <span class="material-icons">home</span> {% trans "Back to Home" %}
-            </a>
+<section class="category-detail-section">
+
+<!-- Hero Section -->
+<div class="terms-hero">
+    <div class="container">
+        <div class="terms-hero-content text-center" data-aos="fade-down">
+            <span class="material-icons terms-icon-hero">gavel</span>
+            <h1 class="display-4 fw-bold mb-3">{% trans "Terms of Service" %}</h1>
+            <p class="lead">{% trans "Please read these terms carefully before using our platform." %}</p>
         </div>
     </div>
 </div>
+
+<!-- Content Section -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Introduction -->
+            <div class="info-highlight" data-aos="fade-up">
+                <h5><span class="material-icons">info</span>{% trans "Welcome to Mnory" %}</h5>
+                <p class="mb-0">{% trans "Welcome to Mnory. By using our platform, you agree to be bound by these Terms of Service. Please read them carefully." %}</p>
+                <span class="timeline-badge">{% trans "Last Updated: January 2025" %}</span>
+            </div>
+
+            <!-- Terms Card 1 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="100">
+                <div class="terms-card-header">
+                    <span class="material-icons">info</span>
+                    <div>
+                        <span class="terms-number">1</span>
+                        <h3 class="d-inline mb-0">{% trans "Introduction" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "Welcome to Mnory. By using our platform, you agree to be bound by these Terms of Service. Please read them carefully." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "These terms apply to all users of the platform" %}</li>
+                        <li>{% trans "By accessing the site, you accept these terms" %}</li>
+                        <li>{% trans "If you disagree, please do not use our services" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Card 2 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="200">
+                <div class="terms-card-header">
+                    <span class="material-icons">public</span>
+                    <div>
+                        <span class="terms-number">2</span>
+                        <h3 class="d-inline mb-0">{% trans "Use of Platform" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "You agree to use Mnory only for lawful purposes and in accordance with these Terms. You must not misuse the platform or interfere with its normal operation." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "Use the platform only for lawful purposes" %}</li>
+                        <li>{% trans "Do not attempt to harm or disrupt the platform" %}</li>
+                        <li>{% trans "Respect intellectual property rights" %}</li>
+                        <li>{% trans "Do not engage in fraudulent activities" %}</li>
+                        <li>{% trans "Comply with all applicable laws and regulations" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Card 3 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="300">
+                <div class="terms-card-header">
+                    <span class="material-icons">person</span>
+                    <div>
+                        <span class="terms-number">3</span>
+                        <h3 class="d-inline mb-0">{% trans "Accounts" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "Keep your password secure and confidential" %}</li>
+                        <li>{% trans "You are responsible for all account activities" %}</li>
+                        <li>{% trans "Notify us immediately of unauthorized access" %}</li>
+                        <li>{% trans "Provide accurate and complete information" %}</li>
+                        <li>{% trans "You must be 18+ to create an account" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Card 4 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="400">
+                <div class="terms-card-header">
+                    <span class="material-icons">shopping_bag</span>
+                    <div>
+                        <span class="terms-number">4</span>
+                        <h3 class="d-inline mb-0">{% trans "Product Information" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "While we strive for accuracy, product descriptions and pricing may contain errors. We reserve the right to correct any inaccuracies." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "Product descriptions are provided for guidance" %}</li>
+                        <li>{% trans "Prices are subject to change without notice" %}</li>
+                        <li>{% trans "We reserve the right to limit quantities" %}</li>
+                        <li>{% trans "Product availability may vary" %}</li>
+                        <li>{% trans "We may refuse or cancel orders" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Card 5 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="500">
+                <div class="terms-card-header">
+                    <span class="material-icons">payment</span>
+                    <div>
+                        <span class="terms-number">5</span>
+                        <h3 class="d-inline mb-0">{% trans "Payment & Pricing" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "All prices are listed in Egyptian Pounds (EGP) unless otherwise stated. Payment must be made at the time of purchase." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "We accept various payment methods" %}</li>
+                        <li>{% trans "All transactions are secure and encrypted" %}</li>
+                        <li>{% trans "Prices include applicable taxes" %}</li>
+                        <li>{% trans "Shipping costs are calculated separately" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Card 6 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="600">
+                <div class="terms-card-header">
+                    <span class="material-icons">local_shipping</span>
+                    <div>
+                        <span class="terms-number">6</span>
+                        <h3 class="d-inline mb-0">{% trans "Shipping & Delivery" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "We ship to addresses within Egypt. Delivery times may vary based on location and product availability." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "Standard delivery: 3-7 business days" %}</li>
+                        <li>{% trans "Express delivery available in major cities" %}</li>
+                        <li>{% trans "You will receive tracking information" %}</li>
+                        <li>{% trans "Delivery times are estimates, not guarantees" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Card 7 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="700">
+                <div class="terms-card-header">
+                    <span class="material-icons">warning</span>
+                    <div>
+                        <span class="terms-number">7</span>
+                        <h3 class="d-inline mb-0">{% trans "Limitation of Liability" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "Mnory is not liable for any indirect, incidental, or consequential damages arising from your use of the platform." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "We provide the platform 'as is'" %}</li>
+                        <li>{% trans "We do not guarantee uninterrupted service" %}</li>
+                        <li>{% trans "We are not liable for third-party content" %}</li>
+                        <li>{% trans "Your use of the platform is at your own risk" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Card 8 -->
+            <div class="terms-card" data-aos="fade-right" data-aos-delay="800">
+                <div class="terms-card-header">
+                    <span class="material-icons">update</span>
+                    <div>
+                        <span class="terms-number">8</span>
+                        <h3 class="d-inline mb-0">{% trans "Changes to Terms" %}</h3>
+                    </div>
+                </div>
+                <div class="terms-card-body">
+                    <p class="text-theme">{% trans "We may update these Terms of Service from time to time. Continued use of the platform constitutes acceptance of the revised terms." %}</p>
+                    <ul class="feature-list text-theme-muted">
+                        <li>{% trans "We will notify you of significant changes" %}</li>
+                        <li>{% trans "Check this page regularly for updates" %}</li>
+                        <li>{% trans "Continued use means acceptance of changes" %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CTA Card -->
+            <div class="cta-card" data-aos="zoom-in" data-aos-delay="900">
+                <span class="material-icons">help_outline</span>
+                <h3>{% trans "Questions About Our Terms?" %}</h3>
+                <p class="mb-4">{% trans "If you have any questions or concerns about these Terms of Service, please don't hesitate to contact our support team." %}</p>
+                <p class="mb-0"><strong>{% trans "Email:" %}</strong> support@mnory.com</p>
+                <p class="mb-0"><strong>{% trans "Customer Service:" %}</strong> {% trans "Available 9 AM - 6 PM (Egypt Time)" %}</p>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="1000">
+                <a href="{% url 'shop:home' %}" class="btn-home btn-primary">
+                    <span class="material-icons">home</span>
+                    {% trans "Back to Home" %}
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+</section>
 {% endblock content %}

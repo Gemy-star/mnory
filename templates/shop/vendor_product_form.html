@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<main class="account-main">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:vendor_dashboard' %}">{% trans "Dashboard" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:vendor_manage_products' %}">{% trans "Manage Products" %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="dashboard-header mb-4" data-aos="fade-up">
+            <h1 class="section-title mb-0">
+                <span class="material-icons">{% if form.instance.pk %}edit_note{% else %}add_box{% endif %}</span>
+                {{ title }}
+            </h1>
+        </div>
+
+        <!-- Product Form Card -->
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="account-card-header">
+                    <h3>{% trans "Product Details" %}</h3>
+                </div>
+                <div class="account-card-body">
+                    {{ form|crispy }}
+                </div>
+            </div>
+
+            <!-- Image Management Card -->
+            <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="account-card-header">
+                    <h3>{% trans "Product Images" %}</h3>
+                </div>
+                <div class="account-card-body">
+                    {{ image_formset.management_form }}
+                    <div id="image-forms-container" class="image-management-grid">
+                        {% for form in image_formset.forms %}
+                        <div class="image-form-wrapper" id="image-{{ forloop.counter0 }}">
+                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                            <div class="image-preview-box">
+                                {% if form.instance.pk and form.instance.image %}
+                                <img src="{{ form.instance.image.url }}" class="image-preview" alt="{% trans 'Product Image' %}">
+                                {% else %}
+                                <div class="image-placeholder">
+                                    <span class="material-icons">add_photo_alternate</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="image-form-fields">
+                                {{ form.image|as_crispy_field }}
+                                {{ form.alt_text|as_crispy_field }}
+                                {{ form.order }}
+                                <div class="d-flex gap-3 mt-2">
+                                    {{ form.is_main|as_crispy_field }}
+                                    {{ form.is_hover|as_crispy_field }}
+                                    {% if form.instance.pk and image_formset.can_delete %}
+                                    <div class="ms-auto">{{ form.DELETE|as_crispy_field }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-image-btn" class="btn btn-outline-secondary mt-3">
+                        <span class="material-icons">add_photo_alternate</span> {% trans "Add Another Image" %}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Variants Management Card -->
+            <div class="account-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="account-card-header">
+                    <h3>{% trans "Product Variants (Colors, Sizes & Stock)" %}</h3>
+                </div>
+                <div class="account-card-body">
+                    {{ variant_formset.management_form }}
+                    <div id="variant-forms-container" class="variant-management-table">
+                        {% for form in variant_formset.forms %}
+                        <div class="variant-form-row" id="variant-{{ forloop.counter0 }}">
+                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-3">{{ form.color|as_crispy_field }}</div>
+                                <div class="col-md-3">{{ form.size|as_crispy_field }}</div>
+                                <div class="col-md-2">{{ form.stock_quantity|as_crispy_field }}</div>
+                                <div class="col-md-2">{{ form.price_adjustment|as_crispy_field }}</div>
+                                <div class="col-md-2 d-flex align-items-center pt-3">
+                                    {{ form.is_available|as_crispy_field }}
+                                    {% if form.instance.pk and variant_formset.can_delete %}
+                                    <div class="ms-auto">{{ form.DELETE|as_crispy_field }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="add-variant-btn" class="btn btn-outline-secondary mt-3">
+                        <span class="material-icons">add</span> {% trans "Add Another Variant" %}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty form templates for JavaScript -->
+            <div id="empty-image-form-template" style="display: none;">
+                <div class="image-form-wrapper" id="image-__prefix__">
+                    {% for hidden in image_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="image-preview-box"><div class="image-placeholder"><span class="material-icons">add_photo_alternate</span></div></div>
+                    <div class="image-form-fields">
+                        {{ image_formset.empty_form.image|as_crispy_field }}
+                        {{ image_formset.empty_form.alt_text|as_crispy_field }}
+                        {{ image_formset.empty_form.order }}
+                        <div class="d-flex gap-3 mt-2">
+                            {{ image_formset.empty_form.is_main|as_crispy_field }}
+                            {{ image_formset.empty_form.is_hover|as_crispy_field }}
+                            {% if image_formset.can_delete %}<div class="ms-auto">{{ image_formset.empty_form.DELETE|as_crispy_field }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="empty-variant-form-template" style="display: none;">
+                <div class="variant-form-row" id="variant-__prefix__">
+                    {% for hidden in variant_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-3">{{ variant_formset.empty_form.color|as_crispy_field }}</div>
+                        <div class="col-md-3">{{ variant_formset.empty_form.size|as_crispy_field }}</div>
+                        <div class="col-md-2">{{ variant_formset.empty_form.stock_quantity|as_crispy_field }}</div>
+                        <div class="col-md-2">{{ variant_formset.empty_form.price_adjustment|as_crispy_field }}</div>
+                        <div class="col-md-2 d-flex align-items-center pt-3">
+                            {{ variant_formset.empty_form.is_available|as_crispy_field }}
+                            {% if variant_formset.can_delete %}
+                            <div class="ms-auto">{{ variant_formset.empty_form.DELETE|as_crispy_field }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span> {% if form.instance.pk %}{% trans "Save Changes" %}{% else %}{% trans "Add Product" %}{% endif %}
+                </button>
+                <a href="{% url 'shop:vendor_manage_products' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dynamic Variant Forms
+    const addVariantBtn = document.getElementById('add-variant-btn');
+    const variantContainer = document.getElementById('variant-forms-container');
+    const emptyVariantTemplate = document.getElementById('empty-variant-form-template').innerHTML;
+    const totalVariantForms = document.getElementById('id_variants-TOTAL_FORMS');
+
+    addVariantBtn.addEventListener('click', function() {
+        const formNum = parseInt(totalVariantForms.value);
+        const newForm = emptyVariantTemplate.replace(/__prefix__/g, formNum);
+        variantContainer.insertAdjacentHTML('beforeend', newForm);
+        totalVariantForms.value = formNum + 1;
+    });
+
+    // Dynamic Image Forms
+    const addImageBtn = document.getElementById('add-image-btn');
+    const imageContainer = document.getElementById('image-forms-container');
+    const emptyImageTemplate = document.getElementById('empty-image-form-template').innerHTML;
+    const totalImageForms = document.getElementById('id_images-TOTAL_FORMS');
+
+    addImageBtn.addEventListener('click', function() {
+        const formNum = parseInt(totalImageForms.value);
+        const newForm = emptyImageTemplate.replace(/__prefix__/g, formNum);
+        imageContainer.insertAdjacentHTML('beforeend', newForm);
+        totalImageForms.value = formNum + 1;
+    });
+
+    // Drag-and-drop reordering for images
+    const imageSortableContainer = document.getElementById('image-forms-container');
+    if (imageSortableContainer) {
+        new Sortable(imageSortableContainer, {
+            animation: 150,
+            handle: '.image-preview-box', // Use the image preview as the drag handle
+            onEnd: function () {
+                const forms = imageSortableContainer.querySelectorAll('.image-form-wrapper');
+                forms.forEach((form, index) => {
+                    const orderInput = form.querySelector('input[id$="-order"]');
+                    if (orderInput) orderInput.value = index;
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Vendor Dashboard" %}{% endblock %}
+
+{% block content %}
+<main class="account-main">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Vendor Dashboard" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Dashboard Header -->
+        <div class="dashboard-header mb-4" data-aos="fade-up">
+            <h1 class="section-title mb-0">
+                <span class="material-icons">dashboard</span>
+                {% trans "Your Dashboard" %}
+            </h1>
+            <div class="d-flex gap-2">
+                <a href="#" class="btn btn-outline-secondary">
+                    <span class="material-icons">settings</span> {% trans "Store Settings" %}
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <span class="material-icons">add</span> {% trans "Add New Product" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="col-md-6 col-lg-4">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-primary" style="font-size: 2.5rem;">inventory_2</span>
+                        <h4 class="mt-2 mb-1">{{ total_products }}</h4>
+                        <p class="text-muted mb-0">{% trans "Total Products" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-success" style="font-size: 2.5rem;">paid</span>
+                        <h4 class="mt-2 mb-1">{{ total_sales|floatformat:2 }} EGP</h4>
+                        <p class="text-muted mb-0">{% trans "Total Sales" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-lg-4">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-info" style="font-size: 2.5rem;">receipt_long</span>
+                        <h4 class="mt-2 mb-1">{{ recent_orders.count }}</h4>
+                        <p class="text-muted mb-0">{% trans "Recent Orders" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Chart -->
+        <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="account-card-header">
+                <h3>{% trans "Sales Overview (Last 7 Days)" %}</h3>
+            </div>
+            <div class="account-card-body">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="account-card-header">
+                <h3>{% trans "Top Selling Products" %}</h3>
+            </div>
+            <div class="account-card-body">
+                {% if top_products %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Product" %}</th>
+                                <th class="text-center">{% trans "Units Sold" %}</th>
+                                <th class="text-end">{% trans "Total Revenue" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in top_products %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ product.get_main_image.image.url }}" alt="{{ product.name }}" class="product-image-sm me-3">
+                                        <a href="{{ product.get_absolute_url }}" class="fw-bold text-decoration-none">{{ product.name }}</a>
+                                    </div>
+                                </td>
+                                <td class="text-center">{{ product.total_sold }}</td>
+                                <td class="text-end fw-bold">{{ product.total_revenue|floatformat:2 }} EGP</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Product Reviews -->
+        <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="400">
+            <div class="account-card-header">
+                <h3>{% trans "Recent Product Reviews" %}</h3>
+                <a href="{% url 'shop:vendor_manage_reviews' %}" class="btn btn-sm btn-outline-primary">
+                    <span class="material-icons">rate_review</span> {% trans "View All" %}
+                </a>
+            </div>
+            <div class="account-card-body">
+                {% if recent_reviews %}
+                    <div class="review-list">
+                        {% for review in recent_reviews %}
+                            {% include "partials/_vendor_review_item.html" with review=review %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">{% trans "You have no product reviews yet." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="account-card" data-aos="fade-up" data-aos-delay="500">
+            <div class="account-card-header">
+                <h3>{% trans "Recent Orders" %}</h3>
+                <a href="{% url 'shop:vendor_manage_products' %}" class="btn btn-sm btn-outline-primary">
+                    <span class="material-icons">history</span> {% trans "View All Orders" %}
+                </a>
+            </div>
+            <div class="account-card-body">
+                {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Order #" %}</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Customer" %}</th>
+                                    <th>{% trans "Total" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td><strong>{{ order.order_number }}</strong></td>
+                                    <td>{{ order.created_at|date:"d M, Y" }}</td>
+                                    <td>{{ order.full_name }}</td>
+                                    <td>{{ order.grand_total|floatformat:2 }} EGP</td>
+                                    <td><span class="badge status-{{ order.status|lower }}">{{ order.get_status_display }}</span></td>
+                                    <td>
+                                        <a href="{% url 'shop:order_detail' order.order_number %}" class="btn btn-sm btn-outline-secondary">
+                                            <span class="material-icons">visibility</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state-container text-center py-4">
+                        <span class="material-icons empty-state-icon" style="font-size: 3rem;">receipt_long</span>
+                        <h4 class="empty-state-title mt-3">{% trans "No recent orders." %}</h4>
+                        <p class="empty-state-subtitle">{% trans "New orders for your products will appear here." %}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+
+    const chartLabels = JSON.parse('{{ chart_labels|safe }}');
+    const chartData = JSON.parse('{{ chart_sales_data|safe }}');
+
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    const fontColor = isDarkMode ? '#e0e0e0' : '#2c3e50';
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: '{% trans "Daily Sales (EGP)" %}',
+                data: chartData,
+                backgroundColor: 'rgba(0, 122, 255, 0.2)',
+                borderColor: 'rgba(0, 122, 255, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(0, 122, 255, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(0, 122, 255, 1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: fontColor
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: fontColor
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: fontColor
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+e

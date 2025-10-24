@@ -7,8 +7,9 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from .forms import VendorRegistrationForm, CustomerRegistrationForm, LoginForm
 
+
 def register_vendor(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = VendorRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
@@ -19,16 +20,16 @@ def register_vendor(request):
         form = VendorRegistrationForm()
 
     context = {
-        'form': form,
-        'title': _("Vendor Registration"),
-        'form_action': request.path,
-        'submit_label': _("Register as Vendor"),
+        "form": form,
+        "title": _("Vendor Registration"),
+        "form_action": request.path,
+        "submit_label": _("Register as Vendor"),
     }
-    return render(request, 'accounts/vendor_register.html', context)
+    return render(request, "accounts/vendor_register.html", context)
 
 
 def register_customer(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CustomerRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -39,12 +40,13 @@ def register_customer(request):
         form = CustomerRegistrationForm()
 
     context = {
-        'form': form,
-        'title': _("Customer Registration"),
-        'form_action': request.path,
-        'submit_label': _("Register as Customer"),
+        "form": form,
+        "title": _("Customer Registration"),
+        "form_action": request.path,
+        "submit_label": _("Register as Customer"),
     }
-    return render(request, 'accounts/customer_register.html', context)
+    return render(request, "accounts/customer_register.html", context)
+
 
 def login_view(request):
     # Already logged in → redirect by role
@@ -78,19 +80,23 @@ def login_view(request):
 def _redirect_by_role(user):
     """Redirect user based on role flags"""
     if getattr(user, "is_vendor_type", False):
-        return redirect("shop_admin:index")
+        return redirect("shop:vendor_dashboard")
     if getattr(user, "is_admin_type", False):
         return redirect("admin:index")
-    if getattr(user, "is_freelancer_type", False) or getattr(user, "is_company_type", False):
+    if getattr(user, "is_freelancer_type", False) or getattr(
+        user, "is_company_type", False
+    ):
         return redirect("freelancing_admin:index")
     if getattr(user, "is_customer_type", False):
-        return redirect("shop:home")
+        return redirect("shop:profile")
     return redirect("shop:home")  # fallback
+
+
 @login_required
 def user_logout(request):
     """Logs out the current user."""
     logout(request)
     messages.info(request, _("You have been logged out."))
-    request.session.pop('cart_count', None)  # Clear cart count on logout
-    request.session.pop('wishlist_count', None)  # Clear wishlist count on logout
-    return redirect('shop:home')
+    request.session.pop("cart_count", None)  # Clear cart count on logout
+    request.session.pop("wishlist_count", None)  # Clear wishlist count on logout
+    return redirect("shop:home")

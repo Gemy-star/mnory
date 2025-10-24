@@ -1,75 +1,49 @@
 {% extends "base.html" %}
-{% load i18n crispy_forms_tags %}
+{% load crispy_forms_tags i18n static %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<section class="section py-5 mnory-bg">
-  <div class="container">
-    <div class="row justify-content-center mb-5">
-      <div class="col-lg-8 text-center">
-        <h2 class="fw-bold text-white"><i class="fa-solid fa-lock me-3"></i>{{ title }}</h2>
-        <p class="text-white">{% trans "Enter your credentials to access your account." %}</p>
-      </div>
-    </div>
-
-    <div class="row gy-4 justify-content-center">
-      <!-- Login Form -->
-      <div class="col-md-7">
-        <div class="card shadow-lg border border-light bg-light text-dark">
-          <div class="card-header border-bottom border-light">
-            <h4 class="mb-0 fw-bold"><i class="fa-solid fa-sign-in-alt me-2"></i>{% trans "Account Login" %}</h4>
-          </div>
-          <div class="card-body p-4">
-          <form method="post" action="{{ form_action }}" novalidate>
-    <form method="post" action="{{ form_action }}" novalidate>
-  {% csrf_token %}
-  {{ form.as_p }}
-
-  {% if request.GET.next %}
-    <input type="hidden" name="next" value="{{ request.GET.next }}">
-  {% endif %}
-
-  <button type="submit" class="btn btn-dark">
-    {{ submit_label }}
-  </button>
-</form>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- Registration Options -->
-      <div class="col-md-5">
-        <div class="card border border-light bg-light text-dark h-100">
-          <div class="card-body p-4 d-flex flex-column justify-content-center">
-            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-user-plus me-2"></i>{% trans "Don't have an account?" %}</h5>
-            <p class="mb-4 text-muted">
-              {% trans "Join our community! Register as a freelancer, company, customer, or vendor." %}
-            </p>
-            <div class="d-grid gap-2">
-              <!-- Freelancer -->
-              <a href="{% url 'create_freelancer_profile' %}" class="btn btn-outline-dark btn-lg">
-                <i class="fa-solid fa-user-tie me-2"></i>{% trans "Register as Freelancer" %}
-              </a>
-              <!-- Company -->
-              <a href="{% url 'create_company_profile' %}" class="btn btn-outline-dark btn-lg mt-2">
-                <i class="fa-solid fa-building me-2"></i>{% trans "Register as Company" %}
-              </a>
-              <!-- Customer -->
-              <a href="{% url 'shop:register_customer' %}" class="btn btn-outline-dark btn-lg mt-2">
-                <i class="fa-solid fa-user me-2"></i>{% trans "Register as Customer" %}
-              </a>
-              <!-- Vendor -->
-              <a href="{% url 'shop:register_vendor' %}" class="btn btn-outline-dark btn-lg mt-2">
-                <i class="fa-solid fa-store me-2"></i>{% trans "Register as Vendor" %}
-              </a>
+<section class="category-detail-section">
+    <div class="container py-5">
+        <div class="auth-card mx-auto" data-aos="fade-up">
+            <!-- Card Header -->
+            <a href="{% url 'shop:home' %}" class="auth-logo-link">
+                <img src="{% static 'images/logo-black.png' %}" alt="Mnory" class="auth-logo auth-logo-light">
+                <img src="{% static 'images/logo.png' %}" alt="Mnory" class="auth-logo auth-logo-dark">
+            </a>
+            <div class="auth-header">
+                <span class="material-icons auth-icon">login</span>
+                <h1 class="auth-title">{% trans "Welcome Back" %}</h1>
+                <p class="auth-subtitle">{% trans "Log in to access your account." %}</p>
             </div>
-          </div>
-        </div>
-      </div>
 
+            <!-- Card Body -->
+            <div class="auth-body">
+                <form method="post" action="{{ form_action }}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+                    {{ form|crispy }}
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <a href="#" class="text-muted small">{% trans "Forgot password?" %}</a>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="material-icons">login</span>
+                            {{ submit_label }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="auth-footer">
+                <p>{% trans "Don't have an account?" %} <a href="{% url 'shop:register_customer' %}">{% trans "Sign up here" %}</a></p>
+            </div>
+        </div>
     </div>
-  </div>
 </section>
 {% endblock %}

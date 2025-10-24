@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Account" %}{% endblock %}
+
+{% block content %}
+<section class="category-detail-section">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "My Account" %}</li>
+            </ol>
+        </nav>
+
+        <div class="account-layout">
+            <!-- Left Sidebar -->
+            <aside class="account-sidebar" data-aos="fade-right">
+                <div class="sidebar-profile-header">
+                    <div class="profile-avatar">
+                        <span class="material-icons">person</span>
+                    </div>
+                    <div class="profile-info">
+                        <h2 class="profile-name">{{ user.get_full_name|default:user.email }}</h2>
+                        <p class="profile-email">{{ user.email }}</p>
+                    </div>
+                </div>
+                <nav class="account-nav">
+                    <ul>
+                        <li>
+                            <a href="{% url 'shop:profile' %}" class="account-nav-link active">
+                                <span class="material-icons">person_outline</span>
+                                <span>{% trans "Profile Information" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:order_history' %}" class="account-nav-link">
+                                <span class="material-icons">receipt_long</span>
+                                <span>{% trans "Order History" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:address_list' %}" class="account-nav-link">
+                                <span class="material-icons">home_work</span>
+                                <span>{% trans "My Addresses" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:account_settings' %}" class="account-nav-link">
+                                <span class="material-icons">settings</span>
+                                <span>{% trans "Account Settings" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:wishlist_view' %}" class="account-nav-link">
+                                <span class="material-icons">favorite_border</span>
+                                <span>{% trans "My Wishlist" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-divider"></li>
+                        <li>
+                            <a href="{% url 'shop:logout' %}" class="account-nav-link logout-link">
+                                <span class="material-icons">logout</span>
+                                <span>{% trans "Logout" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Right Content Area -->
+            <div class="account-content" data-aos="fade-up" data-aos-delay="100">
+                <!-- Profile Information Card -->
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h3>{% trans "Profile Information" %}</h3>
+                        <a href="{% url 'shop:edit_profile' %}" class="btn btn-sm btn-outline-primary">
+                            <span class="material-icons">edit</span> {% trans "Edit Profile" %}
+                        </a>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">{% trans "Full Name" %}</span>
+                                <span class="info-value">{{ user.get_full_name|default:"-" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">{% trans "Email Address" %}</span>
+                                <span class="info-value">{{ user.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">{% trans "Phone Number" %}</span>
+                                <span class="info-value">{{ user.phone_number|default:"-" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Card -->
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h3>{% trans "Recent Orders" %}</h3>
+                        <a href="{% url 'shop:order_history' %}" class="btn btn-sm btn-outline-primary">
+                            <span class="material-icons">history</span> {% trans "View All" %}
+                        </a>
+                    </div>
+                    <div class="account-card-body">
+                        {% if recent_orders %}
+                            {% for order in recent_orders %}
+                                {% include "partials/_order_summary_item.html" with order=order %}
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">{% trans "You have no recent orders." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -124,65 +124,12 @@ if ('performance' in window && 'mark' in performance) {
 // UTILITY FUNCTIONS
 // ========================================
 
-// Language Helper Functions
-function getLangPrefix() {
-    return window.location.pathname.split('/')[1] || 'en';
-}
-
-function isArabic() {
-    return getLangPrefix() === 'ar';
-}
-
-// Bilingual messages for main.js
-const mainMessages = {
-    selectColorSize: { ar: 'الرجاء اختيار اللون والحجم أولاً', en: 'Please select color and size first.' }
-};
-
-function getMainMessage(key) {
-    const lang = isArabic() ? 'ar' : 'en';
-    return mainMessages[key] ? mainMessages[key][lang] : key;
-}
-
 // Simple notification function (uses cart-wishlist.js if available)
 function showMainNotification(message, type = 'warning') {
     if (typeof window.showNotification === 'function') {
         window.showNotification(message, type);
     } else {
         alert(message);
-    }
-}
-
-// CSRF Token Helper
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
-
-// Debounce function for performance
-function debounce(func, wait, immediate) {
-    let timeout;
-    return function executedFunction() {
-        const context = this;
-        const args = arguments;
-        const later = function() {
-            timeout = null;
-            if (!immediate) func.apply(context, args);
-        };
-        const callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) func.apply(context, args);
     };
 }
 
@@ -1255,29 +1202,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Update global counts
-        function updateGlobalCounts(nav_id = "nav1") {
-            const baseUrl = window.location.origin;
-            fetch(`${baseUrl}/get-cart-wishlist-counts/`, {
-                method: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.json())
-            .then(data => {
-                const cartCountEl = document.getElementById(`cart-count-${nav_id}`);
-                const wishCountEl = document.getElementById(`wishlist-count-${nav_id}`);
-                if (cartCountEl && data.cart_count !== undefined) {
-                    cartCountEl.textContent = data.cart_count;
-                }
-                if (wishCountEl && data.wishlist_count !== undefined) {
-                    wishCountEl.textContent = data.wishlist_count;
-                }
-            })
-            .catch(error => {
-                console.error("Failed to fetch cart/wishlist counts:", error);
-            });
-        }
-
         // Cart buttons (related products)
         document.querySelectorAll('.cart-btn').forEach(button => {
             button.addEventListener('click', function (e) {
@@ -1290,29 +1214,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.wishlist-btn').forEach(button => {
             button.addEventListener('click', function (e) {
                 e.preventDefault();
+                // Use the global toggleWishlist function from cart-wishlist.js
                 const productId = this.dataset.productId;
-                const baseUrl = window.location.origin;
-                fetch(`${baseUrl}/add-to-wishlist/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ product_id: productId })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        updateGlobalCounts();
-                        if (window.showToast) window.showToast('Added to Wishlist', 'success');
-                    } else {
-                        if (window.showToast) window.showToast(data.message || 'Action failed.', 'error');
-                    }
-                })
-                .catch(() => {
-                    if (window.showToast) window.showToast('An unexpected error occurred. Please try again.', 'error');
-                });
+                if (typeof window.toggleWishlist === 'function') {
+                    window.toggleWishlist(productId, this);
+                } else {
+                    console.error('toggleWishlist function not found.');
+                }
             });
         });
     }

@@ -1,115 +1,193 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n crispy_forms_tags %}
 
 {% block title %}{% trans "Checkout" %}{% endblock %}
 
 {% block content %}
 <main class="checkout-main">
-  <div class="container">
-    <!-- Breadcrumb Navigation -->
-    <nav aria-label="breadcrumb" class="breadcrumb-nav" data-aos="fade-down" data-aos-delay="50">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <a href="{% url 'shop:home' %}">
-            <span class="material-icons">home</span>
-            {% trans "Home" %}
-          </a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">{% trans "Checkout" %}</li>
-      </ol>
-    </nav>
-  </div>
+    <div class="container py-5">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:cart_view' %}">{% trans "Cart" %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Checkout" %}</li>
+            </ol>
+        </nav>
 
-  <section class="checkout-section" aria-label="{% trans 'Checkout' %}">
-    <div class="container">
-      <div class="section-header" data-aos="fade-up" data-aos-delay="50">
-        <h2 class="section-title">
-          <span class="material-icons">shopping_cart_checkout</span>
-          {% trans "Checkout" %}
-        </h2>
-      </div>
-      <div class="row g-4 align-items-stretch">
-        <!-- Left Column: Shipping & Payment -->
-        <div class="col-lg-6 col-xl-6" data-aos="fade-right" data-aos-delay="100">
-          <div class="checkout-form-section">
-            <h4 class="mb-3"><span class="material-icons">local_shipping</span> {% trans "Shipping Address" %}</h4>
-            <form method="post" action="{% url 'shop:checkout' %}" novalidate>
-              {% csrf_token %}
-              {% if user_shipping_addresses %}
-                <div class="mb-3">
-                  <label for="selected_address" class="form-label">{% trans "Select Address" %}</label>
-                  <select name="selected_address" id="selected_address" class="form-select">
-                    <option value="new">{% trans "Add New Address" %}</option>
-                    {% for address in user_shipping_addresses %}
-                    <option value="{{ address.id }}">{{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-              {% else %}
-                <input type="hidden" name="selected_address" value="new">
-              {% endif %}
-              {{ shipping_form.non_field_errors }}
-              <div class="mb-3">{{ shipping_form.full_name.label_tag }}{{ shipping_form.full_name }}{{ shipping_form.full_name.errors }}</div>
-              <div class="mb-3">{{ shipping_form.address_line1.label_tag }}{{ shipping_form.address_line1 }}{{ shipping_form.address_line1.errors }}</div>
-              <div class="mb-3">{{ shipping_form.address_line2.label_tag }}{{ shipping_form.address_line2 }}{{ shipping_form.address_line2.errors }}</div>
-              <div class="mb-3">{{ shipping_form.city.label_tag }}{{ shipping_form.city }}{{ shipping_form.city.errors }}</div>
-              <div class="mb-3">{{ shipping_form.state_province_region.label_tag }}{{ shipping_form.state_province_region }}{{ shipping_form.state_province_region.errors }}</div>
-              <div class="mb-3">{{ shipping_form.postal_code.label_tag }}{{ shipping_form.postal_code }}{{ shipping_form.postal_code.errors }}</div>
-              <div class="mb-3">{{ shipping_form.phone_number.label_tag }}{{ shipping_form.phone_number }}{{ shipping_form.phone_number.errors }}</div>
-              {{ shipping_form.country }}
-              <div class="form-check mb-3">{{ shipping_form.save_as_default }}{{ shipping_form.save_as_default.label_tag }}{{ shipping_form.save_as_default.errors }}</div>
-              <h4 class="mt-4 mb-3"><span class="material-icons">credit_card</span> {% trans "Payment Details" %}</h4>
-              {{ payment_form.non_field_errors }}
-              <div class="mb-3">
-                {{ payment_form.payment_method.label_tag }}
-                {% for radio in payment_form.payment_method %}
-                  <div class="form-check">{{ radio.tag }} {{ radio.choice_label }}</div>
-                {% endfor %}
-                {{ payment_form.payment_method.errors }}
-              </div>
-              <button type="submit" class="btn btn-dark mt-3 checkout-btn-place-order">
-                <span class="material-icons">check_circle</span> {% trans "Place Order" %}
-              </button>
-            </form>
-          </div>
+        <!-- Page Header -->
+        <div class="section-header" data-aos="fade-up">
+            <h1 class="section-title">
+                <span class="material-icons">shopping_cart_checkout</span>
+                {% trans "Checkout" %}
+            </h1>
         </div>
-        <!-- Right Column: Order Summary -->
-        <div class="col-lg-6 col-xl-6" data-aos="fade-left" data-aos-delay="150">
-          <div class="checkout-summary-section">
-            <h4 class="mb-3"><span class="material-icons">receipt_long</span> {% trans "Order Summary" %}</h4>
-            <div class="checkout-gallery-container" role="region" aria-label="{% trans 'Order summary gallery' %}">
-              <div class="swiper checkout-swiper" tabindex="0" aria-roledescription="carousel" aria-label="{% trans 'Order summary' %}">
-                <div class="swiper-wrapper">
-                  {% for item in cart.items.all %}
-                  <div class="swiper-slide" aria-label="{% trans 'Product' %} {{ forloop.counter }}">
-                    {% include 'partials/_cart_item.html' with item=item.product_variant %}
-                  </div>
-                  {% empty %}
-                  <div class="empty-state" data-aos="fade-up">
-                    <span class="material-icons">shopping_bag</span>
-                    <p>{% trans "Your cart is empty." %}</p>
-                  </div>
-                  {% endfor %}
+
+        <form id="checkout-form" method="post">
+            {% csrf_token %}
+            <div class="checkout-layout" data-aos="fade-up" data-aos-delay="100">
+                <!-- Left Column: Shipping & Payment -->
+                <div class="checkout-main-column">
+                    <!-- Shipping Address Section -->
+                    <div class="checkout-section-card">
+                        <h2 class="checkout-section-title">
+                            <span class="material-icons">local_shipping</span>
+                            {% trans "Shipping Information" %}
+                        </h2>
+                        <div class="checkout-section-body">
+                            {% if saved_addresses %}
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">{% trans "Select a saved address:" %}</label>
+                                <div class="saved-addresses-list">
+                                    {% for address in saved_addresses %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="saved_address" id="address-{{ address.id }}" value="{{ address.id }}" {% if forloop.first %}checked{% endif %}>
+                                        <label class="form-check-label" for="address-{{ address.id }}">
+                                            <strong>{{ address.full_name }}</strong><br>
+                                            {{ address.address_line1 }}, {{ address.city }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="radio" name="saved_address" id="new-address" value="new">
+                                        <label class="form-check-label" for="new-address">
+                                            {% trans "Use a new address" %}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div id="shipping-form-container" class="{% if saved_addresses %}d-none{% endif %}">
+                                {{ form|crispy }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method Section -->
+                    <div class="checkout-section-card mt-4">
+                        <h2 class="checkout-section-title">
+                            <span class="material-icons">payments</span>
+                            {% trans "Payment Method" %}
+                        </h2>
+                        <div class="checkout-section-body">
+                            <div class="payment-option">
+                                <input type="radio" id="cod" name="payment_method" value="cod" checked class="form-check-input">
+                                <label for="cod" class="form-check-label">
+                                    <span class="material-icons">local_shipping</span>
+                                    {% trans "Cash on Delivery" %}
+                                </label>
+                                <p class="payment-description">{% trans "Pay with cash upon delivery." %}</p>
+                            </div>
+                            <!-- Add other payment methods here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div class="checkout-summary-column">
+                    <div class="summary-card sticky-summary">
+                        <div class="summary-header">
+                            <h3 class="summary-title">
+                                <span class="material-icons">receipt_long</span>
+                                {% trans "Order Summary" %}
+                            </h3>
+                        </div>
+
+                        <div class="summary-body">
+                            <ul class="summary-item-list">
+                                {% for item in cart_items %}
+                                <li class="summary-item">
+                                    <img src="{{ item.product_variant.product.get_main_image.image.url }}" alt="{{ item.product_variant.product.name }}" class="summary-item-image">
+                                    <div class="summary-item-details">
+                                        <span class="summary-item-name">{{ item.product_variant.product.name }}</span>
+                                        <span class="summary-item-variant">{{ item.product_variant.color.name }}, {{ item.product_variant.size.name }}</span>
+                                    </div>
+                                    <div class="summary-item-pricing">
+                                        <span class="summary-item-qty">x{{ item.quantity }}</span>
+                                        <span class="summary-item-total">{{ item.total|floatformat:2 }} EGP</span>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="summary-divider"></div>
+
+                            <div class="summary-line">
+                                <span>{% trans "Subtotal" %}</span>
+                                <span id="summary-subtotal">{{ subtotal|floatformat:2 }} EGP</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>{% trans "Shipping" %}</span>
+                                <span id="summary-shipping">{{ shipping_fee|floatformat:2 }} EGP</span>
+                            </div>
+                            <div class="summary-divider"></div>
+                            <div class="summary-line total">
+                                <strong>{% trans "Grand Total" %}</strong>
+                                <strong id="summary-grand-total">{{ grand_total|floatformat:2 }} EGP</strong>
+                            </div>
+                        </div>
+
+                        <div class="summary-footer">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <span class="material-icons">check_circle</span>
+                                {% trans "Place Order" %}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <ul class="list-group mb-4 mt-3 checkout-summary-list">
-              <li class="list-group-item d-flex justify-content-between">
-                <span><span class="material-icons">attach_money</span> {% trans "Subtotal" %}</span>
-                <span>{{ cart.total_price_field|floatformat:2 }} EGP</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span><span class="material-icons">local_shipping</span> {% trans "Shipping" %}</span>
-                <span>{{ shipping_fee|floatformat:2 }} EGP</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between fw-bold">
-                <span><span class="material-icons">payments</span> {% trans "Total" %}</span>
-                <span>{{ grand_total|floatformat:2 }} EGP</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+        </form>
     </div>
-  </section>
 </main>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cityField = document.getElementById('id_city');
+    const shippingCostEl = document.getElementById('summary-shipping');
+    const grandTotalEl = document.getElementById('summary-grand-total');
+    const subtotal = parseFloat('{{ subtotal|floatformat:2 }}');
+
+    if (cityField) {
+        cityField.addEventListener('change', async function() {
+            const city = this.value;
+            if (!city) return;
+
+            try {
+                const response = await fetch(`{% url 'shop:get_shipping_cost' %}?city=${city}`);
+                const data = await response.json();
+
+                if (data.shipping_cost !== undefined) {
+                    const shippingCost = parseFloat(data.shipping_cost);
+                    shippingCostEl.textContent = `${shippingCost.toFixed(2)} EGP`;
+                    grandTotalEl.textContent = `${(subtotal + shippingCost).toFixed(2)} EGP`;
+                }
+            } catch (error) {
+                console.error('Error fetching shipping cost:', error);
+            }
+        });
+    }
+
+    const savedAddressRadios = document.querySelectorAll('input[name="saved_address"]');
+    const shippingFormContainer = document.getElementById('shipping-form-container');
+
+    if (savedAddressRadios.length > 0 && shippingFormContainer) {
+        savedAddressRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'new') {
+                    shippingFormContainer.classList.remove('d-none');
+                } else {
+                    shippingFormContainer.classList.add('d-none');
+                    // Optionally, you can also fetch the city from the selected address
+                    // and trigger the shipping cost update.
+                }
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

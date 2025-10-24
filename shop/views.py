@@ -1,15 +1,20 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
-from django.db.models import Q, Min, Max, Sum
-from django.views.decorators.http import require_http_methods, require_POST, require_GET
+from django.db.models import Q, Min, Max, Sum, Count, F
+from django.db.models.functions import TruncDay  # noqa
+from django.views.decorators.http import (
+    require_http_methods,
+    require_POST,
+    require_GET,
+)  # noqa
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.db import transaction
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db import transaction, models
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # noqa
 import json
 from .forms import RegisterForm, LoginForm, ShippingAddressForm, PaymentForm
-from .models import (
+from .models import (  # noqa
     Category,
     SubCategory,
     FitType,
@@ -29,12 +34,14 @@ from .models import (
     Payment,
     MnoryUser,
     VendorProfile,
+    Advertisement,
 )
 from decimal import Decimal
 import uuid
 import logging
 from django.utils.translation import gettext as _
 from constance import config
+from django.utils import timezone
 from freelancing.models import Review
 
 # Set up logger
@@ -142,8 +149,6 @@ def home(request):
     sliders = HomeSlider.objects.filter(is_active=True).order_by("order")
 
     # Get active advertisements for home page
-    from .models import Advertisement
-
     home_ads = Advertisement.get_active_ads(placement="home")
 
     products_in_wishlist_ids = []
@@ -658,6 +663,23 @@ def product_detail(request, slug):
             wishlist__user=request.user, product=product
         ).exists()
 
+    reviews = (
+        product.reviews.filter(is_public=True)
+        .select_related("user")
+        .order_by("-created_at")
+    )
+    review_form = ReviewForm()
+    user_can_review = False
+    if request.user.is_authenticated:
+        user_can_review = (
+            OrderItem.objects.filter(
+                order__user=request.user,
+                product_variant__product=product,
+                order__status="delivered",
+            ).exists()
+            and not reviews.filter(user=request.user).exists()
+        )
+
     context = {
         "product": product,
         "related_products": related_products,
@@ -667,9 +689,46 @@ def product_detail(request, slug):
         "product_images": product_images,
         "categories": categories,
         "is_in_wishlist": is_in_wishlist,
+        "reviews": reviews,
+        "review_form": review_form,
+        "user_can_review": user_can_review,
     }
 
     return render(request, "shop/product_detail.html", context)
+
+
+@login_required
+@require_POST
+def submit_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    form = ReviewForm(request.POST)
+
+    if form.is_valid():
+        # Check if user has purchased this product
+        can_review = OrderItem.objects.filter(
+            order__user=request.user,
+            product_variant__product=product,
+            order__status="delivered",
+        ).exists()
+        if not can_review:
+            messages.error(
+                request,
+                _("You can only review products you have purchased and received."),
+            )
+            return redirect(product.get_absolute_url())
+
+        review = form.save(commit=False)
+        review.product = product
+        review.user = request.user
+        review.save()
+        messages.success(request, _("Thank you for your review!"))
+    else:
+        messages.error(
+            request,
+            _("There was an error with your submission. Please check the form."),
+        )
+
+    return redirect(product.get_absolute_url())
 
 
 # --- Search & API Endpoints ---
@@ -2080,6 +2139,410 @@ def track_ad_view(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@login_required
+def profile_view(request):
+    recent_orders = Order.objects.filter(user=request.user).order_by("-created_at")[:5]
+    context = {"recent_orders": recent_orders}
+    return render(request, "accounts/profile.html", context)
+
+
+@login_required
+def edit_profile(request):
+    if request.method == "POST":
+        form = UserChangeForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Profile updated successfully!"))
+            return redirect("shop:profile")
+    else:
+        form = UserChangeForm(instance=request.user)
+    return render(request, "accounts/edit_profile.html", {"form": form})
+
+
+@login_required
+def address_list(request):
+    addresses = ShippingAddress.objects.filter(user=request.user)
+    return render(request, "accounts/address_list.html", {"addresses": addresses})
+
+
+@login_required
+def address_add(request):
+    if request.method == "POST":
+        form = ShippingAddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+            address.save()
+            messages.success(request, _("Address added successfully!"))
+            return redirect("shop:address_list")
+    else:
+        form = ShippingAddressForm()
+    return render(request, "accounts/address_form.html", {"form": form})
+
+
+@login_required
+def address_edit(request, address_id):
+    address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
+    if request.method == "POST":
+        form = ShippingAddressForm(request.POST, instance=address)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Address updated successfully!"))
+            return redirect("shop:address_list")
+    else:
+        form = ShippingAddressForm(instance=address)
+    return render(request, "accounts/address_form.html", {"form": form})
+
+
+@login_required
+@require_POST
+def address_delete(request, address_id):
+    address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
+    address.delete()
+    messages.success(request, _("Address deleted successfully!"))
+    return redirect("shop:address_list")
+
+
+@login_required
+def account_settings(request):
+    from django.contrib.auth.forms import PasswordChangeForm
+    from django.contrib.auth import update_session_auth_hash
+
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, _("Your password was successfully updated!"))
+            return redirect("shop:account_settings")
+        else:
+            messages.error(request, _("Please correct the error below."))
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, "accounts/account_settings.html", {"form": form})
+
+
+@login_required
+def vendor_dashboard(request):
+    if not request.user.is_vendor_type:
+        # from django.contrib import messages
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+
+    # Stats
+    total_products = Product.objects.filter(vendor=vendor_profile).count()
+    vendor_order_items = OrderItem.objects.filter(
+        product_variant__product__vendor=vendor_profile
+    )
+    total_sales = (
+        vendor_order_items.aggregate(total=Sum("price_at_purchase"))["total"] or 0
+    )
+    recent_orders = (
+        Order.objects.filter(items__in=vendor_order_items)
+        .distinct()
+        .order_by("-created_at")[:5]
+    )
+
+    # Top Selling Products
+    top_products = (
+        Product.objects.filter(vendor=vendor_profile, is_active=True)
+        .annotate(
+            total_sold=Sum("variants__orderitem__quantity"),
+            total_revenue=Sum(
+                F("variants__orderitem__quantity")
+                * F("variants__orderitem__price_at_purchase")
+            ),
+        )
+        .filter(total_sold__gt=0)
+        .order_by("-total_sold")[:5]
+    )
+    # Chart Data: Sales for the last 7 days
+    # Get recent product reviews
+    recent_reviews = (
+        Review.objects.filter(product__vendor=vendor_profile)
+        .select_related("reviewer", "product")
+        .order_by("-created_at")[:5]
+    )
+
+    today = timezone.now().date()
+    seven_days_ago = today - timedelta(days=6)
+
+    sales_data = (
+        vendor_order_items.filter(order__created_at__date__gte=seven_days_ago)
+        .annotate(day=TruncDay("order__created_at"))
+        .values("day")
+        .annotate(daily_sales=Sum("price_at_purchase"))
+        .order_by("day")
+    )
+
+    # Prepare data for Chart.js
+    chart_labels = [
+        (seven_days_ago + timedelta(days=i)).strftime("%b %d") for i in range(7)
+    ]
+    chart_sales_data = [0.0] * 7
+    sales_dict = {
+        item["day"].strftime("%b %d"): float(item["daily_sales"]) for item in sales_data
+    }
+    for i, label in enumerate(chart_labels):
+        if label in sales_dict:
+            chart_sales_data[i] = sales_dict[label]
+
+    context = {
+        "vendor_profile": vendor_profile,
+        "total_products": total_products,
+        "total_sales": total_sales,
+        "recent_orders": recent_orders,
+        "recent_reviews": recent_reviews,
+        "top_products": top_products,
+        "chart_labels": json.dumps(chart_labels),
+        "chart_sales_data": json.dumps(chart_sales_data),
+    }
+    return render(request, "shop/vendor_dashboard.html", context)
+
+
+@login_required
+def vendor_manage_products(request):
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+    products_list = Product.objects.filter(vendor=vendor_profile).order_by(
+        "-created_at"
+    )
+
+    # Search and Filter
+    search_query = request.GET.get("q", "")
+    status_filter = request.GET.get("status", "")
+
+    if search_query:
+        products_list = products_list.filter(
+            Q(name__icontains=search_query) | Q(sku__icontains=search_query)
+        )
+
+    if status_filter:
+        products_list = products_list.filter(is_active=(status_filter == "active"))
+
+    paginator = Paginator(products_list, 10)  # 10 products per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "products": page_obj,
+        "vendor_profile": vendor_profile,
+        "search_query": search_query,
+        "status_filter": status_filter,
+    }
+    return render(request, "shop/vendor_manage_products.html", context)
+
+
+@login_required
+def vendor_add_product(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.vendor = request.user.vendorprofile
+            product.save()
+            form.save_m2m()  # For many-to-many fields if any
+            messages.success(request, _("Product added successfully!"))
+            return redirect("shop:vendor_manage_products")
+    else:
+        form = ProductForm()
+    context = {"form": form, "title": _("Add New Product")}
+    return render(request, "shop/vendor_product_form.html", context)
+
+
+@login_required
+def vendor_edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    # Ensure the product belongs to the logged-in vendor
+    if product.vendor != request.user.vendorprofile:
+        messages.error(request, _("You do not have permission to edit this product."))
+        return redirect("shop:vendor_manage_products")
+
+    if request.method == "POST":
+        product_form = ProductForm(
+            request.POST, request.FILES, instance=product, prefix="product"
+        )
+        image_formset = ProductImageFormSet(
+            request.POST, request.FILES, instance=product, prefix="images"
+        )
+        variant_formset = ProductVariantFormSet(
+            request.POST, request.FILES, instance=product, prefix="variants"
+        )
+
+        if (
+            product_form.is_valid()
+            and variant_formset.is_valid()  # noqa
+            and image_formset.is_valid()
+        ):
+            product_form.save()
+            variants = variant_formset.save(commit=False)
+
+            # Save images before variants
+            images = image_formset.save(commit=False)
+            for image in images:
+                image.product = product
+                image.save()
+            for form in image_formset.deleted_forms:
+                if form.instance.pk:
+                    form.instance.delete()
+
+            for variant in variants:
+                variant.product = product
+                variant.save()
+
+            for form in variant_formset.deleted_forms:
+                if form.instance.pk:
+                    form.instance.delete()
+
+            # Recalculate total stock for the main product
+            total_stock = (
+                product.variants.aggregate(total=Sum("stock_quantity"))["total"] or 0
+            )
+            product.stock_quantity = total_stock
+            product.save(update_fields=["stock_quantity"])
+
+            # Automatically set the first image as main if none is selected
+            product.refresh_from_db()
+            if (
+                product.images.exists()
+                and not product.images.filter(is_main=True).exists()
+            ):
+                first_image = product.images.order_by("order").first()
+                if first_image:
+                    first_image.is_main = True
+                    first_image.save(update_fields=["is_main"])
+
+            messages.success(request, _("Product updated successfully!"))
+            return redirect("shop:vendor_manage_products")
+    else:
+        product_form = ProductForm(instance=product, prefix="product")
+        image_formset = ProductImageFormSet(instance=product, prefix="images")
+        variant_formset = ProductVariantFormSet(instance=product, prefix="variants")
+
+    context = {
+        "form": product_form,
+        "image_formset": image_formset,
+        "variant_formset": variant_formset,
+        "title": _("Edit Product"),
+    }
+    return render(request, "shop/vendor_product_form.html", context)
+
+
+@login_required
+@require_POST
+def vendor_reply_to_review(request, review_id):
+    if not request.user.is_vendor_type:
+        return JsonResponse(
+            {"success": False, "message": _("Access denied.")}, status=403
+        )
+
+    review = get_object_or_404(Review, id=review_id)
+
+    # Security check: ensure the product belongs to the current vendor
+    if review.product.vendor != request.user.vendorprofile:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": _("You do not have permission to reply to this review."),
+            },
+            status=403,
+        )
+
+    form = ReviewReplyForm(request.POST, instance=review)
+    if form.is_valid():
+        reply = form.save(commit=False)
+        reply.replied_at = timezone.now()
+        reply.save()
+        return JsonResponse(
+            {
+                "success": True,
+                "reply_text": reply.reply,
+                "replied_at": timezone.localtime(reply.replied_at).strftime(
+                    "%b %d, %Y"
+                ),
+            }
+        )
+    else:
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+
+@login_required
+@require_POST
+def vendor_delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    # Ensure the product belongs to the logged-in vendor
+    if product.vendor != request.user.vendorprofile:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": _("You do not have permission to delete this product."),
+            },
+            status=403,
+        )
+
+    try:
+        product.delete()
+        return JsonResponse(
+            {"success": True, "message": _("Product deleted successfully.")}
+        )
+    except Exception as e:
+        logger.error(
+            f"Error deleting product {product_id} by user {request.user.email}: {e}"
+        )
+        return JsonResponse(
+            {
+                "success": False,
+                "message": _("An error occurred while deleting the product."),
+            },
+            status=500,
+        )
+
+
+@login_required
+def vendor_manage_reviews(request):
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+
+    review_list = (
+        Review.objects.filter(product__vendor=vendor_profile)
+        .select_related("user", "product")
+        .order_by("-created_at")
+    )
+
+    # Search and Filter
+    search_query = request.GET.get("q", "")
+    rating_filter = request.GET.get("rating", "")
+
+    if search_query:
+        review_list = review_list.filter(
+            Q(product__name__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(comment__icontains=search_query)
+        )
+
+    if rating_filter:
+        review_list = review_list.filter(rating=rating_filter)
+
+    paginator = Paginator(review_list, 10)  # 10 reviews per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "reviews": page_obj,
+        "search_query": search_query,
+        "rating_filter": rating_filter,
+    }
+    return render(request, "shop/vendor_manage_reviews.html", context)
 
 
 @require_POST

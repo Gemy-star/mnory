@@ -53,7 +53,7 @@
                     <div class="col-lg-5 col-xl-5" data-aos="fade-right" data-aos-delay="100">
                         <div class="product-gallery-container">
                             <!-- Main Product Image Swiper -->
-                            <div class="product-images-wrapper" role="region" aria-label="{% trans 'Product images gallery' %}">
+                            <div class="product-images-wrapper" role="region" aria-label="{% trans 'Product images gallery' %}" style="aspect-ratio: 1 / 1;">
                                 <div class="swiper product-detail-swiper" tabindex="0" aria-roledescription="carousel" aria-label="{% trans 'Product images' %}">
                                     <div class="swiper-wrapper">
                                         {% for image in product_images %}
@@ -63,7 +63,7 @@
                                                {% if forloop.first %}itemprop="image"{% endif %}
                                                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                                                alt="{{ product.name }} - {% if image.color %}{{ image.color.name }}{% else %}{% trans 'Image' %} {{ forloop.counter }}{% endif %}"
-                                               class="product-detail-img"
+                                               class="product-detail-img" style="height: auto; object-fit: contain;"
                                                aria-describedby="zoom-indicator">
                                             </div>
                                         </div>
@@ -72,7 +72,7 @@
                                             <div class="swiper-zoom-container">
                                        <img loading="eager"
                                            src="https://placehold.co/600x600/e0e0e0/555555?text=No+Image"
-                                           alt="{% trans 'No image available' %}"
+                                           alt="{% trans 'No image available' %}" style="height: auto; object-fit: contain;"
                                            class="product-detail-img"
                                            aria-describedby="zoom-indicator">
 
@@ -342,8 +342,24 @@
                                 </button>
                             </div>
                         </div>
+
+
+                        <!-- Product Description -->
+                        <div class="product-description-wrapper pt-4">
+                            <h6 class="product-section-title">
+                                <span class="material-icons">description</span>
+                                {% trans "Product Description" %}
+                            </h6>
+                            <div class="product-description">
+                                {{ product.description|linebreaksbr }}
+                           {% if product.short_description %}
+                            <p class="product-subtitle">{{ product.short_description }}</p>
+                            {% endif %}
+                            </div>
+                        </div>
+
                         <!-- Product Badges -->
-                        <div class="product-detail-badges">
+                        <div class="product-detail-badges pt-2">
                             {% if product.is_on_sale %}
                                 <span class="product-badge badge-sale">
                                     <span class="material-icons">local_offer</span>
@@ -369,22 +385,6 @@
                                 </span>
                             {% endif %}
                         </div>
-
-
-                        <!-- Product Description -->
-                        <div class="product-description-wrapper">
-                            <h6 class="product-section-title">
-                                <span class="material-icons">description</span>
-                                {% trans "Product Description" %}
-                            </h6>
-                            <div class="product-description">
-                                {{ product.description|linebreaksbr }}
-                           {% if product.short_description %}
-                            <p class="product-subtitle">{{ product.short_description }}</p>
-                            {% endif %}
-                            </div>
-                        </div>
-
 
                         <!-- Product Meta Information -->
                         <div class="product-meta-section">
@@ -540,6 +540,75 @@
             </div>
         </div>
     </article>
+
+    <!-- Product Reviews Section -->
+    <section class="product-reviews-section container" data-aos="fade-up" data-aos-delay="300">
+        <div class="section-header">
+            <h3 class="section-title">
+                <span class="material-icons">reviews</span>
+                {% trans "Customer Reviews" %}
+            </h3>
+        </div>
+
+        <div class="reviews-summary">
+            <div class="average-rating">
+                <span class="rating-value">{{ product.average_rating|floatformat:1 }}</span>
+                <div class="stars">
+                    {% for i in "12345" %}
+                        {% if i|add:0 <= product.average_rating %}
+                            <span class="material-icons star filled">star</span>
+                        {% else %}
+                            <span class="material-icons star">star_border</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="review-count">{% blocktrans count counter=product.review_count %}{{ counter }} review{% plural %}{{ counter }} reviews{% endblocktrans %}</span>
+            </div>
+        </div>
+
+        <div class="reviews-list">
+            {% for review in reviews %}
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar"><span class="material-icons">person</span></div>
+                            <div>
+                                <span class="reviewer-name">{{ review.user.get_full_name|default:review.user.email }}</span>
+                                <span class="review-date">{{ review.created_at|date:"d M, Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="review-meta">
+                            <div class="stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <span class="material-icons star filled">star</span>
+                                    {% else %}
+                                        <span class="material-icons star">star_border</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="review-body">
+                        <p>{{ review.comment }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">{% trans "No reviews yet for this product." %}</p>
+            {% endfor %}
+        </div>
+
+        {% if user_can_review %}
+        <div class="review-form-container mt-4">
+            <h4>{% trans "Write a Review" %}</h4>
+            <form action="{% url 'shop:submit_review' product.id %}" method="post">
+                {% csrf_token %}
+                {{ review_form|crispy }}
+                <button type="submit" class="btn btn-primary mt-3">{% trans "Submit Review" %}</button>
+            </form>
+        </div>
+        {% endif %}
+    </section>
 
     <!-- Related Products Section -->
     <section class="related-products-section" data-aos="fade-up" data-aos-delay="250">

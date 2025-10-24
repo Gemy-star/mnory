@@ -1,54 +1,44 @@
 {# templates/accounts/customer_register.html #}
 {% extends "base.html" %}
-{% load crispy_forms_tags i18n %}
+{% load crispy_forms_tags i18n static %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<section class="section py-5 mnory-bg"> {# Added bg-dark for a full dark background section #}
-  <div class="container">
-    <div class="row justify-content-center mb-5">
-      <div class="col-lg-8 text-center">
-        <h2 class="fw-bold text-white"><i class="fa-solid fa-user-circle me-3"></i>{{ title }}</h2> {# Icon for title #}
-        <p class="text-white">{% trans "Complete the form below to register for your customer account." %}</p>
-      </div>
-    </div>
-
-    <div class="row gy-4 justify-content-center"> {# Centering the content columns #}
-      <div class="col-md-7"> {# Column for the registration form card #}
-        <div class="card shadow-lg border border-secondary bg-light text-dark"> {# Dark card styling #}
-          <div class="card-header border-bottom border-secondary"> {# Distinct card header #}
-            <h4 class="mb-0 fw-bold"><i class="fa-solid fa-address-card me-2"></i>{% trans "New User Registration" %}</h4> {# Icon for form header #}
-          </div>
-          <div class="card-body p-4">
-            <form method="post" action="{{ form_action }}" novalidate>
-              {% csrf_token %}
-              {{ form|crispy }} {# Apply crispy_forms_tags filter for consistent styling #}
-
-              <div class="d-grid col-6 mt-4">
-                <button type="submit" class="btn btn-dark btn-lg"> {# Light button for contrast #}
-                  <i class="fa-solid fa-paper-plane me-2"></i>{{ submit_label }} {# Icon for submit button #}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-5"> {# Column for the "Already have an account?" card #}
-        <div class="card border border-secondary bg-light text-dark h-100"> {# Dark card styling, full height #}
-          <div class="card-body p-4 d-flex flex-column justify-content-center"> {# Flexbox for vertical centering content #}
-            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-right-to-bracket me-2"></i>{% trans "Already have an account?" %}</h5> {# Icon for login prompt header #}
-            <p class="mb-4 text-muted">
-              {% trans "If you're already a registered customer, log in to access your dashboard and manage your orders effortlessly." %}
-            </p>
-            <a href="{% url 'shop:login' %}" class="btn btn-outline-dark btn-sm"> {# Outline light button for login #}
-              <i class="fa-solid fa-sign-in-alt me-2"></i>{% trans "Login here" %} {# Icon for login button #}
+<section class="category-detail-section">
+    <div class="container py-5">
+        <div class="auth-card mx-auto" data-aos="fade-up">
+            <!-- Card Header -->
+            <a href="{% url 'shop:home' %}" class="auth-logo-link">
+                <img src="{% static 'images/logo-black.png' %}" alt="Mnory" class="auth-logo auth-logo-light">
+                <img src="{% static 'images/logo.png' %}" alt="Mnory" class="auth-logo auth-logo-dark">
             </a>
-          </div>
+            <div class="auth-header">
+                <span class="material-icons auth-icon">person_add</span>
+                <h1 class="auth-title">{% trans "Create Your Account" %}</h1>
+                <p class="auth-subtitle">{% trans "Join our community to start shopping." %}</p>
+            </div>
+
+            <!-- Card Body -->
+            <div class="auth-body">
+                <form method="post" action="{{ form_action }}" novalidate>
+                    {% csrf_token %}
+                    {{ form|crispy }}
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="material-icons">person_add</span>
+                            {{ submit_label }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="auth-footer">
+                <p>{% trans "Already have an account?" %} <a href="{% url 'shop:login' %}">{% trans "Log in here" %}</a></p>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </section>
 {% endblock %}

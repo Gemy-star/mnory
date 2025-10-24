@@ -1,0 +1,45 @@
+{% load i18n %}
+<div class="review-item">
+    <div class="review-header">
+        <div class="reviewer-info">
+            <div class="reviewer-avatar">
+                <span class="material-icons">person</span>
+            </div>
+            <div>
+                <span class="reviewer-name">{{ review.reviewer.get_full_name|default:review.reviewer.email }}</span>
+                <span class="review-product">{% trans "reviewed" %} <a href="{{ review.product.get_absolute_url }}">{{ review.product.name }}</a></span>
+            </div>
+        </div>
+        <div class="review-meta">
+            <div class="stars">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}
+                        <span class="material-icons star filled">star</span>
+                    {% else %}
+                        <span class="material-icons star">star_border</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <span class="review-date">{{ review.created_at|date:"d M, Y" }}</span>
+        </div>
+    </div>
+    <div class="review-body">
+        <p>{{ review.comment }}</p>
+    </div>
+    <div class="review-footer">
+        {% if not review.reply %}
+        <button class="btn btn-sm btn-outline-primary btn-reply-review" data-review-id="{{ review.id }}">
+            <span class="material-icons">reply</span> {% trans "Reply" %}
+        </button>
+        {% endif %}
+    </div>
+    <div class="vendor-reply" style="display: {% if review.reply %}block{% else %}none{% endif %};">
+        {% if review.reply %}
+        <div class="reply-header">
+            <strong>{% trans "Your Reply" %}</strong>
+            <span class="reply-date">{{ review.replied_at|date:"d M, Y" }}</span>
+        </div>
+        <p>{{ review.reply }}</p>
+        {% endif %}
+    </div>
+</div>

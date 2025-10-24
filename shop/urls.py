@@ -84,6 +84,51 @@ urlpatterns = [
     path("register/customer/", user_views.register_customer, name="register_customer"),
     path("logout/", user_views.user_logout, name="logout"),
     path("login/", user_views.login_view, name="login"),
+    path("account/profile/", views.profile_view, name="profile"),
+    path("account/profile/edit/", views.edit_profile, name="edit_profile"),
+    path("account/addresses/", views.address_list, name="address_list"),
+    path("account/addresses/add/", views.address_add, name="address_add"),
+    path(
+        "account/addresses/edit/<int:address_id>/",
+        views.address_edit,
+        name="address_edit",
+    ),
+    path(
+        "account/addresses/delete/<int:address_id>/",
+        views.address_delete,
+        name="address_delete",
+    ),
+    path("account/settings/", views.account_settings, name="account_settings"),
+    path("vendor/dashboard/", views.vendor_dashboard, name="vendor_dashboard"),
+    path(
+        "vendor/products/", views.vendor_manage_products, name="vendor_manage_products"
+    ),
+    path("vendor/products/add/", views.vendor_add_product, name="vendor_add_product"),
+    path(
+        "vendor/products/edit/<int:product_id>/",
+        views.vendor_edit_product,
+        name="vendor_edit_product",
+    ),
+    path(
+        "vendor/review/reply/<int:review_id>/",
+        views.vendor_reply_to_review,
+        name="vendor_reply_to_review",
+    ),
+    path(
+        "vendor/products/delete/<int:product_id>/",
+        views.vendor_delete_product,
+        name="vendor_delete_product",
+    ),
+    path(
+        "vendor/reviews/",
+        views.vendor_manage_reviews,
+        name="vendor_manage_reviews",
+    ),
+    path(
+        "product/<int:product_id>/review/",
+        views.submit_review,
+        name="submit_review",
+    ),
     # change Currency
     path("set-currency/", extra_views.set_currency, name="set_currency"),
 ]

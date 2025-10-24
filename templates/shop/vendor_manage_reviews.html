@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Manage Reviews" %}{% endblock %}
+
+{% block content %}
+<main class="account-main">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:vendor_dashboard' %}">{% trans "Dashboard" %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Manage Reviews" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="dashboard-header mb-4" data-aos="fade-up">
+            <h1 class="section-title mb-0">
+                <span class="material-icons">rate_review</span>
+                {% trans "Manage Product Reviews" %}
+            </h1>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="card mb-4" data-aos="fade-up" data-aos-delay="50">
+            <div class="card-body">
+                <form method="get" class="d-flex flex-wrap gap-3">
+                    <div class="flex-grow-1">
+                        <div class="input-group">
+                            <span class="input-group-text"><span class="material-icons">search</span></span>
+                            <input type="text" name="q" class="form-control" placeholder="{% trans 'Search by product or reviewer...' %}" value="{{ search_query }}">
+                        </div>
+                    </div>
+                    <div>
+                        <select name="rating" class="form-select" onchange="this.form.submit()">
+                            <option value="">{% trans "All Ratings" %}</option>
+                            {% for i in "54321" %}
+                            <option value="{{ i }}" {% if rating_filter == i %}selected{% endif %}>{{ i }} {% trans "Stars" %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">{% trans "Filter" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reviews List Card -->
+        <div class="account-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="account-card-body">
+                {% if reviews %}
+                    <div class="review-list">
+                        {% for review in reviews %}
+                            {% include "partials/_vendor_review_item.html" with review=review %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state-container text-center py-4">
+                        <span class="material-icons empty-state-icon" style="font-size: 3rem;">reviews</span>
+                        <h4 class="empty-state-title mt-3">{% trans "No product reviews yet." %}</h4>
+                        <p class="empty-state-subtitle">{% trans "Customer reviews for your products will appear here." %}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if reviews.has_other_pages %}
+        <nav aria-label="{% trans 'Page navigation' %}" class="pagination-wrapper mt-4" data-aos="fade-up">
+            <ul class="pagination justify-content-center">
+                {% if reviews.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reviews.previous_page_number }}&q={{ search_query }}&rating={{ rating_filter }}" aria-label="{% trans 'Previous' %}">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+
+                {% for i in reviews.paginator.page_range %}
+                {% if reviews.number == i %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}&q={{ search_query }}&rating={{ rating_filter }}">{{ i }}</a></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if reviews.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reviews.next_page_number }}&q={{ search_query }}&rating={{ rating_filter }}" aria-label="{% trans 'Next' %}">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    </div>
+</main>
+{% endblock %}

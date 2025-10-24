@@ -3306,7 +3306,7 @@ body.dark-mode .drawer-logo-dark {
     right: 0;
     width: 100%;
     height: 100%;
-    z-index: 9999;
+    z-index: 20010;
     pointer-events: none;
 }
 
@@ -4163,7 +4163,7 @@ body.dark-mode .no-categories {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 9999;
+    z-index: 20010;
     pointer-events: none;
 }
 

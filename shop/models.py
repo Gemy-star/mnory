@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils.text import slugify
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 from django.conf import settings  # Import settings to get AUTH_USER_MODEL
 from django.contrib.auth.models import AbstractUser
@@ -308,6 +308,12 @@ class Product(models.Model):
     meta_title = models.CharField(max_length=200, blank=True)
     meta_description = models.CharField(max_length=300, blank=True)
 
+    # Aggregated review fields
+    average_rating = models.DecimalField(
+        max_digits=3, decimal_places=2, default=0.00, editable=False
+    )
+    review_count = models.PositiveIntegerField(default=0, editable=False)
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -481,6 +487,13 @@ class Product(models.Model):
             return Size.objects.filter(is_active=True).order_by(
                 "size_type", "order", "name"
             )
+
+    def update_review_stats(self):
+        """Recalculates and saves the average rating and review count."""
+        reviews = self.reviews.filter(is_public=True)
+        self.average_rating = reviews.aggregate(Avg("rating"))["rating__avg"] or 0
+        self.review_count = reviews.count()
+        self.save(update_fields=["average_rating", "review_count"])
 
 
 class ProductImage(models.Model):
@@ -957,6 +970,34 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for Order {self.order.order_number} - {self.payment_method}"
+
+
+class Review(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="reviews"
+    )
+    user = models.ForeignKey(
+        MnoryUser, on_delete=models.CASCADE, related_name="reviews"
+    )
+    rating = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField()
+    reply = models.TextField(blank=True, null=True, verbose_name=_("Vendor Reply"))
+    replied_at = models.DateTimeField(null=True, blank=True)
+    is_public = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("product", "user")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Review for {self.product.name} by {self.user.email}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.product.update_review_stats()
 
 
 class VendorProfile(models.Model):

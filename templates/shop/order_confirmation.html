@@ -1,35 +1,114 @@
 {% extends "base.html" %}
-{% load i18n math_filters %}
+{% load i18n %}
 
 {% block title %}{% trans "Order Confirmation" %}{% endblock %}
 
 {% block content %}
-<section class="section pt-4">
-  <div class="container my-5 pt-4">
-    <h2 class="fw-bold mb-4">{% trans "Order Confirmation" %}</h2>
+<main class="order-confirmation-main">
+    <div class="container py-5">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}">
+                        <span class="material-icons">home</span>
+                        {% trans "Home" %}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Order Confirmation" %}</li>
+            </ol>
+        </nav>
 
-    <p>{% trans "Thank you for your order!" %}</p>
-    <p>{% trans "Order Number:" %} <strong>{{ order.order_number }}</strong></p>
+        <!-- Confirmation Card -->
+        <div class="confirmation-card mx-auto" data-aos="fade-up" data-aos-delay="100">
+            <!-- Card Header -->
+            <div class="confirmation-header">
+                <span class="material-icons confirmation-icon">check_circle</span>
+                <h1 class="confirmation-title">{% trans "Thank You For Your Order!" %}</h1>
+                <p class="confirmation-subtitle">{% trans "Your order has been placed successfully." %}</p>
+            </div>
 
-    <h4>{% trans "Order Details" %}</h4>
-    <ul class="list-group mb-4">
-      {% for item in order_items %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ item.product_variant.product.name }}
-        ({{ item.product_variant.color.name }}, {{ item.product_variant.size.name }})
-        <span>{{ item.quantity }} x {{ item.price_at_purchase|floatformat:2 }} =
-        {{ item.quantity|mul:item.price_at_purchase|floatformat:2 }}</span>
-      </li>
-      {% endfor %}
-      <li class="list-group-item d-flex justify-content-between fw-bold">
-        <span>{% trans "Total" %}</span>
-        <span>{{ order.grand_total|floatformat:2 }} EGP</span>
-      </li>
-    </ul>
+            <!-- Card Body -->
+            <div class="confirmation-body">
+                <!-- Order Summary -->
+                <div class="confirmation-section">
+                    <h3 class="section-title">
+                        <span class="material-icons">receipt_long</span>
+                        {% trans "Order Summary" %}
+                    </h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">{% trans "Order Number" %}</span>
+                            <strong class="summary-value">{{ order.order_number }}</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">{% trans "Order Date" %}</span>
+                            <span class="summary-value">{{ order.created_at|date:"d M, Y" }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">{% trans "Order Total" %}</span>
+                            <strong class="summary-value">{{ order.grand_total|floatformat:2 }} EGP</strong>
+                        </div>
+                    </div>
+                </div>
 
-    <a href="{% url 'shop:home' %}" class="btn btn-dark">{% trans "Continue Shopping" %}</a>
-  </div>
-</section>
+                <!-- Shipping Details -->
+                {% if order.shipping_address %}
+                <div class="confirmation-section">
+                    <h3 class="section-title">
+                        <span class="material-icons">local_shipping</span>
+                        {% trans "Shipping To" %}
+                    </h3>
+                    <div class="shipping-address">
+                        <strong>{{ order.shipping_address.full_name }}</strong><br>
+                        {{ order.shipping_address.address_line1 }}<br>
+                        {% if order.shipping_address.address_line2 %}{{ order.shipping_address.address_line2 }}<br>{% endif %}
+                        {{ order.shipping_address.city }}, {{ order.shipping_address.state_province_region }}<br>
+                        {{ order.shipping_address.phone_number }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Order Items -->
+                <div class="confirmation-section">
+                    <h3 class="section-title">
+                        <span class="material-icons">inventory_2</span>
+                        {% trans "Items Ordered" %}
+                    </h3>
+                    <ul class="order-items-list">
+                        {% for item in order.items.all %}
+                        <li class="order-item">
+                            <div class="item-details">
+                                <span class="item-name">{{ item.product_variant.product.name }}</span>
+                                <span class="item-variant">
+                                    {% trans "Color:" %} {{ item.product_variant.color.name }}, {% trans "Size:" %} {{ item.product_variant.size.name }}
+                                </span>
+                            </div>
+                            <div class="item-pricing">
+                                <span class="item-quantity">x{{ item.quantity }}</span>
+                                <span class="item-total">{{ item.total|floatformat:2 }} EGP</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="confirmation-footer">
+                <p class="footer-text">{% trans "You will receive an email confirmation shortly with your order details." %}</p>
+                <div class="footer-actions">
+                    <a href="{% url 'shop:home' %}" class="btn btn-outline-primary">
+                        <span class="material-icons">storefront</span>
+                        {% trans "Continue Shopping" %}
+                    </a>
+                    <a href="{% url 'shop:order_history' %}" class="btn btn-primary">
+                        <span class="material-icons">history</span>
+                        {% trans "View Order History" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 {% endblock %}
-
-

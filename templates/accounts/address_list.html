@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Addresses" %}{% endblock %}
+
+{% block content %}
+<section class="category-detail-section">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:profile' %}">{% trans "My Account" %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "My Addresses" %}</li>
+            </ol>
+        </nav>
+
+        <div class="account-layout">
+            <!-- Left Sidebar -->
+            <aside class="account-sidebar" data-aos="fade-right">
+                <div class="sidebar-profile-header">
+                    <div class="profile-avatar">
+                        <span class="material-icons">person</span>
+                    </div>
+                    <div class="profile-info">
+                        <h2 class="profile-name">{{ user.get_full_name|default:user.email }}</h2>
+                        <p class="profile-email">{{ user.email }}</p>
+                    </div>
+                </div>
+                <nav class="account-nav">
+                    <ul>
+                        <li>
+                            <a href="{% url 'shop:profile' %}" class="account-nav-link">
+                                <span class="material-icons">person_outline</span>
+                                <span>{% trans "Profile Information" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:order_history' %}" class="account-nav-link">
+                                <span class="material-icons">receipt_long</span>
+                                <span>{% trans "Order History" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:address_list' %}" class="account-nav-link active">
+                                <span class="material-icons">home_work</span>
+                                <span>{% trans "My Addresses" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:account_settings' %}" class="account-nav-link">
+                                <span class="material-icons">settings</span>
+                                <span>{% trans "Account Settings" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'shop:wishlist_view' %}" class="account-nav-link">
+                                <span class="material-icons">favorite_border</span>
+                                <span>{% trans "My Wishlist" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-divider"></li>
+                        <li>
+                            <a href="{% url 'shop:logout' %}" class="account-nav-link logout-link">
+                                <span class="material-icons">logout</span>
+                                <span>{% trans "Logout" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Right Content Area -->
+            <div class="account-content" data-aos="fade-up" data-aos-delay="100">
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h3>{% trans "My Addresses" %}</h3>
+                        <a href="{% url 'shop:address_add' %}" class="btn btn-primary">
+                            <span class="material-icons">add_location_alt</span> {% trans "Add New Address" %}
+                        </a>
+                    </div>
+                    <div class="account-card-body">
+                        {% if addresses %}
+                        <div class="address-list">
+                            {% for address in addresses %}
+                            <div class="address-card-item">
+                                <div class="address-card-header">
+                                    <span class="address-type">{% if address.is_default %}<span class="badge bg-primary">{% trans "Primary" %}</span>{% endif %}</span>
+                                    <div class="address-card-actions">
+                                        <a href="{% url 'shop:address_edit' address.id %}" class="btn btn-sm btn-outline-secondary"><span class="material-icons">edit</span></a>
+                                        <a href="{% url 'shop:address_delete' address.id %}" class="btn btn-sm btn-outline-danger"><span class="material-icons">delete</span></a>
+                                    </div>
+                                </div>
+                                <div class="address-card-body">
+                                    <strong>{{ address.full_name }}</strong><br>
+                                    {{ address.address_line1 }}, {{ address.city }}<br>
+                                    {{ address.phone_number }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state-container text-center py-4">
+                            <span class="material-icons empty-state-icon" style="font-size: 3rem;">add_location</span>
+                            <h4 class="empty-state-title mt-3">{% trans "No saved addresses yet." %}</h4>
+                            <p class="empty-state-subtitle">{% trans "Add an address for a faster checkout experience." %}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

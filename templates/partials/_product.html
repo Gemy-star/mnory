@@ -76,22 +76,27 @@
 
         <!-- Quick Action Buttons -->
         <div class="product-quick-actions">
-             <button type="button"
-                class="action-btn wishlist-btn {% if product.id in products_in_wishlist_ids %}active{% endif %}"
+            <button type="button"
+                class="action-btn wishlist-btn {% if product.id|stringformat:"s" in request.session.wishlist %}active in-wishlist{% endif %}"
                 data-action="wishlist-toggle"
                 data-product-id="{{ product.id }}"
-                title="{% if product.id in products_in_wishlist_ids %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
-                aria-label="{% if product.id in products_in_wishlist_ids %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
-                <span class="material-icons">{% if product.id in products_in_wishlist_ids %}favorite{% else %}favorite_border{% endif %}</span>
+                title="{% if product.id|stringformat:'s' in request.session.wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
+                aria-label="{% if product.id|stringformat:'s' in request.session.wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
+                <span class="material-icons">{% if product.id|stringformat:"s" in request.session.wishlist %}close{% else %}favorite_border{% endif %}</span>
             </button>
 
-            <button type="button"
-               class="action-btn cart-btn"
-               data-action="cart-add"
-               data-product-id="{{ product.id }}"
-               title="{% trans 'Add to Cart' %}"
-               aria-label="{% trans 'Add to Cart' %}">
-               <span class="material-icons">shopping_cart</span>
+            <button type="button" class="action-btn cart-btn {% if product.is_in_cart %}active{% endif %}"
+                    data-action="{% if product.is_in_cart %}cart-remove{% else %}cart-add{% endif %}"
+                    data-product-id="{{ product.id }}"
+                    data-item-id="{{ product.cart_item_id|default:'' }}"
+                    title="{% if product.is_in_cart %}{% trans 'Remove from Cart' %}{% else %}{% trans 'Add to Cart' %}{% endif %}"
+                    aria-label="{% if product.is_in_cart %}{% trans 'Remove from Cart' %}{% else %}{% trans 'Add to Cart' %}{% endif %}">
+                <span class="cart-add-icon" style="display: {% if product.is_in_cart %}none{% else %}inline-block{% endif %};">
+                    <span class="material-icons" aria-hidden="true">add_shopping_cart</span>
+                </span>
+                <span class="cart-remove-icon" style="display: {% if product.is_in_cart %}inline-block{% else %}none{% endif %};">
+                    <span class="material-icons" aria-hidden="true">remove_shopping_cart</span>
+                </span>
             </button>
 
             <a href="{{ product.get_absolute_url }}"

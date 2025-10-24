@@ -6,7 +6,15 @@
 {% block content %}
 <section class="modern-wishlist-section">
   <div class="container">
-
+      <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Wishlist" %}</li>
+            </ol>
+        </nav>
     <!-- Modern Wishlist Header with Animation -->
     <div class="modern-wishlist-header"
          data-aos="fade-down"
