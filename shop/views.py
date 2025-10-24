@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.db import transaction, models
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # noqa
 import json
-from .forms import RegisterForm, LoginForm, ShippingAddressForm, PaymentForm
+from .forms import RegisterForm, LoginForm, ShippingAddressForm, PaymentForm, ReviewForm
 from .models import (  # noqa
     Category,
     SubCategory,
@@ -663,11 +663,22 @@ def product_detail(request, slug):
             wishlist__user=request.user, product=product
         ).exists()
 
-    reviews = product.reviews.filter(is_public=True).select_related('user').order_by('-created_at')
+    reviews = (
+        product.reviews.filter(is_public=True)
+        .select_related("user")
+        .order_by("-created_at")
+    )
     review_form = ReviewForm()
     user_can_review = False
     if request.user.is_authenticated:
-        user_can_review = OrderItem.objects.filter(order__user=request.user, product_variant__product=product, order__status='delivered').exists() and not reviews.filter(user=request.user).exists()
+        user_can_review = (
+            OrderItem.objects.filter(
+                order__user=request.user,
+                product_variant__product=product,
+                order__status="delivered",
+            ).exists()
+            and not reviews.filter(user=request.user).exists()
+        )
 
     context = {
         "product": product,
@@ -685,6 +696,7 @@ def product_detail(request, slug):
 
     return render(request, "shop/product_detail.html", context)
 
+
 @login_required
 @require_POST
 def submit_review(request, product_id):
@@ -693,9 +705,16 @@ def submit_review(request, product_id):
 
     if form.is_valid():
         # Check if user has purchased this product
-        can_review = OrderItem.objects.filter(order__user=request.user, product_variant__product=product, order__status='delivered').exists()
+        can_review = OrderItem.objects.filter(
+            order__user=request.user,
+            product_variant__product=product,
+            order__status="delivered",
+        ).exists()
         if not can_review:
-            messages.error(request, _("You can only review products you have purchased and received."))
+            messages.error(
+                request,
+                _("You can only review products you have purchased and received."),
+            )
             return redirect(product.get_absolute_url())
 
         review = form.save(commit=False)
@@ -704,9 +723,13 @@ def submit_review(request, product_id):
         review.save()
         messages.success(request, _("Thank you for your review!"))
     else:
-        messages.error(request, _("There was an error with your submission. Please check the form."))
+        messages.error(
+            request,
+            _("There was an error with your submission. Please check the form."),
+        )
 
     return redirect(product.get_absolute_url())
+
 
 # --- Search & API Endpoints ---
 @require_http_methods(["GET"])
@@ -714,18 +737,18 @@ def product_search_view(request):
     """
     Display product search results on a dedicated page.
     """
-    query = request.GET.get('q', '').strip()
+    query = request.GET.get("q", "").strip()
     products_list = Product.objects.none()
 
     if query:
         products_list = (
             Product.objects.filter(
-                Q(name__icontains=query) |
-                Q(description__icontains=query) |
-                Q(brand__name__icontains=query) |
-                Q(category__name__icontains=query),
+                Q(name__icontains=query)
+                | Q(description__icontains=query)
+                | Q(brand__name__icontains=query)
+                | Q(category__name__icontains=query),
                 is_active=True,
-                is_available=True
+                is_available=True,
             )
             .select_related("category", "brand")
             .prefetch_related("images")
@@ -733,15 +756,15 @@ def product_search_view(request):
         )
 
     paginator = Paginator(products_list, 12)  # 12 products per page
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'query': query,
-        'products': page_obj,
-        'result_count': paginator.count,
+        "query": query,
+        "products": page_obj,
+        "result_count": paginator.count,
     }
-    return render(request, 'shop/search_results.html', context)
+    return render(request, "shop/search_results.html", context)
 
 
 @require_http_methods(["GET"])
@@ -2541,37 +2564,46 @@ def track_ad_click(request):
 def search_products(request):
     """Search for products via AJAX."""
     try:
-        query = request.GET.get('q', '').strip()
+        query = request.GET.get("q", "").strip()
 
         if not query:
             return JsonResponse({"products": []})
 
-        products = Product.objects.filter(
-            Q(name__icontains=query)
-            | Q(description__icontains=query)
-            | Q(brand__name__icontains=query)
-            | Q(category__name__icontains=query),
-            is_active=True,
-            is_available=True,
-        ).select_related("category", "subcategory", "brand").prefetch_related("images")[:10]
+        products = (
+            Product.objects.filter(
+                Q(name__icontains=query)
+                | Q(description__icontains=query)
+                | Q(brand__name__icontains=query)
+                | Q(category__name__icontains=query),
+                is_active=True,
+                is_available=True,
+            )
+            .select_related("category", "subcategory", "brand")
+            .prefetch_related("images")[:10]
+        )
 
         results = []
         for product in products:
             main_image = product.get_main_image()
-            results.append({
-                "id": product.id,
-                "name": product.name,
-                "price": str(product.get_price()),
-                "url": product.get_absolute_url(),
-                "image": main_image.image.url if main_image and main_image.image else "",
-                "category": product.category.name if product.category else "",
-                "brand": product.brand.name if product.brand else "",
-            })
+            results.append(
+                {
+                    "id": product.id,
+                    "name": product.name,
+                    "price": str(product.get_price()),
+                    "url": product.get_absolute_url(),
+                    "image": (
+                        main_image.image.url if main_image and main_image.image else ""
+                    ),
+                    "category": product.category.name if product.category else "",
+                    "brand": product.brand.name if product.brand else "",
+                }
+            )
 
         return JsonResponse({"products": results})
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
 
 @require_http_methods(["GET"])
 def get_product_variants(request, product_id):
@@ -4307,19 +4339,21 @@ def vendor_manage_reviews(request):
 
     vendor_profile = get_object_or_404(VendorProfile, user=request.user)
 
-    review_list = Review.objects.filter(
-        product__vendor=vendor_profile
-    ).select_related('user', 'product').order_by('-created_at')
+    review_list = (
+        Review.objects.filter(product__vendor=vendor_profile)
+        .select_related("user", "product")
+        .order_by("-created_at")
+    )
 
     # Search and Filter
-    search_query = request.GET.get('q', '')
-    rating_filter = request.GET.get('rating', '')
+    search_query = request.GET.get("q", "")
+    rating_filter = request.GET.get("rating", "")
 
     if search_query:
         review_list = review_list.filter(
-            Q(product__name__icontains=search_query) |
-            Q(user__email__icontains=search_query) |
-            Q(comment__icontains=search_query)
+            Q(product__name__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(comment__icontains=search_query)
         )
 
     if rating_filter:
@@ -4331,8 +4365,8 @@ def vendor_manage_reviews(request):
 
     context = {
         "reviews": page_obj,
-        'search_query': search_query,
-        'rating_filter': rating_filter,
+        "search_query": search_query,
+        "rating_filter": rating_filter,
     }
     return render(request, "shop/vendor_manage_reviews.html", context)
 
