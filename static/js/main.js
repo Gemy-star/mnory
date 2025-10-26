@@ -51,59 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-// ========================================
-// PRODUCTS HEADER CONTROLS (Grid/List View, Per Page, Mobile Filters)
-// ========================================
-document.addEventListener('DOMContentLoaded', function() {
-    // View toggle handlers
-    const viewGridBtn = document.querySelector('.view-btn.view-grid');
-    const viewListBtn = document.querySelector('.view-btn.view-list');
-    const productsGrid = document.getElementById('product-list-container');
-    if (viewGridBtn && viewListBtn && productsGrid) {
-        viewGridBtn.addEventListener('click', function() {
-            viewGridBtn.classList.add('active');
-            viewGridBtn.setAttribute('aria-pressed', 'true');
-            viewListBtn.classList.remove('active');
-            viewListBtn.setAttribute('aria-pressed', 'false');
-            productsGrid.classList.remove('list-view');
-            productsGrid.classList.add('grid-view');
-        });
-        viewListBtn.addEventListener('click', function() {
-            viewListBtn.classList.add('active');
-            viewListBtn.setAttribute('aria-pressed', 'true');
-            viewGridBtn.classList.remove('active');
-            viewGridBtn.setAttribute('aria-pressed', 'false');
-            productsGrid.classList.remove('grid-view');
-            productsGrid.classList.add('list-view');
-        });
-    }
-
-    // Per page select handler
-    const perPageSelect = document.getElementById('perPageSelect');
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', function() {
-            const params = new URLSearchParams(window.location.search);
-            params.set('per_page', perPageSelect.value);
-            window.location.search = params.toString();
-        });
-    }
-
-    // Mobile filters quick-open
-    const openFiltersMobile = document.getElementById('openFiltersMobile');
-    const filtersPanel = document.getElementById('filtersPanel');
-    if (openFiltersMobile && filtersPanel) {
-        openFiltersMobile.addEventListener('click', function() {
-            filtersPanel.classList.add('expanded');
-            const toggle = document.getElementById('toggleFilters');
-            if (toggle) toggle.classList.add('expanded');
-            const arrow = toggle ? toggle.querySelector('.toggle-arrow') : null;
-            if (arrow) arrow.style.transform = 'rotate(180deg)';
-            // focus first input inside filters
-            const firstInput = filtersPanel.querySelector('select, input');
-            if (firstInput) firstInput.focus();
-        });
-    }
-});
 // static/js/main.js
 // ========================================
 

@@ -64,12 +64,21 @@
 
             <!-- Loading State -->
             <div class="products-loading" style="display: none;">
-                <div class="loading-spinner">
-                    <div class="spinner-ring"></div>
-                    <div class="spinner-ring"></div>
-                    <div class="spinner-ring"></div>
+                <div class="loader-content-inline">
+                    <div class="loader-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <div class="loader-text">
+                        <span class="loading-text">{% trans "Loading products" %}</span>
+                        <span class="loading-dots">
+                            <span class="dot">.</span>
+                            <span class="dot">.</span>
+                            <span class="dot">.</span>
+                        </span>
+                    </div>
                 </div>
-                <p class="loading-text">{% trans "Loading products..." %}</p>
             </div>
 
             <!-- Products Swiper Container -->
@@ -432,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
         priceHtml += '</div>';
 
         // Wishlist state
-    const wishlistIcon = product.in_wishlist ? 'favorite' : 'favorite_border';
+        const wishlistIcon = product.in_wishlist ? 'favorite' : 'favorite_border';
         const wishlistClass = product.in_wishlist ? 'active' : '';
 
         // Images - updated to match API field names
@@ -480,12 +489,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             ${product.name}
                         </a>
                     </div>
-                    ${product.brand || product.category ? `
-                    <div class="product-meta-info">
-                        ${product.brand ? `<span class="product-brand">${product.brand}</span>` : ''}
-                        ${product.category ? `<span class="product-category">${product.category}</span>` : ''}
-                    </div>
-                    ` : ''}
+                    ${(product.brand || product.category) ?
+                    '<div class="product-meta-info">' +
+                        (product.brand ? '<span class="product-brand">' + product.brand + '</span>' : '') +
+                        (product.category ? '<span class="product-category">' + product.category + '</span>' : '') +
+                    '</div>' : ''}
                 </div>
                 <div class="product-details-container">
                     ${priceHtml}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Manage Shipping" %}{% endblock %}
+
+{% block content %}
+<main class="account-main">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'shop:vendor_dashboard' %}">{% trans "Dashboard" %}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Manage Shipping" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="dashboard-header mb-4" data-aos="fade-up">
+            <h1 class="section-title mb-0">
+                <span class="material-icons">local_shipping</span>
+                {% trans "Manage Shipping Costs" %}
+            </h1>
+            <p class="text-muted">{% trans "Set your shipping rates for different regions." %}</p>
+        </div>
+
+        <!-- Shipping Form Card -->
+        <div class="account-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="account-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.shipping_rate_cairo.id_for_label }}" class="form-label">{% trans "Shipping Rate Inside Cairo (EGP)" %}</label>
+                                {{ form.shipping_rate_cairo }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.shipping_rate_outside_cairo.id_for_label }}" class="form-label">{% trans "Shipping Rate Outside Cairo (EGP)" %}</label>
+                                {{ form.shipping_rate_outside_cairo }}
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="{{ form.free_shipping_threshold.id_for_label }}" class="form-label">{% trans "Free Shipping Threshold (EGP)" %}</label>
+                                {{ form.free_shipping_threshold }}
+                                <div class="form-text">{% trans "Offer free shipping for your products in an order if their total value exceeds this amount. Leave blank to disable." %}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">save</span> {% trans "Save Settings" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -3,7 +3,8 @@
     "allow": [
       "Read(//c/**)",
       "Bash(python manage.py check:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(pip install:*)"
     ],
     "deny": [],
     "ask": []

@@ -7823,10 +7823,7 @@ body.dark-mode .sale-section {
   animation: pulse-sale 3s ease-in-out infinite;
 }
 
-.home-categories-section,
-.freelance-categories-section {
-  background: var(--theme-bg-secondary);
-}
+/* Background removed for home-categories-section and freelance-categories-section */
 
 /* Section Animations */
 @keyframes pulse-sale {
@@ -7950,10 +7947,7 @@ body.dark-mode .sale-section {
   background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, var(--theme-bg) 100%);
 }
 
-body.dark-mode .home-categories-section,
-body.dark-mode .freelance-categories-section {
-  background: var(--theme-bg-secondary);
-}
+/* Dark mode background removed for home-categories-section and freelance-categories-section */
 
 body.dark-mode .swiper-nav-btn {
   background: var(--theme-bg-tertiary);

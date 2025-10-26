@@ -11,6 +11,10 @@ from .models import (
     ShippingAddress,
     Payment,
     Advertisement,
+    Coupon,
+    Message,
+    VendorOrder,
+    Payout,
 )
 from .mixins import (
     AdminVendorCustomerOnlyMixin,
@@ -583,3 +587,127 @@ class AdvertisementAdmin(admin.ModelAdmin):
         """Optimize queryset with select_related for category."""
         qs = super().get_queryset(request)
         return qs.select_related("category")
+
+
+@admin.register(Coupon, site=shop_admin_site)
+class CouponAdmin(admin.ModelAdmin):
+    """
+    Admin interface for the Coupon model.
+    """
+
+    list_display = (
+        "code",
+        "discount_type",
+        "discount_value",
+        "is_active",
+        "valid_from",
+        "valid_to",
+        "times_used",
+        "max_uses",
+    )
+    list_filter = ("is_active", "discount_type", "valid_from", "valid_to")
+    search_fields = ("code",)
+    readonly_fields = ("times_used",)
+
+    fieldsets = (
+        ("Coupon Details", {"fields": ("code", "discount_type", "discount_value")}),
+        (
+            "Validity & Rules",
+            {
+                "fields": (
+                    "is_active",
+                    "valid_from",
+                    "valid_to",
+                    "min_purchase_amount",
+                    "max_uses",
+                    "max_uses_per_user",
+                )
+            },
+        ),
+        ("Usage Stats", {"fields": ("times_used",), "classes": ("collapse",)}),
+    )
+
+
+@admin.register(Message, site=shop_admin_site)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ("order", "sender", "recipient", "created_at", "is_read")
+    list_filter = ("is_read", "created_at")
+    search_fields = ("order__order_number", "sender__email", "recipient__email", "body")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(VendorOrder, site=shop_admin_site)
+class VendorOrderAdmin(admin.ModelAdmin):
+    list_display = (
+        "order",
+        "vendor",
+        "subtotal",
+        "shipping_charged",
+        "commission_amount",
+        "net_payout",
+        "created_at",
+    )
+    list_filter = ("vendor", "created_at")
+    search_fields = ("order__order_number", "vendor__store_name")
+    readonly_fields = ("created_at", "net_payout")
+
+
+@admin.register(Payout, site=shop_admin_site)
+class PayoutAdmin(admin.ModelAdmin):
+    list_display = ("vendor", "amount", "status", "requested_at", "completed_at")
+    list_filter = ("status", "requested_at", "completed_at")
+    search_fields = ("vendor__store_name", "vendor__user__email")
+    readonly_fields = ("requested_at", "completed_at")
+    actions = ["mark_as_completed", "mark_as_failed"]
+
+    def mark_as_completed(self, request, queryset):
+        from django.utils import timezone
+
+        for payout in queryset.filter(status="pending"):
+            payout.status = "completed"
+            payout.completed_at = timezone.now()
+            payout.save()
+        self.message_user(
+            request,
+            f"{queryset.filter(status='completed').count()} payouts marked as completed.",
+        )
+
+    mark_as_completed.short_description = "Mark selected payouts as Completed"
+
+    def mark_as_failed(self, request, queryset):
+        from django.db import transaction
+
+        payouts_to_fail = queryset.filter(status="pending")
+        failed_count = 0
+        for payout in payouts_to_fail:
+            with transaction.atomic():
+                # Refund the amount to the vendor's wallet
+                vendor = payout.vendor
+                vendor.wallet_balance += payout.amount
+                vendor.save(update_fields=["wallet_balance"])
+
+                payout.status = "failed"
+                payout.save()
+
+                # Notify the vendor
+                from shop.models import Notification
+                from django.utils.translation import gettext as _
+
+                Notification.objects.create(
+                    user=vendor.user,
+                    notification_type="general",
+                    title=_("Payout Request Failed"),
+                    message=_(
+                        "Your payout request for {amount} EGP has failed and the amount has been returned to your wallet."
+                    ).format(amount=payout.amount),
+                    link=reverse("shop:vendor_dashboard"),
+                )
+                failed_count += 1
+
+        if failed_count > 0:
+            self.message_user(
+                request,
+                f"{failed_count} payouts marked as failed and amounts refunded to vendor wallets.",
+            )
+
+    mark_as_failed.short_description = "Mark selected payouts as Failed (and refund)"

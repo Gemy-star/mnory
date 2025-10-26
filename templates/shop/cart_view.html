@@ -1,332 +1,343 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load i18n %}
+{% load static %}
 
 {% block title %}{% trans "Shopping Cart" %}{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/mnory.css' %}">
+{% endblock css %}
+
 {% block content %}
 <section class="modern-cart-section">
-  <div class="container">
-        <!-- Breadcrumb Navigation -->
-        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">{% trans "Shopping Cart" %}</li>
-            </ol>
-        </nav>
-
-    <!-- Modern Cart Header with Animation -->
-    <div class="modern-cart-header"
-         data-aos="fade-down"
-         data-aos-duration="800"
-         data-aos-easing="ease-out-cubic">
-      <div class="cart-header-content">
-        <div class="cart-icon-wrapper">
-          <span class="material-icons cart-icon">shopping_cart</span>
-          <span class="cart-badge" id="cart-items-badge">{{ items|length }}</span>
+    <div class="container">
+        <!-- Modern Cart Header -->
+        <div class="modern-cart-header" data-aos="fade-down">
+            <div class="cart-header-content">
+                <div class="cart-icon-wrapper">
+                    <span class="material-icons cart-icon">shopping_bag</span>
+                    <span class="cart-badge" id="cart-items-badge">{{ cart.total_items_field|default:0 }}</span>
+                </div>
+                <h1 class="cart-title">{% trans "Your Shopping Cart" %}</h1>
+                <p class="cart-subtitle">{% trans "Review your items and proceed to checkout." %}</p>
+            </div>
+            <div class="cart-divider"></div>
         </div>
-        <h1 class="cart-title">{% trans "Shopping Cart" %}</h1>
-        <p class="cart-subtitle">{% trans "Review and manage your selected items" %}</p>
-      </div>
-      <div class="cart-divider"></div>
-    </div>
 
-    {% if items %}
-    <div class="modern-cart-container" id="cart-items-container">
-
-      <!-- Cart Items Grid -->
-      <div class="cart-items-wrapper">
-        <div class="cart-items-grid">
-          {% for item in items %}
-          <div class="modern-cart-item cart-item"
-               data-item-id="{{ item.id }}"
-               data-aos="zoom-in-up"
-               data-aos-delay="{{ forloop.counter|add:'0'|add:'0' }}"
-               data-aos-duration="600"
-               data-aos-easing="ease-out-back">
-
-            <div class="cart-item-horizontal-layout">
-              <!-- Product Card -->
-              <div class="cart-item-card">
-                {% include "partials/_product.html" with product=item.variant.product section="cart" %}
-              </div>
-
-              <!-- Item Details with Modern Design -->
-              <div class="cart-item-info">
-                <div class="item-specs">
-                  <div class="spec-item" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'1'|add:'0'|add:'0' }}">
-                    <span class="spec-icon material-icons">palette</span>
-                    <div class="spec-content">
-                      <span class="spec-label">{% trans "Color" %}</span>
-                      <span class="spec-value">{{ item.variant.color.name }}</span>
+        <div id="cart-container">
+            {% if items %}
+            <div class="modern-cart-container">
+                <!-- Cart Items -->
+                <div class="cart-items-wrapper">
+                    <div class="cart-items-grid" id="cart-items-grid">
+                        {% for item in items %}
+                        <div class="modern-cart-item" data-item-id="{{ item.id }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                            <div class="cart-item-horizontal-layout">
+                                <!-- Product Card -->
+                                <div class="cart-item-card">
+                                    {% include "partials/_product.html" with product=item.variant.product %}
+                                </div>
+                                <!-- Item Details -->
+                                <div class="cart-item-info">
+                                    <div class="item-specs">
+                                        <div class="spec-item">
+                                            <span class="spec-icon material-icons">palette</span>
+                                            <div class="spec-content">
+                                                <span class="spec-label">{% trans "Color" %}</span>
+                                                <span class="spec-value">{{ item.variant.color.name|default:"N/A" }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-icon material-icons">straighten</span>
+                                            <div class="spec-content">
+                                                <span class="spec-label">{% trans "Size" %}</span>
+                                                <span class="spec-value">{{ item.variant.size.name|default:"N/A" }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-icon material-icons">production_quantity_limits</span>
+                                            <div class="spec-content">
+                                                <span class="spec-label">{% trans "Quantity" %}</span>
+                                                <div class="quantity-controls">
+                                                    <button class="quantity-btn decrease-qty" data-item-id="{{ item.id }}" aria-label="{% trans 'Decrease quantity' %}">-</button>
+                                                    <span class="quantity-display">{{ item.quantity }}</span>
+                                                    <button class="quantity-btn increase-qty" data-item-id="{{ item.id }}" aria-label="{% trans 'Increase quantity' %}">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="spec-item spec-item-total">
+                                            <span class="spec-icon material-icons">payments</span>
+                                            <div class="spec-content">
+                                                <span class="spec-label">{% trans "Total Price" %}</span>
+                                                <span class="spec-value spec-value-price" id="item-total-{{ item.id }}">{{ item.total|floatformat:2 }} EGP</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="modern-remove-btn remove-from-cart-btn" data-item-id="{{ item.id }}">
+                                        <span class="material-icons">delete_sweep</span>
+                                        <span class="btn-text">{% trans "Remove" %}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                  </div>
-
-                  <div class="spec-item" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'1'|add:'5'|add:'0' }}">
-                    <span class="spec-icon material-icons">straighten</span>
-                    <div class="spec-content">
-                      <span class="spec-label">{% trans "Size" %}</span>
-                      <span class="spec-value">{{ item.variant.size.name }}</span>
-                    </div>
-                  </div>
-
-                  <div class="spec-item" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'2'|add:'0'|add:'0' }}">
-                    <span class="spec-icon material-icons">numbers</span>
-                    <div class="spec-content">
-                      <span class="spec-label">{% trans "Quantity" %}</span>
-                      <span class="spec-value">{{ item.quantity }}</span>
-                    </div>
-                  </div>
-
-                  <div class="spec-item spec-item-total" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:'2'|add:'5'|add:'0' }}">
-                    <span class="spec-icon material-icons">payments</span>
-                    <div class="spec-content">
-                      <span class="spec-label">{% trans "Total" %}</span>
-                      <span class="spec-value-price">{{ item.total|floatformat:2 }}</span>
-                    </div>
-                  </div>
                 </div>
 
-                <!-- Remove Button with Modern Style -->
-                <button class="modern-remove-btn remove-from-cart"
-                        data-id="{{ item.id }}"
-                        data-aos="fade-up"
-                        data-aos-delay="{{ forloop.counter|add:'3'|add:'0'|add:'0' }}"
-                        title="{% trans 'Remove from cart' %}">
-                  <span class="material-icons">delete_outline</span>
-                  <span class="btn-text">{% trans "Remove" %}</span>
-                </button>
-              </div>
+                <!-- Order Summary -->
+                <div class="cart-summary-wrapper">
+                    <div class="modern-order-summary sticky-summary" data-aos="fade-left" data-aos-delay="300">
+                        <div class="summary-header">
+                            <span class="material-icons summary-icon">receipt_long</span>
+                            <h3 class="summary-title">{% trans "Order Summary" %}</h3>
+                        </div>
+                        <div class="summary-body">
+                            <div class="summary-line">
+                                <span class="summary-label"><span class="label-icon material-icons">shopping_cart</span>{% trans "Subtotal" %}</span>
+                                <span class="summary-value" id="cart-subtotal">{{ total|floatformat:2 }} EGP</span>
+                            </div>
+                            <div class="summary-line">
+                                <span class="summary-label"><span class="label-icon material-icons">local_shipping</span>{% trans "Shipping" %}</span>
+                                <span class="summary-value" id="cart-shipping">{{ shipping_fee|floatformat:2 }} EGP</span>
+                            </div>
+
+                            <!-- Coupon Section -->
+                            <div class="summary-line coupon-section">
+                                {% if coupon %}
+                                    <span class="summary-label"><span class="label-icon material-icons text-success">check_circle</span>{% trans "Coupon Applied" %} ({{ coupon.code }})</span>
+                                    <span class="summary-value text-success">-{{ discount_amount|floatformat:2 }} EGP</span>
+                                {% else %}
+                                    <form action="{% url 'shop:apply_coupon' %}" method="post" class="coupon-form">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            {{ coupon_apply_form.code }}
+                                            <button class="btn btn-outline-secondary" type="submit">{% trans "Apply" %}</button>
+                                        </div>
+                                    </form>
+                                {% endif %}
+                            </div>
+                            {% if coupon %}
+                            <form action="{% url 'shop:remove_coupon' %}" method="post" class="text-end mt-1">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-link btn-sm text-danger p-0">{% trans "Remove Coupon" %}</button>
+                            </form>
+                            {% endif %}
+
+                            <div class="summary-divider"></div>
+                            <div class="summary-line summary-total">
+                                <span class="summary-label-total">{% trans "Grand Total" %}</span>
+                                <span class="summary-value-total" id="cart-grand-total">{{ grand_total|floatformat:2 }} EGP</span>
+                            </div>
+                        </div>
+
+
+
+                        <div class="summary-footer">
+                            <a href="{% url 'shop:checkout' %}" class="modern-checkout-btn">
+                                <span class="btn-text">{% trans "Proceed to Checkout" %}</span>
+                                <span class="btn-icon material-icons">arrow_forward</span>
+                            </a>
+                            <a href="{% url 'shop:home' %}" class="continue-shopping-link">
+                                <span class="material-icons">arrow_back</span>
+                                {% trans "Continue Shopping" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          {% endfor %}
+            {% else %}
+            <div class="empty-cart-container" id="empty-cart-message" data-aos="zoom-in">
+                <div class="empty-cart-icon-wrapper">
+                    <span class="material-icons empty-cart-icon">remove_shopping_cart</span>
+                </div>
+                <h3 class="empty-cart-title">{% trans "Your cart is empty" %}</h3>
+                <p class="empty-cart-text">{% trans "Looks like you haven't added anything to your cart yet. Start browsing to find something you love!" %}</p>
+                <a href="{% url 'shop:home' %}" class="empty-cart-btn">
+                    <span class="material-icons">storefront</span>
+                    {% trans "Start Shopping" %}
+                </a>
+            </div>
+            {% endif %}
         </div>
-      </div>
-
-      <!-- Modern Order Summary -->
-      <div class="cart-summary-wrapper">
-        <div class="modern-order-summary sticky-summary"
-             data-aos="fade-left"
-             data-aos-duration="800"
-             data-aos-delay="200">
-
-          <div class="summary-header">
-            <span class="material-icons summary-icon">receipt_long</span>
-            <h3 class="summary-title">{% trans "Order Summary" %}</h3>
-          </div>
-
-          <div class="summary-body">
-            <div class="summary-line"
-                 data-aos="fade-left"
-                 data-aos-delay="300">
-              <span class="summary-label">{% trans "Subtotal" %}</span>
-              <span class="summary-value" id="cart-subtotal">{{ total|floatformat:2 }}</span>
-            </div>
-
-            <div class="summary-line"
-                 data-aos="fade-left"
-                 data-aos-delay="350">
-              <span class="summary-label">
-                <span class="material-icons label-icon">local_shipping</span>
-                {% trans "Shipping" %}
-              </span>
-              <span class="summary-value" id="cart-shipping">{{ shipping_fee|floatformat:2 }}</span>
-            </div>
-
-            <div class="summary-divider"></div>
-
-            <div class="summary-line summary-total"
-                 data-aos="fade-left"
-                 data-aos-delay="400">
-              <span class="summary-label-total">{% trans "Total" %}</span>
-              <span class="summary-value-total" id="cart-total">{{ grand_total|floatformat:2 }}</span>
-            </div>
-          </div>
-
-          <div class="summary-footer">
-            <a href="{% url 'shop:checkout' %}"
-               class="modern-checkout-btn"
-               data-aos="zoom-in"
-               data-aos-delay="500">
-              <span class="btn-text">{% trans "Proceed to Checkout" %}</span>
-              <span class="material-icons btn-icon">arrow_forward</span>
-            </a>
-
-            <a href="{% url 'shop:home' %}"
-               class="continue-shopping-link"
-               data-aos="fade-up"
-               data-aos-delay="600">
-              <span class="material-icons">arrow_back</span>
-              {% trans "Continue Shopping" %}
-            </a>
-          </div>
-        </div>
-      </div>
-
     </div>
-
-    {% else %}
-    <div class="empty-cart-container"
-         id="empty-cart-message"
-         data-aos="zoom-in"
-         data-aos-duration="800">
-      <div class="empty-cart-icon-wrapper">
-        <span class="material-icons empty-cart-icon">shopping_cart</span>
-      </div>
-      <h3 class="empty-cart-title">{% trans "Your cart is empty" %}</h3>
-      <p class="empty-cart-text">{% trans "Start adding items to your cart to see them here." %}</p>
-      <a href="{% url 'shop:home' %}" class="empty-cart-btn">
-        <span class="material-icons">storefront</span>
-        {% trans "Browse Products" %}
-      </a>
-    </div>
-    {% endif %}
-
-  </div>
 </section>
 {% endblock %}
 
 {% block js %}
-
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  // Initialize AOS
-  AOS.init({
-    duration: 800,
-    easing: 'ease-out-cubic',
-    once: false,
-    mirror: true,
-    offset: 50
-  });
+document.addEventListener('DOMContentLoaded', function() {
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: true,
+        offset: 50
+    });
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
+    const getCSRFToken = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    function updateCart(itemId, newQuantity) {
+        fetch("{% url 'shop:update_cart_quantity' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                cart_item_id: itemId,
+                quantity: newQuantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update item total
+                const itemTotalEl = document.getElementById(`item-total-${itemId}`);
+                if (itemTotalEl) {
+                    itemTotalEl.textContent = `${parseFloat(data.item_total_price).toFixed(2)} EGP`;
+                    itemTotalEl.style.animation = 'numberUpdate 0.5s ease';
+                    setTimeout(() => itemTotalEl.style.animation = '', 500);
+                }
+
+                // Update summary totals
+                document.getElementById('cart-subtotal').textContent = `${parseFloat(data.cart_total_price).toFixed(2)} EGP`;
+                const shipping = parseFloat(document.getElementById('cart-shipping').textContent) || 0;
+                const grandTotal = parseFloat(data.cart_total_price) + shipping;
+                document.getElementById('cart-grand-total').textContent = `${grandTotal.toFixed(2)} EGP`;
+
+                // Update global cart count
+                if (typeof window.updateAllCounts === 'function') {
+                    window.updateAllCounts();
+                }
+
+                if (data.status === 'removed') {
+                    const itemEl = document.querySelector(`.modern-cart-item[data-item-id="${itemId}"]`);
+                    if (itemEl) {
+                        itemEl.style.animation = 'fadeOut 0.5s ease forwards';
+                        setTimeout(() => {
+                            itemEl.remove();
+                            if (document.querySelectorAll('.modern-cart-item').length === 0) {
+                                document.getElementById('cart-container').innerHTML = `
+                                    <div class="empty-cart-container" style="display:flex;" data-aos="zoom-in">
+                                        <div class="empty-cart-icon-wrapper">
+                                            <span class="material-icons empty-cart-icon">remove_shopping_cart</span>
+                                        </div>
+                                        <h3 class="empty-cart-title">{% trans "Your cart is empty" %}</h3>
+                                        <p class="empty-cart-text">{% trans "Looks like you haven't added anything to your cart yet. Start browsing to find something you love!" %}</p>
+                                        <a href="{% url 'shop:home' %}" class="empty-cart-btn">
+                                            <span class="material-icons">storefront</span>
+                                            {% trans "Start Shopping" %}
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        }, 500);
+                    }
+                }
+            } else {
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification(data.message || '{% trans "An error occurred" %}', 'error');
+                } else {
+                    alert(data.message || '{% trans "An error occurred" %}');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating cart:', error);
+            if (typeof window.showNotification === 'function') {
+                window.showNotification('{% trans "Connection error. Please try again." %}', 'error');
+            } else {
+                alert('{% trans "Connection error. Please try again." %}');
+            }
+        });
     }
-    return cookieValue;
-  }
-  const csrftoken = getCookie('csrftoken');
 
-  // Event delegation for dynamically updated cart items with animations
-  const cartContainer = document.getElementById('cart-items-container');
-  if (cartContainer) {
-    cartContainer.addEventListener('click', function(e) {
-      if (e.target.closest('.remove-from-cart')) {
-        e.preventDefault();
-        const btn = e.target.closest('.remove-from-cart');
-        const itemId = btn.dataset.id;
-        const cartItemElem = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+    function removeFromCart(itemId) {
+        fetch("{% url 'shop:remove_from_cart' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ cart_item_id: itemId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const itemEl = document.querySelector(`.modern-cart-item[data-item-id="${itemId}"]`);
+                if (itemEl) {
+                    itemEl.style.animation = 'fadeOut 0.5s ease forwards';
+                    setTimeout(() => {
+                        itemEl.remove();
+                        // Update summary and check if cart is empty
+                        updateCartSummary(data.cart_total_price);
+                        if (document.querySelectorAll('.modern-cart-item').length === 0) {
+                            document.getElementById('cart-container').innerHTML = `
+                                <div class="empty-cart-container" style="display:flex;" data-aos="zoom-in">
+                                    <div class="empty-cart-icon-wrapper">
+                                        <span class="material-icons empty-cart-icon">remove_shopping_cart</span>
+                                    </div>
+                                    <h3 class="empty-cart-title">{% trans "Your cart is empty" %}</h3>
+                                    <p class="empty-cart-text">{% trans "Looks like you haven't added anything to your cart yet. Start browsing to find something you love!" %}</p>
+                                    <a href="{% url 'shop:home' %}" class="empty-cart-btn">
+                                        <span class="material-icons">storefront</span>
+                                        {% trans "Start Shopping" %}
+                                    </a>
+                                </div>
+                            `;
+                        }
+                    }, 500);
+                }
+                if (typeof window.updateAllCounts === 'function') {
+                    window.updateAllCounts();
+                }
+            } else {
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification(data.message || '{% trans "Failed to remove item." %}', 'error');
+                }
+            }
+        });
+    }
 
-        alertify.confirm(
-          '{% trans "Confirm Deletion" %}',
-          '{% trans "Are you sure you want to remove this item?" %}',
-          function() {
-            // Add removing animation
-            if (cartItemElem) {
-              cartItemElem.style.animation = 'cartItemRemove 0.5s ease-out forwards';
+    function updateCartSummary(subtotal) {
+        const subtotalEl = document.getElementById('cart-subtotal');
+        const shippingEl = document.getElementById('cart-shipping');
+        const grandTotalEl = document.getElementById('cart-grand-total');
+
+        const subtotalValue = parseFloat(subtotal);
+        const shippingValue = parseFloat(shippingEl.textContent) || 0;
+
+        subtotalEl.textContent = `${subtotalValue.toFixed(2)} EGP`;
+        grandTotalEl.textContent = `${(subtotalValue + shippingValue).toFixed(2)} EGP`;
+    }
+
+    document.getElementById('cart-items-grid')?.addEventListener('click', function(e) {
+        const target = e.target;
+        const itemId = target.dataset.itemId;
+
+        if (target.classList.contains('increase-qty') || target.classList.contains('decrease-qty')) {
+            const quantityEl = target.parentElement.querySelector('.quantity-display');
+            let currentQuantity = parseInt(quantityEl.textContent);
+
+            if (target.classList.contains('increase-qty')) {
+                currentQuantity++;
+            } else {
+                currentQuantity--;
             }
 
-            setTimeout(() => {
-              fetch("{% url 'shop:remove_from_cart' %}", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-CSRFToken": csrftoken,
-                  "X-Requested-With": "XMLHttpRequest"
-                },
-                body: JSON.stringify({ cart_item_id: itemId })
-              })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  alertify.success('{% trans "Item removed from cart." %}');
-                  if (cartItemElem) cartItemElem.remove();
+            if (currentQuantity >= 0) {
+                quantityEl.textContent = currentQuantity;
+                updateCart(itemId, currentQuantity);
+            }
+        }
 
-                  // Update totals with animation
-                  if (data.cart_total_items !== undefined) {
-                    const cartCountElem = document.getElementById('cart-count');
-                    const cartBadge = document.getElementById('cart-items-badge');
-                    if (cartCountElem) {
-                      cartCountElem.style.animation = 'pulse 0.5s ease';
-                      cartCountElem.textContent = data.cart_total_items;
-                    }
-                    if (cartBadge) {
-                      cartBadge.style.animation = 'pulse 0.5s ease';
-                      cartBadge.textContent = data.cart_total_items;
-                    }
-                  }
-
-                  if (data.cart_total_price !== undefined) {
-                    const subtotalElem = document.getElementById('cart-subtotal');
-                    const totalElem = document.getElementById('cart-total');
-                    if (subtotalElem) {
-                      subtotalElem.style.animation = 'numberUpdate 0.5s ease';
-                      subtotalElem.textContent = parseFloat(data.cart_total_price).toFixed(2);
-                    }
-                    if (totalElem) {
-                      totalElem.style.animation = 'numberUpdate 0.5s ease';
-                      totalElem.textContent = parseFloat(data.cart_total_price).toFixed(2);
-                    }
-                  }
-
-                  // If no items left, show empty message with animation
-                  if (data.cart_total_items === 0) {
-                    const cartItemsContainer = document.getElementById('cart-items-container');
-                    if (cartItemsContainer) {
-                      cartItemsContainer.style.animation = 'fadeOut 0.5s ease forwards';
-                      setTimeout(() => {
-                        cartItemsContainer.style.display = 'none';
-                        const emptyMsg = document.getElementById('empty-cart-message');
-                        if (emptyMsg) {
-                          emptyMsg.style.display = 'flex';
-                          emptyMsg.style.animation = 'fadeInScale 0.6s ease forwards';
-                        }
-                      }, 500);
-                    }
-                  }
-                } else {
-                  alertify.error(data.message || "{% trans 'Failed to remove item.' %}");
-                  // Reset animation if failed
-                  if (cartItemElem) {
-                    cartItemElem.style.animation = '';
-                  }
-                }
-              })
-              .catch(() => {
-                alertify.error("{% trans 'An error occurred. Please try again.' %}");
-                if (cartItemElem) {
-                  cartItemElem.style.animation = '';
-                }
-              });
-            }, 400);
-          },
-          function() {
-            alertify.message('{% trans "Action cancelled" %}');
-          }
-        );
-      }
+        if (target.closest('.remove-from-cart-btn')) {
+            e.preventDefault();
+            const button = target.closest('.remove-from-cart-btn');
+            removeFromCart(button.dataset.itemId);
+        }
     });
-  }
-
-  // Add hover animations to cart items
-  const cartItems = document.querySelectorAll('.modern-cart-item');
-  cartItems.forEach(item => {
-    item.addEventListener('mouseenter', function() {
-      this.style.transform = 'translateY(-5px)';
-    });
-    item.addEventListener('mouseleave', function() {
-      this.style.transform = 'translateY(0)';
-    });
-  });
 });
 </script>
-{% endblock %}
+{% endblock js %}

@@ -8912,12 +8912,13 @@ body.dark-mode .product-section .swiper-slide .product-card:hover {
 
 /* Modern Categories Section */
 .modern-categories-section {
-    background: var(--theme-bg-secondary);
+    /* Background removed as per user request */
     padding: 4rem 0;
     position: relative;
     overflow: hidden;
 }
 
+/* Background gradient overlay removed
 .modern-categories-section::before {
     content: '';
     position: absolute;
@@ -8933,6 +8934,7 @@ body.dark-mode .product-section .swiper-slide .product-card:hover {
     );
     pointer-events: none;
 }
+*/
 
 /* Categories Grid */
 .categories-grid {
@@ -9641,12 +9643,13 @@ body.dark-mode .registration-card:hover {
 }
 /* Modern Freelance Section */
 .modern-freelance-section {
-    background: var(--theme-bg-secondary);
+    /* Background removed as per user request */
     padding: 0;
     position: relative;
     overflow: hidden;
 }
 
+/* Background gradient overlay removed
 .modern-freelance-section::before {
     content: '';
     position: absolute;
@@ -9662,6 +9665,7 @@ body.dark-mode .registration-card:hover {
     );
     pointer-events: none;
 }
+*/
 
 /* Services Grid */
 .services-grid {
@@ -10017,7 +10021,7 @@ body.dark-mode .registration-card:hover {
 
 /* Dark Mode Adjustments */
 body.dark-mode .modern-freelance-section {
-    background: var(--theme-bg-secondary);
+    background: transparent !important;
 }
 
 body.dark-mode .service-card {

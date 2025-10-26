@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Manage Orders" %}{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:vendor_dashboard' %}">{% trans "Vendor Dashboard" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Manage Orders" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="dashboard-header mb-4" data-aos="fade-up">
+            <h1 class="section-title mb-0">
+                <span class="material-icons">receipt_long</span>
+                {% trans "Manage Your Orders" %}
+            </h1>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="account-card-body">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="searchQuery" class="form-label">{% trans "Search Orders" %}</label>
+                        <input type="text" name="q" id="searchQuery" class="form-control" placeholder="{% trans 'Order #, customer name, or email...' %}" value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="statusFilter" class="form-label">{% trans "Filter by Status" %}</label>
+                        <select name="status" id="statusFilter" class="form-select">
+                            <option value="">{% trans "All Statuses" %}</option>
+                            {% for value, name in status_choices %}
+                            <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <span class="material-icons">search</span> {% trans "Filter" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="account-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="account-card-body">
+                {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Order #" %}</th>
+                                <th>{% trans "Date" %}</th>
+                                <th>{% trans "Customer" %}</th>
+                                <th class="text-end">{% trans "Your Items Total" %}</th>
+                                <th class="text-center">{% trans "Status" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td><strong>{{ order.order_number }}</strong></td>
+                                <td>{{ order.created_at|date:"d M, Y" }}</td>
+                                <td>{{ order.full_name }}</td>
+                                <td class="text-end fw-bold">{{ order.vendor_total|floatformat:2 }} EGP</td>
+                                <td class="text-center"><span class="badge status-{{ order.status|lower }}">{{ order.get_status_display }}</span></td>
+                                <td class="text-end">
+                                    <a href="{% url 'shop:order_detail' order.order_number %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'View Details' %}">
+                                        <span class="material-icons">visibility</span>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state-container text-center py-5">
+                    <span class="material-icons empty-state-icon" style="font-size: 4rem;">search_off</span>
+                    <h4 class="empty-state-title mt-3">{% trans "No orders found." %}</h4>
+                    <p class="empty-state-subtitle">{% trans "No orders match your current search and filter criteria." %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if orders.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4 d-flex justify-content-center" data-aos="fade-up">
+            <ul class="pagination">
+                {% if orders.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1&q={{ search_query }}&status={{ status_filter }}">&laquo;</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}">{% trans "Previous" %}</a></li>
+                {% endif %}
+
+                {% for i in orders.paginator.page_range %}
+                <li class="page-item {% if orders.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}&q={{ search_query }}&status={{ status_filter }}">{{ i }}</a></li>
+                {% endfor %}
+
+                {% if orders.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}&q={{ search_query }}&status={{ status_filter }}">{% trans "Next" %}</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ orders.paginator.num_pages }}&q={{ search_query }}&status={{ status_filter }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

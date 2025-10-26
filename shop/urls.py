@@ -50,7 +50,8 @@ urlpatterns = [
         views.get_available_sizes_ajax,
         name="get_available_sizes_ajax",
     ),
-    # path('api/apply-coupon/', views.apply_coupon, name='apply_coupon'),
+    path("api/apply-coupon/", views.apply_coupon, name="apply_coupon"),
+    path("api/remove-coupon/", views.remove_coupon, name="remove_coupon"),
     # Advertisement tracking
     path("api/track-ad-view/", views.track_ad_view, name="track_ad_view"),
     path("api/track-ad-click/", views.track_ad_click, name="track_ad_click"),
@@ -110,6 +111,31 @@ urlpatterns = [
     ),
     path("vendor/products/add/", views.vendor_add_product, name="vendor_add_product"),
     path(
+        "vendor/products/bulk-stock-edit/",
+        views.vendor_bulk_stock_edit,
+        name="vendor_bulk_stock_edit",
+    ),
+    path(
+        "vendor/orders/",
+        views.vendor_manage_orders,
+        name="vendor_manage_orders",
+    ),
+    path(
+        "vendor/export/sales/",
+        views.vendor_export_sales_csv,
+        name="vendor_export_sales_csv",
+    ),
+    path(
+        "vendor/shipping/",
+        views.vendor_manage_shipping,
+        name="vendor_manage_shipping",
+    ),
+    path(
+        "vendor/payouts/request/",
+        views.vendor_request_payout,
+        name="vendor_request_payout",
+    ),
+    path(
         "vendor/products/edit/<int:product_id>/",
         views.vendor_edit_product,
         name="vendor_edit_product",
@@ -128,6 +154,11 @@ urlpatterns = [
         "vendor/reviews/",
         views.vendor_manage_reviews,
         name="vendor_manage_reviews",
+    ),
+    path(
+        "vendor/notifications/mark-as-read/",
+        views.vendor_mark_notifications_as_read,
+        name="vendor_mark_notifications_as_read",
     ),
     path(
         "product/<int:product_id>/review/",

@@ -9,13 +9,32 @@ from .email import (
     send_vendor_approval_email,
     send_vendor_rejection_email,
     send_admin_new_order_notification,
-    send_admin_new_vendor_notification
+    send_admin_new_vendor_notification,
 )
-from .models import Order, MnoryUser, VendorProfile
-from shop.models import ProductVariant, Cart, CartItem, Wishlist, Product, WishlistItem, MnoryUser, VendorProfile
+from .models import (
+    Order,
+    MnoryUser,
+    VendorProfile,
+    Notification,
+    Review,
+    Message,
+    VendorShipping,
+)
+from shop.models import (
+    ProductVariant,
+    Cart,
+    CartItem,
+    Wishlist,
+    Product,
+    WishlistItem,
+    MnoryUser,
+    VendorProfile,
+    OrderItem,
+)
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 @receiver(post_save, sender=MnoryUser)
 def create_vendor_profile(sender, instance, created, **kwargs):
@@ -25,11 +44,11 @@ def create_vendor_profile(sender, instance, created, **kwargs):
     """
     # Check if the user was just created and their user_type is 'vendor'
     # The 'is_vendor' attribute no longer exists on MnoryUser; use 'user_type' instead.
-    if created and instance.user_type == 'vendor':
+    if created and instance.user_type == "vendor":
         # Ensure a VendorProfile doesn't already exist for this user
         # This check prevents errors if the signal is triggered multiple times
         # or if a profile was manually created.
-        if not hasattr(instance, 'vendorprofile'):
+        if not hasattr(instance, "vendorprofile"):
             VendorProfile.objects.create(user=instance)
             # Optional: Add logging or print statement for debugging
             # print(f"VendorProfile created for new vendor user: {instance.email}")
@@ -42,7 +61,7 @@ def merge_session_cart_wishlist(sender, user, request, **kwargs):
     the user's permanent cart/wishlist upon successful login.
     """
     # --- Cart Merge Logic ---
-    session_cart = request.session.get('cart', {})
+    session_cart = request.session.get("cart", {})
     if session_cart:
         # Get or create the user's persistent cart
         cart, _ = Cart.objects.get_or_create(user=user)
@@ -52,7 +71,9 @@ def merge_session_cart_wishlist(sender, user, request, **kwargs):
             variant = ProductVariant.objects.filter(id=variant_id).first()
             if variant:
                 # Get or create the cart item
-                item, created = CartItem.objects.get_or_create(cart=cart, product_variant=variant)
+                item, created = CartItem.objects.get_or_create(
+                    cart=cart, product_variant=variant
+                )
                 if not created:
                     # If item already exists, add the quantity from session
                     item.quantity += quantity
@@ -61,10 +82,10 @@ def merge_session_cart_wishlist(sender, user, request, **kwargs):
                     item.quantity = quantity
                 item.save()
         # Clear the session cart after merging
-        request.session.pop('cart', None)  # Use .pop(key, default) for safer removal
+        request.session.pop("cart", None)  # Use .pop(key, default) for safer removal
 
     # --- Wishlist Merge Logic ---
-    session_wishlist = request.session.get('wishlist', [])
+    session_wishlist = request.session.get("wishlist", [])
     if session_wishlist:
         # Get or create the user's persistent wishlist
         wishlist, _ = Wishlist.objects.get_or_create(user=user)
@@ -76,12 +97,15 @@ def merge_session_cart_wishlist(sender, user, request, **kwargs):
                 # Add product to wishlist if not already there
                 WishlistItem.objects.get_or_create(wishlist=wishlist, product=product)
         # Clear the session wishlist after merging
-        request.session.pop('wishlist', None)  # Use .pop(key, default) for safer removal
+        request.session.pop(
+            "wishlist", None
+        )  # Use .pop(key, default) for safer removal
 
 
 # -------------------------------
 # Order Related Signals
 # -------------------------------
+
 
 @receiver(post_save, sender=Order)
 def handle_order_created(sender, instance, created, **kwargs):
@@ -90,18 +114,44 @@ def handle_order_created(sender, instance, created, **kwargs):
     """
     if created:
         logger.info(f"New order created: {instance.order_number}")
-        
+
+        # --- Create notifications for vendors ---
+        vendors_notified = set()
+        for item in instance.items.all():
+            vendor_profile = item.product_variant.product.vendor
+            if vendor_profile and vendor_profile.id not in vendors_notified:
+                try:
+                    Notification.objects.create(
+                        user=vendor_profile.user,
+                        notification_type="new_order",
+                        title=_("New Order Received!"),
+                        message=_(
+                            f"You have a new order #{instance.order_number} containing your products."
+                        ),
+                        link=instance.get_absolute_url(),  # Assuming Order model has get_absolute_url
+                    )
+                    vendors_notified.add(vendor_profile.id)
+                except Exception as e:
+                    logger.error(
+                        f"Failed to create new order notification for vendor {vendor_profile.user.email}: {e}"
+                    )
+
         # Send order confirmation email to customer
         try:
             send_order_confirmation_email(instance)
         except Exception as e:
-            logger.error(f"Failed to send order confirmation email for order {instance.order_number}: {str(e)}")
-        
+            logger.error(
+                f"Failed to send order confirmation email for order {instance.order_number}: {str(e)}"
+            )
+
         # Send admin notification
         try:
             send_admin_new_order_notification(instance)
         except Exception as e:
-            logger.error(f"Failed to send admin notification for order {instance.order_number}: {str(e)}")
+            logger.error(
+                f"Failed to send admin notification for order {instance.order_number}: {str(e)}"
+            )
+
 
 @receiver(pre_save, sender=Order)
 def handle_order_status_change(sender, instance, **kwargs):
@@ -113,25 +163,36 @@ def handle_order_status_change(sender, instance, **kwargs):
             old_instance = Order.objects.get(pk=instance.pk)
             old_status = old_instance.status
             new_status = instance.status
-            
+
             # Check if status actually changed
             if old_status != new_status:
-                logger.info(f"Order {instance.order_number} status changed from {old_status} to {new_status}")
-                
+                logger.info(
+                    f"Order {instance.order_number} status changed from {old_status} to {new_status}"
+                )
+
                 # Send status update email after the save completes
                 from django.db import transaction
+
                 transaction.on_commit(
-                    lambda: send_order_status_update_email(instance, old_status, new_status)
+                    lambda: send_order_status_update_email(
+                        instance, old_status, new_status
+                    )
                 )
         except Order.DoesNotExist:
             # This shouldn't happen, but handle gracefully
-            logger.warning(f"Could not find existing order {instance.pk} for status change comparison")
+            logger.warning(
+                f"Could not find existing order {instance.pk} for status change comparison"
+            )
         except Exception as e:
-            logger.error(f"Error handling order status change for {instance.order_number}: {str(e)}")
+            logger.error(
+                f"Error handling order status change for {instance.order_number}: {str(e)}"
+            )
+
 
 # -------------------------------
 # User Registration Signals
 # -------------------------------
+
 
 @receiver(post_save, sender=MnoryUser)
 def handle_user_registration(sender, instance, created, **kwargs):
@@ -140,17 +201,93 @@ def handle_user_registration(sender, instance, created, **kwargs):
     """
     if created:
         logger.info(f"New user registered: {instance.email}")
-        
+
         # Only send welcome email for customers, not vendors or admins
-        if instance.user_type == 'customer':
+        if instance.user_type == "customer":
             try:
                 send_customer_welcome_email(instance)
             except Exception as e:
-                logger.error(f"Failed to send welcome email to {instance.email}: {str(e)}")
+                logger.error(
+                    f"Failed to send welcome email to {instance.email}: {str(e)}"
+                )
+
+
+@receiver(post_save, sender=Review)
+def handle_new_review(sender, instance, created, **kwargs):
+    """
+    Send a notification to the vendor when a new review is created for their product.
+    """
+    if created:
+        vendor_profile = instance.product.vendor
+        if vendor_profile:
+            try:
+                Notification.objects.create(
+                    user=vendor_profile.user,
+                    notification_type="new_review",
+                    title=_("New Product Review!"),
+                    message=_(
+                        f"You received a new {instance.rating}-star review for your product '{instance.product.name}'."
+                    ),
+                    link=instance.product.get_absolute_url(),  # Link to the product page
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to create new review notification for vendor {vendor_profile.user.email}: {e}"
+                )
+
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+
+@receiver(post_save, sender=Message)
+def handle_new_message(sender, instance, created, **kwargs):
+    """
+    Send a notification when a new message is created.
+    """
+    if created:
+        try:
+            # Create a standard notification
+            Notification.objects.create(
+                user=instance.recipient,
+                notification_type="general",  # Or a new 'new_message' type
+                title=_(
+                    f"New Message from {instance.sender.get_full_name() or instance.sender.email}"
+                ),
+                message=_(
+                    f"You have a new message regarding order #{instance.order.order_number}."
+                ),
+                link=instance.order.get_absolute_url(),
+            )
+
+            # Send a real-time event via Channels
+            channel_layer = get_channel_layer()
+            room_name = f"order_{instance.order.order_number}"
+
+            async_to_sync(channel_layer.group_send)(
+                room_name,
+                {
+                    "type": "chat_message",
+                    "message": {
+                        "id": instance.id,
+                        "sender": instance.sender.get_full_name()
+                        or instance.sender.email,
+                        "body": instance.body,
+                        "created_at": instance.created_at.isoformat(),
+                        "is_read": instance.is_read,
+                    },
+                },
+            )
+        except Exception as e:
+            logger.error(
+                f"Failed to create new message notification for user {instance.recipient.email}: {e}"
+            )
+
 
 # -------------------------------
 # Vendor Related Signals
 # -------------------------------
+
 
 @receiver(post_save, sender=VendorProfile)
 def handle_vendor_profile_created(sender, instance, created, **kwargs):
@@ -159,15 +296,21 @@ def handle_vendor_profile_created(sender, instance, created, **kwargs):
     """
     if created:
         logger.info(f"New vendor profile created: {instance.store_name}")
-        
+
+        # Create default shipping settings for the new vendor
+        VendorShipping.objects.create(vendor=instance)
+
         try:
             # Send registration email to vendor
             send_vendor_registration_email(instance.user, instance)
-            
+
             # Send admin notification
             send_admin_new_vendor_notification(instance.user, instance)
         except Exception as e:
-            logger.error(f"Failed to send vendor registration emails for {instance.user.email}: {str(e)}")
+            logger.error(
+                f"Failed to send vendor registration emails for {instance.user.email}: {str(e)}"
+            )
+
 
 @receiver(pre_save, sender=VendorProfile)
 def handle_vendor_approval_change(sender, instance, **kwargs):
@@ -179,13 +322,15 @@ def handle_vendor_approval_change(sender, instance, **kwargs):
             old_instance = VendorProfile.objects.get(pk=instance.pk)
             old_approval_status = old_instance.is_approved
             new_approval_status = instance.is_approved
-            
+
             # Check if approval status changed
             if old_approval_status != new_approval_status:
-                logger.info(f"Vendor {instance.store_name} approval status changed to {new_approval_status}")
-                
+                logger.info(
+                    f"Vendor {instance.store_name} approval status changed to {new_approval_status}"
+                )
+
                 from django.db import transaction
-                
+
                 if new_approval_status:
                     # Vendor was approved
                     transaction.on_commit(
@@ -195,17 +340,27 @@ def handle_vendor_approval_change(sender, instance, **kwargs):
                     # Vendor was rejected (if they were previously approved)
                     if old_approval_status:
                         transaction.on_commit(
-                            lambda: send_vendor_rejection_email(instance.user, instance, "Your vendor account has been suspended.")
+                            lambda: send_vendor_rejection_email(
+                                instance.user,
+                                instance,
+                                "Your vendor account has been suspended.",
+                            )
                         )
-                        
+
         except VendorProfile.DoesNotExist:
-            logger.warning(f"Could not find existing vendor profile {instance.pk} for approval change comparison")
+            logger.warning(
+                f"Could not find existing vendor profile {instance.pk} for approval change comparison"
+            )
         except Exception as e:
-            logger.error(f"Error handling vendor approval change for {instance.user.email}: {str(e)}")
+            logger.error(
+                f"Error handling vendor approval change for {instance.user.email}: {str(e)}"
+            )
+
 
 # -------------------------------
 # Optional: Login tracking for first-time users
 # -------------------------------
+
 
 @receiver(user_logged_in)
 def handle_user_first_login(sender, request, user, **kwargs):
@@ -216,24 +371,33 @@ def handle_user_first_login(sender, request, user, **kwargs):
     # For example, tracking user login analytics or sending follow-up emails
     pass
 
+
 # -------------------------------
 # Utility Functions for Manual Email Sending
 # -------------------------------
+
 
 def send_manual_vendor_rejection_email(vendor_profile, reason=""):
     """
     Manually send vendor rejection email with custom reason
     """
     try:
-        success = send_vendor_rejection_email(vendor_profile.user, vendor_profile, reason)
+        success = send_vendor_rejection_email(
+            vendor_profile.user, vendor_profile, reason
+        )
         if success:
-            logger.info(f"Manual vendor rejection email sent to {vendor_profile.user.email}")
+            logger.info(
+                f"Manual vendor rejection email sent to {vendor_profile.user.email}"
+            )
         else:
-            logger.error(f"Failed to send manual vendor rejection email to {vendor_profile.user.email}")
+            logger.error(
+                f"Failed to send manual vendor rejection email to {vendor_profile.user.email}"
+            )
         return success
     except Exception as e:
         logger.error(f"Error sending manual vendor rejection email: {str(e)}")
         return False
+
 
 def send_bulk_promotional_email(user_queryset, subject, template_name, context):
     """
@@ -241,41 +405,45 @@ def send_bulk_promotional_email(user_queryset, subject, template_name, context):
     Note: Be careful with bulk emails and respect email preferences
     """
     from .email import send_email_with_sendgrid
-    
+
     success_count = 0
     failure_count = 0
-    
+
     for user in user_queryset:
         try:
             # Add user-specific context
             user_context = context.copy()
-            user_context.update({
-                'user': user,
-                'customer_name': user.get_full_name() or user.email.split('@')[0],
-            })
-            
+            user_context.update(
+                {
+                    "user": user,
+                    "customer_name": user.get_full_name() or user.email.split("@")[0],
+                }
+            )
+
             success = send_email_with_sendgrid(
                 to_email=user.email,
                 subject=subject,
                 template_name=template_name,
-                context=user_context
+                context=user_context,
             )
-            
+
             if success:
                 success_count += 1
             else:
                 failure_count += 1
-                
+
         except Exception as e:
             logger.error(f"Error sending promotional email to {user.email}: {str(e)}")
             failure_count += 1
-    
+
     logger.info(f"Bulk email completed: {success_count} sent, {failure_count} failed")
     return success_count, failure_count
+
 
 # -------------------------------
 # Test Functions
 # -------------------------------
+
 
 def test_order_confirmation_email(order_id):
     """
@@ -284,7 +452,9 @@ def test_order_confirmation_email(order_id):
     try:
         order = Order.objects.get(id=order_id)
         success = send_order_confirmation_email(order)
-        print(f"Order confirmation email test: {'✅ Success' if success else '❌ Failed'}")
+        print(
+            f"Order confirmation email test: {'✅ Success' if success else '❌ Failed'}"
+        )
         return success
     except Order.DoesNotExist:
         print(f"❌ Order with ID {order_id} not found")
@@ -293,6 +463,7 @@ def test_order_confirmation_email(order_id):
         print(f"❌ Error testing order confirmation email: {str(e)}")
         return False
 
+
 def test_customer_welcome_email(user_id):
     """
     Test customer welcome email for a specific user
@@ -300,7 +471,9 @@ def test_customer_welcome_email(user_id):
     try:
         user = MnoryUser.objects.get(id=user_id)
         success = send_customer_welcome_email(user)
-        print(f"Customer welcome email test: {'✅ Success' if success else '❌ Failed'}")
+        print(
+            f"Customer welcome email test: {'✅ Success' if success else '❌ Failed'}"
+        )
         return success
     except MnoryUser.DoesNotExist:
         print(f"❌ User with ID {user_id} not found")
@@ -309,6 +482,7 @@ def test_customer_welcome_email(user_id):
         print(f"❌ Error testing customer welcome email: {str(e)}")
         return False
 
+
 def test_vendor_registration_email(vendor_profile_id):
     """
     Test vendor registration email for a specific vendor profile
@@ -316,7 +490,9 @@ def test_vendor_registration_email(vendor_profile_id):
     try:
         vendor_profile = VendorProfile.objects.get(id=vendor_profile_id)
         success = send_vendor_registration_email(vendor_profile.user, vendor_profile)
-        print(f"Vendor registration email test: {'✅ Success' if success else '❌ Failed'}")
+        print(
+            f"Vendor registration email test: {'✅ Success' if success else '❌ Failed'}"
+        )
         return success
     except VendorProfile.DoesNotExist:
         print(f"❌ Vendor profile with ID {vendor_profile_id} not found")

@@ -1,60 +1,14 @@
 {% load static %}
 <div class="loader-content">
   <div class="loader-logo-container">
-    <img src="{% static 'images/logo-black.png' %}"
-         alt="Loading..."
-         class="loader-logo light-theme-logo"
-         loading="eager" />
-    <img src="{% static 'images/logo.png' %}"
-         alt="Loading..."
-         class="loader-logo dark-theme-logo"
-         loading="eager" />
-  </div>
-  <div class="loader-spinner">
-    <div class="spinner-ring"></div>
-    <div class="spinner-ring"></div>
-    <div class="spinner-ring"></div>
+    <!-- Animated Rings -->
+    <div class="loader-ring"></div>
+    <div class="loader-ring"></div>
+    <div class="loader-ring"></div>
+    <!-- Logo -->
+    <img src="{% static 'images/logo.png' %}" alt="Loading..." class="loader-logo" loading="eager" />
   </div>
   <div class="loader-text">
-    <span class="loading-text">Loading</span>
-    <span class="loading-dots">
-      <span class="dot">.</span>
-      <span class="dot">.</span>
-      <span class="dot">.</span>
-    </span>
+    <p>𝓜𝓝𝓞𝓡𝓨</p>
   </div>
 </div>
-
-<script>
-  // Hide loader when page is fully loaded
-  window.addEventListener('load', function () {
-    const loader = document.getElementById('pageLoader');
-    const body = document.body;
-
-    if (loader) {
-      // Add hidden class to start fade-out animation
-      loader.classList.add('hidden');
-
-      // Remove loading class from body
-      body.classList.remove('loading');
-
-      // Completely remove loader from DOM after animation
-      setTimeout(() => {
-        loader.style.display = 'none';
-      }, 800); // Matches the transition duration
-    }
-  });
-
-  // Fallback: Auto-hide loader after 5 seconds if page hasn't fully loaded
-  setTimeout(function() {
-    const loader = document.getElementById('pageLoader');
-    const body = document.body;
-    if (loader && !loader.classList.contains('hidden')) {
-      loader.classList.add('hidden');
-      body.classList.remove('loading');
-      setTimeout(() => {
-        loader.style.display = 'none';
-      }, 800);
-    }
-  }, 5000);
-</script>

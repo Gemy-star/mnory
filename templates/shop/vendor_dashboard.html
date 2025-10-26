@@ -22,58 +22,199 @@
                 <span class="material-icons">dashboard</span>
                 {% trans "Your Dashboard" %}
             </h1>
-            <div class="d-flex gap-2">
-                <a href="#" class="btn btn-outline-secondary">
-                    <span class="material-icons">settings</span> {% trans "Store Settings" %}
-                </a>
-                <a href="#" class="btn btn-primary">
-                    <span class="material-icons">add</span> {% trans "Add New Product" %}
-                </a>
+            <div class="dashboard-header-actions">
+                <!-- Notifications Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="material-icons">notifications</span>
+                        {% if unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge">
+                            {{ unread_notifications_count }}
+                            <span class="visually-hidden">unread notifications</span>
+                        </span>
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown">
+                        <li class="dropdown-header">{% trans "Notifications" %}</li>
+                        {% for notification in notifications %}
+                        <li>
+                            <a class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}" href="{{ notification.link|default:'#' }}">
+                                <div class="d-flex align-items-start">
+                                    <span class="material-icons me-2 notification-icon-{{ notification.notification_type }}">
+                                        {% if notification.notification_type == 'new_order' %}shopping_cart{% elif notification.notification_type == 'new_review' %}rate_review{% else %}notifications{% endif %}
+                                    </span>
+                                    <div>
+                                        <p class="mb-0">{{ notification.title }}</p>
+                                        <small class="text-muted">{{ notification.created_at|timesince }} {% trans "ago" %}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li class="text-center p-3 text-muted">{% trans "No new notifications." %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <!-- Date Filter -->
+                <div class="btn-group" role="group" aria-label="Time period filter">
+                    <a href="?period=7d" class="btn btn-sm {% if period == '7d' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "7 Days" %}</a>
+                    <a href="?period=30d" class="btn btn-sm {% if period == '30d' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "30 Days" %}</a>
+                    <a href="?period=month" class="btn btn-sm {% if period == 'month' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "This Month" %}</a>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'shop:vendor_export_sales_csv' %}?period={{ period }}" class="btn btn-outline-success">
+                        <span class="material-icons">download</span> {% trans "Export CSV" %}
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary">
+                        <span class="material-icons">settings</span> {% trans "Store Settings" %}
+                    </a>
+                    <a href="{% url 'shop:vendor_add_product' %}" class="btn btn-primary">
+                        <span class="material-icons">add</span> {% trans "Add New Product" %}
+                    </a>
+                </div>
             </div>
         </div>
 
         <!-- Stats Cards -->
         <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="col-md-6 col-lg-4">
-                <div class="stats-card h-100">
-                    <div class="account-card-body text-center">
-                        <span class="material-icons text-primary" style="font-size: 2.5rem;">inventory_2</span>
-                        <h4 class="mt-2 mb-1">{{ total_products }}</h4>
-                        <p class="text-muted mb-0">{% trans "Total Products" %}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
+            <div class="col-sm-6 col-lg-3">
                 <div class="stats-card h-100">
                     <div class="account-card-body text-center">
                         <span class="material-icons text-success" style="font-size: 2.5rem;">paid</span>
                         <h4 class="mt-2 mb-1">{{ total_sales|floatformat:2 }} EGP</h4>
-                        <p class="text-muted mb-0">{% trans "Total Sales" %}</p>
+                        <p class="text-muted mb-0">{% trans "Total Sales" %} ({{ period_label }})</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-12 col-lg-4">
+            <div class="col-sm-6 col-lg-3">
                 <div class="stats-card h-100">
                     <div class="account-card-body text-center">
                         <span class="material-icons text-info" style="font-size: 2.5rem;">receipt_long</span>
-                        <h4 class="mt-2 mb-1">{{ recent_orders.count }}</h4>
-                        <p class="text-muted mb-0">{% trans "Recent Orders" %}</p>
+                        <h4 class="mt-2 mb-1">{{ total_orders_count }}</h4>
+                        <p class="text-muted mb-0">{% trans "Total Orders" %} ({{ period_label }})</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-primary" style="font-size: 2.5rem;">shopping_cart</span>
+                        <h4 class="mt-2 mb-1">{{ average_order_value|floatformat:2 }} EGP</h4>
+                        <p class="text-muted mb-0">{% trans "Avg. Order Value" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-secondary" style="font-size: 2.5rem;">local_shipping</span>
+                        <h4 class="mt-2 mb-1">{{ total_shipping_revenue|floatformat:2 }} EGP</h4>
+                        <p class="text-muted mb-0">{% trans "Shipping Revenue" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-danger" style="font-size: 2.5rem;">percent</span>
+                        <h4 class="mt-2 mb-1">-{{ total_commission|floatformat:2 }} EGP</h4>
+                        <p class="text-muted mb-0">{% trans "Platform Commissions" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-success" style="font-size: 2.5rem;">account_balance_wallet</span>
+                        <h4 class="mt-2 mb-1">{{ net_payout|floatformat:2 }} EGP</h4>
+                        <p class="text-muted mb-0">{% trans "Net Payout" %}</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sales Chart -->
-        <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="200">
-            <div class="account-card-header">
-                <h3>{% trans "Sales Overview (Last 7 Days)" %}</h3>
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+                <div class="account-card h-100">
+                    <div class="account-card-header"><h3>{% trans "Sales Overview" %} ({{ period_label }})</h3></div>
+                    <div class="account-card-body"><canvas id="salesLineChart"></canvas></div>
+                </div>
             </div>
-            <div class="account-card-body">
-                <canvas id="salesChart"></canvas>
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="account-card h-100">
+                    <div class="account-card-header"><h3>{% trans "Sales by Category" %}</h3></div>
+                    <div class="account-card-body"><canvas id="categoryPieChart"></canvas></div>
+                </div>
             </div>
         </div>
 
-        <!-- Top Selling Products -->
+        <!-- Payouts Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5" data-aos="fade-right" data-aos-delay="300">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "Wallet & Payouts" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="wallet-balance-card">
+                            <div class="wallet-icon"><span class="material-icons">account_balance_wallet</span></div>
+                            <div class="wallet-info">
+                                <span class="wallet-label">{% trans "Available for Payout" %}</span>
+                                <span class="wallet-amount">{{ vendor_profile.wallet_balance|floatformat:2 }} EGP</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <h4 class="h6">{% trans "Request a Payout" %}</h4>
+                        <form action="{% url 'shop:vendor_request_payout' %}" method="post">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                {{ payout_form.amount }}
+                                <button class="btn btn-primary" type="submit">{% trans "Request" %}</button>
+                            </div>
+                            {% if payout_form.amount.errors %}
+                                <div class="text-danger small mt-1">{{ payout_form.amount.errors.0 }}</div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7" data-aos="fade-left" data-aos-delay="400">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "Payout History" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        {% if payout_history %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Date Requested" %}</th>
+                                        <th>{% trans "Amount" %}</th>
+                                        <th class="text-center">{% trans "Status" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payout in payout_history %}
+                                    <tr>
+                                        <td>{{ payout.requested_at|date:"d M, Y" }}</td>
+                                        <td class="fw-bold">{{ payout.amount|floatformat:2 }} EGP</td>
+                                        <td class="text-center"><span class="badge status-{{ payout.status }}">{{ payout.get_status_display }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">{% trans "You have no payout history." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Selling Products & Recent Reviews -->
         <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="300">
             <div class="account-card-header">
                 <h3>{% trans "Top Selling Products" %}</h3>
@@ -134,7 +275,7 @@
         <div class="account-card" data-aos="fade-up" data-aos-delay="500">
             <div class="account-card-header">
                 <h3>{% trans "Recent Orders" %}</h3>
-                <a href="{% url 'shop:vendor_manage_products' %}" class="btn btn-sm btn-outline-primary">
+                <a href="{% url 'shop:vendor_manage_orders' %}" class="btn btn-sm btn-outline-primary">
                     <span class="material-icons">history</span> {% trans "View All Orders" %}
                 </a>
             </div>
@@ -188,65 +329,124 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    const isDarkMode = document.body.classList.contains('dark-mode');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationBadge = document.getElementById('notification-badge');
 
-    const chartLabels = JSON.parse('{{ chart_labels|safe }}');
-    const chartData = JSON.parse('{{ chart_sales_data|safe }}');
-
-    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-    const fontColor = isDarkMode ? '#e0e0e0' : '#2c3e50';
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                label: '{% trans "Daily Sales (EGP)" %}',
-                data: chartData,
-                backgroundColor: 'rgba(0, 122, 255, 0.2)',
-                borderColor: 'rgba(0, 122, 255, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(0, 122, 255, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(0, 122, 255, 1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: fontColor
+    if (notificationDropdown) {
+        notificationDropdown.addEventListener('show.bs.dropdown', function () {
+            // When dropdown is opened, mark notifications as read
+            if (notificationBadge) {
+                fetch("{% url 'shop:vendor_mark_notifications_as_read' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notificationBadge.style.display = 'none';
+                    }
+                });
+            }
+        });
+    }
+});
+    // 1. Sales Line Chart
+    const salesLineCtx = document.getElementById('salesLineChart');
+    if (salesLineCtx) {
+        const lineChartLabels = JSON.parse('{{ chart_labels|safe }}');
+        const lineChartData = JSON.parse('{{ chart_sales_data|safe }}');
+        new Chart(salesLineCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: lineChartLabels,
+                datasets: [{
+                    label: '{% trans "Daily Sales (EGP)" %}',
+                    data: lineChartData,
+                    backgroundColor: 'rgba(0, 122, 255, 0.2)',
+                    borderColor: 'rgba(0, 122, 255, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(0, 122, 255, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(0, 122, 255, 1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: isDarkMode ? '#e0e0e0' : '#2c3e50' },
+                        grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
                     },
-                    grid: {
-                        color: gridColor
+                    x: {
+                        ticks: { color: isDarkMode ? '#e0e0e0' : '#2c3e50' },
+                        grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
                     }
                 },
-                x: {
-                    ticks: {
-                        color: fontColor
-                    },
-                    grid: {
-                        color: gridColor
-                    }
+                plugins: {
+                    legend: { labels: { color: isDarkMode ? '#e0e0e0' : '#2c3e50' } }
                 }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: fontColor
+            }
+        });
+    }
+
+    // 2. Category Pie Chart
+    const categoryPieCtx = document.getElementById('categoryPieChart');
+    if (categoryPieCtx) {
+        const pieChartLabels = JSON.parse('{{ category_chart_labels|safe }}');
+        const pieChartData = JSON.parse('{{ category_chart_sales|safe }}');
+
+        // Generate dynamic colors for pie chart
+        const pieColors = [
+            'rgba(0, 122, 255, 0.8)', 'rgba(52, 199, 89, 0.8)', 'rgba(255, 149, 0, 0.8)',
+            'rgba(255, 59, 48, 0.8)', 'rgba(88, 86, 214, 0.8)', 'rgba(175, 82, 222, 0.8)',
+            'rgba(255, 45, 85, 0.8)', 'rgba(90, 200, 250, 0.8)', 'rgba(255, 204, 0, 0.8)'
+        ];
+
+        if (pieChartData.length > 0) {
+            new Chart(categoryPieCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: pieChartLabels,
+                    datasets: [{
+                        label: '{% trans "Sales by Category" %}',
+                        data: pieChartData,
+                        backgroundColor: pieColors,
+                        borderColor: isDarkMode ? '#2c2c2e' : '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: isDarkMode ? '#e0e0e0' : '#2c3e50',
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        }
                     }
                 }
             }
+            });
+        } else { // Display a message if there's no data
+            const parent = categoryPieCtx.parentElement;
+            parent.innerHTML = `
+                <div class="empty-state-container text-center py-4 h-100 d-flex flex-column justify-content-center">
+                    <span class="material-icons empty-state-icon" style="font-size: 3rem;">pie_chart_outline</span>
+                    <p class="empty-state-subtitle mt-2">{% trans "No sales data for this period." %}</p>
+                </div>
+            `;
         }
-    });
-});
 </script>
 {% endblock %}
-e

@@ -93,7 +93,7 @@ class ShippingAddressForm(forms.ModelForm):
     city = forms.ChoiceField(
         choices=CITY_CHOICES,
         widget=forms.Select(attrs={"class": "form-select"}),
-        label=_("City")
+        label=_("City"),
     )
 
     class Meta:
@@ -112,7 +112,11 @@ class ShippingAddressForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": _("Full Name")}
             ),
             "address_line1": forms.Textarea(
-                attrs={"class": "form-control", "placeholder": _("Address Line 1"), "rows": 3}
+                attrs={
+                    "class": "form-control",
+                    "placeholder": _("Address Line 1"),
+                    "rows": 3,
+                }
             ),
             "address_line2": forms.TextInput(
                 attrs={
@@ -263,6 +267,14 @@ class ReviewForm(forms.ModelForm):
         labels = {"comment": _("Your Review")}
 
 
+class CouponApplyForm(forms.Form):
+    code = forms.CharField(
+        label=_("Coupon Code"),
+        max_length=50,
+        widget=forms.TextInput(attrs={"placeholder": _("Enter your coupon code")}),
+    )
+
+
 class ReviewReplyForm(forms.ModelForm):
     class Meta:
         model = Review
@@ -390,6 +402,69 @@ class ProductForm(forms.ModelForm):
             "is_best_seller": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "is_new_arrival": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
+
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ["body"]
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": _("Type your message..."),
+                }
+            )
+        }
+        labels = {"body": ""}
+
+
+class ProductBulkEditForm(forms.Form):
+    product_ids = forms.ModelMultipleChoiceField(
+        queryset=Product.objects.none(), widget=forms.MultipleHiddenInput()
+    )
+    category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
+    brand = forms.ModelChoiceField(queryset=Brand.objects.all(), required=False)
+    price = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+    sale_price = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+    is_active = forms.ChoiceField(
+        choices=[("", "---"), ("true", "Active"), ("false", "Inactive")], required=False
+    )
+
+
+class VendorShippingForm(forms.ModelForm):
+    class Meta:
+        model = VendorShipping
+        fields = [
+            "shipping_rate_cairo",
+            "shipping_rate_outside_cairo",
+            "free_shipping_threshold",
+        ]
+
+
+class PayoutRequestForm(forms.Form):
+    amount = forms.DecimalField(
+        label=_("Payout Amount"),
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("1.00"))],
+        widget=forms.NumberInput(
+            attrs={"class": "form-control", "placeholder": "e.g., 500.00"}
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.vendor_profile = kwargs.pop("vendor_profile", None)
+        super().__init__(*args, **kwargs)
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get("amount")
+        if self.vendor_profile and amount > self.vendor_profile.wallet_balance:
+            raise forms.ValidationError(
+                _("You cannot request more than your available wallet balance.")
+            )
+        return amount
 
 
 class VendorProfileForm(forms.ModelForm):

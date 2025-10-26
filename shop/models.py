@@ -832,6 +832,18 @@ class Order(models.Model):
     # Stripe Payment Intent ID (for processing payments)
     stripe_pid = models.CharField(max_length=255, null=True, blank=True)
 
+    # Coupon related fields
+    coupon = models.ForeignKey(
+        "Coupon",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
+    discount_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Order"
@@ -851,6 +863,11 @@ class Order(models.Model):
         if not self.order_number:
             self.order_number = self._generate_order_number()
         super().save(*args, **kwargs)
+
+    def update_total(self):
+        """Recalculates the grand total."""
+        self.grand_total = self.subtotal + self.shipping_cost - self.discount_amount
+        self.save(update_fields=["grand_total"])
 
     def __str__(self):
         return self.order_number
@@ -1037,6 +1054,15 @@ class VendorProfile(models.Model):
         default="free",
         verbose_name="Profile Type",
     )
+    commission_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("10.00"),
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text=_(
+            "Commission percentage taken by the platform from this vendor's sales (e.g., 10 for 10%)."
+        ),
+    )
     is_approved = models.BooleanField(default=False)
     logo_resized = ImageSpecField(
         source="logo",
@@ -1100,6 +1126,116 @@ class VendorProfile(models.Model):
         from django.urls import reverse
 
         return reverse("shop:vendor_detail", kwargs={"slug": self.slug})
+
+
+class VendorOrder(models.Model):
+    """
+    Represents a vendor's portion of a customer's multi-vendor order.
+    This model stores the financial breakdown for each vendor in an order.
+    """
+
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="vendor_orders"
+    )
+    vendor = models.ForeignKey(
+        VendorProfile, on_delete=models.PROTECT, related_name="vendor_orders"
+    )
+    subtotal = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text=_("Subtotal of vendor's items in this order."),
+    )
+    shipping_charged = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text=_("Shipping cost charged for this vendor's items."),
+    )
+    commission_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text=_("Commission rate at the time of order (%)."),
+    )
+    commission_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text=_("Commission amount taken by the platform."),
+    )
+    net_payout = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text=_("The final amount to be paid out to the vendor."),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("order", "vendor")
+        ordering = ["-created_at"]
+        verbose_name = _("Vendor Order")
+        verbose_name_plural = _("Vendor Orders")
+
+    def __str__(self):
+        return f"{self.vendor.store_name}'s part of Order #{self.order.order_number}"
+
+    def save(self, *args, **kwargs):
+        self.net_payout = self.subtotal + self.shipping_charged - self.commission_amount
+        super().save(*args, **kwargs)
+
+
+class VendorShipping(models.Model):
+    """Model to store vendor-specific shipping settings."""
+
+    vendor = models.OneToOneField(
+        VendorProfile, on_delete=models.CASCADE, related_name="shipping_settings"
+    )
+    shipping_rate_cairo = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("60.00")
+    )
+    shipping_rate_outside_cairo = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("100.00")
+    )
+    free_shipping_threshold = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_(
+            "Offer free shipping for orders from this vendor above this amount. Leave blank to disable."
+        ),
+    )
+
+    class Meta:
+        verbose_name = _("Vendor Shipping Setting")
+        verbose_name_plural = _("Vendor Shipping Settings")
+
+    def __str__(self):
+        return f"Shipping settings for {self.vendor.store_name}"
+
+
+class Payout(models.Model):
+    """Model to track vendor payout requests."""
+
+    STATUS_CHOICES = [
+        ("pending", _("Pending")),
+        ("completed", _("Completed")),
+        ("failed", _("Failed")),
+    ]
+
+    vendor = models.ForeignKey(
+        VendorProfile, on_delete=models.CASCADE, related_name="payouts"
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    requested_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    transaction_details = models.TextField(
+        blank=True, help_text=_("e.g., Bank Transaction ID, confirmation number.")
+    )
+
+    class Meta:
+        ordering = ["-requested_at"]
+
+    def __str__(self):
+        return f"Payout of {self.amount} for {self.vendor.store_name} on {self.requested_at.date()}"
 
 
 class Advertisement(models.Model):
@@ -1232,3 +1368,124 @@ class Advertisement(models.Model):
         """Increment the click count for this ad."""
         self.click_count = models.F("click_count") + 1
         self.save(update_fields=["click_count"])
+
+
+class Message(models.Model):
+    """Model for messages between users related to an order."""
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="shop_sent_messages",
+    )
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="shop_received_messages",
+    )
+    body = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Message from {self.sender} to {self.recipient} on order {self.order.order_number}"
+
+
+class Notification(models.Model):
+    """Model for user notifications."""
+
+    NOTIFICATION_TYPE_CHOICES = [
+        ("new_order", _("New Order")),
+        ("new_review", _("New Review")),
+        ("order_status_change", _("Order Status Change")),
+        ("low_stock", _("Low Stock Warning")),
+        ("general", _("General Announcement")),
+    ]
+
+    user = models.ForeignKey(
+        MnoryUser, on_delete=models.CASCADE, related_name="shop_notifications"
+    )
+    notification_type = models.CharField(
+        max_length=20, choices=NOTIFICATION_TYPE_CHOICES
+    )
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    link = models.URLField(
+        max_length=500, blank=True, null=True, help_text=_("Link to the related object")
+    )
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("Notification")
+        verbose_name_plural = _("Notifications")
+
+    def __str__(self):
+        return f"Notification for {self.user.email}: {self.title}"
+
+
+class Coupon(models.Model):
+    """Model for discount coupons."""
+
+    DISCOUNT_TYPE_CHOICES = [
+        ("percentage", _("Percentage")),
+        ("fixed", _("Fixed Amount")),
+    ]
+
+    code = models.CharField(
+        max_length=50, unique=True, help_text=_("The code customers will enter.")
+    )
+    discount_type = models.CharField(
+        max_length=10, choices=DISCOUNT_TYPE_CHOICES, default="percentage"
+    )
+    discount_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text=_(
+            "The discount value. If percentage, enter a number like 10 for 10%. If fixed, enter the amount."
+        ),
+    )
+    min_purchase_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_("The minimum cart total required to use this coupon."),
+    )
+    valid_from = models.DateTimeField(
+        help_text=_("The date and time from which the coupon is valid.")
+    )
+    valid_to = models.DateTimeField(
+        help_text=_("The date and time until which the coupon is valid.")
+    )
+    is_active = models.BooleanField(
+        default=True, help_text=_("Whether the coupon is currently active.")
+    )
+    max_uses = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("Maximum number of times this coupon can be used in total."),
+    )
+    max_uses_per_user = models.PositiveIntegerField(
+        default=1,
+        help_text=_("Maximum number of times a single user can use this coupon."),
+    )
+    times_used = models.PositiveIntegerField(default=0, editable=False)
+
+    class Meta:
+        verbose_name = _("Coupon")
+        verbose_name_plural = _("Coupons")
+        ordering = ["-valid_from"]
+
+    def __str__(self):
+        return self.code
+
+    def is_valid(self):
+        """Check if the coupon is currently valid."""
+        now = timezone.now()
+        return self.is_active and self.valid_from <= now and self.valid_to >= now

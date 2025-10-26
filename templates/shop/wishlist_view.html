@@ -199,6 +199,11 @@
 {% block js %}
 
 <script>
+  // Add the missing animation style directly
+  const style = document.createElement('style');
+  style.textContent = `@keyframes wishlistItemRemove { to { opacity: 0; transform: scale(0.9) translateX(-20px); } }`;
+  document.head.appendChild(style);
+
 document.addEventListener("DOMContentLoaded", function () {
   // Initialize AOS
   AOS.init({
@@ -209,83 +214,72 @@ document.addEventListener("DOMContentLoaded", function () {
     offset: 50
   });
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-  const csrftoken = getCookie('csrftoken');
-
-  // Remove from wishlist with animation
   const wishlistContainer = document.getElementById('wishlist-items-container');
   if (wishlistContainer) {
     wishlistContainer.addEventListener('click', function(e) {
-      if (e.target.closest('.remove-from-wishlist')) {
+      const removeBtn = e.target.closest('.remove-from-wishlist');
+      const addToCartBtn = e.target.closest('.add-to-cart-from-wishlist');
+
+      if (removeBtn) {
         e.preventDefault();
-        const btn = e.target.closest('.remove-from-wishlist');
-        const productId = btn.dataset.productId;
+        const productId = removeBtn.dataset.productId;
         const wishlistItemElem = document.querySelector(`.wishlist-item[data-product-id="${productId}"]`);
 
-        // Add removing animation
         if (wishlistItemElem) {
           wishlistItemElem.style.animation = 'wishlistItemRemove 0.5s ease-out forwards';
-        }
 
-        setTimeout(() => {
-          // Toggle wishlist via existing functionality
-          const wishlistToggleBtn = wishlistItemElem.querySelector('[data-action="wishlist-toggle"]');
-          if (wishlistToggleBtn) {
-            wishlistToggleBtn.click();
-          }
+          // Use the global toggleWishlist function from cart-wishlist.js
+          // Find the corresponding button inside the product partial to update its state
+          const productCardWishlistBtn = wishlistItemElem.querySelector(`.wishlist-btn[data-product-id="${productId}"]`);
 
           setTimeout(() => {
-            if (wishlistItemElem) {
-              wishlistItemElem.remove();
+            if (typeof window.toggleWishlist === 'function' && productCardWishlistBtn) {
+              // This will handle the API call and update counts
+              window.toggleWishlist(productId, productCardWishlistBtn);
             }
 
-            // Update counter
-            const remainingItems = document.querySelectorAll('.wishlist-item').length;
-            const badge = document.getElementById('wishlist-items-badge');
-            const totalItems = document.getElementById('wishlist-total-items');
-
-            if (badge) {
-              badge.style.animation = 'pulse 0.5s ease';
-              badge.textContent = remainingItems;
-            }
-            if (totalItems) {
-              totalItems.style.animation = 'pulse 0.5s ease';
-              totalItems.textContent = remainingItems;
-            }
-
-            // Show empty state if no items left
-            if (remainingItems === 0) {
-              const container = document.getElementById('wishlist-items-container');
-              if (container) {
-                container.style.animation = 'fadeOut 0.5s ease forwards';
-                setTimeout(() => {
-                  container.style.display = 'none';
-                  const emptyMsg = document.getElementById('empty-wishlist-message');
-                  if (emptyMsg) {
-                    emptyMsg.style.display = 'flex';
-                    emptyMsg.style.animation = 'fadeInScale 0.6s ease forwards';
-                  } else {
-                    // Create empty message if it doesn't exist
-                    location.reload();
-                  }
-                }, 500);
+            // After the API call is likely done, remove the element and update UI
+            setTimeout(() => {
+              if (wishlistItemElem) {
+                wishlistItemElem.remove();
               }
-            }
-          }, 100);
-        }, 400);
+
+              // Update counter
+              const remainingItems = document.querySelectorAll('.wishlist-item').length;
+              const badge = document.getElementById('wishlist-items-badge');
+              const totalItems = document.getElementById('wishlist-total-items');
+
+              if (badge) {
+                badge.style.animation = 'pulse 0.5s ease';
+                badge.textContent = remainingItems;
+              }
+              if (totalItems) {
+                totalItems.style.animation = 'pulse 0.5s ease';
+                totalItems.textContent = remainingItems;
+              }
+
+              // Show empty state if no items left
+              if (remainingItems === 0) {
+                const container = document.getElementById('wishlist-items-container');
+                const emptyMsg = document.getElementById('empty-wishlist-message');
+                if (container) container.style.display = 'none';
+                if (emptyMsg) emptyMsg.style.display = 'flex';
+              }
+            }, 300); // Wait for API call
+          }, 500); // Wait for animation
+        }
+      }
+
+      if (addToCartBtn) {
+        e.preventDefault();
+        const productId = addToCartBtn.dataset.productId;
+        if (typeof window.addToCart === 'function') {
+          // The addToCart function needs a product ID and an optional button element
+          // We pass the button to allow the function to show loading states.
+          window.addToCart(productId, { button: addToCartBtn });
+        } else {
+          console.error('addToCart function is not defined. Make sure cart-wishlist.js is loaded.');
+        }
       }
     });
   }

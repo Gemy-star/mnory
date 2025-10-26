@@ -2504,13 +2504,12 @@ body.dark-mode .categories-btn:hover .material-icons {
     border-radius: 50%;
     background: linear-gradient(185deg, #007aff, #007aff);
     color: #ffffff;
-    border: 2px solid var(--theme-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
     pointer-events: none;
-    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+    box-shadow: 0 2px 8px #007aff;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -4629,13 +4628,7 @@ body.dark-mode {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.home-categories-section,
-.freelance-categories-section {
-  background: var(--theme-bg-secondary);
-  box-shadow:
-    inset 0 4px 10px -4px rgba(var(--theme-text-rgb), 0.1),
-    0 2px 10px -2px rgba(var(--theme-text-rgb), 0.05);
-}
+/* Background removed for home-categories-section and freelance-categories-section */
 
 /* Enhanced Section Headers with Better Text Visibility */
 .section-header-tabs {
@@ -4863,13 +4856,7 @@ body.dark-mode .sale-section {
   );
 }
 
-body.dark-mode .home-categories-section,
-body.dark-mode .freelance-categories-section {
-  background: var(--theme-bg-secondary);
-  box-shadow:
-    inset 0 4px 10px -4px rgba(0, 0, 0, 0.2),
-    0 2px 10px -2px rgba(0, 0, 0, 0.15);
-}
+/* Dark mode background removed for home-categories-section and freelance-categories-section */
 
 body.dark-mode .swiper-nav-btn {
   background: var(--theme-bg-tertiary);

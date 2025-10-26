@@ -37,7 +37,7 @@
                             {% trans "Shipping Information" %}
                         </h2>
                         <div class="checkout-section-body">
-                            {% if saved_addresses %}
+                            {% if user_shipping_addresses %}
                             <div class="mb-4">
                                 <label class="form-label fw-bold">{% trans "Select a saved address:" %}</label>
                                 <div class="saved-addresses-list">
@@ -60,8 +60,8 @@
                             </div>
                             {% endif %}
 
-                            <div id="shipping-form-container" class="{% if saved_addresses %}d-none{% endif %}">
-                                {{ form|crispy }}
+                            <div id="shipping-form-container" class="{% if user_shipping_addresses %}d-none{% endif %}">
+                                {{ shipping_form|crispy }}
                             </div>
                         </div>
                     </div>
@@ -123,6 +123,12 @@
                                 <span>{% trans "Shipping" %}</span>
                                 <span id="summary-shipping">{{ shipping_fee|floatformat:2 }} EGP</span>
                             </div>
+                            {% if discount_amount > 0 %}
+                            <div class="summary-line text-success">
+                                <span>{% trans "Discount" %}</span>
+                                <span id="summary-discount">-{{ discount_amount|floatformat:2 }} EGP</span>
+                            </div>
+                            {% endif %}
                             <div class="summary-divider"></div>
                             <div class="summary-line total">
                                 <strong>{% trans "Grand Total" %}</strong>

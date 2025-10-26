@@ -10,10 +10,21 @@ from django.views.decorators.http import (
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.db import transaction, models
+from django.db import transaction, models, connection
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger  # noqa
 import json
-from .forms import RegisterForm, LoginForm, ShippingAddressForm, PaymentForm, ReviewForm
+from .forms import (
+    RegisterForm,
+    LoginForm,
+    ShippingAddressForm,
+    PaymentForm,
+    ReviewForm,
+    CouponApplyForm,
+    MessageForm,
+    VendorShippingForm,
+    PayoutRequestForm,
+    ProductBulkEditForm,
+)
 from .models import (  # noqa
     Category,
     SubCategory,
@@ -35,8 +46,15 @@ from .models import (  # noqa
     MnoryUser,
     VendorProfile,
     Advertisement,
+    Coupon,
+    Message,
+    VendorShipping,
+    VendorOrder,
 )
 from decimal import Decimal
+import csv
+from django.http import HttpResponse
+from datetime import timedelta
 import uuid
 import logging
 from django.utils.translation import gettext as _
@@ -118,6 +136,100 @@ def _filter_and_sort_products(products_queryset, request_get_params):
     )  # Use distinct to avoid duplicates from many-to-many filters
 
 
+def _serialize_products(products_queryset, request):
+    """
+    Helper function to serialize a queryset of products into a list of dictionaries.
+    Handles prices, images, wishlist status, and other common fields.
+    """
+    products_data = []
+    currency = request.session.get("currency", "USD")
+
+    # Get user's wishlist items if authenticated
+    products_in_wishlist_ids = set()
+    if request.user.is_authenticated:
+        try:
+            wishlist = Wishlist.objects.only("id").get(user=request.user)
+            products_in_wishlist_ids = set(
+                wishlist.items.values_list("product_id", flat=True)
+            )
+        except Wishlist.DoesNotExist:
+            pass
+
+    for product in products_queryset:
+        try:
+            primary_image = product.get_main_image()
+            hover_image = product.get_hover_image()
+
+            image_url = (
+                primary_image.image.url
+                if primary_image
+                else "/static/img/placeholder.jpg"
+            )
+            hover_image_url = (
+                hover_image.image.url
+                if hover_image and hover_image != primary_image
+                else image_url
+            )
+
+            # Calculate price based on currency and sale status
+            if currency == "EGP":
+                display_price = (
+                    f"{product.price_egp} EGP"
+                    if product.is_on_sale
+                    else f"{product.price_egp_no_sale} EGP"
+                )
+                original_price = (
+                    f"{product.price_egp_no_sale} EGP" if product.is_on_sale else None
+                )
+            else:  # Default to USD
+                display_price = (
+                    f"{product.price_usd} USD"
+                    if product.is_on_sale
+                    else f"{product.price_usd_no_sale} USD"
+                )
+                original_price = (
+                    f"{product.price_usd_no_sale} USD" if product.is_on_sale else None
+                )
+
+            # Vendor information
+            vendor_name = None
+            vendor_slug = None
+            if product.vendor and hasattr(product.vendor, "vendorprofile"):
+                vendor_name = product.vendor.vendorprofile.store_name
+                vendor_slug = product.vendor.vendorprofile.slug
+
+            products_data.append(
+                {
+                    "id": product.pk,
+                    "name": product.name,
+                    "slug": product.slug,
+                    "price": display_price,
+                    "original_price": original_price,
+                    "image": image_url,
+                    "hover_image": hover_image_url,
+                    "url": product.get_absolute_url(),
+                    "is_on_sale": product.is_on_sale,
+                    "is_featured": product.is_featured,
+                    "is_new_arrival": product.is_new_arrival,
+                    "is_best_seller": getattr(product, "is_best_seller", False),
+                    "is_in_stock": product.is_in_stock,
+                    "discount_percentage": product.get_discount_percentage(),
+                    "in_wishlist": product.pk in products_in_wishlist_ids,
+                    "vendor_name": vendor_name,
+                    "vendor_slug": vendor_slug,
+                    "brand": product.brand.name if product.brand else None,
+                    "category": product.category.name if product.category else None,
+                }
+            )
+        except Exception as e:
+            logger.warning(
+                f"Could not serialize product {product.id} ('{product.name}'): {e}"
+            )
+            continue
+
+    return products_data
+
+
 # --- Core Product & Category Views ---
 def home(request):
     """Homepage view"""
@@ -151,97 +263,10 @@ def home(request):
     # Get active advertisements for home page
     home_ads = Advertisement.get_active_ads(placement="home")
 
-    products_in_wishlist_ids = []
-    if request.user.is_authenticated:
-        try:
-            # Efficiently get wishlist product IDs for the logged-in user
-            wishlist = Wishlist.objects.only("id").get(user=request.user)
-            products_in_wishlist_ids = list(
-                wishlist.items.values_list("product_id", flat=True)
-            )
-        except Wishlist.DoesNotExist:
-            pass  # No wishlist yet for this user
-
-    # Prepare initial category products data for the tabs
-    initial_category_products = []
-    for product in all_products_recent:
-        # Get primary and hover images using model methods (same as API)
-        primary_image = product.get_main_image()
-        hover_image = product.get_hover_image()
-
-        image_url = (
-            primary_image.image.url if primary_image else "/static/img/placeholder.jpg"
-        )
-        hover_image_url = (
-            hover_image.image.url
-            if hover_image and hover_image != primary_image
-            else image_url
-        )
-
-        # Calculate price based on session currency
-        currency = request.session.get("currency", "USD")
-        if currency == "EGP":
-            if product.is_on_sale and hasattr(product, "price_egp"):
-                display_price = f"{product.price_egp} EGP"
-                original_price = (
-                    f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
-                )
-            else:
-                display_price = (
-                    f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
-                )
-                original_price = None
-        else:
-            if product.is_on_sale and hasattr(product, "price_usd"):
-                display_price = f"{product.price_usd} USD"
-                original_price = (
-                    f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
-                )
-            else:
-                display_price = (
-                    f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
-                )
-                original_price = None
-
-        # Get discount percentage safely
-        discount_percentage = None
-        try:
-            if hasattr(product, "get_discount_percentage"):
-                discount_percentage = product.get_discount_percentage()
-        except:
-            pass
-
-        initial_category_products.append(
-            {
-                "id": product.id,
-                "name": product.name,
-                "slug": product.slug,
-                "price": display_price,
-                "original_price": original_price,
-                "image": image_url,
-                "hover_image": hover_image_url,
-                "url": product.get_absolute_url(),
-                "is_on_sale": product.is_on_sale,
-                "is_featured": product.is_featured,
-                "is_new_arrival": product.is_new_arrival,
-                "is_best_seller": getattr(product, "is_best_seller", False),
-                "is_in_stock": product.is_in_stock,
-                "discount_percentage": discount_percentage,
-                "in_wishlist": product.id in products_in_wishlist_ids,
-                "vendor_name": (
-                    product.vendor.vendorprofile.store_name
-                    if product.vendor and hasattr(product.vendor, "vendorprofile")
-                    else None
-                ),
-                "vendor_slug": (
-                    product.vendor.vendorprofile.slug
-                    if product.vendor and hasattr(product.vendor, "vendorprofile")
-                    else None
-                ),
-                "brand": product.brand.name if product.brand else None,
-                "category": product.category.name if product.category else None,
-            }
-        )
+    # Use the new serializer helper for the JSON data for category tabs
+    initial_category_products_json = json.dumps(
+        _serialize_products(all_products_recent, request)
+    )
 
     context = {
         "featured_products": featured_products,
@@ -251,14 +276,9 @@ def home(request):
         "categories": categories,
         "sliders": sliders,
         "home_ads": home_ads,  # Add advertisements to context
-        "all_products": all_products_recent,  # Renamed for clarity
-        "products_in_wishlist_ids": products_in_wishlist_ids,
-        "initial_category_products": all_products_recent[
-            :12
-        ],  # Pass raw products for template iteration
-        "initial_category_products_json": json.dumps(
-            initial_category_products
-        ),  # JSON serialize for JavaScript
+        "all_products": all_products_recent,  # Pass raw queryset for template rendering
+        "initial_category_products": all_products_recent,  # For category tabs section
+        "initial_category_products_json": initial_category_products_json,
         "currency": request.session.get("currency", "USD"),  # Add currency for template
     }
 
@@ -301,104 +321,8 @@ def get_category_products_api(request):
                 :12
             ]  # Show recent products
 
-        # Get user's wishlist items if authenticated
-        products_in_wishlist_ids = []
-        if request.user.is_authenticated:
-            try:
-                wishlist = Wishlist.objects.only("id").get(user=request.user)
-                products_in_wishlist_ids = list(
-                    wishlist.items.values_list("product_id", flat=True)
-                )
-            except Wishlist.DoesNotExist:
-                pass
-
-        # Build product data
-        products_data = []
-        currency = request.session.get("currency", "USD")
-
-        for product in products:
-            try:
-                # Get primary and hover images using model methods
-                primary_image = product.get_main_image()
-                hover_image = product.get_hover_image()
-
-                image_url = (
-                    primary_image.image.url
-                    if primary_image
-                    else "/static/img/placeholder.jpg"
-                )
-                hover_image_url = (
-                    hover_image.image.url
-                    if hover_image and hover_image != primary_image
-                    else image_url
-                )
-
-                # Calculate price based on currency and sale status
-                if currency == "EGP":
-                    if product.is_on_sale and hasattr(product, "price_egp"):
-                        display_price = f"{product.price_egp} EGP"
-                        original_price = f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
-                    else:
-                        display_price = f"{getattr(product, 'price_egp_no_sale', product.price)} EGP"
-                        original_price = None
-                else:
-                    if product.is_on_sale and hasattr(product, "price_usd"):
-                        display_price = f"{product.price_usd} USD"
-                        original_price = f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
-                    else:
-                        display_price = f"{getattr(product, 'price_usd_no_sale', product.price)} USD"
-                        original_price = None
-
-                # Vendor information
-                vendor_name = None
-                vendor_slug = None
-                if product.vendor:
-                    try:
-                        vendor_profile = getattr(product.vendor, "vendorprofile", None)
-                        if vendor_profile:
-                            vendor_name = vendor_profile.store_name
-                            vendor_slug = vendor_profile.slug
-                    except:
-                        pass
-
-                # Brand and category info
-                brand_name = product.brand.name if product.brand else None
-                category_name = product.category.name if product.category else None
-
-                # Get discount percentage safely
-                discount_percentage = None
-                try:
-                    if hasattr(product, "get_discount_percentage"):
-                        discount_percentage = product.get_discount_percentage()
-                except:
-                    pass
-
-                products_data.append(
-                    {
-                        "id": product.pk,
-                        "name": product.name,
-                        "slug": product.slug,
-                        "price": display_price,
-                        "original_price": original_price,
-                        "image": image_url,
-                        "hover_image": hover_image_url,
-                        "url": product.get_absolute_url(),
-                        "is_on_sale": product.is_on_sale,
-                        "is_featured": product.is_featured,
-                        "is_new_arrival": product.is_new_arrival,
-                        "is_best_seller": getattr(product, "is_best_seller", False),
-                        "is_in_stock": product.is_in_stock,
-                        "discount_percentage": discount_percentage,
-                        "in_wishlist": product.pk in products_in_wishlist_ids,
-                        "vendor_name": vendor_name,
-                        "vendor_slug": vendor_slug,
-                        "brand": brand_name,
-                        "category": category_name,
-                    }
-                )
-            except Exception as product_error:
-                # Skip this product if there's an error, but log it
-                continue
+        # Use the refactored serializer
+        products_data = _serialize_products(products, request)
 
         return JsonResponse({"success": True, "products": products_data})
 
@@ -455,37 +379,42 @@ def category_detail(request, slug):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    # Filter options: Only show options relevant to products in the current category/filter set
-    # Use correct related names for reverse relations
-    fit_types = (
-        FitType.objects.filter(is_active=True, products__in=products_queryset)
+    # --- Performance Optimization for Filter Options ---
+    # Instead of filtering on the entire queryset, we get the IDs first.
+    # This is much faster than passing a large subquery in the `__in` clause.
+    product_ids = products_queryset.values_list("id", flat=True)
+
+    # Get FitType options
+    fit_type_ids = (
+        products_queryset.exclude(fit_type__isnull=True)
+        .values_list("fit_type_id", flat=True)
         .distinct()
-        .order_by("name")
     )
-    brands = (
-        Brand.objects.filter(is_active=True, products__in=products_queryset)
+    fit_types = FitType.objects.filter(is_active=True, id__in=fit_type_ids).order_by(
+        "name"
+    )
+
+    # Get Brand options
+    brand_ids = (
+        products_queryset.exclude(brand__isnull=True)
+        .values_list("brand_id", flat=True)
         .distinct()
-        .order_by("name")
     )
-    colors = (
-        Color.objects.filter(
-            is_active=True, productvariant__product__in=products_queryset
-        )
-        .distinct()
-        .order_by("name")
+    brands = Brand.objects.filter(is_active=True, id__in=brand_ids).order_by("name")
+
+    # Get Color and Size options from available variants of the filtered products
+    variants_of_products = ProductVariant.objects.filter(
+        product_id__in=product_ids, is_available=True, stock_quantity__gt=0
     )
-    sizes = (
-        Size.objects.filter(
-            is_active=True, productvariant__product__in=products_queryset
-        )
-        .distinct()
-        .order_by("name")
-    )
+    color_ids = variants_of_products.values_list("color_id", flat=True).distinct()
+    colors = Color.objects.filter(is_active=True, id__in=color_ids).order_by("name")
+
+    size_ids = variants_of_products.values_list("size_id", flat=True).distinct()
+    sizes = Size.objects.filter(is_active=True, id__in=size_ids).order_by("name")
 
     all_categories = Category.objects.filter(is_active=True).order_by(
         "name"
     )  # For navbar/sidebar
-
     products_in_wishlist_ids = []
     if request.user.is_authenticated:
         try:
@@ -862,25 +791,42 @@ def get_cart_and_wishlist_counts(request):
     )
 
 
-
-
 def get_shipping_cost(request):
     """
-    Returns shipping cost based on selected city.
+    AJAX endpoint. Returns total shipping cost based on the selected city and items in the cart.
     """
     city = request.GET.get("city", "")
+    cart = get_cart_for_request(request)
+    total_shipping_cost = Decimal("0.00")
 
-    if city == "INSIDE_CAIRO":
-        shipping_cost = float(config.SHIPPING_RATE_CAIRO)
-    elif city == "OUTSIDE_CAIRO":
-        shipping_cost = float(config.SHIPPING_RATE_OUTSIDE_CAIRO)
-    else:
-        shipping_cost = float(config.SHIPPING_RATE_CAIRO)  # Default
+    if cart:
+        # Group cart items by vendor
+        vendor_items = {}
+        for item in cart.items.all():
+            vendor_id = item.product_variant.product.vendor_id
+            if vendor_id not in vendor_items:
+                vendor_items[vendor_id] = []
+            vendor_items[vendor_id].append(item)
 
-    return JsonResponse({
-        "success": True,
-        "shipping_cost": shipping_cost
-    })
+        # Calculate shipping for each vendor's sub-order
+        for vendor_id, items in vendor_items.items():
+            vendor_shipping = VendorShipping.objects.filter(vendor_id=vendor_id).first()
+            if vendor_shipping:
+                subtotal = sum(item.get_total_price() for item in items)
+                if not (
+                    vendor_shipping.free_shipping_threshold
+                    and subtotal >= vendor_shipping.free_shipping_threshold
+                ):
+                    if city == "OUTSIDE_CAIRO":
+                        total_shipping_cost += (
+                            vendor_shipping.shipping_rate_outside_cairo
+                        )
+                    else:  # Default to inside Cairo
+                        total_shipping_cost += vendor_shipping.shipping_rate_cairo
+
+    return JsonResponse({"success": True, "shipping_cost": float(total_shipping_cost)})
+
+
 # --- Wishlist Views ---
 def wishlist_view(request):
     """Displays the user's wishlist with pagination."""
@@ -1430,6 +1376,7 @@ def cart_view(request):
     total_cart_price = Decimal("0.00")
     shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)
     cart = None
+    coupon_apply_form = CouponApplyForm()
 
     if request.user.is_authenticated:
         try:
@@ -1481,7 +1428,38 @@ def cart_view(request):
     else:
         request.session["cart_count"] = 0
 
-    grand_total = total_cart_price + shipping_fee
+    # --- Coupon Logic ---
+    coupon_id = request.session.get("coupon_id")
+    discount_amount = Decimal("0.00")
+    coupon = None
+    if coupon_id:
+        try:
+            coupon = Coupon.objects.get(id=coupon_id)
+            if coupon.is_valid():
+                if (
+                    coupon.min_purchase_amount
+                    and total_cart_price < coupon.min_purchase_amount
+                ):
+                    messages.warning(
+                        request,
+                        _(
+                            f"Cart total must be at least {coupon.min_purchase_amount} to use this coupon."
+                        ),
+                    )
+                    # Remove invalid coupon
+                    del request.session["coupon_id"]
+                else:
+                    if coupon.discount_type == "percentage":
+                        discount_amount = (
+                            total_cart_price * coupon.discount_value
+                        ) / 100
+                    else:  # Fixed amount
+                        discount_amount = coupon.discount_value
+            else:
+                del request.session["coupon_id"]  # Coupon is no longer valid
+        except Coupon.DoesNotExist:
+            del request.session["coupon_id"]
+    grand_total = total_cart_price + shipping_fee - discount_amount
 
     return render(
         request,
@@ -1491,9 +1469,63 @@ def cart_view(request):
             "total": total_cart_price,
             "shipping_fee": shipping_fee,
             "grand_total": grand_total,
+            "coupon_apply_form": coupon_apply_form,
+            "coupon": coupon,
+            "discount_amount": discount_amount,
             "cart": cart,
         },
     )
+
+
+@require_POST
+def apply_coupon(request):
+    """Applies a coupon to the cart."""
+    now = timezone.now()
+    form = CouponApplyForm(request.POST)
+    if form.is_valid():
+        code = form.cleaned_data["code"]
+        try:
+            coupon = Coupon.objects.get(
+                code__iexact=code,
+                valid_from__lte=now,
+                valid_to__gte=now,
+                is_active=True,
+            )
+
+            # Check total usage limit
+            if coupon.max_uses is not None and coupon.times_used >= coupon.max_uses:
+                messages.error(request, _("This coupon has reached its usage limit."))
+                return redirect("shop:cart_view")
+
+            # Check per-user usage limit
+            if request.user.is_authenticated:
+                user_uses = Order.objects.filter(
+                    user=request.user, coupon=coupon
+                ).count()
+                if user_uses >= coupon.max_uses_per_user:
+                    messages.error(
+                        request,
+                        _(
+                            "You have already used this coupon the maximum number of times."
+                        ),
+                    )
+                    return redirect("shop:cart_view")
+
+            request.session["coupon_id"] = coupon.id
+            messages.success(request, _("Coupon applied successfully!"))
+        except Coupon.DoesNotExist:
+            request.session["coupon_id"] = None
+            messages.error(request, _("This coupon is invalid or has expired."))
+    return redirect("shop:cart_view")
+
+
+@require_POST
+def remove_coupon(request):
+    """Removes an applied coupon from the session."""
+    if "coupon_id" in request.session:
+        del request.session["coupon_id"]
+        messages.success(request, _("Coupon removed."))
+    return redirect("shop:cart_view")
 
 
 @require_POST
@@ -1617,7 +1649,6 @@ def update_cart_quantity(request):
     except Exception as e:
         message = "An error occurred." if lang == "en" else "حدث خطأ."
         return JsonResponse({"success": False, "message": message}, status=500)
-
 
 
 @transaction.atomic
@@ -1758,15 +1789,71 @@ def order_confirmation(request, order_number):
 
 
 def order_detail(request, order_number):
+    order = get_object_or_404(Order, order_number=order_number)
+    is_vendor = False
+
+    # Authorization check
     if request.user.is_authenticated:
-        order = get_object_or_404(Order, order_number=order_number, user=request.user)
-    else:
-        order = get_object_or_404(Order, order_number=order_number, user=None)
+        is_customer_of_order = order.user == request.user
+        is_vendor_of_order = order.items.filter(
+            product_variant__product__vendor__user=request.user
+        ).exists()
+
+        if not is_customer_of_order and not is_vendor_of_order:
+            messages.error(request, _("You are not authorized to view this order."))
+            return redirect("shop:home")
+        if is_vendor_of_order:
+            is_vendor = True
+    elif order.user is not None:  # Anonymous order check
+        messages.error(request, _("You must be logged in to view this order."))
+        return redirect("shop:login")
+
+    # Messaging logic
+    message_form = MessageForm()
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {"success": False, "message": "Authentication required."}, status=403
+            )
+
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.order = order
+            message.sender = request.user
+            # Determine recipient
+            if is_vendor:
+                message.recipient = order.user
+            else:  # Customer is sending
+                # For simplicity, sending to the first vendor in the order.
+                # A more complex system might allow choosing a vendor.
+                first_item = order.items.first()
+                if first_item and first_item.product_variant.product.vendor:
+                    message.recipient = first_item.product_variant.product.vendor.user
+                else:  # Should not happen in a valid order
+                    messages.error(
+                        request,
+                        _("Could not determine the recipient for this message."),
+                    )
+                    return redirect(order.get_absolute_url())
+            message.save()
+            messages.success(request, _("Your message has been sent."))
+            return redirect(order.get_absolute_url())
+
     order_items = order.items.select_related(
         "product_variant__product", "product_variant__color", "product_variant__size"
     ).all()
+    messages_thread = order.messages.select_related("sender").order_by("created_at")
+
     return render(
-        request, "shop/order_detail.html", {"order": order, "order_items": order_items}
+        request,
+        "shop/order_detail.html",
+        {
+            "order": order,
+            "order_items": order_items,
+            "messages": messages_thread,
+            "message_form": message_form,
+        },
     )
 
 
@@ -2122,13 +2209,30 @@ def vendor_dashboard(request):
 
     vendor_profile = get_object_or_404(VendorProfile, user=request.user)
 
-    # Stats
+    # --- Date Filtering ---
+    period = request.GET.get("period", "7d")
+    end_date = timezone.now()
+    if period == "30d":
+        start_date = end_date - timedelta(days=29)
+        period_label = _("Last 30 Days")
+    elif period == "month":
+        start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        period_label = _("This Month")
+    else:  # Default to 7 days
+        period = "7d"
+        start_date = end_date - timedelta(days=6)
+        period_label = _("Last 7 Days")
+
+    # --- Base Querysets for the selected period ---
     total_products = Product.objects.filter(vendor=vendor_profile).count()
     vendor_order_items = OrderItem.objects.filter(
         product_variant__product__vendor=vendor_profile
     )
     total_sales = (
         vendor_order_items.aggregate(total=Sum("price_at_purchase"))["total"] or 0
+    )
+    vendor_order_items_period = vendor_order_items.filter(
+        order__created_at__range=(start_date, end_date)
     )
     recent_orders = (
         Order.objects.filter(items__in=vendor_order_items)
@@ -2137,13 +2241,101 @@ def vendor_dashboard(request):
     )
 
     # Top Selling Products
-    top_products = (
+    # --- KPIs for the selected period ---
+    total_sales_period = (
+        vendor_order_items_period.aggregate(
+            total=Sum(F("price_at_purchase") * F("quantity"))
+        )["total"]
+        or 0
+    )
+    total_orders_period = Order.objects.filter(
+        items__in=vendor_order_items_period
+    ).distinct()
+    total_orders_count_period = total_orders_period.count()
+    average_order_value = (
+        total_sales_period / total_orders_count_period
+        if total_orders_count_period > 0
+        else 0
+    )
+    unique_customers_count = total_orders_period.values("email").distinct().count()
+
+    # --- Fetch financial data from VendorOrder records ---
+    vendor_orders_period = VendorOrder.objects.filter(
+        vendor=vendor_profile, created_at__range=(start_date, end_date)
+    )
+    financial_summary = vendor_orders_period.aggregate(
+        total_shipping=Sum("shipping_charged"),
+        total_commission=Sum("commission_amount"),
+        total_payout=Sum("net_payout"),
+    )
+
+    # --- Shipping & Net Revenue Calculation ---
+    total_shipping_revenue = Decimal("0.00")
+    try:
+        vendor_shipping_settings = VendorShipping.objects.get(vendor=vendor_profile)
+        for order in total_orders_period:
+            # Calculate the subtotal of this vendor's items within this specific order
+            vendor_subtotal_in_order = order.items.filter(
+                product_variant__product__vendor=vendor_profile
+            ).aggregate(subtotal=Sum(F("price_at_purchase") * F("quantity")))[
+                "subtotal"
+            ] or Decimal(
+                "0.00"
+            )
+
+            # Check if this vendor's items qualify for their free shipping
+            if not (
+                vendor_shipping_settings.free_shipping_threshold
+                and vendor_subtotal_in_order
+                >= vendor_shipping_settings.free_shipping_threshold
+            ):
+                city = (
+                    order.shipping_address.city
+                    if order.shipping_address
+                    else "INSIDE_CAIRO"
+                )
+                if city == "OUTSIDE_CAIRO":
+                    total_shipping_revenue += (
+                        vendor_shipping_settings.shipping_rate_outside_cairo
+                    )
+                else:
+                    total_shipping_revenue += (
+                        vendor_shipping_settings.shipping_rate_cairo
+                    )
+    except VendorShipping.DoesNotExist:
+        # If for some reason shipping settings don't exist, shipping revenue is 0
+        total_shipping_revenue = Decimal("0.00")
+
+    # Use the new aggregated values for accuracy
+    total_shipping_revenue = financial_summary["total_shipping"] or Decimal("0.00")
+    total_commission = financial_summary["total_commission"] or Decimal("0.00")
+    net_payout = financial_summary["total_payout"] or Decimal("0.00")
+
+    # --- Payouts Data ---
+    payout_history = vendor_profile.payouts.all()[:10]  # Get last 10 payouts
+    payout_form = PayoutRequestForm(vendor_profile=vendor_profile)
+
+    # --- Data for Tables ---
+    recent_orders_list = (
+        Order.objects.filter(items__in=vendor_order_items)
+        .distinct()
+        .order_by("-created_at")[:5]
+    )
+    top_products_period = (
         Product.objects.filter(vendor=vendor_profile, is_active=True)
         .annotate(
-            total_sold=Sum("variants__orderitem__quantity"),
+            total_sold=Sum(
+                "variants__orderitem__quantity",
+                filter=Q(
+                    variants__orderitem__order__created_at__range=(start_date, end_date)
+                ),
+            ),
             total_revenue=Sum(
                 F("variants__orderitem__quantity")
-                * F("variants__orderitem__price_at_purchase")
+                * F("variants__orderitem__price_at_purchase"),
+                filter=Q(
+                    variants__orderitem__order__created_at__range=(start_date, end_date)
+                ),
             ),
         )
         .filter(total_sold__gt=0)
@@ -2151,46 +2343,143 @@ def vendor_dashboard(request):
     )
     # Chart Data: Sales for the last 7 days
     # Get recent product reviews
-    recent_reviews = (
+    recent_reviews_list = (
         Review.objects.filter(product__vendor=vendor_profile)
         .select_related("reviewer", "product")
         .order_by("-created_at")[:5]
     )
 
-    today = timezone.now().date()
-    seven_days_ago = today - timedelta(days=6)
+    # --- Notifications ---
+    notifications = request.user.shop_notifications.all()[:10]
+    unread_notifications_count = request.user.shop_notifications.filter(
+        is_read=False,
+    ).count()
 
-    sales_data = (
-        vendor_order_items.filter(order__created_at__date__gte=seven_days_ago)
+    # --- Chart Data ---
+    # 1. Daily Sales for Line Chart (Last 7/30 days)
+    daily_sales_data = (
+        vendor_order_items_period.annotate(day=TruncDay("order__created_at"))
+        .values("day")
+        .annotate(daily_sales=Sum(F("price_at_purchase") * F("quantity")))
+        .order_by("day")
+    )
+    days_in_period = (end_date.date() - start_date.date()).days + 1
+    chart_labels = [
+        (start_date + timedelta(days=i)).strftime("%b %d")
+        for i in range(days_in_period)
+    ]
+    chart_sales = [0.0] * days_in_period
+    sales_dict = {
+        item["day"].strftime("%b %d"): float(item["daily_sales"])
+        for item in daily_sales_data
+    }
+    for i, label in enumerate(chart_labels):
+        chart_sales[i] = sales_dict.get(label, 0.0)
+
+    # 2. Sales by Category for Pie Chart
+    category_sales_data = (
+        vendor_order_items_period.values("product_variant__product__category__name")
+        .annotate(total=Sum(F("price_at_purchase") * F("quantity")))
+        .order_by("-total")
+    )
+    category_chart_labels = [
+        item["product_variant__product__category__name"] for item in category_sales_data
+    ]
+    category_chart_sales = [float(item["total"]) for item in category_sales_data]
+
+    # 3. Monthly Sales for Bar Chart (Last 12 months)
+    twelve_months_ago = end_date.replace(year=end_date.year - 1)
+    monthly_sales_data = (
+        vendor_order_items.filter(order__created_at__gte=twelve_months_ago)
         .annotate(day=TruncDay("order__created_at"))
         .values("day")
-        .annotate(daily_sales=Sum("price_at_purchase"))
+        .annotate(monthly_sales=Sum(F("price_at_purchase") * F("quantity")))
         .order_by("day")
     )
 
-    # Prepare data for Chart.js
-    chart_labels = [
-        (seven_days_ago + timedelta(days=i)).strftime("%b %d") for i in range(7)
-    ]
-    chart_sales_data = [0.0] * 7
-    sales_dict = {
-        item["day"].strftime("%b %d"): float(item["daily_sales"]) for item in sales_data
-    }
-    for i, label in enumerate(chart_labels):
-        if label in sales_dict:
-            chart_sales_data[i] = sales_dict[label]
-
     context = {
         "vendor_profile": vendor_profile,
+        "period": period,
+        "period_label": period_label,
         "total_products": total_products,
-        "total_sales": total_sales,
-        "recent_orders": recent_orders,
-        "recent_reviews": recent_reviews,
-        "top_products": top_products,
+        "total_sales": total_sales_period,
+        "total_orders_count": total_orders_count_period,
+        "average_order_value": average_order_value,
+        "unique_customers_count": unique_customers_count,
+        "total_shipping_revenue": total_shipping_revenue,
+        "total_commission": total_commission,
+        "net_payout": net_payout,
+        "payout_history": payout_history,
+        "payout_form": payout_form,
+        "recent_orders": recent_orders_list,
+        "recent_reviews": recent_reviews_list,
+        "top_products": top_products_period,
         "chart_labels": json.dumps(chart_labels),
-        "chart_sales_data": json.dumps(chart_sales_data),
+        "chart_sales_data": json.dumps(chart_sales),
+        "category_chart_labels": json.dumps(category_chart_labels),
+        "category_chart_sales": json.dumps(category_chart_sales),
+        "notifications": notifications,
+        "unread_notifications_count": unread_notifications_count,
     }
     return render(request, "shop/vendor_dashboard.html", context)
+
+
+@login_required
+def vendor_manage_orders(request):
+    """
+    Dedicated page for vendors to view, search, and filter their orders.
+    """
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+
+    # Get all order items belonging to this vendor
+    vendor_order_items = OrderItem.objects.filter(
+        product_variant__product__vendor=vendor_profile
+    ).select_related("order")
+
+    # Get the unique order IDs
+    order_ids = vendor_order_items.values_list("order_id", flat=True).distinct()
+
+    # Base queryset for orders
+    order_list = Order.objects.filter(id__in=order_ids).order_by("-created_at")
+
+    # Search and Filter
+    search_query = request.GET.get("q", "")
+    status_filter = request.GET.get("status", "")
+
+    if search_query:
+        order_list = order_list.filter(
+            Q(order_number__icontains=search_query)
+            | Q(full_name__icontains=search_query)
+            | Q(email__icontains=search_query)
+        )
+
+    if status_filter:
+        order_list = order_list.filter(status=status_filter)
+
+    # Annotate each order with the total value of the vendor's items in that order
+    order_list = order_list.annotate(
+        vendor_total=Sum(
+            "items__price_at_purchase",
+            filter=Q(items__product_variant__product__vendor=vendor_profile),
+        )
+    )
+
+    paginator = Paginator(order_list, 15)  # 15 orders per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "orders": page_obj,
+        "vendor_profile": vendor_profile,
+        "search_query": search_query,
+        "status_filter": status_filter,
+        "status_choices": Order.STATUS_CHOICES,
+    }
+    return render(request, "shop/vendor_manage_orders.html", context)
 
 
 @login_required
@@ -2198,6 +2487,40 @@ def vendor_manage_products(request):
     if not request.user.is_vendor_type:
         messages.error(request, _("Access denied. This page is for vendors only."))
         return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+
+    if request.method == "POST":
+        bulk_form = ProductBulkEditForm(request.POST)
+        bulk_form.fields["product_ids"].queryset = Product.objects.filter(
+            vendor=vendor_profile
+        )
+        if bulk_form.is_valid():
+            product_ids = bulk_form.cleaned_data["product_ids"]
+            update_data = {}
+            if bulk_form.cleaned_data.get("category"):
+                update_data["category"] = bulk_form.cleaned_data["category"]
+            if bulk_form.cleaned_data.get("brand"):
+                update_data["brand"] = bulk_form.cleaned_data["brand"]
+            if bulk_form.cleaned_data.get("price") is not None:
+                update_data["price"] = bulk_form.cleaned_data["price"]
+            if bulk_form.cleaned_data.get("sale_price") is not None:
+                update_data["sale_price"] = bulk_form.cleaned_data["sale_price"]
+            if bulk_form.cleaned_data.get("is_active"):
+                update_data["is_active"] = bulk_form.cleaned_data["is_active"] == "true"
+
+            if update_data:
+                with transaction.atomic():
+                    updated_count = product_ids.update(**update_data)
+                messages.success(
+                    request,
+                    _(f"{updated_count} products have been updated successfully."),
+                )
+            else:
+                messages.warning(
+                    request, _("No changes were selected for bulk editing.")
+                )
+            return redirect("shop:vendor_manage_products")
 
     vendor_profile = get_object_or_404(VendorProfile, user=request.user)
     products_list = Product.objects.filter(vendor=vendor_profile).order_by(
@@ -2220,11 +2543,17 @@ def vendor_manage_products(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    bulk_edit_form = ProductBulkEditForm()
+    bulk_edit_form.fields["product_ids"].queryset = Product.objects.filter(
+        vendor=vendor_profile
+    )
+
     context = {
         "products": page_obj,
         "vendor_profile": vendor_profile,
         "search_query": search_query,
         "status_filter": status_filter,
+        "bulk_edit_form": bulk_edit_form,
     }
     return render(request, "shop/vendor_manage_products.html", context)
 
@@ -2322,6 +2651,192 @@ def vendor_edit_product(request, product_id):
         "title": _("Edit Product"),
     }
     return render(request, "shop/vendor_product_form.html", context)
+
+
+@login_required
+def vendor_bulk_stock_edit(request):
+    """
+    A dedicated page for vendors to bulk-edit stock quantities of their product variants.
+    """
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+
+    if request.method == "POST":
+        with transaction.atomic():
+            updated_count = 0
+            for key, value in request.POST.items():
+                if key.startswith("stock-"):
+                    try:
+                        variant_id = int(key.split("-")[1])
+                        stock_quantity = int(value)
+
+                        # Security check: ensure the variant belongs to the vendor
+                        variant = ProductVariant.objects.select_for_update().get(
+                            id=variant_id, product__vendor=vendor_profile
+                        )
+
+                        if variant.stock_quantity != stock_quantity:
+                            variant.stock_quantity = stock_quantity
+                            variant.is_available = stock_quantity > 0
+                            variant.save(
+                                update_fields=["stock_quantity", "is_available"]
+                            )
+                            updated_count += 1
+
+                    except (ValueError, IndexError, ProductVariant.DoesNotExist):
+                        # Ignore invalid data, but log it
+                        logger.warning(
+                            f"Bulk stock update received invalid data: {key}={value}"
+                        )
+                        continue
+
+            # Recalculate total stock for all affected products
+            affected_product_ids = (
+                ProductVariant.objects.filter(product__vendor=vendor_profile)
+                .values_list("product_id", flat=True)
+                .distinct()
+            )
+            for product_id in affected_product_ids:
+                product = Product.objects.get(id=product_id)
+                total_stock = (
+                    product.variants.aggregate(total=Sum("stock_quantity"))["total"]
+                    or 0
+                )
+                product.stock_quantity = total_stock
+                product.save(update_fields=["stock_quantity"])
+
+        messages.success(
+            request,
+            _(f"{updated_count} variant stock quantities updated successfully."),
+        )
+        return redirect("shop:vendor_bulk_stock_edit")
+
+    # GET request logic
+    variants_list = (
+        ProductVariant.objects.filter(product__vendor=vendor_profile)
+        .select_related("product", "color", "size")
+        .order_by("product__name", "color__name", "size__order")
+    )
+
+    # Filtering
+    search_query = request.GET.get("q", "")
+    if search_query:
+        variants_list = variants_list.filter(
+            Q(product__name__icontains=search_query) | Q(sku__icontains=search_query)
+        )
+
+    paginator = Paginator(variants_list, 25)  # 25 variants per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "variants": page_obj,
+        "vendor_profile": vendor_profile,
+        "search_query": search_query,
+    }
+
+    return render(request, "shop/vendor_bulk_stock_edit.html", context)
+
+
+@login_required
+@require_POST
+def vendor_mark_notifications_as_read(request):
+    """AJAX endpoint for vendors to mark their notifications as read."""
+    if not request.user.is_vendor_type:
+        return JsonResponse(
+            {"success": False, "message": _("Access denied.")}, status=403
+        )
+
+    try:
+        updated_count = request.user.notifications.filter(is_read=False).update(
+            is_read=True
+        )
+        return JsonResponse({"success": True, "updated_count": updated_count})
+    except Exception as e:
+        logger.error(
+            f"Error marking notifications as read for user {request.user.email}: {e}"
+        )
+        return JsonResponse(
+            {"success": False, "message": _("An error occurred.")}, status=500
+        )
+
+
+@login_required
+def vendor_export_sales_csv(request):
+    """
+    Exports a vendor's sales data for a given period as a CSV file.
+    """
+    if not request.user.is_vendor_type:
+        return HttpResponseForbidden("Access denied.")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+
+    # --- Date Filtering (same logic as dashboard) ---
+    period = request.GET.get("period", "7d")
+    end_date = timezone.now()
+    if period == "30d":
+        start_date = end_date - timedelta(days=29)
+    elif period == "month":
+        start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        start_date = end_date - timedelta(days=6)
+
+    # Fetch order items for the period
+    sales_items = (
+        OrderItem.objects.filter(
+            product_variant__product__vendor=vendor_profile,
+            order__payment_status="paid",
+            order__created_at__range=(start_date, end_date),
+        )
+        .select_related(
+            "order",
+            "product_variant__product",
+            "product_variant__color",
+            "product_variant__size",
+        )
+        .order_by("-order__created_at")
+    )
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        f'attachment; filename="sales_report_{vendor_profile.slug}_{start_date.date()}_to_{end_date.date()}.csv"'
+    )
+
+    writer = csv.writer(response)
+    # Write CSV header
+    writer.writerow(
+        [
+            "Order Number",
+            "Order Date",
+            "Product Name",
+            "Variant (Color/Size)",
+            "Quantity",
+            "Price per Item (EGP)",
+            "Total Price (EGP)",
+        ]
+    )
+
+    # Write data rows
+    for item in sales_items:
+        variant_str = (
+            f"{item.product_variant.color.name} / {item.product_variant.size.name}"
+        )
+        writer.writerow(
+            [
+                item.order.order_number,
+                item.order.created_at.strftime("%Y-%m-%d %H:%M"),
+                item.product_variant.product.name,
+                variant_str,
+                item.quantity,
+                item.price_at_purchase,
+                item.get_total_price(),
+            ]
+        )
+
+    return response
 
 
 @login_required
@@ -3379,10 +3894,12 @@ def checkout_view(request):
     initial_shipping_data = {}
     user_shipping_addresses = ShippingAddress.objects.none()
 
+    # Fetch user's saved addresses more efficiently
     if request.user.is_authenticated:
-        user_orders = Order.objects.filter(user=request.user)
-        user_shipping_addresses = ShippingAddress.objects.filter(order__in=user_orders)
-        if user_shipping_addresses.exists():
+        user_shipping_addresses = ShippingAddress.objects.filter(
+            user=request.user
+        ).distinct()
+        if user_shipping_addresses:
             default_address = (
                 user_shipping_addresses.filter(is_default=True).first()
                 or user_shipping_addresses.order_by("-id").first()
@@ -3393,7 +3910,6 @@ def checkout_view(request):
                     "address_line1": default_address.address_line1,
                     "address_line2": default_address.address_line2,
                     "city": default_address.city,
-                    "email": default_address.email,
                     "phone_number": default_address.phone_number,
                 }
 
@@ -3402,21 +3918,81 @@ def checkout_view(request):
     )
     payment_form = PaymentForm(request.POST or None)
 
-    # Calculate shipping fee based on form data or default
-    shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)
-    if request.method == "POST":
-        city = request.POST.get("city", "")
-        if city == "INSIDE_CAIRO":
-            shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)
-        elif city == "OUTSIDE_CAIRO":
-            shipping_fee = Decimal(config.SHIPPING_RATE_OUTSIDE_CAIRO)
+    # Determine shipping fee based on form input or default address
+    city = (
+        request.POST.get("city")
+        if request.method == "POST"
+        else initial_shipping_data.get("city")
+    )
+    if city == "OUTSIDE_CAIRO":
+        # This is now an estimate; the real calculation happens below
+        shipping_fee_estimate = Decimal(config.SHIPPING_RATE_OUTSIDE_CAIRO)
+    else:
+        shipping_fee_estimate = Decimal(config.SHIPPING_RATE_CAIRO)
+
+    # --- New Per-Vendor Shipping Calculation ---
+    total_shipping_cost = Decimal("0.00")
+    vendor_items = {}
+    for item in cart.items.all():
+        vendor_id = item.product_variant.product.vendor_id
+        if vendor_id not in vendor_items:
+            vendor_items[vendor_id] = []
+        vendor_items[vendor_id].append(item)
+
+    for vendor_id, items in vendor_items.items():
+        vendor_shipping = VendorShipping.objects.filter(vendor_id=vendor_id).first()
+        if vendor_shipping:
+            subtotal = sum(item.get_total_price() for item in items)
+            if not (
+                vendor_shipping.free_shipping_threshold
+                and subtotal >= vendor_shipping.free_shipping_threshold
+            ):
+                if city == "OUTSIDE_CAIRO":
+                    total_shipping_cost += vendor_shipping.shipping_rate_outside_cairo
+                else:
+                    total_shipping_cost += vendor_shipping.shipping_rate_cairo
+
+    # --- Coupon Logic for Checkout ---
+    coupon_id = request.session.get("coupon_id")
+    discount_amount = Decimal("0.00")
+    coupon = None
+    if coupon_id:
+        try:
+            coupon = Coupon.objects.get(id=coupon_id)
+            if coupon.is_valid():
+                if (
+                    coupon.min_purchase_amount
+                    and cart.total_price_field < coupon.min_purchase_amount
+                ):
+                    messages.warning(
+                        request, _("Coupon is no longer valid for this cart total.")
+                    )
+                    del request.session["coupon_id"]
+                else:
+                    if coupon.discount_type == "percentage":
+                        discount_amount = (
+                            cart.total_price_field * coupon.discount_value
+                        ) / 100
+                    else:
+                        discount_amount = coupon.discount_value
+            else:
+                del request.session["coupon_id"]
+        except Coupon.DoesNotExist:
+            del request.session["coupon_id"]
 
     if request.method == "POST":
         selected_address_id = request.POST.get("saved_address")
-        if selected_address_id == "new" or not selected_address_id or not user_shipping_addresses.exists():
-            # New address or no saved addresses
+        use_new_address = selected_address_id == "new" or not user_shipping_addresses
+
+        if use_new_address:
+            # Process with new address form
             if shipping_form.is_valid() and payment_form.is_valid():
-                return process_order(request, cart, shipping_form, payment_form)
+                return process_order(
+                    request,
+                    cart,
+                    shipping_form=shipping_form,
+                    payment_form=payment_form,
+                )
             else:
                 messages.error(
                     request,
@@ -3426,29 +4002,23 @@ def checkout_view(request):
                 )
         else:
             # Existing address selected
-            if not request.user.is_authenticated:
-                messages.error(
-                    request, _("You must be logged in to use an existing address.")
-                )
-                return redirect("shop:checkout")
             try:
+                # Security: Ensure the selected address belongs to the current user
                 selected_address = get_object_or_404(
-                    ShippingAddress, id=selected_address_id, order__user=request.user
+                    ShippingAddress, id=selected_address_id, user=request.user
                 )
-            except ShippingAddress.DoesNotExist:
+                if payment_form.is_valid():
+                    return process_order(
+                        request,
+                        cart,
+                        payment_form=payment_form,
+                        existing_address=selected_address,
+                    )
+            except (ShippingAddress.DoesNotExist, ValueError):
                 messages.error(
-                    request,
-                    _("Selected shipping address not found or does not belong to you."),
+                    request, _("Invalid address selected. Please try again.")
                 )
                 return redirect("shop:checkout")
-
-            if payment_form.is_valid():
-                return process_order(
-                    request,
-                    cart,
-                    payment_form=payment_form,
-                    existing_address=selected_address,
-                )
             else:
                 messages.error(
                     request, _("Please correct the errors in your payment details.")
@@ -3456,15 +4026,14 @@ def checkout_view(request):
 
     context = {
         "cart": cart,
-        "form": shipping_form,
         "shipping_form": shipping_form,
         "payment_form": payment_form,
-        "saved_addresses": user_shipping_addresses,
         "user_shipping_addresses": user_shipping_addresses,
         "cart_items": cart.items.all(),
         "subtotal": cart.total_price_field,
-        "shipping_fee": shipping_fee,
-        "grand_total": cart.total_price_field + shipping_fee,
+        "shipping_fee": total_shipping_cost,
+        "discount_amount": discount_amount,
+        "grand_total": cart.total_price_field + total_shipping_cost - discount_amount,
     }
     return render(request, "shop/checkout.html", context)
 
@@ -3482,6 +4051,71 @@ def process_order(
             messages.error(request, _("Payment information is required."))
             return redirect("shop:checkout")
 
+        # --- Final Coupon Validation ---
+        coupon_id = request.session.get("coupon_id")
+        coupon = None
+        discount_amount = Decimal("0.00")
+        if coupon_id:
+            try:
+                coupon = Coupon.objects.get(id=coupon_id)
+                if coupon.is_valid() and (
+                    not coupon.min_purchase_amount
+                    or cart.total_price_field >= coupon.min_purchase_amount
+                ):
+                    if coupon.discount_type == "percentage":
+                        discount_amount = (
+                            cart.total_price_field * coupon.discount_value
+                        ) / 100
+                    else:
+                        discount_amount = coupon.discount_value
+                else:
+                    # Coupon became invalid, proceed without it
+                    coupon = None
+                    messages.warning(
+                        request,
+                        _("The applied coupon was invalid and has been removed."),
+                    )
+            except Coupon.DoesNotExist:
+                coupon = None
+
+        # Determine shipping cost from the final address data
+        city = (
+            shipping_form.cleaned_data.get("city")
+            if shipping_form
+            else existing_address.city
+        )
+
+        # --- New Per-Vendor Shipping Calculation for Order ---
+        total_shipping_cost = Decimal("0.00")
+        vendor_items = {}
+        # Group items by vendor
+        for item in cart.items.all():
+            vendor_id = item.product_variant.product.vendor_id
+            if vendor_id not in vendor_items:
+                vendor_items[vendor_id] = []
+            vendor_items[vendor_id].append(item)
+
+        for vendor_id, items in vendor_items.items():
+            try:
+                vendor_shipping = VendorShipping.objects.get(vendor_id=vendor_id)
+                subtotal = sum(item.get_total_price() for item in items)
+                if not (
+                    vendor_shipping.free_shipping_threshold
+                    and subtotal >= vendor_shipping.free_shipping_threshold
+                ):
+                    total_shipping_cost += (
+                        vendor_shipping.shipping_rate_outside_cairo
+                        if city == "OUTSIDE_CAIRO"
+                        else vendor_shipping.shipping_rate_cairo
+                    )
+            except VendorShipping.DoesNotExist:
+                # Fallback to global config if vendor settings are missing
+                total_shipping_cost += (
+                    Decimal(config.SHIPPING_RATE_OUTSIDE_CAIRO)
+                    if city == "OUTSIDE_CAIRO"
+                    else Decimal(config.SHIPPING_RATE_CAIRO)
+                )
+
         # Create order
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
@@ -3491,28 +4125,31 @@ def process_order(
                 else existing_address.full_name
             ),
             email=(
-                request.user.email if request.user.is_authenticated else ""
-            ),  # Optional
+                shipping_form.cleaned_data.get("email")
+                if shipping_form
+                else existing_address.email
+            ),
             phone_number=(
                 shipping_form.cleaned_data["phone_number"]
                 if shipping_form
                 else existing_address.phone_number
             ),
             subtotal=Decimal("0.00"),
-            shipping_cost=Decimal(config.SHIPPING_RATE_CAIRO),  # Using your config
+            shipping_cost=total_shipping_cost,
             grand_total=Decimal("0.00"),
+            coupon=coupon,
+            discount_amount=discount_amount,
             status="pending",
             payment_status="pending",
         )
 
         # Save shipping address
         if existing_address:
-            shipping_address = existing_address
-            shipping_address.order = order
-            shipping_address.save()
+            # Use a copy of the existing address for this order's record
+            shipping_address = existing_address.clone_for_order(order)
         else:
             shipping_address = shipping_form.save(commit=False)
-            if hasattr(shipping_address, "user") and request.user.is_authenticated:
+            if request.user.is_authenticated:
                 shipping_address.user = request.user
             shipping_address.order = order
             shipping_address.save()
@@ -3532,8 +4169,15 @@ def process_order(
 
         # Process cart items
         subtotal = Decimal("0.00")
-        for cart_item in cart.items.select_related("product_variant").all():
-            variant = cart_item.product_variant
+        # Lock product variants to prevent race conditions on stock
+        cart_items = cart.items.select_related("product_variant__product").all()
+        variants_to_lock = [item.product_variant for item in cart_items]
+        locked_variants = list(
+            ProductVariant.objects.select_for_update().filter(
+                id__in=[v.id for v in variants_to_lock]
+            )
+        )
+        for cart_item in cart_items:
             if variant.stock_quantity < cart_item.quantity:
                 raise ValueError(
                     f"Not enough stock for {variant.product.name} "
@@ -3553,9 +4197,56 @@ def process_order(
             variant.save()
             subtotal += price * cart_item.quantity
 
+        # --- Create VendorOrder records and calculate commissions ---
+        for vendor_id, items in vendor_items.items():
+            vendor_profile = VendorProfile.objects.get(id=vendor_id)
+            vendor_subtotal = sum(item.get_total_price() for item in items)
+
+            # Calculate this vendor's portion of the shipping
+            vendor_shipping_cost = Decimal("0.00")
+            try:
+                vendor_shipping_settings = VendorShipping.objects.get(
+                    vendor=vendor_profile
+                )
+                if not (
+                    vendor_shipping_settings.free_shipping_threshold
+                    and vendor_subtotal
+                    >= vendor_shipping_settings.free_shipping_threshold
+                ):
+                    vendor_shipping_cost = (
+                        vendor_shipping_settings.shipping_rate_outside_cairo
+                        if city == "OUTSIDE_CAIRO"
+                        else vendor_shipping_settings.shipping_rate_cairo
+                    )
+            except VendorShipping.DoesNotExist:
+                vendor_shipping_cost = (
+                    Decimal(config.SHIPPING_RATE_OUTSIDE_CAIRO)
+                    if city == "OUTSIDE_CAIRO"
+                    else Decimal(config.SHIPPING_RATE_CAIRO)
+                )
+
+            # Calculate commission
+            commission_rate = vendor_profile.commission_rate
+            commission_amount = (vendor_subtotal * commission_rate) / 100
+
+            # Create the VendorOrder record
+            vendor_order = VendorOrder.objects.create(
+                order=order,
+                vendor=vendor_profile,
+                subtotal=vendor_subtotal,
+                shipping_charged=vendor_shipping_cost,
+                commission_rate=commission_rate,
+                commission_amount=commission_amount,
+                # net_payout is calculated on save
+            )
+
+            # Update vendor's wallet balance
+            vendor_profile.wallet_balance += vendor_order.net_payout
+            vendor_profile.save(update_fields=["wallet_balance"])
+
         # Update totals
         order.subtotal = subtotal
-        order.grand_total = subtotal + order.shipping_cost
+        order.grand_total = subtotal + order.shipping_cost - discount_amount
         order.save()
 
         # Update payment
@@ -3567,6 +4258,12 @@ def process_order(
         order.status = "processing"
         order.payment_status = "paid"
         order.save()
+
+        # Increment coupon usage count
+        if coupon:
+            coupon.times_used = F("times_used") + 1
+            coupon.save()
+            del request.session["coupon_id"]
 
         # Clear cart
         cart.items.all().delete()
@@ -4281,6 +4978,76 @@ def vendor_manage_reviews(request):
         "rating_filter": rating_filter,
     }
     return render(request, "shop/vendor_manage_reviews.html", context)
+
+
+@login_required
+def vendor_manage_shipping(request):
+    """
+    Page for vendors to manage their shipping costs.
+    """
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+    # get_or_create ensures this works even if the signal failed for an old vendor
+    shipping_settings, created = VendorShipping.objects.get_or_create(
+        vendor=vendor_profile
+    )
+
+    if request.method == "POST":
+        form = VendorShippingForm(request.POST, instance=shipping_settings)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, _("Your shipping settings have been updated successfully.")
+            )
+            return redirect("shop:vendor_manage_shipping")
+    else:
+        form = VendorShippingForm(instance=shipping_settings)
+
+    context = {"form": form, "vendor_profile": vendor_profile}
+    return render(request, "shop/vendor_manage_shipping.html", context)
+
+
+@login_required
+@require_POST
+def vendor_request_payout(request):
+    """
+    Handles a vendor's request for a payout from their wallet.
+    """
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied."))
+        return redirect("shop:home")
+
+    vendor_profile = get_object_or_404(VendorProfile, user=request.user)
+    form = PayoutRequestForm(request.POST, vendor_profile=vendor_profile)
+
+    if form.is_valid():
+        amount = form.cleaned_data["amount"]
+        with transaction.atomic():
+            # Lock the vendor profile row to prevent race conditions
+            vendor = VendorProfile.objects.select_for_update().get(id=vendor_profile.id)
+            if amount <= vendor.wallet_balance:
+                vendor.wallet_balance -= amount
+                vendor.save(update_fields=["wallet_balance"])
+                Payout.objects.create(vendor=vendor, amount=amount, status="pending")
+                messages.success(
+                    request,
+                    _(
+                        f"Your payout request for {amount} EGP has been submitted for review."
+                    ),
+                )
+            else:
+                messages.error(
+                    request, _("Insufficient wallet balance for this payout request.")
+                )
+    else:
+        messages.error(
+            request, _("Invalid amount requested. Please check the form and try again.")
+        )
+
+    return redirect("shop:vendor_dashboard")
 
 
 @require_POST
