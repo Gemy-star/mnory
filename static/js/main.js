@@ -1424,4 +1424,33 @@ document.addEventListener('DOMContentLoaded', function() {
             simulateTouch: true,
             allowTouchMove: true,
             resistance: true,
-            resistanceR
+            resistanceRatio: 0.85
+        });
+    }
+});
+
+// ========================================
+// INTERNATIONALIZATION (i18n) MESSAGES
+// ========================================
+function getMainMessage(key) {
+    const lang = document.documentElement.lang || 'en';
+    const messages = {
+        en: {
+            selectColorSize: 'Please select a color and size',
+            addedToCart: 'Added to cart successfully!',
+            addedToWishlist: 'Added to wishlist!',
+            removedFromWishlist: 'Removed from wishlist',
+            loginRequired: 'Please login to continue',
+            error: 'An error occurred. Please try again.'
+        },
+        ar: {
+            selectColorSize: 'الرجاء اختيار اللون والمقاس',
+            addedToCart: 'تمت الإضافة إلى السلة بنجاح!',
+            addedToWishlist: 'تمت الإضافة إلى المفضلة!',
+            removedFromWishlist: 'تمت الإزالة من المفضلة',
+            loginRequired: 'الرجاء تسجيل الدخول للمتابعة',
+            error: 'حدث خطأ. يرجى المحاولة مرة أخرى.'
+        }
+    };
+    return messages[lang]?.[key] || messages.en[key] || key;
+}
