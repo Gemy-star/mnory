@@ -1,56 +1,3 @@
-// ========================================
-// PRODUCTS HEADER CONTROLS (Grid/List View, Per Page, Mobile Filters)
-// ========================================
-document.addEventListener('DOMContentLoaded', function() {
-    // View toggle handlers
-    const viewGridBtn = document.querySelector('.view-btn.view-grid');
-    const viewListBtn = document.querySelector('.view-btn.view-list');
-    const productsGrid = document.getElementById('product-list-container');
-    if (viewGridBtn && viewListBtn && productsGrid) {
-        viewGridBtn.addEventListener('click', function() {
-            viewGridBtn.classList.add('active');
-            viewGridBtn.setAttribute('aria-pressed', 'true');
-            viewListBtn.classList.remove('active');
-            viewListBtn.setAttribute('aria-pressed', 'false');
-            productsGrid.classList.remove('list-view');
-            productsGrid.classList.add('grid-view');
-        });
-        viewListBtn.addEventListener('click', function() {
-            viewListBtn.classList.add('active');
-            viewListBtn.setAttribute('aria-pressed', 'true');
-            viewGridBtn.classList.remove('active');
-            viewGridBtn.setAttribute('aria-pressed', 'false');
-            productsGrid.classList.remove('grid-view');
-            productsGrid.classList.add('list-view');
-        });
-    }
-
-    // Per page select handler
-    const perPageSelect = document.getElementById('perPageSelect');
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', function() {
-            const params = new URLSearchParams(window.location.search);
-            params.set('per_page', perPageSelect.value);
-            window.location.search = params.toString();
-        });
-    }
-
-    // Mobile filters quick-open
-    const openFiltersMobile = document.getElementById('openFiltersMobile');
-    const filtersPanel = document.getElementById('filtersPanel');
-    if (openFiltersMobile && filtersPanel) {
-        openFiltersMobile.addEventListener('click', function() {
-            filtersPanel.classList.add('expanded');
-            const toggle = document.getElementById('toggleFilters');
-            if (toggle) toggle.classList.add('expanded');
-            const arrow = toggle ? toggle.querySelector('.toggle-arrow') : null;
-            if (arrow) arrow.style.transform = 'rotate(180deg)';
-            // focus first input inside filters
-            const firstInput = filtersPanel.querySelector('select, input');
-            if (firstInput) firstInput.focus();
-        });
-    }
-});
 // static/js/main.js
 // ========================================
 
@@ -451,10 +398,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Dark Mode Initialization
     function initDarkMode() {
-        // Check for saved theme preference or default to light mode
+        // Check for saved theme preference or default to dark mode
         const savedTheme = localStorage.getItem('mnory-theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const shouldUseDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+        // Default to dark mode if no preference is saved
+        const shouldUseDark = savedTheme === 'dark' || (!savedTheme);
 
         // Apply initial theme
         if (shouldUseDark) {
@@ -505,6 +453,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateThemeIcon(isDark);
             }
         });
+    }
+
+    // ========================================
+    // GLOBAL NOTIFICATION DROPDOWN
+    // ========================================
+    function initGlobalNotifications() {
+        const notificationDropdown = document.getElementById('headerNotificationDropdown');
+        const notificationBadge = document.getElementById('headerNotificationBadge');
+
+        if (notificationDropdown) {
+            notificationDropdown.addEventListener('show.bs.dropdown', function () {
+                // When dropdown is opened, mark notifications as read
+                if (notificationBadge && notificationBadge.style.display !== 'none') {
+                    fetch("{% url 'shop:mark_notifications_as_read' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}', // This will be rendered by Django in the template
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Hide the badge visually
+                            notificationBadge.style.display = 'none';
+                        }
+                    }).catch(error => {
+                        console.error("Error marking notifications as read:", error);
+                    });
+                }
+            });
+        }
     }
 
     // ========================================
@@ -622,16 +602,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // PAGE LOADER
     // ========================================
 
-    function hidePageLoader() {
-        setTimeout(() => {
-            const loader = document.getElementById('pageLoader');
-            if (loader) {
-                loader.style.opacity = '0';
+    function initPageLoader() {
+        const loader = document.getElementById('pageLoader');
+        const body = document.body;
+
+        if (!loader) return;
+
+        const hideLoader = () => {
+            if (!loader.classList.contains('hidden')) {
+                loader.classList.add('hidden');
+                body.classList.remove('loading');
+                // Remove from DOM after animation to prevent interaction
                 setTimeout(() => {
                     loader.style.display = 'none';
-                }, 300);
+                }, 800); // Must match CSS transition duration
             }
-        }, 500);
+        };
+
+        // Promise that resolves on window load
+        const windowLoad = new Promise(resolve => {
+            window.addEventListener('load', resolve);
+        });
+
+        // Promise that resolves after a timeout
+        const fallbackTimeout = new Promise(resolve => {
+            setTimeout(resolve, 5000); // 5-second fallback
+        });
+
+        // Hide loader when the first of these events completes
+        Promise.race([windowLoad, fallbackTimeout]).then(() => {
+            hideLoader();
+        });
     }
 
     // ========================================
@@ -654,37 +655,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // INITIALIZE ALL FEATURES
     // ========================================
-
-    function initializeAllFeatures() {
-        // Header & Navigation (counts now handled by cart-wishlist.js)
-        initHeaderScrollBehavior();
-        initSearchModal();
-        initMobileSearch();
-
-        // Theme System
-        initDarkMode();
-
-        // UI Enhancements
-        initLazyLoading();
-        initBackToTop();
-        initAnimations();
-        initFormValidation();
-        initLanguageSwitcher();
-        initCategorySearch();
-        initCategoriesDrawer();
-        initPagesDrawer();
-        initMobileDrawerTheme();
-
-        // Update theme icons on load
-        updateAllThemeIcons();
-
-        // Sync counts on load
-        syncCounts();
-
-        // Page State
-        hidePageLoader();
-        measurePerformance();
-    }
 
     // Category Search Filter
     function initCategorySearch() {
@@ -966,7 +936,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const buyNowQuantityInput = document.getElementById('buy-now-quantity-input');
         const sizeButtonToggle = document.getElementById('size_btn');
         const sizeContainer = document.getElementById('size_container');
-
         let selectedColorId = null;
         let selectedSizeId = null;
 
@@ -1134,7 +1103,8 @@ document.addEventListener('DOMContentLoaded', function() {
         buyNowForm?.addEventListener('submit', function(e) {
             if (!selectedColorId || !selectedSizeId) {
                 e.preventDefault();
-                if (window.showToast) window.showToast('Please select color and size first for Buy Now.', 'error');
+                // Use the main notification function for consistency
+                showMainNotification(getMainMessage('selectColorSize'), 'warning');
             } else {
                 if (buyNowQuantityInput && quantityInput) {
                     buyNowQuantityInput.value = quantityInput.value;
@@ -1362,14 +1332,25 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = `/set-currency/?currency=${currency}`;
     };
 
-    // Check if Bootstrap is loaded before initializing
-    if (typeof bootstrap !== 'undefined') {
-        initializeAllFeatures();
-    } else {
-        setTimeout(() => {
-            initializeAllFeatures();
-        }, 100);
-    }
+    // Call initialization functions
+    initHeaderScrollBehavior();
+    initSearchModal();
+    initMobileSearch();
+    initDarkMode();
+    initLazyLoading();
+    initBackToTop();
+    initAnimations();
+    initFormValidation();
+    initLanguageSwitcher();
+    initCategorySearch();
+    initCategoriesDrawer();
+    initPagesDrawer();
+    initMobileDrawerTheme();
+    updateAllThemeIcons();
+    initGlobalNotifications();
+    syncCounts();
+    initPageLoader();
+    measurePerformance();
 
 });
 // ========================================
@@ -1443,7 +1424,4 @@ document.addEventListener('DOMContentLoaded', function() {
             simulateTouch: true,
             allowTouchMove: true,
             resistance: true,
-            resistanceRatio: 0.85
-        });
-    }
-});
+            resistanceR

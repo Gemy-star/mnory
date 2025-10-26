@@ -1,18 +1,28 @@
-# shop/context_processors.py
-from .models import Category
-from django.urls import resolve
-from django.conf import settings
-from django.contrib.sites.models import Site
+from itertools import chain
 
-def categories_processor(request):
-    currency = request.session.get('currency', 'USD')
-    current_site = Site.objects.get_current()
+
+def notifications_context(request):
+    """
+    Provides notification-related context to all templates.
+    """
+    if not request.user.is_authenticated:
+        return {}
+
+    # Fetch notifications from both shop and freelancing apps
+    shop_notifications = request.user.shop_notifications.all()
+    freelancing_notifications = request.user.freelancing_notifications.all()
+
+    # Combine and sort all notifications by creation date
+    all_notifications = sorted(
+        chain(shop_notifications, freelancing_notifications),
+        key=lambda x: x.created_at,
+        reverse=True,
+    )
+
+    # Get the count of unread notifications from both sources
+    unread_count = sum(1 for n in all_notifications if not n.is_read)
 
     return {
-        'categories': Category.objects.filter(is_active=True).order_by('name'),
-        'current_url_name': resolve(request.path_info).url_name,
-        'currency':currency,
-        'LANGUAGES': settings.LANGUAGES,
-        'SITE_NAME': current_site.name,
-        'SITE_URL': current_site.domain,
+        "recent_notifications": all_notifications[:10],  # Show the 10 most recent
+        "unread_notifications_count": unread_count,
     }

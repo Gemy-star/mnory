@@ -5050,6 +5050,33 @@ def vendor_request_payout(request):
     return redirect("shop:vendor_dashboard")
 
 
+@login_required
+@require_POST
+def mark_notifications_as_read(request):
+    """
+    AJAX endpoint for any logged-in user to mark all their notifications as read.
+    """
+    try:
+        # Mark notifications from both apps as read
+        shop_updated_count = request.user.shop_notifications.filter(
+            is_read=False
+        ).update(is_read=True)
+        freelance_updated_count = request.user.freelancing_notifications.filter(
+            is_read=False
+        ).update(is_read=True)
+
+        total_updated = shop_updated_count + freelance_updated_count
+
+        return JsonResponse({"success": True, "updated_count": total_updated})
+    except Exception as e:
+        logger.error(
+            f"Error marking notifications as read for user {request.user.email}: {e}"
+        )
+        return JsonResponse(
+            {"success": False, "message": _("An error occurred.")}, status=500
+        )
+
+
 @require_POST
 def track_ad_click(request):
     """Track advertisement click count via AJAX."""

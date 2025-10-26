@@ -1,37 +1,34 @@
 {% extends "base.html" %}
 {% load i18n crispy_forms_tags %}
-
+{% load static %}
 {% block title %}{% trans "Checkout" %}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock css %}
 
 {% block content %}
 <main class="checkout-main">
     <div class="container py-5">
-        <!-- Breadcrumb Navigation -->
-        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
-                </li>
-                <li class="breadcrumb-item"><a href="{% url 'shop:cart_view' %}">{% trans "Cart" %}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{% trans "Checkout" %}</li>
-            </ol>
-        </nav>
-
         <!-- Page Header -->
-        <div class="section-header" data-aos="fade-up">
-            <h1 class="section-title">
-                <span class="material-icons">shopping_cart_checkout</span>
-                {% trans "Checkout" %}
-            </h1>
+        <div class="modern-cart-header" data-aos="fade-down">
+            <div class="cart-header-content">
+                <div class="cart-icon-wrapper">
+                    <span class="material-icons cart-icon">shopping_cart_checkout</span>
+                </div>
+                <h1 class="cart-title">{% trans "Secure Checkout" %}</h1>
+                <p class="cart-subtitle">{% trans "Almost there! Please complete your order." %}</p>
+            </div>
+            <div class="cart-divider"></div>
         </div>
 
-        <form id="checkout-form" method="post">
+        <form id="checkout-form" method="post" class="needs-validation" novalidate>
             {% csrf_token %}
             <div class="checkout-layout" data-aos="fade-up" data-aos-delay="100">
                 <!-- Left Column: Shipping & Payment -->
                 <div class="checkout-main-column">
                     <!-- Shipping Address Section -->
-                    <div class="checkout-section-card">
+                    <div class="checkout-section-card" data-aos="fade-right" data-aos-delay="200">
                         <h2 class="checkout-section-title">
                             <span class="material-icons">local_shipping</span>
                             {% trans "Shipping Information" %}
@@ -41,18 +38,22 @@
                             <div class="mb-4">
                                 <label class="form-label fw-bold">{% trans "Select a saved address:" %}</label>
                                 <div class="saved-addresses-list">
-                                    {% for address in saved_addresses %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="saved_address" id="address-{{ address.id }}" value="{{ address.id }}" {% if forloop.first %}checked{% endif %}>
+                                    {% for address in user_shipping_addresses %}
+                                    <div class="form-check saved-address-item">
+                                        <input class="form-check-input" type="radio" name="saved_address" id="address-{{ address.id }}" value="{{ address.id }}" data-city="{{ address.city }}" {% if forloop.first %}checked{% endif %}>
                                         <label class="form-check-label" for="address-{{ address.id }}">
-                                            <strong>{{ address.full_name }}</strong><br>
-                                            {{ address.address_line1 }}, {{ address.city }}
+                                            <span class="material-icons address-icon">location_on</span>
+                                            <div class="address-details">
+                                                <strong>{{ address.full_name }}</strong><br>
+                                                {{ address.address_line1 }}, {{ address.city }}
+                                            </div>
                                         </label>
                                     </div>
                                     {% endfor %}
-                                    <div class="form-check mt-2">
+                                    <div class="form-check mt-2 saved-address-item">
                                         <input class="form-check-input" type="radio" name="saved_address" id="new-address" value="new">
                                         <label class="form-check-label" for="new-address">
+                                            <span class="material-icons address-icon">add_location_alt</span>
                                             {% trans "Use a new address" %}
                                         </label>
                                     </div>
@@ -67,7 +68,7 @@
                     </div>
 
                     <!-- Payment Method Section -->
-                    <div class="checkout-section-card mt-4">
+                    <div class="checkout-section-card mt-4" data-aos="fade-right" data-aos-delay="300">
                         <h2 class="checkout-section-title">
                             <span class="material-icons">payments</span>
                             {% trans "Payment Method" %}
@@ -76,7 +77,7 @@
                             <div class="payment-option">
                                 <input type="radio" id="cod" name="payment_method" value="cod" checked class="form-check-input">
                                 <label for="cod" class="form-check-label">
-                                    <span class="material-icons">local_shipping</span>
+                                    <span class="material-icons">payments</span>
                                     {% trans "Cash on Delivery" %}
                                 </label>
                                 <p class="payment-description">{% trans "Pay with cash upon delivery." %}</p>
@@ -88,12 +89,10 @@
 
                 <!-- Right Column: Order Summary -->
                 <div class="checkout-summary-column">
-                    <div class="summary-card sticky-summary">
+                    <div class="modern-order-summary sticky-summary" data-aos="fade-left" data-aos-delay="400">
                         <div class="summary-header">
-                            <h3 class="summary-title">
-                                <span class="material-icons">receipt_long</span>
-                                {% trans "Order Summary" %}
-                            </h3>
+                            <span class="material-icons summary-icon">receipt_long</span>
+                            <h3 class="summary-title">{% trans "Order Summary" %}</h3>
                         </div>
 
                         <div class="summary-body">
@@ -107,7 +106,7 @@
                                     </div>
                                     <div class="summary-item-pricing">
                                         <span class="summary-item-qty">x{{ item.quantity }}</span>
-                                        <span class="summary-item-total">{{ item.total|floatformat:2 }} EGP</span>
+                                        <span class="summary-item-total">{{ item.get_total_price|floatformat:2 }} EGP</span>
                                     </div>
                                 </li>
                                 {% endfor %}
@@ -116,31 +115,35 @@
                             <div class="summary-divider"></div>
 
                             <div class="summary-line">
-                                <span>{% trans "Subtotal" %}</span>
-                                <span id="summary-subtotal">{{ subtotal|floatformat:2 }} EGP</span>
+                                <span class="summary-label"><span class="label-icon material-icons">shopping_cart</span>{% trans "Subtotal" %}</span>
+                                <span class="summary-value" id="summary-subtotal">{{ subtotal|floatformat:2 }} EGP</span>
                             </div>
                             <div class="summary-line">
-                                <span>{% trans "Shipping" %}</span>
-                                <span id="summary-shipping">{{ shipping_fee|floatformat:2 }} EGP</span>
+                                <span class="summary-label"><span class="label-icon material-icons">local_shipping</span>{% trans "Shipping" %}</span>
+                                <span class="summary-value" id="summary-shipping">{{ shipping_fee|floatformat:2 }} EGP</span>
                             </div>
                             {% if discount_amount > 0 %}
                             <div class="summary-line text-success">
-                                <span>{% trans "Discount" %}</span>
-                                <span id="summary-discount">-{{ discount_amount|floatformat:2 }} EGP</span>
+                                <span class="summary-label"><span class="label-icon material-icons text-success">check_circle</span>{% trans "Discount" %}</span>
+                                <span class="summary-value" id="summary-discount">-{{ discount_amount|floatformat:2 }} EGP</span>
                             </div>
                             {% endif %}
                             <div class="summary-divider"></div>
-                            <div class="summary-line total">
-                                <strong>{% trans "Grand Total" %}</strong>
-                                <strong id="summary-grand-total">{{ grand_total|floatformat:2 }} EGP</strong>
+                            <div class="summary-line summary-total">
+                                <strong class="summary-label-total">{% trans "Grand Total" %}</strong>
+                                <strong class="summary-value-total" id="summary-grand-total">{{ grand_total|floatformat:2 }} EGP</strong>
                             </div>
                         </div>
 
                         <div class="summary-footer">
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <span class="material-icons">check_circle</span>
+                            <button type="submit" class="modern-checkout-btn">
+                <span class="material-icons">shopping_cart_checkout</span>
                                 {% trans "Place Order" %}
                             </button>
+                            <a href="{% url 'shop:cart_view' %}" class="continue-shopping-link">
+                                <span class="material-icons">arrow_back</span>
+                                {% trans "Back to Cart" %}
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -153,10 +156,18 @@
 {% block js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: true,
+        offset: 50
+    });
+
     const cityField = document.getElementById('id_city');
     const shippingCostEl = document.getElementById('summary-shipping');
     const grandTotalEl = document.getElementById('summary-grand-total');
     const subtotal = parseFloat('{{ subtotal|floatformat:2 }}');
+    const discount = parseFloat('{{ discount_amount|floatformat:2 }}');
 
     if (cityField) {
         cityField.addEventListener('change', async function() {
@@ -170,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.shipping_cost !== undefined) {
                     const shippingCost = parseFloat(data.shipping_cost);
                     shippingCostEl.textContent = `${shippingCost.toFixed(2)} EGP`;
-                    grandTotalEl.textContent = `${(subtotal + shippingCost).toFixed(2)} EGP`;
+                    grandTotalEl.textContent = `${(subtotal + shippingCost - discount).toFixed(2)} EGP`;
                 }
             } catch (error) {
                 console.error('Error fetching shipping cost:', error);
@@ -186,10 +197,20 @@ document.addEventListener('DOMContentLoaded', function() {
             radio.addEventListener('change', function() {
                 if (this.value === 'new') {
                     shippingFormContainer.classList.remove('d-none');
+                    // Trigger change on city field to recalculate shipping if it has a value
+                    if(cityField.value) cityField.dispatchEvent(new Event('change'));
                 } else {
                     shippingFormContainer.classList.add('d-none');
-                    // Optionally, you can also fetch the city from the selected address
-                    // and trigger the shipping cost update.
+                    // When a saved address is selected, get its city and update shipping
+                    const selectedRadio = document.querySelector('input[name="saved_address"]:checked');
+                    if (selectedRadio && selectedRadio.dataset.city) {
+                        const city = selectedRadio.dataset.city;
+                        // Simulate a change event on a temporary element to trigger the fetch
+                        const tempSelect = document.createElement('select');
+                        tempSelect.value = city;
+                        cityField.value = city; // Keep the hidden form in sync
+                        cityField.dispatchEvent(new Event('change'));
+                    }
                 }
             });
         });
