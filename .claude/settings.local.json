@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/**)"
+      "Read(//c/**)",
+      "Bash(python manage.py check:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

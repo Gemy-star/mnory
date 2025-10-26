@@ -41,6 +41,11 @@ urlpatterns = [
         name="get_cart_and_wishlist_counts",
     ),  # GET for counts
     path(
+        "api/get-shipping-cost/",
+        views.get_shipping_cost,
+        name="get_shipping_cost",
+    ),  # GET for shipping cost based on city
+    path(
         "api/get-available-sizes/<int:product_id>/",
         views.get_available_sizes_ajax,
         name="get_available_sizes_ajax",

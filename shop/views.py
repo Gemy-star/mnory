@@ -862,6 +862,25 @@ def get_cart_and_wishlist_counts(request):
     )
 
 
+
+
+def get_shipping_cost(request):
+    """
+    Returns shipping cost based on selected city.
+    """
+    city = request.GET.get("city", "")
+
+    if city == "INSIDE_CAIRO":
+        shipping_cost = float(config.SHIPPING_RATE_CAIRO)
+    elif city == "OUTSIDE_CAIRO":
+        shipping_cost = float(config.SHIPPING_RATE_OUTSIDE_CAIRO)
+    else:
+        shipping_cost = float(config.SHIPPING_RATE_CAIRO)  # Default
+
+    return JsonResponse({
+        "success": True,
+        "shipping_cost": shipping_cost
+    })
 # --- Wishlist Views ---
 def wishlist_view(request):
     """Displays the user's wishlist with pagination."""
@@ -1599,124 +1618,6 @@ def update_cart_quantity(request):
         message = "An error occurred." if lang == "en" else "حدث خطأ."
         return JsonResponse({"success": False, "message": message}, status=500)
 
-
-# --- Checkout & Order Views ---
-def get_cart_for_request(request):
-    if request.user.is_authenticated:
-        try:
-            return Cart.objects.get(user=request.user)
-        except Cart.DoesNotExist:
-            return None
-    else:
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.save()
-            session_key = request.session.session_key
-        try:
-            return Cart.objects.get(session_key=session_key)
-        except Cart.DoesNotExist:
-            return None
-
-
-def checkout_view(request):
-    cart = get_cart_for_request(request)
-
-    if not cart or not cart.items.exists():
-        messages.warning(
-            request, _("Your cart is empty. Please add items before checking out.")
-        )
-        return redirect("shop:cart_view")
-
-    cart.update_totals()
-    if cart.total_items == 0:
-        messages.warning(
-            request,
-            _(
-                "Your cart is empty after stock adjustments. Please add items before checking out."
-            ),
-        )
-        return redirect("shop:cart_view")
-
-    initial_shipping_data = {}
-    user_shipping_addresses = ShippingAddress.objects.none()
-
-    if request.user.is_authenticated:
-        user_orders = Order.objects.filter(user=request.user)
-        user_shipping_addresses = ShippingAddress.objects.filter(order__in=user_orders)
-        if user_shipping_addresses.exists():
-            default_address = (
-                user_shipping_addresses.filter(is_default=True).first()
-                or user_shipping_addresses.order_by("-id").first()
-            )
-            if default_address:
-                initial_shipping_data = {
-                    "full_name": default_address.full_name,
-                    "address_line1": default_address.address_line1,
-                    "address_line2": default_address.address_line2,
-                    "city": default_address.city,
-                    "email": default_address.email,
-                    "phone_number": default_address.phone_number,
-                }
-
-    shipping_form = ShippingAddressForm(
-        request.POST or None, initial=initial_shipping_data
-    )
-    payment_form = PaymentForm(request.POST or None)
-
-    shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)  # <-- Add this
-    if request.method == "POST":
-        selected_address_id = request.POST.get("selected_address")
-        if selected_address_id == "new" or not user_shipping_addresses.exists():
-            # New address or no saved addresses
-            if shipping_form.is_valid() and payment_form.is_valid():
-                return process_order(request, cart, shipping_form, payment_form)
-            else:
-                messages.error(
-                    request,
-                    _(
-                        "Please correct the errors in your shipping and/or payment details."
-                    ),
-                )
-        else:
-            # Existing address selected
-            if not request.user.is_authenticated:
-                messages.error(
-                    request, _("You must be logged in to use an existing address.")
-                )
-                return redirect("shop:checkout")
-            try:
-                selected_address = get_object_or_404(
-                    ShippingAddress, id=selected_address_id, order__user=request.user
-                )
-            except ShippingAddress.DoesNotExist:
-                messages.error(
-                    request,
-                    _("Selected shipping address not found or does not belong to you."),
-                )
-                return redirect("shop:checkout")
-
-            if payment_form.is_valid():
-                return process_order(
-                    request,
-                    cart,
-                    payment_form=payment_form,
-                    existing_address=selected_address,
-                )
-            else:
-                messages.error(
-                    request, _("Please correct the errors in your payment details.")
-                )
-
-    context = {
-        "cart": cart,
-        "shipping_form": shipping_form,
-        "payment_form": payment_form,
-        "user_shipping_addresses": user_shipping_addresses,
-        "shipping_fee": shipping_fee,  # <-- Pass to template
-        "grand_total": cart.total_price_field
-        + shipping_fee,  # <-- Optional precomputed total
-    }
-    return render(request, "shop/checkout.html", context)
 
 
 @transaction.atomic
@@ -3501,10 +3402,18 @@ def checkout_view(request):
     )
     payment_form = PaymentForm(request.POST or None)
 
-    shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)  # <-- Add this
+    # Calculate shipping fee based on form data or default
+    shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)
     if request.method == "POST":
-        selected_address_id = request.POST.get("selected_address")
-        if selected_address_id == "new" or not user_shipping_addresses.exists():
+        city = request.POST.get("city", "")
+        if city == "INSIDE_CAIRO":
+            shipping_fee = Decimal(config.SHIPPING_RATE_CAIRO)
+        elif city == "OUTSIDE_CAIRO":
+            shipping_fee = Decimal(config.SHIPPING_RATE_OUTSIDE_CAIRO)
+
+    if request.method == "POST":
+        selected_address_id = request.POST.get("saved_address")
+        if selected_address_id == "new" or not selected_address_id or not user_shipping_addresses.exists():
             # New address or no saved addresses
             if shipping_form.is_valid() and payment_form.is_valid():
                 return process_order(request, cart, shipping_form, payment_form)
@@ -3547,12 +3456,15 @@ def checkout_view(request):
 
     context = {
         "cart": cart,
+        "form": shipping_form,
         "shipping_form": shipping_form,
         "payment_form": payment_form,
+        "saved_addresses": user_shipping_addresses,
         "user_shipping_addresses": user_shipping_addresses,
-        "shipping_fee": shipping_fee,  # <-- Pass to template
-        "grand_total": cart.total_price_field
-        + shipping_fee,  # <-- Optional precomputed total
+        "cart_items": cart.items.all(),
+        "subtotal": cart.total_price_field,
+        "shipping_fee": shipping_fee,
+        "grand_total": cart.total_price_field + shipping_fee,
     }
     return render(request, "shop/checkout.html", context)
 

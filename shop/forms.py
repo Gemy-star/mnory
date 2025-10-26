@@ -84,6 +84,18 @@ class LoginForm(AuthenticationForm):
 
 
 class ShippingAddressForm(forms.ModelForm):
+    CITY_CHOICES = [
+        ("", _("Select City")),
+        ("INSIDE_CAIRO", _("Inside Cairo")),
+        ("OUTSIDE_CAIRO", _("Outside Cairo")),
+    ]
+
+    city = forms.ChoiceField(
+        choices=CITY_CHOICES,
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label=_("City")
+    )
+
     class Meta:
         model = ShippingAddress
         fields = [
@@ -100,16 +112,13 @@ class ShippingAddressForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": _("Full Name")}
             ),
             "address_line1": forms.Textarea(
-                attrs={"class": "form-control", "placeholder": _("Address Line 1")}
+                attrs={"class": "form-control", "placeholder": _("Address Line 1"), "rows": 3}
             ),
             "address_line2": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": _("Address Line 2 (Optional)"),
                 }
-            ),
-            "city": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": _("City")}
             ),
             "email": forms.EmailInput(
                 attrs={"class": "form-control", "placeholder": _("Email")}
@@ -125,6 +134,7 @@ class ShippingAddressForm(forms.ModelForm):
             "address_line2": _("Address Line 2"),
             "phone_number": _("Phone Number"),
             "is_default": _("Set as default address"),
+            "city": _("City"),
         }
 
     def __init__(self, *args, **kwargs):
