@@ -1,4 +1,13 @@
 from itertools import chain
+from .models import Category
+
+
+def categories_processor(request):
+    """
+    Provides a list of all active categories to all templates.
+    """
+    categories = Category.objects.filter(is_active=True).order_by("name")
+    return {"all_categories": categories}
 
 
 def notifications_context(request):

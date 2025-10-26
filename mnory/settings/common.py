@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+
 import os
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
@@ -22,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i#13ip5hxcad)*u(0c*7mk38cn-#pubj#cz$36^rn*8cvp*nb8'
+SECRET_KEY = "django-insecure-i#13ip5hxcad)*u(0c*7mk38cn-#pubj#cz$36^rn*8cvp*nb8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -33,92 +34,95 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'shop.apps.ShopConfig',
-    'freelancing.apps.FreelancingConfig',
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'constance',
-    'constance.backends.database',
-    'imagekit',
-    'colorfield',
-    'mathfilters',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "shop.apps.ShopConfig",
+    "freelancing.apps.FreelancingConfig",
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "constance",
+    "constance.backends.database",
+    "imagekit",
+    "colorfield",
+    "mathfilters",
     "django_ckeditor_5",
-    'django_countries',
+    "django_countries",
     # 'widget_tweaks',
 ]
-CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 SITE_ID = 1
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'shop.middleware.AdminAccessMiddleware',
-    'shop.middleware.UserTypeContextMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "shop.middleware.AdminAccessMiddleware",
+    "shop.middleware.UserTypeContextMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'mnory.urls'
+ROOT_URLCONF = "mnory.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], # Look for templates in the 'templates' directory at project root
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'shop.context_processors.categories_processor',
-                'constance.context_processors.config',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
+            BASE_DIR / "templates"
+        ],  # Look for templates in the 'templates' directory at project root
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "shop.context_processors.categories_processor",
+                "shop.context_processors.notifications_context",
+                "constance.context_processors.config",
             ],
         },
     },
 ]
-WSGI_APPLICATION = 'mnory.wsgi.application'
+WSGI_APPLICATION = "mnory.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
-AUTH_USER_MODEL = 'shop.MnoryUser'
+AUTH_USER_MODEL = "shop.MnoryUser"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -126,118 +130,136 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'ar'
-TIME_ZONE = 'Africa/Cairo'
+LANGUAGE_CODE = "ar"
+TIME_ZONE = "Africa/Cairo"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-LOCALE_PATHS = [BASE_DIR / 'locale']
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 LANGUAGES = [
-    ('en', _('English')),
-    ('ar', _('Arabic')),
+    ("en", _("English")),
+    ("ar", _("Arabic")),
 ]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 STATICFILES_DIRS = [
-    BASE_DIR / 'static', # Look for static files in the 'static' directory at project root
+    BASE_DIR
+    / "static",  # Look for static files in the 'static' directory at project root
 ]
 
 # Media files (User-uploaded content, like product images)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR , "media") # Store uploaded media files in the 'media' directory at project root
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(
+    BASE_DIR, "media"
+)  # Store uploaded media files in the 'media' directory at project root
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =======================
 # Django Constance
 # =======================
 CONSTANCE_CONFIG = {
     # Company Info
-    'COMPANY_NAME': ('Mnory', 'Company name', str),
-    'COMPANY_DESCRIPTION': (
-        'Mnory is a modern e-commerce platform offering premium products and a seamless shopping experience.',
-        'Company description',
-        str
+    "COMPANY_NAME": ("Mnory", "Company name", str),
+    "COMPANY_DESCRIPTION": (
+        "Mnory is a modern e-commerce platform offering premium products and a seamless shopping experience.",
+        "Company description",
+        str,
     ),
-    'EMAIL_ADDRESS': ('support@mnory.com', 'Contact email address', str),
-    'WHATSAPP_NUMBER': ('+201234567890', 'WhatsApp number with country code', str),
-
+    "EMAIL_ADDRESS": ("support@mnory.com", "Contact email address", str),
+    "WHATSAPP_NUMBER": ("+201234567890", "WhatsApp number with country code", str),
     # Social Media
-    'FACEBOOK_URL': ('https://facebook.com/yourpage', 'Facebook URL', str),
-    'INSTAGRAM_URL': ('https://instagram.com/yourprofile', 'Instagram URL', str),
-    'TIKTOK_URL': ('https://tiktok.com/@yourprofile', 'TikTok URL', str),
-
+    "FACEBOOK_URL": ("https://facebook.com/yourpage", "Facebook URL", str),
+    "INSTAGRAM_URL": ("https://instagram.com/yourprofile", "Instagram URL", str),
+    "TIKTOK_URL": ("https://tiktok.com/@yourprofile", "TikTok URL", str),
     # Product Flags
-    'ENABLE_BEST_SELLER_FLAG': (True, 'Enable "Best Seller" flag display for products', bool),
-    'ENABLE_NEW_ARRIVAL_FLAG': (True, 'Enable "New Arrival" flag display for products', bool),
-    'ENABLE_FEATURED_FLAG': (True, 'Enable "Featured" flag display for products', bool),
-    'ENABLE_SALE_FLAG': (True, 'Enable "On Sale" flag display for products', bool),
-    'ENABLE_ALL_FLAG': (True, 'Enable "All" flag display for products', bool),
-    'ENABLE_USER_LOG': (False, 'Enable User System (not completed yet)', bool),
-
+    "ENABLE_BEST_SELLER_FLAG": (
+        True,
+        'Enable "Best Seller" flag display for products',
+        bool,
+    ),
+    "ENABLE_NEW_ARRIVAL_FLAG": (
+        True,
+        'Enable "New Arrival" flag display for products',
+        bool,
+    ),
+    "ENABLE_FEATURED_FLAG": (True, 'Enable "Featured" flag display for products', bool),
+    "ENABLE_SALE_FLAG": (True, 'Enable "On Sale" flag display for products', bool),
+    "ENABLE_ALL_FLAG": (True, 'Enable "All" flag display for products', bool),
+    "ENABLE_USER_LOG": (False, "Enable User System (not completed yet)", bool),
     # Shipping
-    'SHIPPING_RATE_CAIRO': (60.00, 'Flat shipping rate for orders inside Cairo.', float),
-    'SHIPPING_RATE_OUTSIDE_CAIRO': (100.00, 'Flat shipping rate for orders outside Cairo.', float),
-
+    "SHIPPING_RATE_CAIRO": (
+        60.00,
+        "Flat shipping rate for orders inside Cairo.",
+        float,
+    ),
+    "SHIPPING_RATE_OUTSIDE_CAIRO": (
+        100.00,
+        "Flat shipping rate for orders outside Cairo.",
+        float,
+    ),
     # Currency
-    'EXCHANGE_RATE_USD_TO_EGP': (50.00, 'Exchange rate from USD to EGP', float),
-
+    "EXCHANGE_RATE_USD_TO_EGP": (50.00, "Exchange rate from USD to EGP", float),
     # Site / Admin
-    'SITE_NAME': (None, 'Site name (managed by django.contrib.sites)', str),
-    'SITE_URL': (None, 'Site URL (managed by django.contrib.sites)', str),
-    'ADMIN_EMAIL': (os.getenv('ADMIN_EMAIL', 'support@mnory.com'), 'Admin Email used to receive emails', str),
-    'SENDGRID_API_KEY': (os.getenv('SENDGRID_API_KEY'), 'SendGrid API Key', str),
+    "SITE_NAME": (None, "Site name (managed by django.contrib.sites)", str),
+    "SITE_URL": (None, "Site URL (managed by django.contrib.sites)", str),
+    "ADMIN_EMAIL": (
+        os.getenv("ADMIN_EMAIL", "support@mnory.com"),
+        "Admin Email used to receive emails",
+        str,
+    ),
+    "SENDGRID_API_KEY": (os.getenv("SENDGRID_API_KEY"), "SendGrid API Key", str),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = {
-    'Company Information': (
-        'COMPANY_NAME',
-        'COMPANY_DESCRIPTION',
-        'EMAIL_ADDRESS',
-        'WHATSAPP_NUMBER',
-        'SITE_NAME',
-        'SITE_URL',
+    "Company Information": (
+        "COMPANY_NAME",
+        "COMPANY_DESCRIPTION",
+        "EMAIL_ADDRESS",
+        "WHATSAPP_NUMBER",
+        "SITE_NAME",
+        "SITE_URL",
     ),
-    'Social Media Links': (
-        'FACEBOOK_URL',
-        'INSTAGRAM_URL',
-        'TIKTOK_URL',
+    "Social Media Links": (
+        "FACEBOOK_URL",
+        "INSTAGRAM_URL",
+        "TIKTOK_URL",
     ),
-    'Shipping': (
-        'SHIPPING_RATE_CAIRO',
-        'SHIPPING_RATE_OUTSIDE_CAIRO',
+    "Shipping": (
+        "SHIPPING_RATE_CAIRO",
+        "SHIPPING_RATE_OUTSIDE_CAIRO",
     ),
-    'Product Flag Toggles': (
-        'ENABLE_BEST_SELLER_FLAG',
-        'ENABLE_NEW_ARRIVAL_FLAG',
-        'ENABLE_FEATURED_FLAG',
-        'ENABLE_SALE_FLAG',
-        'ENABLE_ALL_FLAG',
-        'ENABLE_USER_LOG',
-        'EXCHANGE_RATE_USD_TO_EGP',
+    "Product Flag Toggles": (
+        "ENABLE_BEST_SELLER_FLAG",
+        "ENABLE_NEW_ARRIVAL_FLAG",
+        "ENABLE_FEATURED_FLAG",
+        "ENABLE_SALE_FLAG",
+        "ENABLE_ALL_FLAG",
+        "ENABLE_USER_LOG",
+        "EXCHANGE_RATE_USD_TO_EGP",
     ),
-    'Email & API': (
-        'ADMIN_EMAIL',
-        'SENDGRID_API_KEY',
+    "Email & API": (
+        "ADMIN_EMAIL",
+        "SENDGRID_API_KEY",
     ),
 }
 
-LOGIN_URL = reverse_lazy('shop:login')
-LOGIN_REDIRECT_URL = reverse_lazy('admin:index')
+LOGIN_URL = reverse_lazy("shop:login")
+LOGIN_REDIRECT_URL = reverse_lazy("admin:index")
 # 100 MB = 100 * 1024 * 1024 bytes
 DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
 
 
 # Admin Site Configuration
-ADMIN_MEDIA_PREFIX = '/static/admin/'
+ADMIN_MEDIA_PREFIX = "/static/admin/"
 
 # Security Settings for Admin
 SECURE_ADMIN_LOGIN = True  # Require HTTPS for admin login in production
@@ -246,9 +268,9 @@ SECURE_ADMIN_LOGIN = True  # Require HTTPS for admin login in production
 SESSION_COOKIE_AGE = 3600 * 8  # 8 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-ADMIN_USER_TYPES = ['admin']
-VENDOR_USER_TYPES = ['vendor']
-CUSTOMER_USER_TYPES = ['customer', 'client']
+ADMIN_USER_TYPES = ["admin"]
+VENDOR_USER_TYPES = ["vendor"]
+CUSTOMER_USER_TYPES = ["customer", "client"]
 # Admin Configuration
 ADMIN_SITE_HEADER = "Mnory Shop Administration"
 ADMIN_SITE_TITLE = "Mnory Admin"
@@ -268,12 +290,12 @@ EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 
 
 PLATFORM_SETTINGS = {
-    'MIN_HOURLY_RATE': 5,
-    'MAX_HOURLY_RATE': 500,
-    'MIN_PROJECT_BUDGET': 50,
-    'MAX_PROJECT_BUDGET': 100000,
-    'PROPOSAL_EXPIRY_DAYS': 30,
-    'CONTRACT_AUTO_COMPLETE_DAYS': 90,
-    'PLATFORM_FEE_PERCENTAGE': 0.10,  # 10%
-    'PAYMENT_PROCESSING_FEE': 0.029,  # 2.9%
+    "MIN_HOURLY_RATE": 5,
+    "MAX_HOURLY_RATE": 500,
+    "MIN_PROJECT_BUDGET": 50,
+    "MAX_PROJECT_BUDGET": 100000,
+    "PROPOSAL_EXPIRY_DAYS": 30,
+    "CONTRACT_AUTO_COMPLETE_DAYS": 90,
+    "PLATFORM_FEE_PERCENTAGE": 0.10,  # 10%
+    "PAYMENT_PROCESSING_FEE": 0.029,  # 2.9%
 }
