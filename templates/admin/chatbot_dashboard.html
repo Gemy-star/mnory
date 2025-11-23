@@ -1,0 +1,124 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Chatbot Questions" %}{% endblock %}
+
+{% block content %}
+<div class="content">
+  <h1>{% trans "Chatbot Questions" %}</h1>
+  <p class="help">
+    {% blocktrans %}This page shows recent questions asked to the Mnory chatbot and the automatic answers it returned.{% endblocktrans %}
+  </p>
+
+  <div class="module">
+    <h2>{% trans "Recent questions" %}</h2>
+    <p id="chatbot-questions-message" class="help"></p>
+
+    <p>
+      <label for="chatbot-filter-input">{% trans "Filter" %}</label>
+      <input type="text" id="chatbot-filter-input" style="min-width: 260px;" />
+    </p>
+
+    <table class="table" id="chatbot-questions-table">
+      <thead>
+        <tr>
+          <th style="width: 30%;">{% trans "Question" %}</th>
+          <th style="width: 30%;">{% trans "Answer" %}</th>
+          <th>{% trans "User" %}</th>
+          <th>{% trans "Language" %}</th>
+          <th>{% trans "When" %}</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(function() {
+  var allQuestions = [];
+
+  function renderRows(items) {
+    var table = document.getElementById('chatbot-questions-table');
+    var tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+
+    if (!items || !items.length) {
+      return;
+    }
+
+    items.forEach(function(q) {
+      var tr = document.createElement('tr');
+
+      var tdQ = document.createElement('td');
+      tdQ.textContent = (q.question || '').slice(0, 240);
+      tr.appendChild(tdQ);
+
+      var tdA = document.createElement('td');
+      tdA.textContent = (q.answer || '').slice(0, 240);
+      tr.appendChild(tdA);
+
+      var tdUser = document.createElement('td');
+      tdUser.textContent = q.user || '';
+      tr.appendChild(tdUser);
+
+      var tdLang = document.createElement('td');
+      tdLang.textContent = q.language_code || '';
+      tr.appendChild(tdLang);
+
+      var tdWhen = document.createElement('td');
+      tdWhen.textContent = q.created_at || '';
+      tr.appendChild(tdWhen);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function applyFilter() {
+    var input = document.getElementById('chatbot-filter-input');
+    var q = (input.value || '').toLowerCase();
+    if (!q) {
+      renderRows(allQuestions);
+      return;
+    }
+
+    var filtered = allQuestions.filter(function(item) {
+      var question = (item.question || '').toLowerCase();
+      var answer = (item.answer || '').toLowerCase();
+      var user = (item.user || '').toLowerCase();
+      return (
+        question.indexOf(q) !== -1 ||
+        answer.indexOf(q) !== -1 ||
+        user.indexOf(q) !== -1
+      );
+    });
+    renderRows(filtered);
+  }
+
+  function loadQuestions() {
+    var msg = document.getElementById('chatbot-questions-message');
+    msg.textContent = '{% trans "Loading chatbot questions..." %}';
+
+    fetch('/admin/api/chatbot/questions/')
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        allQuestions = data.questions || [];
+        renderRows(allQuestions);
+        msg.textContent = '{% trans "Loaded" %} ' + allQuestions.length + ' {% trans "questions" %}.';
+      })
+      .catch(function(err) {
+        console.error(err);
+        msg.textContent = '{% trans "Failed to load chatbot questions." %}';
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadQuestions();
+    var filterInput = document.getElementById('chatbot-filter-input');
+    if (filterInput) {
+      filterInput.addEventListener('input', applyFilter);
+    }
+  });
+})();
+</script>
+{% endblock %}

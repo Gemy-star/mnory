@@ -1429,6 +1429,29 @@ class Notification(models.Model):
         return f"Notification for {self.user.email}: {self.title}"
 
 
+class ChatbotQuestion(models.Model):
+    user = models.ForeignKey(
+        MnoryUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="chatbot_questions",
+    )
+    question = models.TextField()
+    answer = models.TextField()
+    language_code = models.CharField(max_length=10, blank=True, null=True)
+    source_path = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("Chatbot question")
+        verbose_name_plural = _("Chatbot questions")
+
+    def __str__(self):
+        return (self.question or "")[:100]
+
+
 class Coupon(models.Model):
     """Model for discount coupons."""
 

@@ -80,6 +80,21 @@ if "constance" in settings.INSTALLED_APPS:
             name="admin_settings_update",
         ),
     ]
+
+urlpatterns += [
+    path(
+        "admin/chatbot/",
+        staff_member_required(
+            TemplateView.as_view(template_name="admin/chatbot_dashboard.html")
+        ),
+        name="admin_chatbot_dashboard",
+    ),
+    path(
+        "admin/api/chatbot/questions/",
+        admin_views.chatbot_questions_list,
+        name="admin_chatbot_questions",
+    ),
+]
 urlpatterns += i18n_patterns(
     path("", include("shop.urls")),  # Your main app
     path("jobs/", include("freelancing.urls")),  # Your freelancer app

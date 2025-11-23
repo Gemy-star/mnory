@@ -153,6 +153,35 @@ def constance_settings_update(request: HttpRequest) -> JsonResponse:
 
 @staff_member_required
 @require_GET
+def chatbot_questions_list(request: HttpRequest) -> JsonResponse:
+    """Return recent chatbot questions for display in the admin dashboard.
+
+    This relies on the ChatbotQuestion model defined in shop.models.
+    """
+
+    from shop.models import ChatbotQuestion  # Imported here to avoid circular imports
+
+    qs = ChatbotQuestion.objects.select_related("user").all()[:500]
+
+    data: list[dict[str, Any]] = []
+    for q in qs:
+        data.append(
+            {
+                "id": q.id,
+                "user": getattr(q.user, "email", None),
+                "question": q.question,
+                "answer": q.answer,
+                "language_code": q.language_code,
+                "source_path": q.source_path,
+                "created_at": q.created_at.isoformat() if q.created_at else None,
+            }
+        )
+
+    return JsonResponse({"questions": data})
+
+
+@staff_member_required
+@require_GET
 def translation_messages(request: HttpRequest, lang_code: str) -> JsonResponse:
     """Return simple list of translation messages for a given language.
 

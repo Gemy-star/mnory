@@ -15,6 +15,7 @@ from .models import (
     Message,
     VendorOrder,
     Payout,
+    ChatbotQuestion,
 )
 from .mixins import (
     AdminVendorCustomerOnlyMixin,
@@ -634,6 +635,19 @@ class MessageAdmin(admin.ModelAdmin):
     list_filter = ("is_read", "created_at")
     search_fields = ("order__order_number", "sender__email", "recipient__email", "body")
     readonly_fields = ("created_at",)
+
+
+@admin.register(ChatbotQuestion, site=shop_admin_site)
+class ChatbotQuestionAdmin(admin.ModelAdmin):
+    list_display = ("short_question", "user", "language_code", "created_at")
+    list_filter = ("language_code", "created_at")
+    search_fields = ("question", "answer", "user__email")
+    readonly_fields = ("user", "question", "answer", "language_code", "source_path", "created_at")
+
+    def short_question(self, obj):
+        return (obj.question or "")[:80]
+
+    short_question.short_description = "Question"
 
 
 @admin.register(VendorOrder, site=shop_admin_site)

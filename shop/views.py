@@ -51,6 +51,7 @@ from .models import (  # noqa
     Message,
     VendorShipping,
     VendorOrder,
+    ChatbotQuestion,
 )
 from decimal import Decimal
 import csv
@@ -418,6 +419,19 @@ def chatbot_api(request):
             "and our Terms of Service. Try asking, for example: "
             '"How do you protect my data?" or "What are your terms and conditions?"'
         )
+
+    # Log the question and answer for admin review
+    try:
+        lang_code = translation.get_language()
+        ChatbotQuestion.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            question=question,
+            answer=answer,
+            language_code=lang_code,
+            source_path=str(request.META.get("HTTP_REFERER", ""))[:255],
+        )
+    except Exception as e:
+        logger.error(f"Failed to log chatbot question: {e}")
 
     return JsonResponse(
         {
