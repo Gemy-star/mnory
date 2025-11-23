@@ -1,6 +1,17 @@
 {% load i18n %}
 <!-- WhatsApp widget styles moved to style.css -->
 
+<button
+   type="button"
+   id="compareFab"
+   class="compare-fab"
+   title="{% trans 'Compare products' %}"
+   aria-label="{% trans 'Compare products' %}"
+   style="display: none;">
+  <span class="material-icons" aria-hidden="true">compare_arrows</span>
+  <span id="compareFabCount" class="compare-fab-count">0</span>
+</button>
+
 <a href="https://wa.me/{{ config.WHATSAPP_NUMBER|cut:'+' }}"
    id="whatsappBtn"
    target="_blank"

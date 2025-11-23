@@ -502,6 +502,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             <span class="material-icons" aria-hidden="true">visibility</span>
                             <span>${translations.quickView}</span>
                         </a>
+                        <button type="button"
+                                class="btn-icon-action compare-btn"
+                                data-action="compare-toggle"
+                                data-product-id="${product.id || product.pk}">
+                            <span class="material-icons" aria-hidden="true">compare_arrows</span>
+                        </button>
                     </div>
                 </div>
             </div>

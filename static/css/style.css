@@ -801,6 +801,24 @@ textarea {
   border-color: var(--theme-border) !important;
 }
 
+.compare-table {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text);
+}
+
+.compare-table thead th {
+  background-color: var(--theme-bg-tertiary);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.compare-table tbody th,
+.compare-table tbody td {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
 body.dark-mode .product-card {
   box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
 }

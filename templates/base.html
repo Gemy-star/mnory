@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE in 'ar' %}rtl{% else %}ltr{% endif %}" class="no-js">
 <head>
@@ -255,6 +255,46 @@
                     {% if LANGUAGE_CODE == 'ar' %}إرسال{% else %}Send{% endif %}
                 </button>
             </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="compareModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{% trans "Compare Products" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="compareTableWrapper" class="table-responsive">
+                        <table class="table table-striped align-middle compare-table"
+                               data-label-name="{% trans 'Name' %}"
+                               data-label-price="{% trans 'Price' %}"
+                               data-label-vendor="{% trans 'Vendor' %}"
+                               data-label-rating="{% trans 'Rating' %}"
+                               data-label-colors="{% trans 'Colors' %}"
+                               data-label-sizes="{% trans 'Sizes' %}"
+                               data-label-availability="{% trans 'Availability' %}">
+                            <thead>
+                                <tr id="compareHeaderRow"></tr>
+                            </thead>
+                            <tbody id="compareBodyRows"></tbody>
+                        </table>
+                    </div>
+                    <div id="compareEmptyState" class="text-center text-muted py-4" style="display: none;">
+                        <span class="material-icons d-block mb-2">compare_arrows</span>
+                        <p>{% trans "Select products to compare." %}</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="compareClearBtn" class="btn btn-outline-secondary">
+                        {% trans "Clear" %}
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                        {% trans "Close" %}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

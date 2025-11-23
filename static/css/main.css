@@ -1194,6 +1194,51 @@ body.dark-mode .payment-icons img {
   text-decoration: none !important;
 }
 
+#compareFab {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--mnory-accent);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 9998;
+}
+
+#compareFab .material-icons {
+  font-size: 24px;
+}
+
+#compareFabCount {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--mnory-accent);
+  font-size: 11px;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+#compareFab:hover {
+  background: var(--mnory-accent-2, var(--mnory-accent));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
 #whatsappIcon {
   font-size: 28px;
   color: #25D366 !important;

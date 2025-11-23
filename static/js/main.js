@@ -916,6 +916,249 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Product compare feature
+    function initCompareFeature() {
+        if (window.__mnoryCompareInitialized) {
+            return;
+        }
+        window.__mnoryCompareInitialized = true;
+
+        const compareItems = [];
+        const maxItems = 3;
+
+        const compareModalEl = document.getElementById('compareModal');
+        let compareModal = null;
+        if (compareModalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            compareModal = new bootstrap.Modal(compareModalEl);
+        }
+
+        const compareTable = document.querySelector('.compare-table');
+        const compareFab = document.getElementById('compareFab');
+        const compareFabCount = document.getElementById('compareFabCount');
+        const labels = compareTable ? {
+            name: compareTable.dataset.labelName || 'Name',
+            price: compareTable.dataset.labelPrice || 'Price',
+            vendor: compareTable.dataset.labelVendor || 'Vendor',
+            rating: compareTable.dataset.labelRating || 'Rating',
+            colors: compareTable.dataset.labelColors || 'Colors',
+            sizes: compareTable.dataset.labelSizes || 'Sizes',
+            availability: compareTable.dataset.labelAvailability || 'Availability'
+        } : {
+            name: 'Name',
+            price: 'Price',
+            vendor: 'Vendor',
+            rating: 'Rating',
+            colors: 'Colors',
+            sizes: 'Sizes',
+            availability: 'Availability'
+        };
+
+        function collectProductData(card) {
+            const id = card.dataset.productId || '';
+            const nameEl = card.querySelector('.product-title-link, .product-name a, .product-name');
+            const name = nameEl ? nameEl.textContent.trim() : '';
+
+            const priceEl = card.querySelector('.product-price-wrapper .current-price') ||
+                card.querySelector('.price-area .sale-price') ||
+                card.querySelector('.price-area .regular-price');
+            const price = priceEl ? priceEl.textContent.trim() : '';
+
+            const vendorEl = card.querySelector('.vendor-name');
+            const vendor = vendorEl ? vendorEl.textContent.trim() : '';
+
+            const ratingTextEl = card.querySelector('.rating-text');
+            const ratingCountEl = card.querySelector('.rating-count');
+            const rating = ratingTextEl ? ratingTextEl.textContent.trim() : '';
+            const ratingCount = ratingCountEl ? ratingCountEl.textContent.trim() : '';
+
+            const colorDots = card.querySelectorAll('.color-swatches .color-dot');
+            const colors = Array.from(colorDots)
+                .map(el => el.getAttribute('title') || '')
+                .filter(Boolean)
+                .join(', ');
+
+            const sizeTags = card.querySelectorAll('.size-tags .size-tag');
+            const sizes = Array.from(sizeTags)
+                .map(el => el.textContent.trim())
+                .filter(Boolean)
+                .join(', ');
+
+            const statusEl = card.querySelector('.availability-status .status');
+            const status = statusEl ? statusEl.textContent.trim() : '';
+
+            const imgEl = card.querySelector('.product-img.main-img, .product-img');
+            const image = imgEl ? imgEl.getAttribute('src') : '';
+
+            const linkEl = card.querySelector('.product-link, .product-title-link');
+            const url = linkEl ? linkEl.getAttribute('href') : '#';
+
+            return {
+                id,
+                name,
+                price,
+                vendor,
+                rating,
+                ratingCount,
+                colors,
+                sizes,
+                status,
+                image,
+                url
+            };
+        }
+
+        function renderCompareModal() {
+            const headerRow = document.getElementById('compareHeaderRow');
+            const bodyRows = document.getElementById('compareBodyRows');
+            const emptyState = document.getElementById('compareEmptyState');
+            const tableWrapper = document.getElementById('compareTableWrapper');
+
+            if (!headerRow || !bodyRows || !emptyState || !tableWrapper) {
+                return;
+            }
+
+            if (compareItems.length === 0) {
+                headerRow.innerHTML = '';
+                bodyRows.innerHTML = '';
+                tableWrapper.style.display = 'none';
+                emptyState.style.display = 'block';
+                if (compareFab) {
+                    compareFab.style.display = 'none';
+                }
+                if (compareFabCount) {
+                    compareFabCount.style.display = 'none';
+                }
+                return;
+            }
+
+            tableWrapper.style.display = 'block';
+            emptyState.style.display = 'none';
+            if (compareFab) {
+                compareFab.style.display = 'flex';
+            }
+            if (compareFabCount) {
+                compareFabCount.style.display = 'flex';
+                compareFabCount.textContent = String(compareItems.length);
+            }
+
+            let headerHtml = '<th></th>';
+            compareItems.forEach(item => {
+                const imgHtml = item.image ? '<img src="' + item.image + '" alt="' + (item.name || '') + '" class="img-fluid" style="max-height: 80px;">' : '';
+                headerHtml += '<th><div class="compare-product-heading">' +
+                    imgHtml +
+                    '<div class="mt-2">' + (item.name || '') + '</div>' +
+                    '</div></th>';
+            });
+            headerRow.innerHTML = headerHtml;
+
+            bodyRows.innerHTML = '';
+
+            const rows = [
+                { key: 'price', label: labels.price },
+                { key: 'vendor', label: labels.vendor },
+                { key: 'rating', label: labels.rating },
+                { key: 'colors', label: labels.colors },
+                { key: 'sizes', label: labels.sizes },
+                { key: 'status', label: labels.availability }
+            ];
+
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                const th = document.createElement('th');
+                th.textContent = row.label;
+                tr.appendChild(th);
+
+                compareItems.forEach(item => {
+                    const td = document.createElement('td');
+                    let value = item[row.key] || '';
+                    if (row.key === 'rating' && item.rating) {
+                        const countText = item.ratingCount ? ' ' + item.ratingCount : '';
+                        value = item.rating + countText;
+                    }
+                    td.textContent = value || '-';
+                    tr.appendChild(td);
+                });
+
+                bodyRows.appendChild(tr);
+            });
+        }
+
+        function openCompareModal() {
+            if (compareModal && compareItems.length > 0) {
+                compareModal.show();
+            }
+        }
+
+        if (compareFab) {
+            compareFab.addEventListener('click', function(e) {
+                e.preventDefault();
+                openCompareModal();
+            });
+        }
+
+        function updateButtonState(card, active) {
+            const btn = card.querySelector('.compare-btn, [data-action="compare-toggle"]');
+            if (!btn) return;
+            if (active) {
+                btn.classList.add('in-compare');
+                btn.setAttribute('aria-pressed', 'true');
+            } else {
+                btn.classList.remove('in-compare');
+                btn.setAttribute('aria-pressed', 'false');
+            }
+        }
+
+        function toggleCompare(card) {
+            const data = collectProductData(card);
+            if (!data.id) return;
+
+            const existingIndex = compareItems.findIndex(item => item.id === data.id);
+            if (existingIndex !== -1) {
+                compareItems.splice(existingIndex, 1);
+                updateButtonState(card, false);
+                renderCompareModal();
+                return;
+            }
+
+            if (compareItems.length >= maxItems) {
+                if (typeof getMainMessage === 'function') {
+                    showMainNotification(getMainMessage('compareLimit'), 'warning');
+                } else {
+                    showMainNotification('You can compare up to ' + maxItems + ' products.', 'warning');
+                }
+                return;
+            }
+
+            compareItems.push(data);
+            updateButtonState(card, true);
+            renderCompareModal();
+        }
+
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.compare-btn, [data-action="compare-toggle"]');
+            if (!btn) return;
+            const card = btn.closest('.product-card');
+            if (!card) return;
+            e.preventDefault();
+            e.stopPropagation();
+            toggleCompare(card);
+        });
+
+        const clearBtn = document.getElementById('compareClearBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                compareItems.splice(0, compareItems.length);
+                document.querySelectorAll('.compare-btn.in-compare').forEach(btn => {
+                    btn.classList.remove('in-compare');
+                    btn.setAttribute('aria-pressed', 'false');
+                });
+                renderCompareModal();
+            });
+        }
+
+        renderCompareModal();
+    }
+
     // Sync cart and wishlist counts across all locations (FIXED)
     function syncCounts() {
         // Call the updateAllCounts function from cart-wishlist.js
@@ -1370,6 +1613,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initPagesDrawer();
     initMobileDrawerTheme();
     updateAllThemeIcons();
+    initCompareFeature();
     initGlobalNotifications();
     syncCounts();
     initPageLoader();
@@ -1464,6 +1708,7 @@ function getMainMessage(key) {
             addedToWishlist: 'Added to wishlist!',
             removedFromWishlist: 'Removed from wishlist',
             loginRequired: 'Please login to continue',
+            compareLimit: 'You can compare up to 3 products.',
             error: 'An error occurred. Please try again.'
         },
         ar: {
@@ -1472,6 +1717,7 @@ function getMainMessage(key) {
             addedToWishlist: 'تمت الإضافة إلى المفضلة!',
             removedFromWishlist: 'تمت الإزالة من المفضلة',
             loginRequired: 'الرجاء تسجيل الدخول للمتابعة',
+            compareLimit: 'يمكنك مقارنة ما يصل إلى 3 منتجات.',
             error: 'حدث خطأ. يرجى المحاولة مرة أخرى.'
         }
     };
