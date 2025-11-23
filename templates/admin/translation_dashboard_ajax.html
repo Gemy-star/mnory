@@ -1,0 +1,251 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Translation Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="content">
+  <h1>{% trans "Translation Dashboard" %}</h1>
+  <p class="help">
+    {% blocktrans %}Use this page to access the interface for managing your project translations.{% endblocktrans %}
+  </p>
+
+  <div class="module" id="translation-status-module">
+    <h2>{% trans "Translation files" %}</h2>
+    <p id="translation-status-message" class="help"></p>
+    <table class="table" id="translation-status-table">
+      <thead>
+        <tr>
+          <th>{% trans "Code" %}</th>
+          <th>{% trans "Language" %}</th>
+          <th>{% trans "PO files" %}</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="module" id="translation-editor-module">
+    <h2>{% trans "Messages" %}</h2>
+    <p id="translation-editor-message" class="help"></p>
+    <p>
+      <label for="translation-filter-input">
+        {% trans "Filter" %}
+      </label>
+      <input type="text" id="translation-filter-input" style="min-width: 260px;" />
+    </p>
+    <table class="table" id="translation-messages-table">
+      <thead>
+        <tr>
+          <th style="width: 45%;">{% trans "Message ID" %}</th>
+          <th>{% trans "Translation" %}</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p>
+      <button type="button" class="button default" id="translation-save-button">
+        {% trans "Save translations" %}
+      </button>
+    </p>
+  </div>
+</div>
+
+<script>
+(function() {
+  var currentLangCode = null;
+  var allMessages = [];
+
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function renderTranslations(payload) {
+    var msg = document.getElementById('translation-status-message');
+    var table = document.getElementById('translation-status-table');
+    var tbody = table.querySelector('tbody');
+
+    tbody.innerHTML = '';
+    msg.textContent = '';
+
+    if (!payload || !payload.languages || !payload.languages.length) {
+      msg.textContent = '{% trans "No translation data found." %}';
+      return;
+    }
+
+    payload.languages.forEach(function(lang) {
+      var tr = document.createElement('tr');
+
+      var tdCode = document.createElement('td');
+      tdCode.textContent = lang.code || '';
+      tr.appendChild(tdCode);
+
+      var tdName = document.createElement('td');
+      tdName.textContent = lang.name || '';
+      tr.appendChild(tdName);
+
+      var tdPo = document.createElement('td');
+      if (lang.po_count && lang.po_count > 0) {
+        tdPo.textContent = lang.po_count + ' *.po';
+      } else {
+        tdPo.textContent = '-';
+      }
+      tr.appendChild(tdPo);
+
+      tr.setAttribute('data-lang-code', lang.code || '');
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', function() {
+        if (!lang.code) return;
+        selectLanguageRow(lang.code, tr);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadTranslations() {
+    var msg = document.getElementById('translation-status-message');
+    msg.textContent = '{% trans "Loading translation data..." %}';
+
+    fetch('/admin/api/translations/')
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) { renderTranslations(data); })
+      .catch(function(err) {
+        console.error(err);
+        msg.textContent = '{% trans "Failed to load translation data." %}';
+      });
+  }
+
+  function renderMessagesTable(messages) {
+    var table = document.getElementById('translation-messages-table');
+    var tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+
+    if (!messages || !messages.length) {
+      return;
+    }
+
+    messages.forEach(function(msg) {
+      var tr = document.createElement('tr');
+
+      var tdId = document.createElement('td');
+      tdId.textContent = msg.msgid || '';
+      tr.appendChild(tdId);
+
+      var tdStr = document.createElement('td');
+      var textarea = document.createElement('textarea');
+      textarea.style.width = '100%';
+      textarea.rows = 2;
+      textarea.value = msg.msgstr || '';
+      textarea.setAttribute('data-msgid', msg.msgid || '');
+      tdStr.appendChild(textarea);
+      tr.appendChild(tdStr);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function selectLanguageRow(langCode, row) {
+    currentLangCode = langCode;
+    var editorMsg = document.getElementById('translation-editor-message');
+    editorMsg.textContent = '{% trans "Loading messages for" %} ' + langCode + '...';
+
+    var rows = document.querySelectorAll('#translation-status-table tbody tr');
+    rows.forEach(function(r) { r.classList.remove('selected'); });
+    if (row) {
+      row.classList.add('selected');
+    }
+
+    fetch('/admin/api/translations/' + encodeURIComponent(langCode) + '/')
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        allMessages = data.messages || [];
+        renderMessagesTable(allMessages);
+        editorMsg.textContent = '{% trans "Loaded" %} ' + allMessages.length + ' {% trans "messages" %}.';
+      })
+      .catch(function(err) {
+        console.error(err);
+        editorMsg.textContent = '{% trans "Failed to load messages." %}';
+      });
+  }
+
+  function applyFilter() {
+    var input = document.getElementById('translation-filter-input');
+    var q = (input.value || '').toLowerCase();
+    if (!q) {
+      renderMessagesTable(allMessages);
+      return;
+    }
+    var filtered = allMessages.filter(function(m) {
+      var id = (m.msgid || '').toLowerCase();
+      var val = (m.msgstr || '').toLowerCase();
+      return id.indexOf(q) !== -1 || val.indexOf(q) !== -1;
+    });
+    renderMessagesTable(filtered);
+  }
+
+  function handleSave() {
+    var editorMsg = document.getElementById('translation-editor-message');
+    if (!currentLangCode) {
+      editorMsg.textContent = '{% trans "Select a language first." %}';
+      return;
+    }
+
+    var inputs = document.querySelectorAll('#translation-messages-table [data-msgid]');
+    var messages = [];
+    inputs.forEach(function(input) {
+      var msgid = input.getAttribute('data-msgid');
+      if (!msgid) return;
+      messages.push({ msgid: msgid, msgstr: input.value || '' });
+    });
+
+    editorMsg.textContent = '{% trans "Saving translations..." %}';
+
+    fetch('/admin/api/translations/' + encodeURIComponent(currentLangCode) + '/update/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ messages: messages })
+    })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (data.errors && Object.keys(data.errors).length) {
+          console.error('Translation save errors', data.errors);
+          editorMsg.textContent = '{% trans "Some translations failed to save." %}';
+        } else {
+          editorMsg.textContent = '{% trans "Translations saved successfully." %}';
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        editorMsg.textContent = '{% trans "Failed to save translations." %}';
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadTranslations();
+    var filterInput = document.getElementById('translation-filter-input');
+    if (filterInput) {
+      filterInput.addEventListener('input', applyFilter);
+    }
+    var saveBtn = document.getElementById('translation-save-button');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', handleSave);
+    }
+  });
+})();
+</script>
+{% endblock %}

@@ -16,19 +16,70 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.generic import TemplateView
+from django.contrib.admin.views.decorators import staff_member_required
 
 from shop.admin_sites import shop_admin_site
 from freelancing.admin_sites import freelancing_admin_site
+from . import admin_views
 
 urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
 ]
-
+if "rosetta" in settings.INSTALLED_APPS:
+    urlpatterns += [
+        re_path(r"^rosetta/", include("rosetta.urls")),
+        path(
+            "admin/translations/",
+            staff_member_required(
+                TemplateView.as_view(
+                    template_name="admin/translation_dashboard_ajax.html"
+                )
+            ),
+            name="admin_translation_dashboard",
+        ),
+        path(
+            "admin/api/translations/",
+            admin_views.translation_metadata,
+            name="admin_translation_metadata",
+        ),
+        path(
+            "admin/api/translations/<str:lang_code>/",
+            admin_views.translation_messages,
+            name="admin_translation_messages",
+        ),
+        path(
+            "admin/api/translations/<str:lang_code>/update/",
+            admin_views.translation_messages_update,
+            name="admin_translation_messages_update",
+        ),
+    ]
+if "constance" in settings.INSTALLED_APPS:
+    urlpatterns += [
+        path(
+            "admin/settings/",
+            staff_member_required(
+                TemplateView.as_view(
+                    template_name="admin/settings_dashboard.html"
+                )
+            ),
+            name="admin_settings_dashboard",
+        ),
+        path(
+            "admin/api/settings/",
+            admin_views.constance_settings_list,
+            name="admin_settings_metadata",
+        ),
+        path(
+            "admin/api/settings/update/",
+            admin_views.constance_settings_update,
+            name="admin_settings_update",
+        ),
+    ]
 urlpatterns += i18n_patterns(
     path("", include("shop.urls")),  # Your main app
     path("jobs/", include("freelancing.urls")),  # Your freelancer app

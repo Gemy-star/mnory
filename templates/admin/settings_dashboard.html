@@ -1,0 +1,191 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Site Settings" %}{% endblock %}
+
+{% block content %}
+<div class="content">
+  <h1>{% trans "Site Settings" %}</h1>
+  <p class="help">
+    {% blocktrans %}Manage dynamic configuration values powered by django-constance.{% endblocktrans %}
+  </p>
+
+  <div id="constance-settings-root"></div>
+  <div id="constance-settings-messages" class="help"></div>
+  <p>
+    <button type="button" class="button default" id="constance-save-button">
+      {% trans "Save changes" %}
+    </button>
+  </p>
+</div>
+
+<script>
+(function() {
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function renderSettings(payload) {
+    var root = document.getElementById('constance-settings-root');
+    var msg = document.getElementById('constance-settings-messages');
+    root.innerHTML = '';
+    msg.textContent = '';
+
+    if (!payload || !payload.fieldsets || !payload.fieldsets.length) {
+      msg.textContent = '{% trans "No settings found." %}';
+      return;
+    }
+
+    payload.fieldsets.forEach(function(fs) {
+      var module = document.createElement('div');
+      module.className = 'module';
+
+      var heading = document.createElement('h2');
+      heading.textContent = fs.name;
+      module.appendChild(heading);
+
+      var table = document.createElement('table');
+      table.className = 'table';
+
+      var thead = document.createElement('thead');
+      thead.innerHTML = '<tr>' +
+        '<th>{% trans "Key" %}</th>' +
+        '<th>{% trans "Value" %}</th>' +
+        '<th>{% trans "Default" %}</th>' +
+        '<th>{% trans "Description" %}</th>' +
+        '</tr>';
+      table.appendChild(thead);
+
+      var tbody = document.createElement('tbody');
+
+      (fs.items || []).forEach(function(item) {
+        var tr = document.createElement('tr');
+
+        var tdKey = document.createElement('td');
+        tdKey.textContent = item.key;
+        tr.appendChild(tdKey);
+
+        var tdValue = document.createElement('td');
+        var input;
+        var typeLower = (item.type || '').toLowerCase();
+
+        if (typeLower === 'bool' || typeLower === 'boolean') {
+          input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = Boolean(item.value);
+        } else if (typeLower === 'int' || typeLower === 'float') {
+          input = document.createElement('input');
+          input.type = 'number';
+          input.value = item.value !== null && item.value !== undefined ? item.value : '';
+        } else {
+          input = document.createElement('input');
+          input.type = 'text';
+          input.value = item.value !== null && item.value !== undefined ? item.value : '';
+        }
+
+        input.setAttribute('data-constance-key', item.key);
+        input.setAttribute('data-constance-type', item.type);
+        input.style.width = '100%';
+
+        tdValue.appendChild(input);
+        tr.appendChild(tdValue);
+
+        var tdDefault = document.createElement('td');
+        tdDefault.textContent = item.default !== null && item.default !== undefined ? item.default : '';
+        tr.appendChild(tdDefault);
+
+        var tdDesc = document.createElement('td');
+        tdDesc.textContent = item.help_text || '';
+        tr.appendChild(tdDesc);
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      module.appendChild(table);
+      root.appendChild(module);
+    });
+  }
+
+  function loadSettings() {
+    var msg = document.getElementById('constance-settings-messages');
+    msg.textContent = '{% trans "Loading settings..." %}';
+
+    fetch('/admin/api/settings/')
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        renderSettings(data);
+      })
+      .catch(function(err) {
+        console.error(err);
+        msg.textContent = '{% trans "Failed to load settings." %}';
+      });
+  }
+
+  function handleSave() {
+    var msg = document.getElementById('constance-settings-messages');
+    msg.textContent = '';
+
+    var inputs = document.querySelectorAll('[data-constance-key]');
+    var updates = {};
+
+    inputs.forEach(function(input) {
+      var key = input.getAttribute('data-constance-key');
+      var type = (input.getAttribute('data-constance-type') || '').toLowerCase();
+      var value;
+
+      if (type === 'bool' || type === 'boolean') {
+        value = input.checked;
+      } else if (type === 'int' || type === 'float') {
+        value = input.value;
+      } else {
+        value = input.value;
+      }
+
+      updates[key] = value;
+    });
+
+    fetch('/admin/api/settings/update/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ updates: updates })
+    })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (data.errors && Object.keys(data.errors).length) {
+          msg.textContent = '{% trans "Some settings failed to save." %}';
+          console.error('Settings errors', data.errors);
+        } else {
+          msg.textContent = '{% trans "Settings saved successfully." %}';
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        msg.textContent = '{% trans "Failed to save settings." %}';
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    var saveBtn = document.getElementById('constance-save-button');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', handleSave);
+    }
+  });
+})();
+</script>
+{% endblock %}

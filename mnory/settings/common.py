@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "django_countries",
     # 'widget_tweaks',
     "channels",
+    "rosetta",
 ]
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 SITE_ID = 1
