@@ -862,6 +862,17 @@ body.chatbot-open #mnoryChatbotToggle {
     max-width: calc(100vw - 32px);
     max-height: calc(100vh - 32px);
   }
+
+  #mnoryChatbotToggle {
+    bottom: 85px;
+    right: 18px;
+    width: 54px;
+    height: 54px;
+  }
+
+  .chatbot-btn .material-icons {
+    font-size: 26px;
+  }
 }
 
 @media (max-width: 767.98px) {
@@ -875,8 +886,21 @@ body.chatbot-open #mnoryChatbotToggle {
   }
 
   #mnoryChatbotToggle {
-    bottom: 90px;
-    right: 15px;
+    bottom: 75px;
+    right: 12px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .chatbot-btn .material-icons {
+    font-size: 28px;
+  }
+
+  .back-to-top-btn {
+    bottom: 20px;
+    right: 12px;
+    width: 48px;
+    height: 48px;
   }
 }
 
@@ -892,8 +916,32 @@ body.chatbot-open #mnoryChatbotToggle {
   }
 
   #mnoryChatbotToggle {
-    bottom: 80px;
+    bottom: 70px;
     right: 10px;
+    width: 58px;
+    height: 58px;
+  }
+
+  .chatbot-btn .material-icons {
+    font-size: 30px;
+  }
+
+  .chatbot-badge {
+    top: -6px;
+    right: -6px;
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  .back-to-top-btn {
+    bottom: 15px;
+    right: 10px;
+    width: 46px;
+    height: 46px;
+  }
+
+  .back-to-top-btn i {
+    font-size: 20px;
   }
 
   .mnory-chatbot-header {
