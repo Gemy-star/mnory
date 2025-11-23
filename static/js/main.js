@@ -1054,28 +1054,62 @@ document.addEventListener('DOMContentLoaded', function() {
             bodyRows.innerHTML = '';
 
             const rows = [
-                { key: 'price', label: labels.price },
-                { key: 'vendor', label: labels.vendor },
-                { key: 'rating', label: labels.rating },
-                { key: 'colors', label: labels.colors },
-                { key: 'sizes', label: labels.sizes },
-                { key: 'status', label: labels.availability }
+                { key: 'price', label: labels.price, icon: 'sell' },
+                { key: 'vendor', label: labels.vendor, icon: 'store' },
+                { key: 'rating', label: labels.rating, icon: 'star' },
+                { key: 'colors', label: labels.colors, icon: 'palette' },
+                { key: 'sizes', label: labels.sizes, icon: 'straighten' },
+                { key: 'status', label: labels.availability, icon: 'inventory_2' }
             ];
 
             rows.forEach(row => {
                 const tr = document.createElement('tr');
                 const th = document.createElement('th');
-                th.textContent = row.label;
+                if (row.icon) {
+                    th.innerHTML = '<span class="material-icons me-1" aria-hidden="true">' +
+                        row.icon +
+                        '</span><span>' + row.label + '</span>';
+                } else {
+                    th.textContent = row.label;
+                }
                 tr.appendChild(th);
 
                 compareItems.forEach(item => {
                     const td = document.createElement('td');
                     let value = item[row.key] || '';
+
                     if (row.key === 'rating' && item.rating) {
                         const countText = item.ratingCount ? ' ' + item.ratingCount : '';
                         value = item.rating + countText;
                     }
-                    td.textContent = value || '-';
+
+                    if (row.key === 'status') {
+                        const rawStatus = value || '';
+                        let statusText = rawStatus
+                            .replace('check_circle', '')
+                            .replace('cancel', '')
+                            .trim();
+                        const lower = rawStatus.toLowerCase();
+                        const isInStock =
+                            lower.includes('stock') ||
+                            lower.includes('متوفر') ||
+                            lower.includes('available');
+                        const iconName = isInStock ? 'check_circle' : 'cancel';
+                        const iconClass = isInStock ? 'text-success' : 'text-danger';
+
+                        if (!statusText) {
+                            statusText = isInStock ? 'In Stock' : rawStatus;
+                        }
+
+                        td.innerHTML =
+                            '<span class="material-icons ' + iconClass + '" aria-hidden="true">' +
+                            iconName +
+                            '</span>' +
+                            '<span class="ms-1">' + statusText + '</span>';
+                    } else {
+                        td.textContent = value || '-';
+                    }
+
                     tr.appendChild(td);
                 });
 
