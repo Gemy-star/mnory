@@ -8,6 +8,7 @@ from django.views.decorators.http import (
     require_GET,
 )  # noqa
 from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -333,6 +334,7 @@ def get_category_products_api(request):
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e), "products": []})
 
+@csrf_exempt
 @require_POST
 def chatbot_api(request):
     """Simple bilingual chatbot for policy/terms/about questions.
