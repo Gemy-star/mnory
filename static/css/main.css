@@ -1241,12 +1241,12 @@ body.dark-mode .payment-icons img {
 
 #whatsappIcon {
   font-size: 28px;
-  color: #25D366 !important;
+  color: var(--mnory-accent) !important;
   transition: color 0.3s ease;
 }
 
 #whatsappBtn:hover #whatsappIcon {
-  color: #000 !important;
+  color: var(--mnory-accent-2, var(--mnory-accent)) !important;
 }
 
 #whatsappBtn:focus,
