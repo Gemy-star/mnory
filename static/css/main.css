@@ -609,8 +609,8 @@ body.theme-transition-active * {
   position: absolute;
   top: -8px;
   right: -8px;
-  background: linear-gradient(135deg, var(--mnory-accent, var(--primary-color)), var(--mnory-accent-2, var(--primary-color)));
-  color: var(--mnory-accent);;
+  background: #ffffff;
+  color: var(--mnory-accent);
   font-size: 10px;
   font-weight: 600;
   padding: 2px 6px;

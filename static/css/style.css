@@ -1832,25 +1832,29 @@ body.dark-mode .payment-icons img {
 
 #whatsappIcon {
   font-size: 28px;
-  color: #25D366 !important;
+  color: var(--mnory-accent) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-shadow: 0 2px 4px rgba(37, 211, 102, 0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 
 #whatsappBtn:hover #whatsappIcon {
-  color: #128C7E !important;
+  color: var(--mnory-accent-2, var(--mnory-accent)) !important;
   transform: scale(1.1) rotate(15deg);
-  text-shadow: 0 4px 8px rgba(18, 140, 126, 0.3);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
 }
 
 /* Dark Theme Support */
 body.dark-mode #whatsappBtn {
-  background: linear-gradient(135deg, rgba(40, 40, 40, 0.95) 0%, rgba(60, 60, 60, 0.9) 100%);
-  border-color: rgba(37, 211, 102, 0.3);
+  background: linear-gradient(
+    135deg,
+    var(--mnory-accent),
+    var(--mnory-accent-2, var(--mnory-accent))
+  );
+  border-color: var(--mnory-accent);
   box-shadow:
-    0 8px 32px rgba(37, 211, 102, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.6),
     0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    inset 0 0 0 1px var(--mnory-accent);
 }
 
 body.dark-mode #whatsappBtn:hover {
@@ -1862,13 +1866,13 @@ body.dark-mode #whatsappBtn:hover {
 }
 
 body.dark-mode #whatsappIcon {
-  color: #25D366 !important;
-  text-shadow: 0 2px 4px rgba(37, 211, 102, 0.4);
+  color: var(--mnory-accent) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 body.dark-mode #whatsappBtn:hover #whatsappIcon {
-  color: #2EE86F !important;
-  text-shadow: 0 4px 8px rgba(46, 232, 111, 0.4);
+  color: var(--mnory-accent-2, var(--mnory-accent)) !important;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
 }
 
 /* Pulse Animation */
