@@ -1845,11 +1845,7 @@ body.dark-mode .payment-icons img {
 
 /* Dark Theme Support */
 body.dark-mode #whatsappBtn {
-  background: linear-gradient(
-    135deg,
-    var(--mnory-accent),
-    var(--mnory-accent-2, var(--mnory-accent))
-  );
+  background: linear-gradient(135deg, #141414 0%, #222222 100%);
   border-color: var(--mnory-accent);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.6),

@@ -184,16 +184,16 @@
             aria-modal="false"
             aria-labelledby="mnoryChatbotTitle"
             dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
-            <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <div class="mnory-chatbot-header">
                 <div>
-                    <div id="mnoryChatbotTitle" style="font-weight: 600; font-size: 0.98rem;">
+                    <div id="mnoryChatbotTitle" class="mnory-chatbot-title">
                         {% if LANGUAGE_CODE == 'ar' %}
                             مساعد منوري
                         {% else %}
                             Mnory Assistant
                         {% endif %}
                     </div>
-                    <div style="font-size: 0.8rem; opacity: 0.9;">
+                    <div class="mnory-chatbot-subtitle">
                         {% if LANGUAGE_CODE == 'ar' %}
                             اسأل عن منوري، سياسة الخصوصية أو الشروط والأحكام
                         {% else %}
@@ -201,57 +201,57 @@
                         {% endif %}
                     </div>
                 </div>
-                <button type="button" id="mnoryChatbotClose" aria-label="{% if LANGUAGE_CODE == 'ar' %}إغلاق المحادثة{% else %}Close chat{% endif %}" style="background: transparent; border: none; color: inherit; padding: 0; margin: 0; cursor: pointer;">
-                    <span class="material-icons" style="font-size: 20px;">close</span>
+                <button type="button" id="mnoryChatbotClose" class="mnory-chatbot-close" aria-label="{% if LANGUAGE_CODE == 'ar' %}إغلاق المحادثة{% else %}Close chat{% endif %}">
+                    <span class="material-icons">close</span>
                 </button>
             </div>
             <div
                 id="mnoryChatbotSuggestions"
-                style="padding: 6px 10px; border-bottom: 1px solid var(--theme-border, #333); background: var(--theme-bg-secondary, #111); font-size: 0.78rem;">
-                <div style="margin-bottom: 4px; opacity: 0.9;">
+                class="mnory-chatbot-suggestions">
+                <div class="mnory-chatbot-suggestions-label">
                     {% if LANGUAGE_CODE == 'ar' %}
                         أسئلة مقترحة
                     {% else %}
                         Suggested questions
                     {% endif %}
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                <div class="mnory-chatbot-suggestions-list">
                     {% if LANGUAGE_CODE == 'ar' %}
-                        <button type="button" class="mnory-chatbot-suggestion" data-question="كيف تحمون بياناتي؟" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="كيف تحمون بياناتي؟">
                             كيف تحمون بياناتي؟
                         </button>
-                        <button type="button" class="mnory-chatbot-suggestion" data-question="ما هي الشروط والأحكام؟" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="ما هي الشروط والأحكام؟">
                             ما هي الشروط والأحكام؟
                         </button>
-                        <button type="button" class="mnory-chatbot-suggestion" data-question="من هو منوري؟" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="من هو منوري؟">
                             من هو منوري؟
                         </button>
                     {% else %}
-                        <button type="button" class="mnory-chatbot-suggestion" data-question="How do you protect my data?" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="How do you protect my data?">
                             How do you protect my data?
                         </button>
-                        <button type="button" class="mnory-chatbot-suggestion" data-question="What are your terms and conditions?" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="What are your terms and conditions?">
                             What are your terms and conditions?
                         </button>
-                        <button type="button" class="mnory-chatbot-suggestion" data-question="What is Mnory?" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="What is Mnory?">
                             What is Mnory?
                         </button>
                     {% endif %}
                 </div>
             </div>
 
-            <div id="mnoryChatbotMessages" style="padding: 10px 12px; overflow-y: auto; flex: 1; font-size: 0.85rem; background: var(--theme-bg, #000);">
+            <div id="mnoryChatbotMessages" class="mnory-chatbot-messages">
             </div>
 
-            <form id="mnoryChatbotForm" style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--theme-border, #333); background: var(--theme-bg-secondary, #111);">
+            <form id="mnoryChatbotForm" class="mnory-chatbot-form">
                 <input
                     id="mnoryChatbotInput"
                     type="text"
                     name="question"
                     autocomplete="off"
                     placeholder="{% if LANGUAGE_CODE == 'ar' %}اكتب سؤالك هنا...{% else %}Type your question...{% endif %}"
-                    style="flex: 1; border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 6px 10px; background: transparent; color: inherit; font-size: 0.85rem;">
-                <button type="submit" style="border-radius: 999px; border: none; padding: 6px 12px; background: var(--primary); color: #fff; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
+                    class="mnory-chatbot-input">
+                <button type="submit" class="mnory-chatbot-send">
                     {% if LANGUAGE_CODE == 'ar' %}إرسال{% else %}Send{% endif %}
                 </button>
             </form>
@@ -361,7 +361,7 @@
                 bubble.style.fontSize = '0.83rem';
                 bubble.style.lineHeight = '1.4';
                 if (sender === 'user') {
-                    bubble.style.background = 'var(--primary)';
+                    bubble.style.background = 'var(--mnory-accent)';
                     bubble.style.color = '#fff';
                     if (document.documentElement.getAttribute('dir') === 'rtl') {
                         bubble.style.borderBottomLeftRadius = '2px';
@@ -369,8 +369,8 @@
                         bubble.style.borderBottomRightRadius = '2px';
                     }
                 } else {
-                    bubble.style.background = 'var(--theme-bg-secondary, #111)';
-                    bubble.style.color = 'inherit';
+                    bubble.style.background = 'var(--theme-bg-secondary)';
+                    bubble.style.color = 'var(--theme-text)';
                     if (document.documentElement.getAttribute('dir') === 'rtl') {
                         bubble.style.borderBottomRightRadius = '2px';
                     } else {

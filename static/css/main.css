@@ -641,14 +641,135 @@ body.theme-transition-active * {
   width: 360px;
   max-width: calc(100% - 40px);
   max-height: min(80vh, 520px);
-  background: var(--theme-bg-secondary, #111);
-  color: inherit;
+  background: var(--theme-bg-secondary);
+  color: var(--theme-text);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   display: none;
   flex-direction: column;
   overflow: hidden;
   z-index: 1040;
+}
+
+.mnory-chatbot-header {
+  background: linear-gradient(135deg, var(--mnory-accent), var(--mnory-accent-2, var(--mnory-accent)));
+  color: #fff;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mnory-chatbot-title {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.mnory-chatbot-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.mnory-chatbot-close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.mnory-chatbot-close .material-icons {
+  font-size: 20px;
+}
+
+.mnory-chatbot-suggestions {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--theme-border);
+  background: var(--theme-bg-secondary);
+  font-size: 0.78rem;
+}
+
+.mnory-chatbot-suggestions-label {
+  margin-bottom: 4px;
+  opacity: 0.9;
+}
+
+.mnory-chatbot-suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mnory-chatbot-suggestion {
+  border-radius: 999px;
+  border: 1px solid var(--theme-border);
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--theme-text);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--transition-ease),
+              color var(--transition-fast) var(--transition-ease),
+              border-color var(--transition-fast) var(--transition-ease);
+}
+
+.mnory-chatbot-suggestion:hover {
+  background: var(--theme-bg);
+  border-color: var(--mnory-accent);
+  color: var(--mnory-accent);
+}
+
+.mnory-chatbot-messages {
+  padding: 10px 12px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 0.85rem;
+  background: var(--theme-bg);
+}
+
+.mnory-chatbot-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--theme-border);
+  background: var(--theme-bg-secondary);
+}
+
+.mnory-chatbot-input {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid var(--theme-input-border, var(--theme-border));
+  padding: 6px 10px;
+  background: var(--theme-input-bg, transparent);
+  color: var(--theme-text);
+  font-size: 0.85rem;
+}
+
+.mnory-chatbot-input::placeholder {
+  color: var(--theme-text-muted);
+}
+
+.mnory-chatbot-send {
+  border-radius: 999px;
+  border: none;
+  padding: 6px 12px;
+  background: var(--mnory-accent);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast) var(--transition-ease),
+              transform var(--transition-fast) var(--transition-ease),
+              box-shadow var(--transition-fast) var(--transition-ease);
+}
+
+.mnory-chatbot-send:hover {
+  background: var(--mnory-accent-2, var(--mnory-accent));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--theme-shadow);
 }
 
 @media (max-width: 767.98px) {
@@ -1186,12 +1307,22 @@ body.dark-mode .payment-icons img {
   background-color: white;
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
+  transition: all var(--transition-fast);
+  animation: mnory-slide-up 0.4s ease-out;
   z-index: 9999;
   position: fixed;
   bottom: 30px;
   left: 20px;
   text-decoration: none !important;
+}
+
+body.dark-mode #whatsappBtn {
+  background-color: #121212;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode #whatsappBtn #whatsappIcon {
+  color: var(--mnory-accent-2, var(--mnory-accent)) !important;
 }
 
 #compareFab {
@@ -1210,6 +1341,8 @@ body.dark-mode .payment-icons img {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   z-index: 9998;
+  transition: all var(--transition-fast);
+  animation: mnory-slide-up 0.4s ease-out;
 }
 
 #compareFab .material-icons {
@@ -1786,6 +1919,7 @@ body.dark-mode .btn-close {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: mnory-slide-up 0.4s ease-out;
 }
 
 .back-to-top-btn:hover {
