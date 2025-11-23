@@ -81,8 +81,9 @@
                 data-action="wishlist-toggle"
                 data-product-id="{{ product.id }}"
                 title="{% if product.id|stringformat:'s' in request.session.wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
-                aria-label="{% if product.id|stringformat:'s' in request.session.wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}">
-                <span class="material-icons">{% if product.id|stringformat:"s" in request.session.wishlist %}close{% else %}favorite_border{% endif %}</span>
+                aria-label="{% if product.id|stringformat:'s' in request.session.wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
+                aria-pressed="{% if product.id|stringformat:'s' in request.session.wishlist %}true{% else %}false{% endif %}">
+                <span class="material-icons">{% if product.id|stringformat:"s" in request.session.wishlist %}favorite{% else %}favorite_border{% endif %}</span>
             </button>
 
             <button type="button" class="action-btn cart-btn {% if product.is_in_cart %}active{% endif %}"

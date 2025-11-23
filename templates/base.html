@@ -261,6 +261,8 @@
                 </button>
             </form>
         </div>
+        <!-- Chatbot Backdrop -->
+        <div id="mnoryChatbotBackdrop" class="mnory-chatbot-backdrop"></div>
     </div>
 
     <div class="modal fade" id="compareModal" tabindex="-1" aria-hidden="true">
@@ -338,13 +340,14 @@
             const toggleBtn = document.getElementById('mnoryChatbotToggle');
             const chatWindow = document.getElementById('mnoryChatbotWindow');
             const closeBtn = document.getElementById('mnoryChatbotClose');
+            const backdrop = document.getElementById('mnoryChatbotBackdrop');
             const form = document.getElementById('mnoryChatbotForm');
             const input = document.getElementById('mnoryChatbotInput');
             const messages = document.getElementById('mnoryChatbotMessages');
             const suggestionsContainer = document.getElementById('mnoryChatbotSuggestions');
             const suggestionButtons = suggestionsContainer ? suggestionsContainer.querySelectorAll('[data-question]') : null;
 
-            if (!toggleBtn || !chatWindow || !form || !input || !messages) {
+            if (!toggleBtn || !chatWindow || !form || !input || !messages || !backdrop) {
                 return;
             }
 
@@ -457,13 +460,22 @@
             }
 
             function openChat() {
+                chatWindow.classList.remove('closing');
+                chatWindow.classList.add('opening');
                 chatWindow.style.display = 'flex';
+                backdrop.classList.add('active');
+                document.body.classList.add('chatbot-open');
                 toggleBtn.setAttribute('aria-expanded', 'true');
+
                 if (!messages.dataset.initialized) {
                     appendMessage(greetingText, 'bot');
                     messages.dataset.initialized = '1';
                 }
-                input.focus();
+
+                setTimeout(function() {
+                    input.focus();
+                }, 300);
+
                 // Hide the badge after first interaction
                 const badge = toggleBtn.querySelector('.chatbot-badge');
                 if (badge) {
@@ -472,11 +484,17 @@
             }
 
             function closeChat() {
-                chatWindow.style.display = 'none';
+                chatWindow.classList.remove('opening');
+                chatWindow.classList.add('closing');
+                backdrop.classList.remove('active');
+                document.body.classList.remove('chatbot-open');
                 toggleBtn.setAttribute('aria-expanded', 'false');
-            }
 
-            toggleBtn.addEventListener('click', function () {
+                setTimeout(function() {
+                    chatWindow.style.display = 'none';
+                    chatWindow.classList.remove('closing');
+                }, 300);
+            }            toggleBtn.addEventListener('click', function () {
                 if (chatWindow.style.display === 'flex') {
                     closeChat();
                 } else {
@@ -498,6 +516,9 @@
             if (closeBtn) {
                 closeBtn.addEventListener('click', closeChat);
             }
+
+            // Close chatbot when clicking backdrop
+            backdrop.addEventListener('click', closeChat);
 
             if (suggestionsContainer && suggestionButtons && suggestionButtons.length) {
                 suggestionButtons.forEach(function (btn) {

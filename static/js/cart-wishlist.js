@@ -256,22 +256,23 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
                 showNotification(data.message || getMessage('wishlistUpdated'), 'success');
                 updateAllCounts();
                 if (button) {
-                    const icon = button.querySelector('i') || button.querySelector('.material-icons');
+                    const icon = button.querySelector('.material-icons') || button.querySelector('i');
                     const card = button.closest('.product-card');
                     const isWishlistPage = card && card.dataset.context === 'wishlist';
                     const btnText = button.querySelector('.btn-text');
+
+                    // Get translated labels
+                    const addToWishlistLabel = isArabic() ? 'إضافة إلى المفضلة' : 'Add to Wishlist';
+                    const removeFromWishlistLabel = isArabic() ? 'إزالة من المفضلة' : 'Remove from Wishlist';
 
                     if (data.in_wishlist || data.added) {
                         // Now in wishlist (added)
                         button.classList.add('active');
                         button.classList.add('in-wishlist');
                         button.setAttribute('aria-pressed', 'true');
-                        button.title = getMessage('wishlistUpdated');
-                        button.setAttribute('aria-label', getMessage('wishlistUpdated'));
+                        button.title = removeFromWishlistLabel;
+                        button.setAttribute('aria-label', removeFromWishlistLabel);
                         if (icon) {
-                            if (!icon.classList.contains('material-icons')) {
-                                icon.className = 'material-icons';
-                            }
                             icon.textContent = 'favorite';
                             icon.style.animation = 'heartBeat 0.5s ease';
                             setTimeout(() => { icon.style.animation = ''; }, 500);
@@ -293,12 +294,9 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
                             button.classList.remove('in-wishlist');
                             button.classList.remove('active');
                             button.setAttribute('aria-pressed', 'false');
-                            button.title = getMessage('wishlistFailed');
-                            button.setAttribute('aria-label', getMessage('wishlistFailed'));
+                            button.title = addToWishlistLabel;
+                            button.setAttribute('aria-label', addToWishlistLabel);
                             if (icon) {
-                                if (!icon.classList.contains('material-icons')) {
-                                    icon.className = 'material-icons';
-                                }
                                 icon.textContent = 'favorite_border';
                             }
                             if (btnText) {
