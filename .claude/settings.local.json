@@ -4,7 +4,8 @@
       "Read(//c/**)",
       "Bash(python manage.py check:*)",
       "Bash(python:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

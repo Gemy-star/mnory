@@ -490,10 +490,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         </a>
                     </div>
                     ${(product.brand || product.category) ?
-                    '<div class="product-meta-info">' +
-                        (product.brand ? '<span class="product-brand">' + product.brand + '</span>' : '') +
-                        (product.category ? '<span class="product-category">' + product.category + '</span>' : '') +
-                    '</div>' : ''}
+                    `<div class="product-meta-info">
+                        ${product.brand ? `<span class="product-brand">${product.brand}</span>` : ''}
+                        ${product.category ? `<span class="product-category">${product.category}</span>` : ''}
+                    </div>` : ''}
                 </div>
                 <div class="product-details-container">
                     ${priceHtml}

@@ -106,7 +106,10 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         fetch(`/${langPrefix}/api/add-to-cart/`, {
             method: 'POST',
             body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             credentials: 'same-origin'
         })
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
@@ -241,7 +244,10 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         fetch(`/${langPrefix}/api/add-to-wishlist/`, {
             method: 'POST',
             body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             credentials: 'same-origin'
         })
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
