@@ -135,6 +135,11 @@
         {% include "partials/_toast.html" %}
     </section>
 
+    <!-- Hidden CSRF form to ensure CSRF cookie is set -->
+    <form style="display: none;" aria-hidden="true">
+        {% csrf_token %}
+    </form>
+
     <!-- Main Content -->
     <main id="main-content" role="main" class="main-content bg-theme" itemscope itemtype="https://schema.org/WebPageElement">
         <div class="content-wrapper">

@@ -259,21 +259,29 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
                     const icon = button.querySelector('i') || button.querySelector('.material-icons');
                     const card = button.closest('.product-card');
                     const isWishlistPage = card && card.dataset.context === 'wishlist';
+                    const btnText = button.querySelector('.btn-text');
 
                     if (data.in_wishlist || data.added) {
+                        // Now in wishlist (added)
                         button.classList.add('active');
                         button.classList.add('in-wishlist');
                         button.setAttribute('aria-pressed', 'true');
+                        button.title = getMessage('wishlistUpdated');
+                        button.setAttribute('aria-label', getMessage('wishlistUpdated'));
                         if (icon) {
-                            // Prefer material icons; convert if a FontAwesome <i> was used
                             if (!icon.classList.contains('material-icons')) {
                                 icon.className = 'material-icons';
                             }
-                            icon.textContent = 'close';
+                            icon.textContent = 'favorite';
                             icon.style.animation = 'heartBeat 0.5s ease';
                             setTimeout(() => { icon.style.animation = ''; }, 500);
                         }
+                        // Keep textual label as "Wishlist" for consistency
+                        if (btnText) {
+                            btnText.textContent = btnText.textContent; // no-op, but keeps structure explicit
+                        }
                     } else {
+                        // Removed from wishlist
                         if (isWishlistPage) {
                             card.classList.add('removing');
                             setTimeout(() => {
@@ -285,11 +293,16 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
                             button.classList.remove('in-wishlist');
                             button.classList.remove('active');
                             button.setAttribute('aria-pressed', 'false');
+                            button.title = getMessage('wishlistFailed');
+                            button.setAttribute('aria-label', getMessage('wishlistFailed'));
                             if (icon) {
                                 if (!icon.classList.contains('material-icons')) {
                                     icon.className = 'material-icons';
                                 }
                                 icon.textContent = 'favorite_border';
+                            }
+                            if (btnText) {
+                                btnText.textContent = btnText.textContent;
                             }
                         }
                     }

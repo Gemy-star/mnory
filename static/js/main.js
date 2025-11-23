@@ -1133,12 +1133,35 @@ document.addEventListener('DOMContentLoaded', function() {
         function updateButtonState(card, active) {
             const btn = card.querySelector('.compare-btn, [data-action="compare-toggle"]');
             if (!btn) return;
+
+            const icon = btn.querySelector('.material-icons, i');
+
             if (active) {
+                // Mark as in compare list
                 btn.classList.add('in-compare');
                 btn.setAttribute('aria-pressed', 'true');
+                btn.title = 'Remove from compare';
+                btn.setAttribute('aria-label', 'Remove from compare');
+
+                if (icon) {
+                    if (!icon.classList.contains('material-icons')) {
+                        icon.className = 'material-icons';
+                    }
+                    icon.textContent = 'close';
+                }
             } else {
+                // Not in compare list
                 btn.classList.remove('in-compare');
                 btn.setAttribute('aria-pressed', 'false');
+                btn.title = 'Compare';
+                btn.setAttribute('aria-label', 'Compare');
+
+                if (icon) {
+                    if (!icon.classList.contains('material-icons')) {
+                        icon.className = 'material-icons';
+                    }
+                    icon.textContent = 'compare_arrows';
+                }
             }
         }
 
