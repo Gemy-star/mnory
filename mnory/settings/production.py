@@ -33,10 +33,47 @@ DATABASES = {
 }
 
 # =======================
+# Redis cache & sessions
+# =======================
+
+# Use Redis for Django cache in production. LOCATION can be overridden
+# via REDIS_URL env var, e.g. redis://127.0.0.1:6379/1
+REDIS_CACHE_LOCATION = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_CACHE_LOCATION,
+        'KEY_PREFIX': 'mnory',
+        'TIMEOUT': 300,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+    }
+}
+
+# Store sessions in both cache (Redis) and DB for resilience
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+SESSION_CACHE_ALIAS = 'default'
+
+# =======================
 # Static & Media
 # =======================
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 FILE_UPLOAD_TEMP_DIR = '/var/tmp/mnory'
+
+# =======================
+# Channels: Redis channel layer
+# =======================
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # =======================
 # Logging

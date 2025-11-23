@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Notifications" %}{% endblock %}
+
+{% block content %}
+<main class="notifications-page">
+    <div class="container py-5">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Notifications" %}</li>
+            </ol>
+        </nav>
+
+        <div class="account-card" data-aos="fade-up">
+            <div class="account-card-header d-flex justify-content-between align-items-center">
+                <h1 class="h4 mb-0">
+                    <span class="material-icons me-2">notifications</span>
+                    {% trans "Your Notifications" %}
+                </h1>
+            </div>
+            <div class="account-card-body">
+                {% if notifications %}
+                    <ul class="list-group list-group-flush">
+                        {% for n in notifications %}
+                            <li class="list-group-item d-flex justify-content-between align-items-start {% if not n.is_read %}fw-bold{% endif %}">
+                                <div class="me-3">
+                                    <div class="small text-muted mb-1">
+                                        {{ n.created_at|date:"Y-m-d H:i" }}
+                                    </div>
+                                    <div>{{ n.title }}</div>
+                                    <div class="small text-muted mt-1">{{ n.message }}</div>
+                                </div>
+                                {% if n.link %}
+                                    <a href="{{ n.link }}" class="btn btn-sm btn-outline-primary">
+                                        <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+                                    </a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center py-4">
+                        <span class="material-icons d-block mb-2" style="font-size: 32px;">notifications_off</span>
+                        {% trans "You have no notifications yet." %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

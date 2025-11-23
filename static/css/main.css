@@ -572,20 +572,110 @@ body.theme-transition-active * {
 /* Back to Top Button */
 .back-to-top-btn {
   position: fixed;
-  bottom: 80px;
+  bottom: 30px;
   right: 20px;
   width: 50px;
   height: 50px;
-  background: var(--primary-color);
-  color: white;
+  background: var(--mnory-accent);
+  color: #fff;
   border: none;
   border-radius: 50%;
   box-shadow: var(--shadow-lg);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 999;
+  transition: all var(--transition-fast);
+  z-index: 20010;
   font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatbot-btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative;
+}
+
+.chatbot-btn .material-icons {
+  font-size: 28px;
+}
+
+.back-to-top-btn i {
+  font-size: 22px;
+}
+
+.chatbot-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, var(--mnory-accent, var(--primary-color)), var(--mnory-accent-2, var(--primary-color)));
+  color: #ff0000;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--theme-border);
+  box-shadow: 0 2px 6px var(--theme-shadow);
+  white-space: nowrap;
+  animation: chatbot-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes chatbot-badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+#mnoryChatbotToggle {
+  bottom: 100px;
+}
+
+.mnory-chatbot-window {
+  position: fixed;
+  bottom: 180px;
+  right: 20px;
+  width: 360px;
+  max-width: calc(100% - 40px);
+  max-height: min(80vh, 520px);
+  background: var(--theme-bg-secondary, #111);
+  color: inherit;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1040;
+}
+
+@media (max-width: 767.98px) {
+  .mnory-chatbot-window {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    bottom: env(safe-area-inset-bottom, 90px);
+    max-height: min(75vh, 520px);
+  }
+
+  #mnoryChatbotToggle {
+    bottom: 100px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .mnory-chatbot-window {
+    left: 8px;
+    right: 8px;
+    bottom: env(safe-area-inset-bottom, 80px);
+    max-height: min(80vh, 520px);
+  }
+
+  #mnoryChatbotToggle {
+    bottom: 90px;
+  }
 }
 
 .back-to-top-btn.visible {
@@ -1099,7 +1189,7 @@ body.dark-mode .payment-icons img {
   transition: background-color 0.3s ease;
   z-index: 9999;
   position: fixed;
-  bottom: env(safe-area-inset-bottom, 20px);
+  bottom: 30px;
   left: 20px;
   text-decoration: none !important;
 }
@@ -1292,8 +1382,14 @@ html, body {
   background: var(--mnory-accent) !important;
   border-color: transparent !important;
   color: #fff !important;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    background-color var(--transition-fast) var(--transition-ease),
+    color var(--transition-fast) var(--transition-ease),
+    border-color var(--transition-fast) var(--transition-ease),
+    transform var(--transition-fast) var(--transition-ease),
+    box-shadow var(--transition-fast) var(--transition-ease);
 }
 
 .btn-primary:hover {
@@ -1321,11 +1417,16 @@ html, body {
   background: var(--theme-bg);
   border: 1px solid var(--theme-border);
   box-shadow: var(--shadow-sm);
-  transition: all var(--transition-normal) var(--transition-ease);
+  transition:
+    transform var(--transition-normal) var(--transition-ease),
+    box-shadow var(--transition-normal) var(--transition-ease),
+    border-color var(--transition-normal) var(--transition-ease);
 }
 
 .card:hover {
   box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  border-color: rgba(var(--mnory-accent-rgb, 0, 122, 255), 0.35);
 }
 
 .card-body {
@@ -1625,7 +1726,7 @@ body.dark-mode .btn-close {
 ======================================== */
 .back-to-top-btn {
   position: fixed;
-  bottom: 80px;
+  bottom: 30px;
   right: 20px;
   width: 50px;
   height: 50px;
@@ -1635,7 +1736,11 @@ body.dark-mode .btn-close {
   border-radius: 50%;
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-fast);
-  z-index: 999;
+  z-index: 20010;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .back-to-top-btn:hover {

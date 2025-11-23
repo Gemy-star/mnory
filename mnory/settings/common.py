@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django_ckeditor_5",
     "django_countries",
     # 'widget_tweaks',
+    "channels",
 ]
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 SITE_ID = 1
@@ -94,6 +95,28 @@ TEMPLATES = [
     },
 ]
 WSGI_APPLICATION = "mnory.wsgi.application"
+ASGI_APPLICATION = "mnory.asgi.application"
+
+# Channels / Redis configuration
+REDIS_URL = os.getenv("REDIS_URL")
+
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+            },
+        }
+    }
+else:
+    # In-memory layer is fine for local development and tests,
+    # but you should use Redis (set REDIS_URL) in production.
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    }
 
 
 # Database

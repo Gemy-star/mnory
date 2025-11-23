@@ -7,6 +7,7 @@ from django.views.decorators.http import (
     require_POST,
     require_GET,
 )  # noqa
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -59,8 +60,9 @@ import uuid
 import logging
 from django.utils.translation import gettext as _
 from constance import config
-from django.utils import timezone
+from django.utils import timezone, translation
 from shop.models import Review
+from itertools import chain
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -213,7 +215,7 @@ def _serialize_products(products_queryset, request):
                     "is_new_arrival": product.is_new_arrival,
                     "is_best_seller": getattr(product, "is_best_seller", False),
                     "is_in_stock": product.is_in_stock,
-                    "discount_percentage": product.get_discount_percentage(),
+                    "discount_percentage": product.get_discount_percentage,
                     "in_wishlist": product.pk in products_in_wishlist_ids,
                     "vendor_name": vendor_name,
                     "vendor_slug": vendor_slug,
@@ -231,6 +233,7 @@ def _serialize_products(products_queryset, request):
 
 
 # --- Core Product & Category Views ---
+@cache_page(60)
 def home(request):
     """Homepage view"""
     # Optimized initial product queries to reduce database hits - excluding obvious dummy/test products
@@ -329,6 +332,99 @@ def get_category_products_api(request):
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e), "products": []})
 
+@require_POST
+def chatbot_api(request):
+    """Simple bilingual chatbot for policy/terms/about questions.
+
+    This endpoint is intentionally lightweight and rule-based. It looks for
+    keywords in the user's question and responds with short, translated
+    summaries based on Mnory's About, Privacy Policy, and Terms content.
+    """
+    question = ""
+    if request.body:
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+            question = str(payload.get("question", "")).strip()
+        except (json.JSONDecodeError, UnicodeDecodeError, AttributeError):
+            question = ""
+    if not question:
+        question = request.POST.get("question", "").strip()
+
+    if not question:
+        return JsonResponse(
+            {"success": False, "error": _("Please type your question.")},
+            status=400,
+        )
+
+    normalized = question.lower()
+
+    privacy_keywords = [
+        "privacy",
+        "data",
+        "personal",
+        "cookies",
+        "سياسة",
+        "خصوصية",
+        "البيانات",
+    ]
+    terms_keywords = [
+        "terms",
+        "conditions",
+        "service",
+        "rules",
+        "شروط",
+        "احكام",
+        "الخدمة",
+        "القواعد",
+    ]
+    about_keywords = [
+        "about",
+        "mnory",
+        "store",
+        "brand",
+        "منوري",
+        "من نحن",
+        "المتجر",
+        "العلامة",
+    ]
+
+    def contains_any(text, keywords):
+        return any(k in text for k in keywords)
+
+    if contains_any(normalized, privacy_keywords):
+        answer = _(
+            "We collect only the information needed to process your orders, "
+            "secure your account, and improve your shopping experience. "
+            "Your data is protected with encryption and strict access controls. "
+            "You can review the full details in our Privacy Policy page."
+        )
+    elif contains_any(normalized, terms_keywords):
+        answer = _(
+            "By using Mnory you agree to our Terms of Service. "
+            "They explain how you can use the platform, payment and delivery "
+            "rules, and limitations of our responsibility. "
+            "For the full legal text, please read the Terms of Service page."
+        )
+    elif contains_any(normalized, about_keywords):
+        answer = _(
+            "Mnory is a fashion and lifestyle platform that offers carefully "
+            "selected products with a focus on quality and reliable delivery "
+            "across Egypt. We work with trusted vendors to bring you a smooth "
+            "online shopping experience."
+        )
+    else:
+        answer = _(
+            "I can help you with information about Mnory, our Privacy Policy, "
+            "and our Terms of Service. Try asking, for example: "
+            '"How do you protect my data?" or "What are your terms and conditions?"'
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "answer": answer,
+        }
+    )
 
 def category_detail(request, slug):
     """Category detail view - supports 'all' to show all products"""
@@ -554,6 +650,7 @@ def subcategory_detail(request, category_slug, slug):
     return render(request, "shop/subcategory_detail.html", context)
 
 
+@cache_page(60)
 def product_detail(request, slug):
     """Product detail view"""
     product = get_object_or_404(
@@ -1892,6 +1989,7 @@ def get_available_sizes_ajax(request, product_id):
     return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
 
+@cache_page(60)
 def vendor_detail(request, slug):
     # 1. Get the VendorProfile instance
     vendor_profile = get_object_or_404(VendorProfile, slug=slug)
@@ -2762,6 +2860,34 @@ def vendor_mark_notifications_as_read(request):
         return JsonResponse(
             {"success": False, "message": _("An error occurred.")}, status=500
         )
+
+
+@login_required
+def notifications_list(request):
+    """List all notifications (shop + freelancing) for the current user."""
+
+    shop_notifications = request.user.shop_notifications.all()
+
+    # Freelancing notifications may not exist in all setups; handle gracefully
+    freelancing_notifications_qs = getattr(
+        request.user, "freelancing_notifications", None
+    )
+    if freelancing_notifications_qs is not None:
+        freelancing_notifications = freelancing_notifications_qs.all()
+    else:
+        freelancing_notifications = []
+
+    all_notifications = sorted(
+        chain(shop_notifications, freelancing_notifications),
+        key=lambda n: n.created_at,
+        reverse=True,
+    )
+
+    return render(
+        request,
+        "shop/notifications_list.html",
+        {"notifications": all_notifications},
+    )
 
 
 @login_required

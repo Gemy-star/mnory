@@ -13,19 +13,19 @@
   "categories": ["shopping", "lifestyle", "fashion"],
   "icons": [
     {
-      "src": "/static/images/icon-192x192.png",
+      "src": "/static/images/logo-black.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/static/images/icon-512x512.png",
+      "src": "/static/images/logo-black.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/static/images/apple-touch-icon.png",
+      "src": "/static/images/logo-black.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
@@ -59,16 +59,16 @@
   ],
   "screenshots": [
     {
-      "src": "/static/images/screenshot-desktop.png",
+      "src": "/static/images/slide1.jpg",
       "sizes": "1280x720",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Mnory Desktop View"
     },
     {
-      "src": "/static/images/screenshot-mobile.png",
+      "src": "/static/images/slide2.jpg",
       "sizes": "375x667",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Mnory Mobile View"
     }

@@ -24,7 +24,23 @@ function showMainNotification(message, type = 'warning') {
         window.showNotification(message, type);
     } else {
         alert(message);
-    };
+    }
+}
+
+// Basic cookie helper (for CSRF token, etc.)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 // ========================================
@@ -461,30 +477,37 @@ document.addEventListener('DOMContentLoaded', function() {
     function initGlobalNotifications() {
         const notificationDropdown = document.getElementById('headerNotificationDropdown');
         const notificationBadge = document.getElementById('headerNotificationBadge');
+        const markUrl = document.body && document.body.dataset
+            ? document.body.dataset.markNotificationsUrl
+            : null;
 
-        if (notificationDropdown) {
-            notificationDropdown.addEventListener('show.bs.dropdown', function () {
-                // When dropdown is opened, mark notifications as read
-                if (notificationBadge && notificationBadge.style.display !== 'none') {
-                    fetch("{% url 'shop:mark_notifications_as_read' %}", {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}', // This will be rendered by Django in the template
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Hide the badge visually
-                            notificationBadge.style.display = 'none';
-                        }
-                    }).catch(error => {
-                        console.error("Error marking notifications as read:", error);
-                    });
-                }
-            });
+        if (!notificationDropdown || !markUrl) {
+            return;
         }
+
+        notificationDropdown.addEventListener('show.bs.dropdown', function () {
+            // When dropdown is opened, mark notifications as read
+            if (notificationBadge && notificationBadge.style.display !== 'none') {
+                fetch(markUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken') || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success) {
+                        // Hide the badge visually
+                        notificationBadge.style.display = 'none';
+                    }
+                }).catch(error => {
+                    console.error("Error marking notifications as read:", error);
+                });
+            }
+        });
     }
 
     // ========================================
@@ -1362,10 +1385,10 @@ document.addEventListener('DOMContentLoaded', function() {
         new Swiper('.wishlist-swiper', {
             slidesPerView: 2,
             spaceBetween: 15,
-                            breakpoints: {
-                                        0:   { slidesPerView: 2, spaceBetween: 15 },
-                                        768: { slidesPerView: 4, spaceBetween: 25 }
-                                },
+            breakpoints: {
+                0: { slidesPerView: 2, spaceBetween: 15 },
+                768: { slidesPerView: 4, spaceBetween: 25 }
+            },
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev'

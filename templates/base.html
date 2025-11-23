@@ -34,7 +34,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
     <link rel="shortcut icon" href="{% static 'images/logo-black.png' %}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/logo-black.png' %}">
     <link rel="apple-touch-icon-precomposed" href="{% static 'images/logo-black.png' %}">
     <link rel="manifest" href="{% static 'manifest.json' %}">
 
@@ -111,7 +111,8 @@
       data-add-to-cart-url="{% url 'shop:add_to_cart' %}"
       data-remove-from-cart-url="{% url 'shop:remove_from_cart' %}"
       data-add-to-wishlist-url="{% url 'shop:add_to_wishlist' %}"
-      data-remove-from-wishlist-url="{% url 'shop:remove_from_wishlist' %}">
+      data-remove-from-wishlist-url="{% url 'shop:remove_from_wishlist' %}"
+      data-mark-notifications-url="{% url 'shop:mark_notifications_as_read' %}">
 
     <!-- Skip Link -->
     <a href="#main-content" class="skip-to-content visually-hidden-focusable">
@@ -162,6 +163,101 @@
         {% include 'partials/_whatsapp.html' %}
     </aside>
 
+    <!-- Mnory Chatbot Widget -->
+    <div id="mnoryChatbotWrapper" aria-live="polite" aria-label="{% if LANGUAGE_CODE == 'ar' %}مساعد منوري{% else %}Mnory Assistant{% endif %}">
+        <button
+            id="mnoryChatbotToggle"
+            type="button"
+            class="back-to-top-btn chatbot-btn"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="mnoryChatbotWindow"
+            aria-label="{% if LANGUAGE_CODE == 'ar' %}مساعدة الدردشة{% else %}Chat support{% endif %}">
+            <span class="material-icons">chat</span>
+            <span class="chatbot-badge">{% if LANGUAGE_CODE == 'ar' %}مرحبا{% else %}Hi{% endif %}</span>
+        </button>
+
+        <div
+            id="mnoryChatbotWindow"
+            class="mnory-chatbot-window"
+            role="dialog"
+            aria-modal="false"
+            aria-labelledby="mnoryChatbotTitle"
+            dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
+            <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <div>
+                    <div id="mnoryChatbotTitle" style="font-weight: 600; font-size: 0.98rem;">
+                        {% if LANGUAGE_CODE == 'ar' %}
+                            مساعد منوري
+                        {% else %}
+                            Mnory Assistant
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 0.8rem; opacity: 0.9;">
+                        {% if LANGUAGE_CODE == 'ar' %}
+                            اسأل عن منوري، سياسة الخصوصية أو الشروط والأحكام
+                        {% else %}
+                            Ask about Mnory, privacy policy or terms
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" id="mnoryChatbotClose" aria-label="{% if LANGUAGE_CODE == 'ar' %}إغلاق المحادثة{% else %}Close chat{% endif %}" style="background: transparent; border: none; color: inherit; padding: 0; margin: 0; cursor: pointer;">
+                    <span class="material-icons" style="font-size: 20px;">close</span>
+                </button>
+            </div>
+            <div
+                id="mnoryChatbotSuggestions"
+                style="padding: 6px 10px; border-bottom: 1px solid var(--theme-border, #333); background: var(--theme-bg-secondary, #111); font-size: 0.78rem;">
+                <div style="margin-bottom: 4px; opacity: 0.9;">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                        أسئلة مقترحة
+                    {% else %}
+                        Suggested questions
+                    {% endif %}
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="كيف تحمون بياناتي؟" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                            كيف تحمون بياناتي؟
+                        </button>
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="ما هي الشروط والأحكام؟" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                            ما هي الشروط والأحكام؟
+                        </button>
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="من هو منوري؟" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                            من هو منوري؟
+                        </button>
+                    {% else %}
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="How do you protect my data?" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                            How do you protect my data?
+                        </button>
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="What are your terms and conditions?" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                            What are your terms and conditions?
+                        </button>
+                        <button type="button" class="mnory-chatbot-suggestion" data-question="What is Mnory?" style="border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 4px 8px; background: transparent; color: inherit; font-size: 0.78rem; cursor: pointer;">
+                            What is Mnory?
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="mnoryChatbotMessages" style="padding: 10px 12px; overflow-y: auto; flex: 1; font-size: 0.85rem; background: var(--theme-bg, #000);">
+            </div>
+
+            <form id="mnoryChatbotForm" style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--theme-border, #333); background: var(--theme-bg-secondary, #111);">
+                <input
+                    id="mnoryChatbotInput"
+                    type="text"
+                    name="question"
+                    autocomplete="off"
+                    placeholder="{% if LANGUAGE_CODE == 'ar' %}اكتب سؤالك هنا...{% else %}Type your question...{% endif %}"
+                    style="flex: 1; border-radius: 999px; border: 1px solid var(--theme-border, #333); padding: 6px 10px; background: transparent; color: inherit; font-size: 0.85rem;">
+                <button type="submit" style="border-radius: 999px; border: none; padding: 6px 12px; background: var(--primary); color: #fff; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
+                    {% if LANGUAGE_CODE == 'ar' %}إرسال{% else %}Send{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Back to Top -->
     <button id="backToTop" class="back-to-top-btn" aria-label="{% if LANGUAGE_CODE == 'ar' %}العودة إلى الأعلى{% else %}Back to top{% endif %}">
         <i class="fas fa-chevron-up"></i>
@@ -190,6 +286,193 @@
 
     <!-- Main JS -->
     <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- Mnory Chatbot Logic -->
+    <script>
+        (function () {
+            const toggleBtn = document.getElementById('mnoryChatbotToggle');
+            const chatWindow = document.getElementById('mnoryChatbotWindow');
+            const closeBtn = document.getElementById('mnoryChatbotClose');
+            const form = document.getElementById('mnoryChatbotForm');
+            const input = document.getElementById('mnoryChatbotInput');
+            const messages = document.getElementById('mnoryChatbotMessages');
+            const suggestionsContainer = document.getElementById('mnoryChatbotSuggestions');
+            const suggestionButtons = suggestionsContainer ? suggestionsContainer.querySelectorAll('[data-question]') : null;
+
+            if (!toggleBtn || !chatWindow || !form || !input || !messages) {
+                return;
+            }
+
+            const greetingText = `{% if LANGUAGE_CODE == 'ar' %}مرحباً! أنا مساعد منوري. يمكنني مساعدتك في فهم من نحن، سياسة الخصوصية، أو الشروط والأحكام.{% else %}Hi! I am the Mnory assistant. I can help you with information about Mnory, our privacy policy, and our terms of service.{% endif %}`;
+            const errorText = `{% if LANGUAGE_CODE == 'ar' %}حدث خطأ غير متوقع، حاول مرة أخرى لاحقاً.{% else %}Something went wrong, please try again later.{% endif %}`;
+            const emptyText = `{% if LANGUAGE_CODE == 'ar' %}من فضلك اكتب سؤالاً أولاً.{% else %}Please type a question first.{% endif %}`;
+
+            function appendMessage(text, sender) {
+                const wrapper = document.createElement('div');
+                wrapper.style.marginBottom = '6px';
+                wrapper.style.display = 'flex';
+                wrapper.style.justifyContent = sender === 'user' ? 'flex-end' : 'flex-start';
+
+                const bubble = document.createElement('div');
+                bubble.textContent = text;
+                bubble.style.maxWidth = '80%';
+                bubble.style.padding = '6px 10px';
+                bubble.style.borderRadius = '12px';
+                bubble.style.fontSize = '0.83rem';
+                bubble.style.lineHeight = '1.4';
+                if (sender === 'user') {
+                    bubble.style.background = 'var(--primary)';
+                    bubble.style.color = '#fff';
+                    if (document.documentElement.getAttribute('dir') === 'rtl') {
+                        bubble.style.borderBottomLeftRadius = '2px';
+                    } else {
+                        bubble.style.borderBottomRightRadius = '2px';
+                    }
+                } else {
+                    bubble.style.background = 'var(--theme-bg-secondary, #111)';
+                    bubble.style.color = 'inherit';
+                    if (document.documentElement.getAttribute('dir') === 'rtl') {
+                        bubble.style.borderBottomRightRadius = '2px';
+                    } else {
+                        bubble.style.borderBottomLeftRadius = '2px';
+                    }
+                }
+
+                wrapper.appendChild(bubble);
+                messages.appendChild(wrapper);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            const csrftoken = getCookie('csrftoken');
+
+            function sendQuestion(rawQuestion) {
+                const question = (rawQuestion || '').trim();
+                if (!question) {
+                    appendMessage(emptyText, 'bot');
+                    return;
+                }
+
+                appendMessage(question, 'user');
+                input.value = '';
+
+                const typingId = 'mnory-typing-indicator';
+                const typing = document.createElement('div');
+                typing.id = typingId;
+                typing.style.marginBottom = '6px';
+                typing.textContent = '...';
+                typing.style.fontSize = '0.78rem';
+                typing.style.opacity = '0.7';
+                messages.appendChild(typing);
+                messages.scrollTop = messages.scrollHeight;
+
+                fetch("{% url 'shop:chatbot_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || ''
+                    },
+                    body: JSON.stringify({ question: question })
+                })
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
+                        const el = document.getElementById(typingId);
+                        if (el && el.parentNode) {
+                            el.parentNode.removeChild(el);
+                        }
+                        if (data && data.success && data.answer) {
+                            appendMessage(data.answer, 'bot');
+                        } else if (data && data.error) {
+                            appendMessage(data.error, 'bot');
+                        } else {
+                            appendMessage(errorText, 'bot');
+                        }
+                    })
+                    .catch(function () {
+                        const el = document.getElementById(typingId);
+                        if (el && el.parentNode) {
+                            el.parentNode.removeChild(el);
+                        }
+                        appendMessage(errorText, 'bot');
+                    });
+            }
+
+            function openChat() {
+                chatWindow.style.display = 'flex';
+                toggleBtn.setAttribute('aria-expanded', 'true');
+                if (!messages.dataset.initialized) {
+                    appendMessage(greetingText, 'bot');
+                    messages.dataset.initialized = '1';
+                }
+                input.focus();
+                // Hide the badge after first interaction
+                const badge = toggleBtn.querySelector('.chatbot-badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+            }
+
+            function closeChat() {
+                chatWindow.style.display = 'none';
+                toggleBtn.setAttribute('aria-expanded', 'false');
+            }
+
+            toggleBtn.addEventListener('click', function () {
+                if (chatWindow.style.display === 'flex') {
+                    closeChat();
+                } else {
+                    openChat();
+                }
+            });
+
+            const headerToggleBtn = document.getElementById('headerChatbotToggle');
+            if (headerToggleBtn) {
+                headerToggleBtn.addEventListener('click', function () {
+                    if (chatWindow.style.display === 'flex') {
+                        closeChat();
+                    } else {
+                        openChat();
+                    }
+                });
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeChat);
+            }
+
+            if (suggestionsContainer && suggestionButtons && suggestionButtons.length) {
+                suggestionButtons.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var q = btn.getAttribute('data-question') || '';
+                        if (!q) {
+                            return;
+                        }
+                        input.value = q;
+                        sendQuestion(q);
+                    });
+                });
+            }
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                sendQuestion(input.value || '');
+            });
+        })();
+    </script>
 
     <!-- Page-Specific JS -->
     {% block js %}{% endblock js %}

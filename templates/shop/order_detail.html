@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n mathfilters %}
+{% load i18n mathfilters static %}
 
 {% block title %}{% trans "Order Details" %}{% endblock %}
 
@@ -121,6 +121,46 @@
                         {% endfor %}
                     </ul>
                 </div>
+
+                <!-- Order Messages / Chat -->
+                <div class="order-messages-section mt-4" id="orderChatContainer" data-order-number="{{ order.order_number }}">
+                    <h3 class="section-title d-flex align-items-center gap-2">
+                        <span class="material-icons">chat</span>
+                        {% trans "Messages about this order" %}
+                    </h3>
+
+                    <ul id="orderMessagesList" class="list-unstyled small mb-3">
+                        {% for m in messages %}
+                            <li class="order-message-item mb-2 {% if m.sender == request.user %}from-me text-end{% else %}from-them text-start{% endif %}">
+                                <div class="fw-semibold">
+                                    {{ m.sender.get_full_name|default:m.sender.email }}
+                                    <span class="text-muted ms-1" style="font-size: 0.75rem;">{{ m.created_at|date:"Y-m-d H:i" }}</span>
+                                </div>
+                                <div class="order-message-body">{{ m.body|linebreaksbr }}</div>
+                            </li>
+                        {% empty %}
+                            <li class="text-muted small">{% trans "No messages yet. Start the conversation." %}</li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if request.user.is_authenticated %}
+                        <form id="orderChatForm" class="order-chat-form">
+                            <div class="input-group">
+                                <input
+                                    id="orderChatInput"
+                                    type="text"
+                                    class="form-control"
+                                    autocomplete="off"
+                                    placeholder="{% trans 'Write a message...' %}">
+                                <button class="btn btn-primary" type="submit">
+                                    <span class="material-icons">send</span>
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <p class="text-muted small mb-0">{% trans "You must be logged in to send messages." %}</p>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Card Footer -->
@@ -137,4 +177,9 @@
         </div>
     </div>
 </main>
+{% endblock %}
+
+{% block js %}
+    {{ block.super }}
+    <script src="{% static 'js/order-chat.js' %}"></script>
 {% endblock %}

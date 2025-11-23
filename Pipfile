@@ -21,6 +21,9 @@ sendgrid = "*"
 django-ckeditor-5 = "*"
 django-mathfilters = "*"
 channels = "*"
+daphne = "*"
+channels-redis = "*"
+django-redis = "*"
 
 [dev-packages]
 django-silk = "*"

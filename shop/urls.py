@@ -16,9 +16,7 @@ urlpatterns = [
     path("product/<slug:slug>/", views.product_detail, name="product_detail"),
     path("vendor/<slug:slug>/", views.vendor_detail, name="vendor_detail"),
     # Search & API Endpoints (All AJAX actions should typically be POST)
-    path(
-        "search/", views.search_products, name="search_products"
-    ),  # GET for search results
+    path("search/", views.search_products, name="search_products"),  # GET for search results
     path(
         "api/products/",
         views.get_category_products_api,
@@ -29,17 +27,23 @@ urlpatterns = [
         views.get_product_variants,
         name="get_product_variants",
     ),  # GET for variant data
+    path("api/add-to-cart/", views.add_to_cart, name="add_to_cart"),  # Renamed, consolidated all add-to-cart here
     path(
-        "api/add-to-cart/", views.add_to_cart, name="add_to_cart"
-    ),  # Renamed, consolidated all add-to-cart here
-    path(
-        "api/add-to-wishlist/", views.add_to_wishlist, name="add_to_wishlist"
+        "api/add-to-wishlist/",
+        views.add_to_wishlist,
+        name="add_to_wishlist",
     ),  # Renamed, consolidated all add-to-wishlist here
     path(
         "api/get-counts/",
         views.get_cart_and_wishlist_counts,
         name="get_cart_and_wishlist_counts",
-    ),  # GET for counts
+    ),  # GET for counts (new endpoint)
+    # Legacy counts URL to support older JS paths like ajax/cart-count/
+    path(
+        "ajax/cart-count/",
+        views.get_cart_and_wishlist_counts,
+        name="cart_count_legacy",
+    ),
     path(
         "api/get-shipping-cost/",
         views.get_shipping_cost,
@@ -52,24 +56,35 @@ urlpatterns = [
     ),
     path("api/apply-coupon/", views.apply_coupon, name="apply_coupon"),
     path("api/remove-coupon/", views.remove_coupon, name="remove_coupon"),
+    path("api/chatbot/", views.chatbot_api, name="chatbot_api"),
     # Advertisement tracking
     path("api/track-ad-view/", views.track_ad_view, name="track_ad_view"),
     path("api/track-ad-click/", views.track_ad_click, name="track_ad_click"),
     # Static Pages
-    path("terms/", TemplateView.as_view(template_name="shop/terms.html"), name="terms"),
     path(
-        "policy/", TemplateView.as_view(template_name="shop/policy.html"), name="policy"
+        "terms/",
+        TemplateView.as_view(template_name="shop/terms.html"),
+        name="terms",
+    ),
+    path(
+        "policy/",
+        TemplateView.as_view(template_name="shop/policy.html"),
+        name="policy",
     ),
     # Cart Views
     path("cart/", views.cart_view, name="cart_view"),
     path(
-        "cart/update-quantity/", views.update_cart_quantity, name="update_cart_quantity"
+        "cart/update-quantity/",
+        views.update_cart_quantity,
+        name="update_cart_quantity",
     ),
     path("cart/remove/", views.remove_from_cart, name="remove_from_cart"),
     # Wishlist Views
     path("wishlist/", views.wishlist_view, name="wishlist_view"),
     path(
-        "wishlist/remove/", views.remove_from_wishlist, name="remove_from_wishlist"
+        "wishlist/remove/",
+        views.remove_from_wishlist,
+        name="remove_from_wishlist",
     ),  # Specific endpoint for removal
     # Checkout & Order Views
     path("checkout/", views.checkout_view, name="checkout"),
@@ -79,15 +94,22 @@ urlpatterns = [
         views.order_confirmation,
         name="order_confirmation",
     ),
-    # path('order/anonymous_confirmation/<int:order_id>/<uuid:token>/', views.order_confirmation_anonymous_view,
-    #      name='order_confirmation_anonymous'),
+    # path(
+    #     "order/anonymous_confirmation/<int:order_id>/<uuid:token>/",
+    #     views.order_confirmation_anonymous_view,
+    #     name="order_confirmation_anonymous",
+    # ),
     path("orders/", views.order_history, name="order_history"),
     path("orders/<str:order_number>/", views.order_detail, name="order_detail"),
     # Buy Now
     path("buy-now/", extra_views.buy_now_view, name="buy_now"),
     # Accounts Views
     path("register/vendor/", user_views.register_vendor, name="register_vendor"),
-    path("register/customer/", user_views.register_customer, name="register_customer"),
+    path(
+        "register/customer/",
+        user_views.register_customer,
+        name="register_customer",
+    ),
     path("logout/", user_views.user_logout, name="logout"),
     path("login/", user_views.login_view, name="login"),
     path("account/profile/", views.profile_view, name="profile"),
@@ -107,9 +129,15 @@ urlpatterns = [
     path("account/settings/", views.account_settings, name="account_settings"),
     path("vendor/dashboard/", views.vendor_dashboard, name="vendor_dashboard"),
     path(
-        "vendor/products/", views.vendor_manage_products, name="vendor_manage_products"
+        "vendor/products/",
+        views.vendor_manage_products,
+        name="vendor_manage_products",
     ),
-    path("vendor/products/add/", views.vendor_add_product, name="vendor_add_product"),
+    path(
+        "vendor/products/add/",
+        views.vendor_add_product,
+        name="vendor_add_product",
+    ),
     path(
         "vendor/products/bulk-stock-edit/",
         views.vendor_bulk_stock_edit,
@@ -159,6 +187,17 @@ urlpatterns = [
         "vendor/notifications/mark-as-read/",
         views.vendor_mark_notifications_as_read,
         name="vendor_mark_notifications_as_read",
+    ),
+    # Global notifications for any logged-in user
+    path(
+        "notifications/",
+        views.notifications_list,
+        name="notifications_list",
+    ),
+    path(
+        "notifications/mark-as-read/",
+        views.mark_notifications_as_read,
+        name="mark_notifications_as_read",
     ),
     path(
         "product/<int:product_id>/review/",
