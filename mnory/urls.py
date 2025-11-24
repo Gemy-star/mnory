@@ -90,6 +90,8 @@ urlpatterns += [
         admin_views.chatbot_questions_list,
         name="admin_chatbot_questions",
     ),
+    # CKEditor 5 upload/browse URLs (provides 'ck_editor_5_upload_file' and others)
+    path("ckeditor5/", include("django_ckeditor_5.urls")),
 ]
 urlpatterns += i18n_patterns(
     path("", include("shop.urls")),  # Your main app

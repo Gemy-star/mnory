@@ -75,6 +75,58 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "mnory.urls"
+CKEDITOR_5_CONFIGS = {
+    "default": {
+        "language": "ar",  # RTL Arabic support
+        "toolbar": [
+            "heading",
+            "|",
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "link",
+            "|",
+            "bulletedList",
+            "numberedList",
+            "blockQuote",
+            "|",
+            "insertTable",
+            "mediaEmbed",
+            "imageUpload",
+            "|",
+            "undo",
+            "redo",
+            "|",
+            "alignment",
+            "horizontalLine",
+            "code",
+            "codeBlock",
+        ],
+        "image": {
+            "toolbar": [
+                "imageTextAlternative",
+                "imageStyle:full",
+                "imageStyle:side",
+                "linkImage",
+                "resizeImage",
+            ],
+            "styles": ["full", "side"],
+        },
+        "table": {
+            "contentToolbar": [
+                "tableColumn",
+                "tableRow",
+                "mergeTableCells",
+                "tableProperties",
+                "tableCellProperties"
+            ]
+        },
+        "mediaEmbed": {
+            "previewsInData": True
+        },
+    }
+}
 
 TEMPLATES = [
     {
