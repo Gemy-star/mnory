@@ -69,6 +69,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "shop.middleware.AdminAccessMiddleware",
     "shop.middleware.UserTypeContextMiddleware",
+    "shop.middleware.LoginRedirectMiddleware",  # Add login redirect middleware
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -275,8 +276,16 @@ CONSTANCE_CONFIG_FIELDSETS = {
     ),
 }
 
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    "shop.backends.RoleBasedRedirectBackend",  # Custom backend for role-based redirects
+    "django.contrib.auth.backends.ModelBackend",  # Default backend
+]
+
 LOGIN_URL = reverse_lazy("shop:login")
-LOGIN_REDIRECT_URL = reverse_lazy("admin:index")
+# LOGIN_REDIRECT_URL will be determined dynamically by middleware based on user type
+# Keeping this as fallback for edge cases
+LOGIN_REDIRECT_URL = reverse_lazy("shop:home")
 # 100 MB = 100 * 1024 * 1024 bytes
 DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 MB

@@ -49,17 +49,16 @@ class Command(BaseCommand):
                     f"Superuser '{DefaultSuperUser.EMAIL}' created successfully."
                 ))
 
-                # Optional: Add the superuser to the 'Admin' group if you have one
-                # This assumes 'Admin' is one of the group names in your Groups enum
+                # Add the superuser to the 'Admin' group
                 try:
-                    admin_group = Group.objects.get(name='Admin')  # Or whatever your admin group is named
+                    admin_group = Group.objects.get(name=Groups.ADMIN.value)
                     superuser.groups.add(admin_group)
                     self.stdout.write(self.style.SUCCESS(
-                        f"Superuser '{DefaultSuperUser.EMAIL}' added to 'Admin' group."
+                        f"Superuser '{DefaultSuperUser.EMAIL}' added to '{Groups.ADMIN.value}' group."
                     ))
                 except Group.DoesNotExist:
                     self.stdout.write(self.style.WARNING(
-                        "Admin group not found. Superuser not added to a specific admin group."
+                        f"'{Groups.ADMIN.value}' group not found. Superuser not added to a specific admin group."
                     ))
 
             except Exception as e:

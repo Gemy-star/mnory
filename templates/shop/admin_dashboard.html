@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Admin Dashboard" %}{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container-fluid py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Admin Dashboard" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Dashboard Header -->
+        <div class="dashboard-header mb-4 d-flex justify-content-between align-items-center" data-aos="fade-up">
+            <div>
+                <h1 class="section-title mb-0">
+                    <span class="material-icons">admin_panel_settings</span>
+                    {% trans "Admin Dashboard" %}
+                </h1>
+                <p class="text-muted mb-0">{% trans "Platform Overview & Management" %}</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/admin/" class="btn btn-outline-primary">
+                    <span class="material-icons">settings</span> {% trans "Django Admin" %}
+                </a>
+                <div class="btn-group">
+                    <a href="?period=today" class="btn btn-sm {% if period == 'today' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "Today" %}</a>
+                    <a href="?period=7d" class="btn btn-sm {% if period == '7d' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "7 Days" %}</a>
+                    <a href="?period=30d" class="btn btn-sm {% if period == '30d' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "30 Days" %}</a>
+                    <a href="?period=month" class="btn btn-sm {% if period == 'month' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "This Month" %}</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Stats Cards -->
+        <div class="row g-4 mb-4" data-aos="fade-up">
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-primary text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity: 0.8;">paid</span>
+                        <h4 class="mt-2 mb-1">{{ total_revenue|floatformat:2 }} EGP</h4>
+                        <p class="mb-0 opacity-75">{% trans "Total Revenue" %} ({{ period_label }})</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-success text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity: 0.8;">shopping_cart</span>
+                        <h4 class="mt-2 mb-1">{{ total_orders }}</h4>
+                        <p class="mb-0 opacity-75">{% trans "Total Orders" %} ({{ period_label }})</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-info text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity: 0.8;">groups</span>
+                        <h4 class="mt-2 mb-1">{{ total_users }}</h4>
+                        <p class="mb-0 opacity-75">{% trans "Total Users" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-warning text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity: 0.8;">inventory</span>
+                        <h4 class="mt-2 mb-1">{{ total_products }}</h4>
+                        <p class="mb-0 opacity-75">{% trans "Total Products" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Stats -->
+        <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-primary" style="font-size: 2rem;">store</span>
+                        <h5 class="mt-2 mb-1">{{ total_vendors }}</h5>
+                        <p class="text-muted mb-0">{% trans "Vendors" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-success" style="font-size: 2rem;">person</span>
+                        <h5 class="mt-2 mb-1">{{ total_customers }}</h5>
+                        <p class="text-muted mb-0">{% trans "Customers" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-info" style="font-size: 2rem;">work</span>
+                        <h5 class="mt-2 mb-1">{{ total_freelancers }}</h5>
+                        <p class="text-muted mb-0">{% trans "Freelancers" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stats-card h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons text-warning" style="font-size: 2rem;">business</span>
+                        <h5 class="mt-2 mb-1">{{ total_companies }}</h5>
+                        <p class="text-muted mb-0">{% trans "Companies" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "Revenue Overview" %} ({{ period_label }})</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "User Distribution" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <canvas id="userTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Quick Links -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6" data-aos="fade-up">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "Recent Orders" %}</h3>
+                        <a href="/admin/shop/order/" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Order #" %}</th>
+                                        <th>{% trans "Customer" %}</th>
+                                        <th>{% trans "Total" %}</th>
+                                        <th>{% trans "Status" %}</th>
+                                        <th>{% trans "Date" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td><a href="/admin/shop/order/{{ order.id }}/change/">#{{ order.order_number }}</a></td>
+                                        <td>{{ order.full_name|truncatewords:2 }}</td>
+                                        <td>{{ order.grand_total }} EGP</td>
+                                        <td>
+                                            <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'pending' %}warning{% else %}info{% endif %}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="5" class="text-center text-muted">{% trans "No recent orders" %}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "Quick Links" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <a href="/admin/shop/product/" class="quick-link-card">
+                                    <span class="material-icons">inventory</span>
+                                    <span>{% trans "Manage Products" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/admin/shop/order/" class="quick-link-card">
+                                    <span class="material-icons">receipt_long</span>
+                                    <span>{% trans "Manage Orders" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/admin/shop/mnoryuser/" class="quick-link-card">
+                                    <span class="material-icons">people</span>
+                                    <span>{% trans "Manage Users" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/admin/shop/vendorprofile/" class="quick-link-card">
+                                    <span class="material-icons">store</span>
+                                    <span>{% trans "Manage Vendors" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/admin/shop/advertisement/" class="quick-link-card">
+                                    <span class="material-icons">campaign</span>
+                                    <span>{% trans "Advertisements" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/admin/shop/coupon/" class="quick-link-card">
+                                    <span class="material-icons">discount</span>
+                                    <span>{% trans "Coupons" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/admin/shop/chatbotquestion/" class="quick-link-card">
+                                    <span class="material-icons">chat</span>
+                                    <span>{% trans "Chatbot Questions" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="/admin/" class="quick-link-card">
+                                    <span class="material-icons">admin_panel_settings</span>
+                                    <span>{% trans "Full Admin Panel" %}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Products & Platform Health -->
+        <div class="row g-4">
+            <div class="col-lg-6" data-aos="fade-up">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "Top Selling Products" %} ({{ period_label }})</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Product" %}</th>
+                                        <th>{% trans "Sales" %}</th>
+                                        <th>{% trans "Revenue" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in top_products %}
+                                    <tr>
+                                        <td>{{ product.name|truncatewords:4 }}</td>
+                                        <td>{{ product.total_sold }}</td>
+                                        <td>{{ product.total_revenue|floatformat:2 }} EGP</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="3" class="text-center text-muted">{% trans "No data available" %}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="account-card h-100">
+                    <div class="account-card-header">
+                        <h3>{% trans "Platform Health" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>{% trans "Active Products" %}</span>
+                            <span class="badge bg-success">{{ active_products }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>{% trans "Pending Orders" %}</span>
+                            <span class="badge bg-warning text-dark">{{ pending_orders }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>{% trans "Low Stock Products" %}</span>
+                            <span class="badge bg-danger">{{ low_stock_count }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>{% trans "Total Reviews" %}</span>
+                            <span class="badge bg-info">{{ total_reviews }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>{% trans "Active Coupons" %}</span>
+                            <span class="badge bg-primary">{{ active_coupons }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.bg-gradient-success {
+    background: linear-gradient(135deg, #0cebeb 0%, #20e3b2 100%);
+}
+.bg-gradient-info {
+    background: linear-gradient(135deg, #2af598 0%, #009efd 100%);
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.quick-link-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    min-height: 120px;
+    text-align: center;
+}
+
+.quick-link-card:hover {
+    border-color: var(--mnory-accent);
+    background-color: rgba(var(--mnory-accent-rgb), 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quick-link-card .material-icons {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--mnory-accent);
+}
+
+.quick-link-card span:last-child {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart');
+    if (revenueCtx) {
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels|safe }},
+                datasets: [{
+                    label: '{% trans "Revenue (EGP)" %}',
+                    data: {{ chart_data|safe }},
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // User Type Chart
+    const userTypeCtx = document.getElementById('userTypeChart');
+    if (userTypeCtx) {
+        new Chart(userTypeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['{% trans "Vendors" %}', '{% trans "Customers" %}', '{% trans "Freelancers" %}', '{% trans "Companies" %}'],
+                datasets: [{
+                    data: [{{ total_vendors }}, {{ total_customers }}, {{ total_freelancers }}, {{ total_companies }}],
+                    backgroundColor: [
+                        '#667eea',
+                        '#20e3b2',
+                        '#009efd',
+                        '#fee140'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

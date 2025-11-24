@@ -60,9 +60,17 @@ def login_view(request):
         login(request, user)
         messages.success(request, _("Login successful."))
 
-        # ✅ If ?next= exists → redirect there
+        # ✅ Check if ?next= exists
         next_url = request.POST.get("next") or request.GET.get("next")
+
+        # Filter out admin URLs for non-admin users - redirect based on role instead
         if next_url:
+            # Don't redirect to admin unless user is actually admin/superuser
+            if "/admin/" in next_url:
+                if not (user.is_superuser or getattr(user, "is_admin_type", False)):
+                    # Non-admin trying to access admin, redirect to their dashboard
+                    return _redirect_by_role(user)
+            # For other next URLs, allow the redirect
             return redirect(next_url)
 
         # Otherwise role-based redirect
@@ -78,17 +86,32 @@ def login_view(request):
 
 
 def _redirect_by_role(user):
-    """Redirect user based on role flags"""
+    """Redirect user based on role flags - Admins/superusers go to /admin/, others to custom dashboards"""
+    # Debug logging
+    import logging
+
+    logger = logging.getLogger(__name__)
+    logger.info(
+        f"Redirecting user: {user.email}, user_type: {user.user_type}, is_superuser: {user.is_superuser}"
+    )
+
     if getattr(user, "is_vendor_type", False):
+        logger.info(f"Redirecting vendor to vendor_dashboard")
         return redirect("shop:vendor_dashboard")
-    if getattr(user, "is_admin_type", False):
-        return redirect("admin:index")
-    if getattr(user, "is_freelancer_type", False) or getattr(
-        user, "is_company_type", False
-    ):
-        return redirect("freelancing_admin:index")
+    if getattr(user, "is_freelancer_type", False):
+        logger.info(f"Redirecting freelancer to freelancer_dashboard")
+        return redirect("freelancer_dashboard")
+    if getattr(user, "is_company_type", False):
+        logger.info(f"Redirecting company to company_dashboard")
+        return redirect("company_dashboard")
     if getattr(user, "is_customer_type", False):
+        logger.info(f"Redirecting customer to profile")
         return redirect("shop:profile")
+    if user.is_superuser or getattr(user, "is_admin_type", False):
+        # Admin/superusers go to Django admin dashboard
+        logger.info(f"Redirecting admin/superuser to Django admin")
+        return redirect("/admin/")
+    logger.info(f"Fallback redirect to home")
     return redirect("shop:home")  # fallback
 
 

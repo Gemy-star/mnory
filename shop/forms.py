@@ -4,9 +4,11 @@ from django.contrib.auth.forms import (
     AuthenticationForm,
     UserChangeForm,
 )
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from .models import *
+from .consts import get_group_for_user_type
 from django.db import transaction, IntegrityError
 
 MnoryUser = get_user_model()
@@ -62,6 +64,11 @@ class RegisterForm(UserCreationForm):
         user.user_type = self.cleaned_data.get("user_type", "customer")
         if commit:
             user.save()
+            # Assign user to appropriate group
+            group_name = get_group_for_user_type(user.user_type)
+            if group_name:
+                group, _ = Group.objects.get_or_create(name=group_name)
+                user.groups.add(group)
         return user
 
 
@@ -222,6 +229,11 @@ class VendorRegistrationForm(UserCreationForm):
                             ),
                         },
                     )
+                    # Assign user to appropriate group
+                    group_name = get_group_for_user_type(user.user_type)
+                    if group_name:
+                        group, _ = Group.objects.get_or_create(name=group_name)
+                        user.groups.add(group)
             except IntegrityError:
                 raise forms.ValidationError(
                     _("A vendor profile already exists for this user.")
@@ -245,6 +257,11 @@ class CustomerRegistrationForm(UserCreationForm):
         user.user_type = "customer"
         if commit:
             user.save()
+            # Assign user to appropriate group
+            group_name = get_group_for_user_type(user.user_type)
+            if group_name:
+                group, _ = Group.objects.get_or_create(name=group_name)
+                user.groups.add(group)
         return user
 
 

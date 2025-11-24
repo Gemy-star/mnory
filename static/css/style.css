@@ -2130,6 +2130,14 @@ html, body {
    PRODUCT CARDS - ENHANCED
 ======================================== */
 .product-card {
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Ensure all child elements respect card boundaries */
+.product-card * {
+  box-sizing: border-box;
 }
 
 /* Product Image Wrapper */
@@ -2554,27 +2562,36 @@ body.dark-mode .vendor-info-compact {
     gap: 1rem;
   }
 
+  .product-card {
+    min-height: 380px;
+  }
+
+  .product-image-wrapper {
+    aspect-ratio: 1 / 1;
+    max-height: 200px;
+  }
+
   .product-title {
     font-size: 0.85rem;
     min-height: 2.2em;
   }
 
   .product-content {
-    padding: 1rem;
+    padding: 0.75rem;
     gap: 0.5rem;
   }
 
   .current-price {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   .old-price {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .action-btn {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
   }
 
   .action-btn .material-icons {
@@ -2590,31 +2607,54 @@ body.dark-mode .vendor-info-compact {
     font-size: 0.65rem;
     padding: 2px 6px;
   }
+
+  .vendor-info-compact {
+    font-size: 0.75rem;
+  }
+
+  .vendor-info-compact .material-icons {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 576px) {
   .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
     gap: 0.75rem;
   }
 
+  .product-card {
+    min-height: 360px;
+  }
+
+  .product-image-wrapper {
+    aspect-ratio: 1 / 1;
+    max-height: 180px;
+  }
+
   .product-title {
-    font-size: 0.8rem;
-    min-height: 2em;
+    font-size: 0.75rem;
+    min-height: 1.8em;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   .product-content {
-    padding: 0.75rem;
-    gap: 0.4rem;
+    padding: 0.6rem;
+    gap: 0.35rem;
   }
 
   .current-price {
-    font-size: 1.1rem;
+    font-size: 1rem;
+  }
+
+  .old-price {
+    font-size: 0.75rem;
   }
 
   .colors-label,
   .sizes-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 
   .colors-label .material-icons,
@@ -2622,17 +2662,163 @@ body.dark-mode .vendor-info-compact {
     font-size: 12px;
   }
 
+  .color-dot {
+    width: 14px;
+    height: 14px;
+  }
+
+  .size-tag {
+    font-size: 0.6rem;
+    padding: 2px 5px;
+  }
+
   .product-rating {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .product-rating .star {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .product-quick-actions {
     opacity: 1;
     transform: translateX(0);
+    gap: 6px;
+  }
+
+  .action-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .action-btn .material-icons {
+    font-size: 16px;
+  }
+
+  .availability-status {
+    font-size: 0.7rem;
+  }
+
+  .availability-status .material-icons {
+    font-size: 14px;
+  }
+
+  .vendor-info-compact {
+    font-size: 0.7rem;
+  }
+
+  .vendor-info-compact .material-icons {
+    font-size: 12px;
+  }
+}
+
+/* Extra small devices - phones under 400px */
+@media (max-width: 400px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .product-card {
+    min-height: 340px;
+  }
+
+  .product-image-wrapper {
+    max-height: 160px;
+  }
+
+  .product-title {
+    font-size: 0.7rem;
+    min-height: 1.6em;
+  }
+
+  .product-content {
+    padding: 0.5rem;
+    gap: 0.3rem;
+  }
+
+  .current-price {
+    font-size: 0.95rem;
+  }
+
+  .old-price {
+    font-size: 0.7rem;
+  }
+
+  .product-colors-preview,
+  .product-sizes-preview {
+    font-size: 0.6rem;
+  }
+
+  .colors-label .material-icons,
+  .sizes-label .material-icons {
+    font-size: 11px;
+  }
+
+  .color-dot {
+    width: 12px;
+    height: 12px;
+  }
+
+  .size-tag {
+    font-size: 0.55rem;
+    padding: 1px 4px;
+  }
+
+  .action-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .action-btn .material-icons {
+    font-size: 15px;
+  }
+
+  .product-quick-actions {
+    gap: 5px;
+  }
+
+  .product-rating {
+    font-size: 0.65rem;
+  }
+
+  .product-rating .star {
+    font-size: 12px;
+  }
+
+  .availability-status {
+    font-size: 0.65rem;
+  }
+
+  .availability-status .material-icons {
+    font-size: 12px;
+  }
+
+  .vendor-info-compact {
+    font-size: 0.65rem;
+  }
+
+  .vendor-info-compact .material-icons {
+    font-size: 11px;
+  }
+
+  .product-badge {
+    padding: 2px 4px;
+    font-size: 0.6rem;
+  }
+
+  .product-badge .material-icons,
+  .product-badge i {
+    font-size: 10px;
+  }
+
+  .stock-indicator {
+    padding: 2px 4px;
+    font-size: 0.6rem;
+  }
+
+  .stock-indicator .material-icons {
+    font-size: 11px;
   }
 }
 

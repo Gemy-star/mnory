@@ -97,6 +97,15 @@ class MnoryUser(AbstractUser):
     def is_affiliate_type(self):
         return self.user_type == "affiliate"
 
+    # Aliases for freelancing app compatibility
+    @property
+    def is_freelancer_user(self):
+        return self.user_type == "freelancer"
+
+    @property
+    def is_company_user(self):
+        return self.user_type == "company"
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)

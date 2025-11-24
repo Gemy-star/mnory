@@ -23,8 +23,6 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.contrib.admin.views.decorators import staff_member_required
 
-from shop.admin_sites import shop_admin_site
-from freelancing.admin_sites import freelancing_admin_site
 from . import admin_views
 
 urlpatterns = [
@@ -63,9 +61,7 @@ if "constance" in settings.INSTALLED_APPS:
         path(
             "admin/settings/",
             staff_member_required(
-                TemplateView.as_view(
-                    template_name="admin/settings_dashboard.html"
-                )
+                TemplateView.as_view(template_name="admin/settings_dashboard.html")
             ),
             name="admin_settings_dashboard",
         ),
@@ -98,10 +94,7 @@ urlpatterns += [
 urlpatterns += i18n_patterns(
     path("", include("shop.urls")),  # Your main app
     path("jobs/", include("freelancing.urls")),  # Your freelancer app
-    path("admin/", admin.site.urls),
-    # Custom admin sites for different user types
-    path("shop-admin/", shop_admin_site.urls),
-    path("freelancing-admin/", freelancing_admin_site.urls),
+    path("admin/", admin.site.urls),  # Django admin for superusers only
 )
 
 if settings.DEBUG:

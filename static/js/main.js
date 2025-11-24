@@ -635,26 +635,41 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!loader.classList.contains('hidden')) {
                 loader.classList.add('hidden');
                 body.classList.remove('loading');
+
                 // Remove from DOM after animation to prevent interaction
                 setTimeout(() => {
                     loader.style.display = 'none';
-                }, 800); // Must match CSS transition duration
+                    // Optional: dispatch custom event for other scripts
+                    window.dispatchEvent(new Event('loaderHidden'));
+                }, 600); // Match CSS transition duration
             }
         };
 
+        // Minimum display time for better UX (prevents flash)
+        const minDisplayTime = new Promise(resolve => {
+            setTimeout(resolve, 800);
+        });
+
         // Promise that resolves on window load
         const windowLoad = new Promise(resolve => {
-            window.addEventListener('load', resolve);
+            if (document.readyState === 'complete') {
+                resolve();
+            } else {
+                window.addEventListener('load', resolve);
+            }
         });
 
-        // Promise that resolves after a timeout
+        // Promise that resolves after a timeout (safety fallback)
         const fallbackTimeout = new Promise(resolve => {
-            setTimeout(resolve, 5000); // 5-second fallback
+            setTimeout(resolve, 6000); // 6-second fallback
         });
 
-        // Hide loader when the first of these events completes
-        Promise.race([windowLoad, fallbackTimeout]).then(() => {
-            hideLoader();
+        // Hide loader when minimum time passed AND content loaded
+        Promise.all([minDisplayTime, Promise.race([windowLoad, fallbackTimeout])]).then(() => {
+            // Small delay for smoother transition
+            requestAnimationFrame(() => {
+                hideLoader();
+            });
         });
     }
 

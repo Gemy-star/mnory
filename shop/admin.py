@@ -26,7 +26,6 @@ from .mixins import (
     CustomerReadOnlyMixin,
     VendorAutoAssignMixin,
 )
-from .admin_sites import shop_admin_site
 
 User = get_user_model()
 
@@ -35,7 +34,7 @@ User = get_user_model()
 # -----------------------------
 
 
-@admin.register(MnoryUser, site=shop_admin_site)
+@admin.register(MnoryUser)
 class MnoryUserAdmin(AdminOnlyMixin, UserRestrictedMixin, admin.ModelAdmin):
     list_display = ("email", "user_type", "is_active", "is_staff", "date_joined")
     search_fields = ("email", "phone_number", "first_name", "last_name")
@@ -66,7 +65,7 @@ class MnoryUserAdmin(AdminOnlyMixin, UserRestrictedMixin, admin.ModelAdmin):
     )
 
 
-@admin.register(VendorProfile, site=shop_admin_site)
+@admin.register(VendorProfile)
 class VendorProfileAdmin(AdminVendorCustomerOnlyMixin, admin.ModelAdmin):
     list_display = (
         "user_email",
@@ -160,7 +159,7 @@ class VendorProfileAdmin(AdminVendorCustomerOnlyMixin, admin.ModelAdmin):
         return tuple(filters)
 
 
-@admin.register(Product, site=shop_admin_site)
+@admin.register(Product)
 class ProductAdmin(
     AdminVendorCustomerOnlyMixin,
     VendorFilterMixin,
@@ -234,7 +233,7 @@ class ProductAdmin(
     deactivate_products.short_description = "Deactivate selected products"
 
 
-@admin.register(Order, site=shop_admin_site)
+@admin.register(Order)
 class OrderAdmin(
     AdminVendorCustomerOnlyMixin,
     CustomerFilterMixin,
@@ -316,7 +315,7 @@ class OrderAdmin(
     mark_as_delivered.short_description = "Mark as Delivered"
 
 
-@admin.register(Cart, site=shop_admin_site)
+@admin.register(Cart)
 class CartAdmin(AdminVendorCustomerOnlyMixin, CustomerFilterMixin, admin.ModelAdmin):
     list_display = ("id", "user_email", "items_count", "created_at", "updated_at")
     search_fields = ("user__email", "user__first_name", "user__last_name")
@@ -340,7 +339,7 @@ class CartAdmin(AdminVendorCustomerOnlyMixin, CustomerFilterMixin, admin.ModelAd
         return readonly_fields
 
 
-@admin.register(Wishlist, site=shop_admin_site)
+@admin.register(Wishlist)
 class WishlistAdmin(
     AdminVendorCustomerOnlyMixin, CustomerFilterMixin, admin.ModelAdmin
 ):
@@ -366,7 +365,7 @@ class WishlistAdmin(
         return readonly_fields
 
 
-@admin.register(ShippingAddress, site=shop_admin_site)
+@admin.register(ShippingAddress)
 class ShippingAddressAdmin(
     AdminVendorCustomerOnlyMixin, CustomerFilterMixin, admin.ModelAdmin
 ):
@@ -436,7 +435,7 @@ class ShippingAddressAdmin(
         return tuple(filters)
 
 
-@admin.register(Payment, site=shop_admin_site)
+@admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
         "id",
@@ -516,7 +515,7 @@ class PaymentAdmin(admin.ModelAdmin):
             self.date_hierarchy = None
 
 
-@admin.register(Advertisement, site=shop_admin_site)
+@admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
     """
     Admin interface for Advertisement model.
@@ -590,7 +589,7 @@ class AdvertisementAdmin(admin.ModelAdmin):
         return qs.select_related("category")
 
 
-@admin.register(Coupon, site=shop_admin_site)
+@admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
     """
     Admin interface for the Coupon model.
@@ -629,7 +628,7 @@ class CouponAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Message, site=shop_admin_site)
+@admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ("order", "sender", "recipient", "created_at", "is_read")
     list_filter = ("is_read", "created_at")
@@ -637,12 +636,19 @@ class MessageAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
 
 
-@admin.register(ChatbotQuestion, site=shop_admin_site)
+@admin.register(ChatbotQuestion)
 class ChatbotQuestionAdmin(admin.ModelAdmin):
     list_display = ("short_question", "user", "language_code", "created_at")
     list_filter = ("language_code", "created_at")
     search_fields = ("question", "answer", "user__email")
-    readonly_fields = ("user", "question", "answer", "language_code", "source_path", "created_at")
+    readonly_fields = (
+        "user",
+        "question",
+        "answer",
+        "language_code",
+        "source_path",
+        "created_at",
+    )
 
     def short_question(self, obj):
         return (obj.question or "")[:80]
@@ -650,7 +656,7 @@ class ChatbotQuestionAdmin(admin.ModelAdmin):
     short_question.short_description = "Question"
 
 
-@admin.register(VendorOrder, site=shop_admin_site)
+@admin.register(VendorOrder)
 class VendorOrderAdmin(admin.ModelAdmin):
     list_display = (
         "order",
@@ -666,7 +672,7 @@ class VendorOrderAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "net_payout")
 
 
-@admin.register(Payout, site=shop_admin_site)
+@admin.register(Payout)
 class PayoutAdmin(admin.ModelAdmin):
     list_display = ("vendor", "amount", "status", "requested_at", "completed_at")
     list_filter = ("status", "requested_at", "completed_at")

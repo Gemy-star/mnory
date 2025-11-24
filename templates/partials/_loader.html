@@ -1,15 +1,33 @@
 {% load static %}
 <div class="loader-content">
+  <!-- Main Logo Container with Rings -->
   <div class="loader-logo-container">
     <!-- Animated Rings -->
-    <div class="loader-ring"></div>
-    <div class="loader-ring"></div>
-    <div class="loader-ring"></div>
+    <div class="loader-ring loader-ring-1"></div>
+    <div class="loader-ring loader-ring-2"></div>
+    <div class="loader-ring loader-ring-3"></div>
+
+    <!-- Rotating Dots -->
+    <div class="loader-dots">
+      <span class="loader-dot"></span>
+      <span class="loader-dot"></span>
+      <span class="loader-dot"></span>
+      <span class="loader-dot"></span>
+    </div>
+
     <!-- Logo -->
     <img src="{% static 'images/logo-black.png' %}" alt="Loading..." class="loader-logo loader-logo-light" loading="eager" />
     <img src="{% static 'images/logo.png' %}" alt="Loading..." class="loader-logo loader-logo-dark" loading="eager" />
   </div>
-  <div class="loader-text">
-    <p>𝓜𝓝𝓞𝓡𝓨</p>
+
+  <!-- Brand Text -->
+  <div class="loader-brand">
+    <h2 class="loader-text">𝓜𝓝𝓞𝓡𝓨</h2>
+    <p class="loader-tagline">Your Marketplace</p>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="loader-progress">
+    <div class="loader-progress-bar"></div>
   </div>
 </div>
