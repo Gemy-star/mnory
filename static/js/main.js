@@ -18,9 +18,11 @@ if ('performance' in window && 'mark' in performance) {
 // UTILITY FUNCTIONS
 // ========================================
 
-// Simple notification function (uses cart-wishlist.js if available)
+// Simple notification function (uses toast/notification helpers if available)
 function showMainNotification(message, type = 'warning') {
-    if (typeof window.showNotification === 'function') {
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+    } else if (typeof window.showNotification === 'function') {
         window.showNotification(message, type);
     } else {
         alert(message);

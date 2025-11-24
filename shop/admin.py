@@ -16,6 +16,8 @@ from .models import (
     VendorOrder,
     Payout,
     ChatbotQuestion,
+    Color,
+    Size,
 )
 from .mixins import (
     AdminVendorCustomerOnlyMixin,
@@ -731,3 +733,18 @@ class PayoutAdmin(admin.ModelAdmin):
             )
 
     mark_as_failed.short_description = "Mark selected payouts as Failed (and refund)"
+
+
+@admin.register(Color)
+class ColorAdmin(admin.ModelAdmin):
+    list_display = ("name", "hex_code", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("name",)
+
+
+@admin.register(Size)
+class SizeAdmin(admin.ModelAdmin):
+    list_display = ("name", "size_type", "order", "is_active")
+    list_filter = ("size_type", "is_active")
+    search_fields = ("name",)
+    ordering = ("size_type", "order", "name")

@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% if form.instance.pk %}{% trans "Edit Product" %}{% else %}{% trans "Add Product" %}{% endif %} - Mnory Admin{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="material-icons">{% if form.instance.pk %}edit{% else %}add_circle{% endif %}</i>
+                        {% if form.instance.pk %}{% trans "Edit Product" %}{% else %}{% trans "Add New Product" %}{% endif %}
+                    </h5>
+                    <a href="{% url 'shop:admin_products' %}" class="btn btn-sm btn-secondary">
+                        <i class="material-icons">arrow_back</i>
+                        {% trans "Back to Products" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="productForm">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ form.non_field_errors }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- Basic Information -->
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Basic Information" %}</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.name.label }} <span class="text-danger">*</span></label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.short_description.label }}</label>
+                                    {{ form.short_description }}
+                                    {% if form.short_description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.short_description.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.description.label }} <span class="text-danger">*</span></label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Categorization & Pricing -->
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Categorization & Pricing" %}</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.category.label }} <span class="text-danger">*</span></label>
+                                    {{ form.category }}
+                                    {% if form.category.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.category.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.subcategory.label }}</label>
+                                    {{ form.subcategory }}
+                                    {% if form.subcategory.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.subcategory.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.brand.label }}</label>
+                                    {{ form.brand }}
+                                    {% if form.brand.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.brand.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.fit_type.label }}</label>
+                                    {{ form.fit_type }}
+                                    {% if form.fit_type.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.fit_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ form.price.label }} <span class="text-danger">*</span></label>
+                                        {{ form.price }}
+                                        {% if form.price.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ form.sale_price.label }}</label>
+                                        {{ form.sale_price }}
+                                        {% if form.sale_price.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.sale_price.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="row">
+                            <!-- Vendor & Status -->
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Vendor & Status" %}</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.vendor.label }} <span class="text-danger">*</span></label>
+                                    {{ form.vendor }}
+                                    {% if form.vendor.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.vendor.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            {{ form.is_active.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Status & Highlights -->
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Status & Highlights" %}</h6>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_available }}
+                                        <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                                            {{ form.is_available.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.is_available.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.is_available.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_featured }}
+                                        <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
+                                            {{ form.is_featured.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.is_featured.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.is_featured.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_best_seller }}
+                                        <label class="form-check-label" for="{{ form.is_best_seller.id_for_label }}">
+                                            {{ form.is_best_seller.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.is_best_seller.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.is_best_seller.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_new_arrival }}
+                                        <label class="form-check-label" for="{{ form.is_new_arrival.id_for_label }}">
+                                            {{ form.is_new_arrival.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.is_new_arrival.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.is_new_arrival.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Additional Details -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Additional Details" %}</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.meta_title.label }}</label>
+                                    {{ form.meta_title }}
+                                    {% if form.meta_title.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.meta_title.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.meta_description.label }}</label>
+                                    {{ form.meta_description }}
+                                    {% if form.meta_description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.meta_description.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.size_chart.label }}</label>
+                                    {{ form.size_chart }}
+                                    {% if form.size_chart.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.size_chart.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.delivery_return.label }}</label>
+                                    {{ form.delivery_return }}
+                                    {% if form.delivery_return.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.delivery_return.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'shop:admin_products' %}" class="btn btn-secondary">
+                                <i class="material-icons">cancel</i>
+                                {% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="material-icons">save</i>
+                                {% if form.instance.pk %}{% trans "Update Product" %}{% else %}{% trans "Create Product" %}{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

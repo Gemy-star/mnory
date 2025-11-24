@@ -197,7 +197,14 @@ document.addEventListener('DOMContentLoaded', function() {
             rowToDelete.style.opacity = '0';
             setTimeout(() => rowToDelete.remove(), 500);
         } else {
-            alert(data.message || '{% trans "An error occurred." %}');
+            const message = data.message || '{% trans "An error occurred." %}';
+            if (window.showToast) {
+                window.showToast(message, 'error');
+            } else if (typeof window.showNotification === 'function') {
+                window.showNotification(message, 'error');
+            } else {
+                alert(message);
+            }
         }
         deleteModal.hide();
     });

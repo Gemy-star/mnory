@@ -5,7 +5,7 @@
 
 {% block content %}
 <main class="category-detail-section">
-    <div class="container-fluid py-4">
+    <div class="container py-4">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
             <ol class="breadcrumb">
@@ -192,45 +192,57 @@
                     <div class="account-card-body">
                         <div class="row g-3">
                             <div class="col-6">
-                                <a href="/admin/shop/product/" class="quick-link-card">
+                                <a href="{% url 'shop:admin_products' %}" class="quick-link-card">
                                     <span class="material-icons">inventory</span>
                                     <span>{% trans "Manage Products" %}</span>
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="/admin/shop/order/" class="quick-link-card">
+                                <a href="{% url 'shop:admin_orders' %}" class="quick-link-card">
                                     <span class="material-icons">receipt_long</span>
                                     <span>{% trans "Manage Orders" %}</span>
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="/admin/shop/mnoryuser/" class="quick-link-card">
+                                <a href="{% url 'shop:admin_users' %}" class="quick-link-card">
                                     <span class="material-icons">people</span>
                                     <span>{% trans "Manage Users" %}</span>
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="/admin/shop/vendorprofile/" class="quick-link-card">
+                                <a href="{% url 'shop:admin_vendors' %}" class="quick-link-card">
                                     <span class="material-icons">store</span>
                                     <span>{% trans "Manage Vendors" %}</span>
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="/admin/shop/advertisement/" class="quick-link-card">
+                                <a href="{% url 'shop:admin_ads' %}" class="quick-link-card">
                                     <span class="material-icons">campaign</span>
                                     <span>{% trans "Advertisements" %}</span>
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="/admin/shop/coupon/" class="quick-link-card">
+                                <a href="{% url 'shop:admin_coupons' %}" class="quick-link-card">
                                     <span class="material-icons">discount</span>
                                     <span>{% trans "Coupons" %}</span>
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="/admin/shop/chatbotquestion/" class="quick-link-card">
+                                <a href="{% url 'shop:admin_chatbot' %}" class="quick-link-card">
                                     <span class="material-icons">chat</span>
                                     <span>{% trans "Chatbot Questions" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{% url 'admin_settings_dashboard' %}" class="quick-link-card">
+                                    <span class="material-icons">tune</span>
+                                    <span>{% trans "Site Settings" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{% url 'admin_translation_dashboard' %}" class="quick-link-card">
+                                    <span class="material-icons">translate</span>
+                                    <span>{% trans "Translations" %}</span>
                                 </a>
                             </div>
                             <div class="col-6">
@@ -362,6 +374,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Get theme colors
+    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
     // Revenue Chart
     const revenueCtx = document.getElementById('revenueChart');
     if (revenueCtx) {
@@ -388,7 +405,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            color: textColor
+                        },
+                        grid: {
+                            color: gridColor
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: textColor
+                        },
+                        grid: {
+                            color: gridColor
+                        }
                     }
                 }
             }
@@ -414,10 +445,31 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: textColor
+                        }
+                    }
+                }
             }
         });
     }
+
+    // Update charts when theme changes
+    const themeObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'data-theme') {
+                location.reload(); // Reload to update chart colors
+            }
+        });
+    });
+
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+    });
 });
 </script>
 {% endblock %}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Manage Vendors" %} - {% trans "Admin" %}{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:admin_dashboard' %}"><span class="material-icons">admin_panel_settings</span> {% trans "Admin Dashboard" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Manage Vendors" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="dashboard-header mb-4" data-aos="fade-up">
+            <h1 class="section-title mb-0">
+                <span class="material-icons">store</span>
+                {% trans "Manage Vendors" %}
+            </h1>
+            <p class="text-muted mb-0">{{ total_count }} {% trans "total vendors" %}</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4" data-aos="fade-up">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="search" class="form-control" placeholder="{% trans 'Search vendor email, username...' %}" value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="is_active" class="form-select">
+                            <option value="">{% trans "All Status" %}</option>
+                            <option value="true" {% if active_filter == 'true' %}selected{% endif %}>{% trans "Active" %}</option>
+                            <option value="false" {% if active_filter == 'false' %}selected{% endif %}>{% trans "Inactive" %}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">search</span> {% trans "Filter" %}
+                        </button>
+                        <a href="{% url 'shop:admin_vendors' %}" class="btn btn-outline-secondary">
+                            <span class="material-icons">clear</span> {% trans "Clear" %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Vendors Table -->
+        <div class="card" data-aos="fade-up">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Email" %}</th>
+                                <th>{% trans "Username" %}</th>
+                                <th>{% trans "Phone" %}</th>
+                                <th>{% trans "Products" %}</th>
+                                <th>{% trans "Orders" %}</th>
+                                <th>{% trans "Total Sales" %}</th>
+                                <th>{% trans "Joined" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vendor in vendors %}
+                            <tr>
+                                <td><strong>{{ vendor.email }}</strong></td>
+                                <td>{{ vendor.username|default:"—" }}</td>
+                                <td>{{ vendor.phone_number|default:"—" }}</td>
+                                <td>{{ vendor.product_count }}</td>
+                                <td>{{ vendor.order_count }}</td>
+                                <td><strong>{{ vendor.total_sales|default:0|floatformat:2 }} EGP</strong></td>
+                                <td>{{ vendor.date_joined|date:"Y-m-d" }}</td>
+                                <td>
+                                    {% if vendor.is_active %}
+                                        <span class="badge bg-success">{% trans "Active" %}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-info"
+                                                onclick="viewVendorDetails({{ vendor.id }})"
+                                                title="{% trans 'View Details' %}">
+                                            <span class="material-icons">visibility</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-{% if vendor.is_active %}secondary{% else %}success{% endif %}"
+                                                onclick="toggleVendorStatus({{ vendor.id }}, {{ vendor.is_active|yesno:'true,false' }})"
+                                                title="{% if vendor.is_active %}{% trans 'Deactivate' %}{% else %}{% trans 'Activate' %}{% endif %}">
+                                            <span class="material-icons">{% if vendor.is_active %}block{% else %}check_circle{% endif %}</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <span class="material-icons" style="font-size: 3rem; color: #ddd;">store</span>
+                                    <p class="text-muted mt-2">{% trans "No vendors found" %}</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if vendors.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if vendors.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ vendors.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if active_filter %}&is_active={{ active_filter }}{% endif %}">
+                                <span class="material-icons">chevron_left</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in vendors.paginator.page_range %}
+                            {% if vendors.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > vendors.number|add:'-3' and num < vendors.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if active_filter %}&is_active={{ active_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if vendors.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ vendors.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if active_filter %}&is_active={{ active_filter }}{% endif %}">
+                                <span class="material-icons">chevron_right</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Vendor Details Modal -->
+<div class="modal fade" id="vendorDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <span class="material-icons">store</span>
+                    {% trans "Vendor Details" %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="vendorDetailsContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">{% trans "Loading..." %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleVendorStatus(vendorId, isActive) {
+    if (!confirm(isActive ? '{% trans "Deactivate this vendor?" %}' : '{% trans "Activate this vendor?" %}')) {
+        return;
+    }
+
+    fetch(`/admin-vendors/${vendorId}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            location.reload();
+        } else {
+            showToast(data.message || '{% trans "Failed to update vendor status" %}', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('{% trans "An error occurred" %}', 'error');
+    });
+}
+
+function viewVendorDetails(vendorId) {
+    const modal = new bootstrap.Modal(document.getElementById('vendorDetailsModal'));
+    modal.show();
+
+    fetch(`/admin-vendors/${vendorId}/details/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('vendorDetailsContent').innerHTML = data.html;
+        } else {
+            document.getElementById('vendorDetailsContent').innerHTML = `
+                <div class="alert alert-danger">
+                    ${data.message || '{% trans "Failed to load vendor details" %}'}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        document.getElementById('vendorDetailsContent').innerHTML = `
+            <div class="alert alert-danger">
+                {% trans "An error occurred while loading vendor details" %}
+            </div>
+        `;
+    });
+}
+</script>
+{% endblock %}

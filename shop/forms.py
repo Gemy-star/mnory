@@ -383,8 +383,9 @@ ProductVariantFormSet = forms.inlineformset_factory(
     can_delete_extra=True,
 )
 
+class VendorProductForm(forms.ModelForm):
+    """Simplified product form for vendors (no vendor/flags fields)."""
 
-class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
@@ -397,11 +398,8 @@ class ProductForm(forms.ModelForm):
             "fit_type",
             "price",
             "sale_price",
-            "is_active",
-            "is_available",
-            "is_featured",
-            "is_best_seller",
-            "is_new_arrival",
+            "size_chart",
+            "delivery_return",
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
@@ -413,11 +411,6 @@ class ProductForm(forms.ModelForm):
             "fit_type": forms.Select(attrs={"class": "form-select"}),
             "price": forms.NumberInput(attrs={"class": "form-control"}),
             "sale_price": forms.NumberInput(attrs={"class": "form-control"}),
-            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "is_available": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "is_featured": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "is_best_seller": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "is_new_arrival": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
 
@@ -583,3 +576,110 @@ class SimpleLoginForm(forms.Form):
             attrs={"class": "form-control", "placeholder": _("Password")}
         ),
     )
+
+
+# ============================================================================
+# ADMIN FORMS
+# ============================================================================
+
+class ProductForm(forms.ModelForm):
+    """Form for creating/editing products"""
+
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "description",
+            "short_description",
+            "category",
+            "subcategory",
+            "brand",
+            "fit_type",
+            "price",
+            "sale_price",
+            "vendor",
+            "is_active",
+            "is_available",
+            "is_featured",
+            "is_best_seller",
+            "is_new_arrival",
+            "meta_title",
+            "meta_description",
+            "size_chart",
+            "delivery_return",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+            "short_description": forms.TextInput(attrs={"class": "form-control"}),
+            "category": forms.Select(attrs={"class": "form-select"}),
+            "subcategory": forms.Select(attrs={"class": "form-select"}),
+            "brand": forms.Select(attrs={"class": "form-select"}),
+            "fit_type": forms.Select(attrs={"class": "form-select"}),
+            "price": forms.NumberInput(attrs={"class": "form-control"}),
+            "sale_price": forms.NumberInput(attrs={"class": "form-control"}),
+            "vendor": forms.Select(attrs={"class": "form-select"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "is_available": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "is_featured": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "is_best_seller": forms.CheckboxInput(
+                attrs={"class": "form-check-input"}
+            ),
+            "is_new_arrival": forms.CheckboxInput(
+                attrs={"class": "form-check-input"}
+            ),
+            "meta_title": forms.TextInput(attrs={"class": "form-control"}),
+            "meta_description": forms.TextInput(attrs={"class": "form-control"}),
+        }
+
+
+class AdvertisementForm(forms.ModelForm):
+    """Form for creating/editing advertisements"""
+    class Meta:
+        model = Advertisement
+        fields = [
+            'title', 'title_ar', 'description', 'description_ar', 'image',
+            'link_url', 'placement', 'category', 'is_active', 'display_order',
+            'start_date', 'end_date'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'title_ar': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'description_ar': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'link_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'placement': forms.Select(attrs={'class': 'form-select'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'display_order': forms.NumberInput(attrs={'class': 'form-control'}),
+            'start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+        }
+
+
+class CouponForm(forms.ModelForm):
+    """Form for creating/editing coupons"""
+    class Meta:
+        model = Coupon
+        fields = [
+            'code', 'discount_type', 'discount_value', 'min_purchase_amount',
+            'valid_from', 'valid_to', 'is_active', 'max_uses', 'max_uses_per_user'
+        ]
+        widgets = {
+            'code': forms.TextInput(attrs={'class': 'form-control', 'style': 'text-transform: uppercase;'}),
+            'discount_type': forms.Select(attrs={'class': 'form-select'}),
+            'discount_value': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'min_purchase_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'valid_from': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'valid_to': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'max_uses': forms.NumberInput(attrs={'class': 'form-control'}),
+            'max_uses_per_user': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+        if code:
+            return code.upper()
+        return code

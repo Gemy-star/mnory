@@ -143,8 +143,8 @@ class LoginRedirectMiddleware(MiddlewareMixin):
             return reverse("shop:profile")
 
         if user.is_superuser or getattr(user, "is_admin_type", False):
-            # Admin/superusers go to Django admin
-            return "/admin/"
+            # Admin/superusers go to custom admin dashboard
+            return reverse("shop:admin_dashboard")
 
         # Default fallback
         return reverse("shop:home")

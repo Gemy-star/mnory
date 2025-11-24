@@ -26,6 +26,12 @@ from .forms import (
     VendorShippingForm,
     PayoutRequestForm,
     ProductBulkEditForm,
+    ProductForm,
+    AdvertisementForm,
+    CouponForm,
+    ProductImageFormSet,
+    ProductVariantFormSet,
+    VendorProductForm,
 )
 from .models import (  # noqa
     Category,
@@ -2674,18 +2680,70 @@ def vendor_manage_products(request):
 
 @login_required
 def vendor_add_product(request):
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
+    # Use an unsaved product instance so we can bind inline formsets on add
+    product = Product(vendor=request.user.vendorprofile)
+
     if request.method == "POST":
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save(commit=False)
-            product.vendor = request.user.vendorprofile
-            product.save()
-            form.save_m2m()  # For many-to-many fields if any
+        product_form = VendorProductForm(
+            request.POST, request.FILES, instance=product, prefix="product"
+        )
+        image_formset = ProductImageFormSet(
+            request.POST, request.FILES, instance=product, prefix="images"
+        )
+        variant_formset = ProductVariantFormSet(
+            request.POST, request.FILES, instance=product, prefix="variants"
+        )
+
+        if (
+            product_form.is_valid()
+            and image_formset.is_valid()
+            and variant_formset.is_valid()
+        ):
+            # Save main product first to get a primary key
+            product_form.save()
+
+            # Save images
+            images = image_formset.save(commit=False)
+            for image in images:
+                image.product = product
+                image.save()
+            for form in image_formset.deleted_forms:
+                if form.instance.pk:
+                    form.instance.delete()
+
+            # Save variants
+            variants = variant_formset.save(commit=False)
+            for variant in variants:
+                variant.product = product
+                variant.save()
+            for form in variant_formset.deleted_forms:
+                if form.instance.pk:
+                    form.instance.delete()
+
+            # Recalculate total stock for the main product
+            total_stock = (
+                product.variants.aggregate(total=Sum("stock_quantity"))["total"] or 0
+            )
+            product.stock_quantity = total_stock
+            product.save(update_fields=["stock_quantity"])
+
             messages.success(request, _("Product added successfully!"))
             return redirect("shop:vendor_manage_products")
     else:
-        form = ProductForm()
-    context = {"form": form, "title": _("Add New Product")}
+        product_form = VendorProductForm(instance=product, prefix="product")
+        image_formset = ProductImageFormSet(instance=product, prefix="images")
+        variant_formset = ProductVariantFormSet(instance=product, prefix="variants")
+
+    context = {
+        "form": product_form,
+        "image_formset": image_formset,
+        "variant_formset": variant_formset,
+        "title": _("Add New Product"),
+    }
     return render(request, "shop/vendor_product_form.html", context)
 
 
@@ -2698,7 +2756,7 @@ def vendor_edit_product(request, product_id):
         return redirect("shop:vendor_manage_products")
 
     if request.method == "POST":
-        product_form = ProductForm(
+        product_form = VendorProductForm(
             request.POST, request.FILES, instance=product, prefix="product"
         )
         image_formset = ProductImageFormSet(
@@ -2754,7 +2812,7 @@ def vendor_edit_product(request, product_id):
             messages.success(request, _("Product updated successfully!"))
             return redirect("shop:vendor_manage_products")
     else:
-        product_form = ProductForm(instance=product, prefix="product")
+        product_form = VendorProductForm(instance=product, prefix="product")
         image_formset = ProductImageFormSet(instance=product, prefix="images")
         variant_formset = ProductVariantFormSet(instance=product, prefix="variants")
 
@@ -4804,79 +4862,132 @@ def account_settings(request):
 @login_required
 def vendor_dashboard(request):
     if not request.user.is_vendor_type:
-        # from django.contrib import messages
         messages.error(request, _("Access denied. This page is for vendors only."))
         return redirect("shop:home")
 
     vendor_profile = get_object_or_404(VendorProfile, user=request.user)
 
-    # Stats
-    total_products = Product.objects.filter(vendor=vendor_profile).count()
+    # Date filtering
+    period = request.GET.get("period", "7d")
+    end_date = timezone.now()
+
+    if period == "today":
+        start_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        period_label = _("Today")
+    elif period == "30d":
+        start_date = end_date - timedelta(days=29)
+        period_label = _("Last 30 Days")
+    elif period == "month":
+        start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        period_label = _("This Month")
+    else:  # Default to 7 days
+        period = "7d"
+        start_date = end_date - timedelta(days=6)
+        period_label = _("Last 7 Days")
+
+    # Vendor order items
     vendor_order_items = OrderItem.objects.filter(
         product_variant__product__vendor=vendor_profile
     )
-    total_sales = (
-        vendor_order_items.aggregate(total=Sum("price_at_purchase"))["total"] or 0
+
+    # Filter order items by period
+    period_order_items = vendor_order_items.filter(
+        order__created_at__range=(start_date, end_date)
     )
+
+    # Stats for the period
+    total_products = Product.objects.filter(vendor=vendor_profile, is_active=True).count()
+    active_products = Product.objects.filter(vendor=vendor_profile, is_active=True, is_available=True).count()
+
+    total_sales = period_order_items.aggregate(total=Sum("price_at_purchase"))["total"] or Decimal('0.00')
+    total_orders_count = Order.objects.filter(
+        items__in=period_order_items
+    ).distinct().count()
+
+    # Additional metrics
+    average_order_value = total_sales / total_orders_count if total_orders_count > 0 else Decimal('0.00')
+    pending_orders = Order.objects.filter(
+        items__in=vendor_order_items,
+        status='pending'
+    ).distinct().count()
+
+    # Recent orders (all time, not filtered by period)
     recent_orders = (
         Order.objects.filter(items__in=vendor_order_items)
         .distinct()
-        .order_by("-created_at")[:5]
+        .order_by("-created_at")[:10]
     )
 
-    # Top Selling Products
+    # Top Selling Products (in period)
     top_products = (
         Product.objects.filter(vendor=vendor_profile, is_active=True)
         .annotate(
-            total_sold=Sum("variants__orderitem__quantity"),
+            total_sold=Sum("variants__orderitem__quantity",
+                          filter=Q(variants__orderitem__order__created_at__range=(start_date, end_date))),
             total_revenue=Sum(
-                F("variants__orderitem__quantity")
-                * F("variants__orderitem__price_at_purchase")
+                F("variants__orderitem__quantity") * F("variants__orderitem__price_at_purchase"),
+                filter=Q(variants__orderitem__order__created_at__range=(start_date, end_date))
             ),
         )
         .filter(total_sold__gt=0)
-        .order_by("-total_sold")[:5]
+        .order_by("-total_revenue")[:5]
     )
-    # Chart Data: Sales for the last 7 days
-    # Get recent product reviews
+
+    # Recent product reviews
     recent_reviews = (
         Review.objects.filter(product__vendor=vendor_profile)
         .select_related("reviewer", "product")
         .order_by("-created_at")[:5]
     )
 
-    today = timezone.now().date()
-    seven_days_ago = today - timedelta(days=6)
-
-    sales_data = (
-        vendor_order_items.filter(order__created_at__date__gte=seven_days_ago)
-        .annotate(day=TruncDay("order__created_at"))
-        .values("day")
-        .annotate(daily_sales=Sum("price_at_purchase"))
-        .order_by("day")
+    # Sales data by category for pie chart
+    category_sales = (
+        period_order_items
+        .values('product_variant__product__category__name')
+        .annotate(total=Sum('price_at_purchase'))
+        .order_by('-total')[:5]
     )
+    category_chart_labels = [item['product_variant__product__category__name'] or _('Uncategorized')
+                            for item in category_sales]
+    category_chart_sales = [float(item['total']) for item in category_sales]
 
-    # Prepare data for Chart.js
-    chart_labels = [
-        (seven_days_ago + timedelta(days=i)).strftime("%b %d") for i in range(7)
-    ]
-    chart_sales_data = [0.0] * 7
-    sales_dict = {
-        item["day"].strftime("%b %d"): float(item["daily_sales"]) for item in sales_data
-    }
-    for i, label in enumerate(chart_labels):
-        if label in sales_dict:
-            chart_sales_data[i] = sales_dict[label]
+    # Chart Data: Daily sales for the period
+    daily_sales = period_order_items.annotate(
+        day=TruncDay('order__created_at')
+    ).values('day').annotate(
+        daily_total=Sum('price_at_purchase')
+    ).order_by('day')
+
+    # Create complete date range with zeros for missing days
+    sales_dict = {item['day'].date(): float(item['daily_total']) for item in daily_sales}
+
+    chart_labels = []
+    chart_sales_data = []
+    current_date = start_date.date() if hasattr(start_date, 'date') else start_date
+    end_date_only = end_date.date() if hasattr(end_date, 'date') else end_date
+
+    while current_date <= end_date_only:
+        chart_labels.append(current_date.strftime('%b %d'))
+        chart_sales_data.append(sales_dict.get(current_date, 0.0))
+        current_date += timedelta(days=1)
 
     context = {
+        "period": period,
+        "period_label": period_label,
         "vendor_profile": vendor_profile,
         "total_products": total_products,
+        "active_products": active_products,
         "total_sales": total_sales,
+        "total_orders_count": total_orders_count,
+        "average_order_value": average_order_value,
+        "pending_orders": pending_orders,
         "recent_orders": recent_orders,
         "recent_reviews": recent_reviews,
         "top_products": top_products,
         "chart_labels": json.dumps(chart_labels),
         "chart_sales_data": json.dumps(chart_sales_data),
+        "category_chart_labels": json.dumps(category_chart_labels),
+        "category_chart_sales": json.dumps(category_chart_sales),
     }
     return render(request, "shop/vendor_dashboard.html", context)
 
@@ -4919,8 +5030,12 @@ def vendor_manage_products(request):
 
 @login_required
 def vendor_add_product(request):
+    if not request.user.is_vendor_type:
+        messages.error(request, _("Access denied. This page is for vendors only."))
+        return redirect("shop:home")
+
     if request.method == "POST":
-        form = ProductForm(request.POST, request.FILES)
+        form = VendorProductForm(request.POST, request.FILES, prefix="product")
         if form.is_valid():
             product = form.save(commit=False)
             product.vendor = request.user.vendorprofile
@@ -4929,7 +5044,7 @@ def vendor_add_product(request):
             messages.success(request, _("Product added successfully!"))
             return redirect("shop:vendor_manage_products")
     else:
-        form = ProductForm()
+        form = VendorProductForm(prefix="product")
     context = {"form": form, "title": _("Add New Product")}
     return render(request, "shop/vendor_product_form.html", context)
 
@@ -4943,7 +5058,7 @@ def vendor_edit_product(request, product_id):
         return redirect("shop:vendor_manage_products")
 
     if request.method == "POST":
-        product_form = ProductForm(
+        product_form = VendorProductForm(
             request.POST, request.FILES, instance=product, prefix="product"
         )
         image_formset = ProductImageFormSet(
@@ -4999,7 +5114,7 @@ def vendor_edit_product(request, product_id):
             messages.success(request, _("Product updated successfully!"))
             return redirect("shop:vendor_manage_products")
     else:
-        product_form = ProductForm(instance=product, prefix="product")
+        product_form = VendorProductForm(instance=product, prefix="product")
         image_formset = ProductImageFormSet(instance=product, prefix="images")
         variant_formset = ProductVariantFormSet(instance=product, prefix="variants")
 
@@ -5248,3 +5363,863 @@ def track_ad_click(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@login_required
+def admin_dashboard(request):
+    """Admin dashboard with platform-wide statistics and management tools"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Date filtering
+    period = request.GET.get("period", "7d")
+    end_date = timezone.now()
+
+    if period == "today":
+        start_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        period_label = _("Today")
+    elif period == "30d":
+        start_date = end_date - timedelta(days=29)
+        period_label = _("Last 30 Days")
+    elif period == "month":
+        start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        period_label = _("This Month")
+    else:  # Default to 7 days
+        period = "7d"
+        start_date = end_date - timedelta(days=6)
+        period_label = _("Last 7 Days")
+
+    # Platform-wide statistics
+    total_users = MnoryUser.objects.count()
+    total_vendors = MnoryUser.objects.filter(user_type='vendor').count()
+    total_customers = MnoryUser.objects.filter(user_type='customer').count()
+    total_freelancers = MnoryUser.objects.filter(user_type='freelancer').count()
+    total_companies = MnoryUser.objects.filter(user_type='company').count()
+
+    total_products = Product.objects.filter(is_active=True).count()
+    active_products = Product.objects.filter(is_active=True, is_available=True).count()
+
+    # Orders statistics for the period
+    orders_period = Order.objects.filter(created_at__range=(start_date, end_date))
+    total_orders = orders_period.count()
+    total_revenue = orders_period.aggregate(total=Sum('grand_total'))['total'] or Decimal('0.00')
+    pending_orders = Order.objects.filter(status='pending').count()
+
+    # Recent orders
+    recent_orders = Order.objects.select_related('user').order_by('-created_at')[:10]
+
+    # Top selling products in period
+    from django.db.models import Sum as DBSum
+    top_products = Product.objects.filter(
+        variants__orderitem__order__created_at__range=(start_date, end_date)
+    ).annotate(
+        total_sold=DBSum('variants__orderitem__quantity'),
+        total_revenue=DBSum(F('variants__orderitem__quantity') * F('variants__orderitem__price_at_purchase'))
+    ).order_by('-total_revenue')[:5]
+
+    # Platform health metrics
+    low_stock_count = ProductVariant.objects.filter(stock_quantity__lt=10, stock_quantity__gt=0).count()
+    try:
+        from shop.models import Review
+        total_reviews = Review.objects.count()
+    except:
+        total_reviews = 0
+    active_coupons = Coupon.objects.filter(is_active=True, valid_to__gte=timezone.now()).count()
+
+    # Chart data - daily revenue for the period
+    daily_revenue = orders_period.annotate(
+        day=TruncDay('created_at')
+    ).values('day').annotate(
+        revenue=Sum('grand_total')
+    ).order_by('day')
+
+    # Create a complete date range with zeros for days without orders
+    from datetime import date as dt_date
+    revenue_dict = {item['day'].date(): float(item['revenue']) for item in daily_revenue}
+
+    chart_labels = []
+    chart_data = []
+    current_date = start_date.date() if hasattr(start_date, 'date') else start_date
+    end_date_only = end_date.date() if hasattr(end_date, 'date') else end_date
+
+    while current_date <= end_date_only:
+        chart_labels.append(current_date.strftime('%b %d'))
+        chart_data.append(revenue_dict.get(current_date, 0.0))
+        current_date += timedelta(days=1)
+
+    context = {
+        'period': period,
+        'period_label': period_label,
+        'total_revenue': total_revenue,
+        'total_orders': total_orders,
+        'total_users': total_users,
+        'total_products': total_products,
+        'total_vendors': total_vendors,
+        'total_customers': total_customers,
+        'total_freelancers': total_freelancers,
+        'total_companies': total_companies,
+        'active_products': active_products,
+        'pending_orders': pending_orders,
+        'low_stock_count': low_stock_count,
+        'total_reviews': total_reviews,
+        'active_coupons': active_coupons,
+        'recent_orders': recent_orders,
+        'top_products': top_products,
+        'chart_labels': json.dumps(chart_labels),
+        'chart_data': json.dumps(chart_data),
+    }
+
+    return render(request, 'shop/admin_dashboard.html', context)
+
+
+# ============================================================================
+# ADMIN MANAGEMENT VIEWS
+# ============================================================================
+
+@login_required
+def admin_products(request):
+    """Admin view for managing all products"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    category_filter = request.GET.get("category", "")
+    status_filter = request.GET.get("status", "")
+    vendor_filter = request.GET.get("vendor", "")
+
+    # Base queryset
+    products = Product.objects.select_related("category", "vendor").all()
+
+    # Apply filters
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) | Q(sku__icontains=search_query)
+        )
+    if category_filter:
+        products = products.filter(category_id=category_filter)
+    if status_filter == "active":
+        products = products.filter(is_active=True, is_available=True)
+    elif status_filter == "inactive":
+        products = products.filter(is_active=False)
+    elif status_filter == "out_of_stock":
+        products = products.filter(is_available=False)
+    if vendor_filter:
+        products = products.filter(vendor_id=vendor_filter)
+
+    # Pagination
+    paginator = Paginator(products, 20)
+    page = request.GET.get("page")
+    products = paginator.get_page(page)
+
+    context = {
+        "products": products,
+        "total_count": paginator.count,
+        "categories": Category.objects.all(),
+        "vendors": MnoryUser.objects.filter(user_type="vendor"),
+        "search_query": search_query,
+        "category_filter": category_filter,
+        "status_filter": status_filter,
+        "vendor_filter": vendor_filter,
+    }
+    return render(request, "shop/admin_products.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_product_toggle_status(request, product_id):
+    """Toggle product active status"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        product = Product.objects.get(id=product_id)
+        product.is_active = not product.is_active
+        product.save()
+        return JsonResponse({
+            "success": True,
+            "message": _("Product status updated successfully")
+        })
+    except Product.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Product not found")}, status=404)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_product_delete(request, product_id):
+    """Delete a product"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        product = Product.objects.get(id=product_id)
+        product.delete()
+        return JsonResponse({
+            "success": True,
+            "message": _("Product deleted successfully")
+        })
+    except Product.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Product not found")}, status=404)
+
+
+@login_required
+def admin_orders(request):
+    """Admin view for managing all orders"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    status_filter = request.GET.get("status", "")
+    payment_filter = request.GET.get("payment_status", "")
+    date_from = request.GET.get("date_from", "")
+
+    # Base queryset
+    orders = Order.objects.select_related("user").prefetch_related("orderitem_set").all()
+
+    # Apply filters
+    if search_query:
+        orders = orders.filter(
+            Q(order_number__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(user__username__icontains=search_query)
+        )
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+    if payment_filter:
+        orders = orders.filter(payment_status=payment_filter)
+    if date_from:
+        orders = orders.filter(created_at__gte=date_from)
+
+    orders = orders.order_by("-created_at")
+
+    # Pagination
+    paginator = Paginator(orders, 20)
+    page = request.GET.get("page")
+    orders = paginator.get_page(page)
+
+    context = {
+        "orders": orders,
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "status_filter": status_filter,
+        "payment_filter": payment_filter,
+        "date_from": date_from,
+    }
+    return render(request, "shop/admin_orders.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_order_update_status(request, order_id):
+    """Update order status"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        import json
+        data = json.loads(request.body)
+        order = Order.objects.get(id=order_id)
+        order.status = data.get("status")
+        order.save()
+        return JsonResponse({
+            "success": True,
+            "message": _("Order status updated successfully")
+        })
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Order not found")}, status=404)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
+@login_required
+def admin_users(request):
+    """Admin view for managing all users"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    type_filter = request.GET.get("user_type", "")
+    active_filter = request.GET.get("is_active", "")
+
+    # Base queryset
+    users = MnoryUser.objects.all()
+
+    # Apply filters
+    if search_query:
+        users = users.filter(
+            Q(email__icontains=search_query) | Q(username__icontains=search_query)
+        )
+    if type_filter:
+        users = users.filter(user_type=type_filter)
+    if active_filter == "true":
+        users = users.filter(is_active=True)
+    elif active_filter == "false":
+        users = users.filter(is_active=False)
+
+    users = users.order_by("-date_joined")
+
+    # Pagination
+    paginator = Paginator(users, 20)
+    page = request.GET.get("page")
+    users = paginator.get_page(page)
+
+    context = {
+        "users": users,
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "type_filter": type_filter,
+        "active_filter": active_filter,
+    }
+    return render(request, "shop/admin_users.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_user_toggle_status(request, user_id):
+    """Toggle user active status"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        user = MnoryUser.objects.get(id=user_id)
+        if user.is_superuser:
+            return JsonResponse({"success": False, "message": _("Cannot modify superuser")}, status=403)
+        user.is_active = not user.is_active
+        user.save()
+        return JsonResponse({
+            "success": True,
+            "message": _("User status updated successfully")
+        })
+    except MnoryUser.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("User not found")}, status=404)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_user_delete(request, user_id):
+    """Delete a user"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        user = MnoryUser.objects.get(id=user_id)
+        if user.is_superuser:
+            return JsonResponse({"success": False, "message": _("Cannot delete superuser")}, status=403)
+        user.delete()
+        return JsonResponse({
+            "success": True,
+            "message": _("User deleted successfully")
+        })
+    except MnoryUser.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("User not found")}, status=404)
+
+
+@login_required
+def admin_vendors(request):
+    """Admin view for managing vendors"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    active_filter = request.GET.get("is_active", "")
+
+    # Base queryset with annotations
+    vendors = MnoryUser.objects.filter(user_type="vendor").annotate(
+        product_count=Count("products", distinct=True),
+        order_count=Count("products__orderitem__order", distinct=True),
+        total_sales=Sum("products__orderitem__price_at_purchase")
+    )
+
+    # Apply filters
+    if search_query:
+        vendors = vendors.filter(
+            Q(email__icontains=search_query) | Q(username__icontains=search_query)
+        )
+    if active_filter == "true":
+        vendors = vendors.filter(is_active=True)
+    elif active_filter == "false":
+        vendors = vendors.filter(is_active=False)
+
+    vendors = vendors.order_by("-date_joined")
+
+    # Pagination
+    paginator = Paginator(vendors, 20)
+    page = request.GET.get("page")
+    vendors = paginator.get_page(page)
+
+    context = {
+        "vendors": vendors,
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "active_filter": active_filter,
+    }
+    return render(request, "shop/admin_vendors.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_vendor_toggle_status(request, vendor_id):
+    """Toggle vendor active status"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        vendor = MnoryUser.objects.get(id=vendor_id, user_type="vendor")
+        vendor.is_active = not vendor.is_active
+        vendor.save()
+        return JsonResponse({
+            "success": True,
+            "message": _("Vendor status updated successfully")
+        })
+    except MnoryUser.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Vendor not found")}, status=404)
+
+
+@login_required
+def admin_ads(request):
+    """Admin view for managing advertisements"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    position_filter = request.GET.get("position", "")
+    active_filter = request.GET.get("is_active", "")
+
+    # Base queryset
+    ads = Advertisement.objects.all()
+
+    # Apply filters
+    if search_query:
+        ads = ads.filter(
+            Q(title__icontains=search_query) | Q(description__icontains=search_query)
+        )
+    if position_filter:
+        ads = ads.filter(placement=position_filter)
+    if active_filter == "true":
+        ads = ads.filter(is_active=True)
+    elif active_filter == "false":
+        ads = ads.filter(is_active=False)
+
+    ads = ads.order_by("-created_at")
+
+    # Pagination
+    paginator = Paginator(ads, 12)
+    page = request.GET.get("page")
+    ads = paginator.get_page(page)
+
+    context = {
+        "ads": ads,
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "position_filter": position_filter,
+        "active_filter": active_filter,
+    }
+    return render(request, "shop/admin_ads.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_ad_toggle_status(request, ad_id):
+    """Toggle ad active status"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        ad = Advertisement.objects.get(id=ad_id)
+        ad.is_active = not ad.is_active
+        ad.save()
+        return JsonResponse({
+            "success": True,
+            "message": _("Advertisement status updated successfully")
+        })
+    except Advertisement.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Advertisement not found")}, status=404)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_ad_delete(request, ad_id):
+    """Delete an advertisement"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        ad = Advertisement.objects.get(id=ad_id)
+        ad.delete()
+        return JsonResponse({
+            "success": True,
+            "message": _("Advertisement deleted successfully")
+        })
+    except Advertisement.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Advertisement not found")}, status=404)
+
+
+@login_required
+def admin_coupons(request):
+    """Admin view for managing coupons"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    type_filter = request.GET.get("discount_type", "")
+    active_filter = request.GET.get("is_active", "")
+
+    # Base queryset
+    coupons = Coupon.objects.all()
+
+    # Apply filters
+    if search_query:
+        coupons = coupons.filter(code__icontains=search_query)
+    if type_filter:
+        coupons = coupons.filter(discount_type=type_filter)
+    if active_filter == "true":
+        coupons = coupons.filter(is_active=True, valid_to__gte=timezone.now())
+    elif active_filter == "false":
+        coupons = coupons.filter(is_active=False)
+    elif active_filter == "expired":
+        coupons = coupons.filter(valid_to__lt=timezone.now())
+
+    coupons = coupons.order_by("-created_at")
+
+    # Add is_expired property
+    for coupon in coupons:
+        coupon.is_expired = coupon.valid_to < timezone.now()
+
+    # Pagination
+    paginator = Paginator(coupons, 20)
+    page = request.GET.get("page")
+    coupons = paginator.get_page(page)
+
+    context = {
+        "coupons": coupons,
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "type_filter": type_filter,
+        "active_filter": active_filter,
+    }
+    return render(request, "shop/admin_coupons.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_coupon_toggle_status(request, coupon_id):
+    """Toggle coupon active status"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        coupon = Coupon.objects.get(id=coupon_id)
+        if coupon.valid_to < timezone.now():
+            return JsonResponse({"success": False, "message": _("Cannot activate expired coupon")}, status=400)
+        coupon.is_active = not coupon.is_active
+        coupon.save()
+        return JsonResponse({
+            "success": True,
+            "message": _("Coupon status updated successfully")
+        })
+    except Coupon.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Coupon not found")}, status=404)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_coupon_delete(request, coupon_id):
+    """Delete a coupon"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        coupon = Coupon.objects.get(id=coupon_id)
+        coupon.delete()
+        return JsonResponse({
+            "success": True,
+            "message": _("Coupon deleted successfully")
+        })
+    except Coupon.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Coupon not found")}, status=404)
+
+
+@login_required
+def admin_chatbot(request):
+    """Admin view for managing chatbot Q&A"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    active_filter = request.GET.get("is_active", "")
+
+    # Base queryset
+    questions = ChatbotQuestion.objects.all()
+
+    # Apply filters
+    if search_query:
+        questions = questions.filter(
+            Q(question__icontains=search_query) | Q(answer__icontains=search_query)
+        )
+
+    questions = questions.order_by("-created_at")
+
+    # Stats
+    total_count = questions.count()
+    active_count = questions.filter(created_at__isnull=False).count()
+    total_queries = questions.count()  # This could be enhanced with actual usage tracking
+
+    # Pagination
+    paginator = Paginator(questions, 20)
+    page = request.GET.get("page")
+    questions = paginator.get_page(page)
+
+    context = {
+        "questions": questions,
+        "total_count": total_count,
+        "active_count": active_count,
+        "total_queries": total_queries,
+        "search_query": search_query,
+        "active_filter": active_filter,
+    }
+    return render(request, "shop/admin_chatbot.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_chatbot_create(request):
+    """Create a new chatbot Q&A"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        import json
+        data = json.loads(request.body)
+        ChatbotQuestion.objects.create(
+            question=data.get("question"),
+            answer=data.get("answer"),
+            user=request.user
+        )
+        return JsonResponse({
+            "success": True,
+            "message": _("Q&A created successfully")
+        })
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_chatbot_update(request, qa_id):
+    """Update a chatbot Q&A"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        import json
+        data = json.loads(request.body)
+        qa = ChatbotQuestion.objects.get(id=qa_id)
+        qa.question = data.get("question")
+        qa.answer = data.get("answer")
+        qa.save()
+        return JsonResponse({
+            "success": True,
+            "message": _("Q&A updated successfully")
+        })
+    except ChatbotQuestion.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Q&A not found")}, status=404)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
+@login_required
+def admin_chatbot_get(request, qa_id):
+    """Get chatbot Q&A details"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        qa = ChatbotQuestion.objects.get(id=qa_id)
+        return JsonResponse({
+            "success": True,
+            "qa": {
+                "id": qa.id,
+                "question": qa.question,
+                "answer": qa.answer,
+                "is_active": True
+            }
+        })
+    except ChatbotQuestion.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Q&A not found")}, status=404)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_chatbot_delete(request, qa_id):
+    """Delete a chatbot Q&A"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse({"success": False, "message": _("Access denied")}, status=403)
+
+    try:
+        qa = ChatbotQuestion.objects.get(id=qa_id)
+        qa.delete()
+        return JsonResponse({
+            "success": True,
+            "message": _("Q&A deleted successfully")
+        })
+    except ChatbotQuestion.DoesNotExist:
+        return JsonResponse({"success": False, "message": _("Q&A not found")}, status=404)
+
+
+# ============================================================================
+# ADMIN CREATE/EDIT VIEWS
+# ============================================================================
+
+@login_required
+def admin_product_add(request):
+    """Add new product"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Product created successfully"))
+            return redirect("shop:admin_products")
+    else:
+        form = ProductForm()
+
+    context = {"form": form, "title": _("Add New Product"), "action": "add"}
+    return render(request, "shop/admin_product_form.html", context)
+
+
+@login_required
+def admin_product_edit(request, product_id):
+    """Edit existing product"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Product updated successfully"))
+            return redirect("shop:admin_products")
+    else:
+        form = ProductForm(instance=product)
+
+    context = {
+        "form": form,
+        "product": product,
+        "title": _("Edit Product"),
+        "action": "edit",
+    }
+    return render(request, "shop/admin_product_form.html", context)
+
+
+@login_required
+def admin_ad_add(request):
+    """Add new advertisement"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = AdvertisementForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Advertisement created successfully"))
+            return redirect("shop:admin_ads")
+    else:
+        form = AdvertisementForm()
+
+    context = {"form": form, "title": _("Add New Advertisement"), "action": "add"}
+    return render(request, "shop/admin_ad_form.html", context)
+
+
+@login_required
+def admin_ad_edit(request, ad_id):
+    """Edit existing advertisement"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    ad = get_object_or_404(Advertisement, id=ad_id)
+
+    if request.method == "POST":
+        form = AdvertisementForm(request.POST, request.FILES, instance=ad)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Advertisement updated successfully"))
+            return redirect("shop:admin_ads")
+    else:
+        form = AdvertisementForm(instance=ad)
+
+    context = {
+        "form": form,
+        "ad": ad,
+        "title": _("Edit Advertisement"),
+        "action": "edit",
+    }
+    return render(request, "shop/admin_ad_form.html", context)
+
+
+@login_required
+def admin_coupon_add(request):
+    """Add new coupon"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = CouponForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Coupon created successfully"))
+            return redirect("shop:admin_coupons")
+    else:
+        form = CouponForm()
+
+    context = {"form": form, "title": _("Add New Coupon"), "action": "add"}
+    return render(request, "shop/admin_coupon_form.html", context)
+
+
+@login_required
+def admin_coupon_edit(request, coupon_id):
+    """Edit existing coupon"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    coupon = get_object_or_404(Coupon, id=coupon_id)
+
+    if request.method == "POST":
+        form = CouponForm(request.POST, instance=coupon)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Coupon updated successfully"))
+            return redirect("shop:admin_coupons")
+    else:
+        form = CouponForm(instance=coupon)
+
+    context = {
+        "form": form,
+        "coupon": coupon,
+        "title": _("Edit Coupon"),
+        "action": "edit",
+    }
+    return render(request, "shop/admin_coupon_form.html", context)

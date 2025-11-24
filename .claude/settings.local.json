@@ -5,7 +5,10 @@
       "Bash(python manage.py check:*)",
       "Bash(python:*)",
       "Bash(pip install:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(combined.css 2)",
+      "Bash(NUL)",
+      "Bash(cmd /c \"type main.css style.css mnory.css vendor_detail.css > combined.css\")"
     ],
     "deny": [],
     "ask": []

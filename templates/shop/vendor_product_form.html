@@ -38,6 +38,7 @@
                 </div>
             </div>
 
+            {% if image_formset and variant_formset %}
             <!-- Image Management Card -->
             <div class="account-card mb-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="account-card-header">
@@ -81,8 +82,18 @@
 
             <!-- Variants Management Card -->
             <div class="account-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="account-card-header">
-                    <h3>{% trans "Product Variants (Colors, Sizes & Stock)" %}</h3>
+                <div class="account-card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">{% trans "Product Variants (Colors, Sizes & Stock)" %}</h3>
+                    <div class="d-flex gap-2">
+                        <a href="/admin/shop/color/add/" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <span class="material-icons" style="font-size: 1rem;">palette</span>
+                            <span class="d-none d-md-inline">{% trans "Add Color" %}</span>
+                        </a>
+                        <a href="/admin/shop/size/add/" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <span class="material-icons" style="font-size: 1rem;">straighten</span>
+                            <span class="d-none d-md-inline">{% trans "Add Size" %}</span>
+                        </a>
+                    </div>
                 </div>
                 <div class="account-card-body">
                     {{ variant_formset.management_form }}
@@ -112,6 +123,7 @@
             </div>
 
             <!-- Empty form templates for JavaScript -->
+            {% if image_formset and variant_formset %}
             <div id="empty-image-form-template" style="display: none;">
                 <div class="image-form-wrapper" id="image-__prefix__">
                     {% for hidden in image_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
@@ -168,12 +180,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const emptyVariantTemplate = document.getElementById('empty-variant-form-template').innerHTML;
     const totalVariantForms = document.getElementById('id_variants-TOTAL_FORMS');
 
-    addVariantBtn.addEventListener('click', function() {
-        const formNum = parseInt(totalVariantForms.value);
-        const newForm = emptyVariantTemplate.replace(/__prefix__/g, formNum);
-        variantContainer.insertAdjacentHTML('beforeend', newForm);
-        totalVariantForms.value = formNum + 1;
-    });
+    if (addVariantBtn && variantContainer && totalVariantForms && emptyVariantTemplate) {
+        addVariantBtn.addEventListener('click', function() {
+            const formNum = parseInt(totalVariantForms.value);
+            const newForm = emptyVariantTemplate.replace(/__prefix__/g, formNum);
+            variantContainer.insertAdjacentHTML('beforeend', newForm);
+            totalVariantForms.value = formNum + 1;
+        });
+    }
 
     // Dynamic Image Forms
     const addImageBtn = document.getElementById('add-image-btn');
@@ -181,12 +195,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const emptyImageTemplate = document.getElementById('empty-image-form-template').innerHTML;
     const totalImageForms = document.getElementById('id_images-TOTAL_FORMS');
 
-    addImageBtn.addEventListener('click', function() {
-        const formNum = parseInt(totalImageForms.value);
-        const newForm = emptyImageTemplate.replace(/__prefix__/g, formNum);
-        imageContainer.insertAdjacentHTML('beforeend', newForm);
-        totalImageForms.value = formNum + 1;
-    });
+    if (addImageBtn && imageContainer && totalImageForms && emptyImageTemplate) {
+        addImageBtn.addEventListener('click', function() {
+            const formNum = parseInt(totalImageForms.value);
+            const newForm = emptyImageTemplate.replace(/__prefix__/g, formNum);
+            imageContainer.insertAdjacentHTML('beforeend', newForm);
+            totalImageForms.value = formNum + 1;
+        });
+    }
 
     // Drag-and-drop reordering for images
     const imageSortableContainer = document.getElementById('image-forms-container');

@@ -5,7 +5,7 @@
 {% block title %}{% trans "Shopping Cart" %}{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/mnory.css' %}">
+{% comment %} Mnory.css is now included in combined.css {% endcomment %}
 {% endblock css %}
 
 {% block content %}
@@ -235,19 +235,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             } else {
-                if (typeof window.showNotification === 'function') {
-                    window.showNotification(data.message || '{% trans "An error occurred" %}', 'error');
+                const message = data.message || '{% trans "An error occurred" %}';
+                if (window.showToast) {
+                    window.showToast(message, 'error');
+                } else if (typeof window.showNotification === 'function') {
+                    window.showNotification(message, 'error');
                 } else {
-                    alert(data.message || '{% trans "An error occurred" %}');
+                    alert(message);
                 }
             }
         })
         .catch(error => {
             console.error('Error updating cart:', error);
-            if (typeof window.showNotification === 'function') {
-                window.showNotification('{% trans "Connection error. Please try again." %}', 'error');
+            const message = '{% trans "Connection error. Please try again." %}';
+            if (window.showToast) {
+                window.showToast(message, 'error');
+            } else if (typeof window.showNotification === 'function') {
+                window.showNotification(message, 'error');
             } else {
-                alert('{% trans "Connection error. Please try again." %}');
+                alert(message);
             }
         });
     }

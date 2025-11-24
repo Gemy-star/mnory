@@ -16,7 +16,9 @@ urlpatterns = [
     path("product/<slug:slug>/", views.product_detail, name="product_detail"),
     path("vendor/<slug:slug>/", views.vendor_detail, name="vendor_detail"),
     # Search & API Endpoints (All AJAX actions should typically be POST)
-    path("search/", views.search_products, name="search_products"),  # GET for search results
+    path(
+        "search/", views.search_products, name="search_products"
+    ),  # GET for search results
     path(
         "api/products/",
         views.get_category_products_api,
@@ -27,7 +29,9 @@ urlpatterns = [
         views.get_product_variants,
         name="get_product_variants",
     ),  # GET for variant data
-    path("api/add-to-cart/", views.add_to_cart, name="add_to_cart"),  # Renamed, consolidated all add-to-cart here
+    path(
+        "api/add-to-cart/", views.add_to_cart, name="add_to_cart"
+    ),  # Renamed, consolidated all add-to-cart here
     path(
         "api/add-to-wishlist/",
         views.add_to_wishlist,
@@ -127,6 +131,97 @@ urlpatterns = [
         name="address_delete",
     ),
     path("account/settings/", views.account_settings, name="account_settings"),
+    # Admin Dashboard
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    # Admin Management Pages
+    path("admin-products/", views.admin_products, name="admin_products"),
+    path("admin-products/add/", views.admin_product_add, name="admin_product_add"),
+    path(
+        "admin-products/<int:product_id>/edit/",
+        views.admin_product_edit,
+        name="admin_product_edit",
+    ),
+    path(
+        "admin-products/<int:product_id>/toggle-status/",
+        views.admin_product_toggle_status,
+        name="admin_product_toggle_status",
+    ),
+    path(
+        "admin-products/<int:product_id>/delete/",
+        views.admin_product_delete,
+        name="admin_product_delete",
+    ),
+    path("admin-orders/", views.admin_orders, name="admin_orders"),
+    path(
+        "admin-orders/<int:order_id>/update-status/",
+        views.admin_order_update_status,
+        name="admin_order_update_status",
+    ),
+    path("admin-users/", views.admin_users, name="admin_users"),
+    path(
+        "admin-users/<int:user_id>/toggle-status/",
+        views.admin_user_toggle_status,
+        name="admin_user_toggle_status",
+    ),
+    path(
+        "admin-users/<int:user_id>/delete/",
+        views.admin_user_delete,
+        name="admin_user_delete",
+    ),
+    path("admin-vendors/", views.admin_vendors, name="admin_vendors"),
+    path(
+        "admin-vendors/<int:vendor_id>/toggle-status/",
+        views.admin_vendor_toggle_status,
+        name="admin_vendor_toggle_status",
+    ),
+    path("admin-ads/", views.admin_ads, name="admin_ads"),
+    path("admin-ads/add/", views.admin_ad_add, name="admin_ad_add"),
+    path("admin-ads/<int:ad_id>/edit/", views.admin_ad_edit, name="admin_ad_edit"),
+    path(
+        "admin-ads/<int:ad_id>/toggle-status/",
+        views.admin_ad_toggle_status,
+        name="admin_ad_toggle_status",
+    ),
+    path(
+        "admin-ads/<int:ad_id>/delete/", views.admin_ad_delete, name="admin_ad_delete"
+    ),
+    path("admin-coupons/", views.admin_coupons, name="admin_coupons"),
+    path("admin-coupons/add/", views.admin_coupon_add, name="admin_coupon_add"),
+    path(
+        "admin-coupons/<int:coupon_id>/edit/",
+        views.admin_coupon_edit,
+        name="admin_coupon_edit",
+    ),
+    path(
+        "admin-coupons/<int:coupon_id>/toggle-status/",
+        views.admin_coupon_toggle_status,
+        name="admin_coupon_toggle_status",
+    ),
+    path(
+        "admin-coupons/<int:coupon_id>/delete/",
+        views.admin_coupon_delete,
+        name="admin_coupon_delete",
+    ),
+    path("admin-chatbot/", views.admin_chatbot, name="admin_chatbot"),
+    path(
+        "admin-chatbot/create/", views.admin_chatbot_create, name="admin_chatbot_create"
+    ),
+    path(
+        "admin-chatbot/<int:qa_id>/get/",
+        views.admin_chatbot_get,
+        name="admin_chatbot_get",
+    ),
+    path(
+        "admin-chatbot/<int:qa_id>/update/",
+        views.admin_chatbot_update,
+        name="admin_chatbot_update",
+    ),
+    path(
+        "admin-chatbot/<int:qa_id>/delete/",
+        views.admin_chatbot_delete,
+        name="admin_chatbot_delete",
+    ),
+    # Vendor Dashboard & Management
     path("vendor/dashboard/", views.vendor_dashboard, name="vendor_dashboard"),
     path(
         "vendor/products/",

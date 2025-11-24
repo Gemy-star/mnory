@@ -86,7 +86,7 @@ def login_view(request):
 
 
 def _redirect_by_role(user):
-    """Redirect user based on role flags - Admins/superusers go to /admin/, others to custom dashboards"""
+    """Redirect user based on role flags - Admins go to custom dashboard"""
     # Debug logging
     import logging
 
@@ -108,9 +108,9 @@ def _redirect_by_role(user):
         logger.info(f"Redirecting customer to profile")
         return redirect("shop:profile")
     if user.is_superuser or getattr(user, "is_admin_type", False):
-        # Admin/superusers go to Django admin dashboard
-        logger.info(f"Redirecting admin/superuser to Django admin")
-        return redirect("/admin/")
+        # Admin/superusers go to custom admin dashboard
+        logger.info(f"Redirecting admin/superuser to admin dashboard")
+        return redirect("shop:admin_dashboard")
     logger.info(f"Fallback redirect to home")
     return redirect("shop:home")  # fallback
 

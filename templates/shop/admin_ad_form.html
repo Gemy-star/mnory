@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% if form.instance.pk %}{% trans "Edit Advertisement" %}{% else %}{% trans "Add Advertisement" %}{% endif %} - Mnory Admin{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="material-icons">{% if form.instance.pk %}edit{% else %}add_circle{% endif %}</i>
+                        {% if form.instance.pk %}{% trans "Edit Advertisement" %}{% else %}{% trans "Add New Advertisement" %}{% endif %}
+                    </h5>
+                    <a href="{% url 'shop:admin_ads' %}" class="btn btn-sm btn-secondary">
+                        <i class="material-icons">arrow_back</i>
+                        {% trans "Back to Ads" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="adForm">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ form.non_field_errors }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- Basic Information -->
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Basic Information" %}</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.title.label }} <span class="text-danger">*</span></label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.title.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.title_ar.label }}</label>
+                                    {{ form.title_ar }}
+                                    {% if form.title_ar.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.title_ar.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.description.label }}</label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.description_ar.label }}</label>
+                                    {{ form.description_ar }}
+                                    {% if form.description_ar.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.description_ar.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.link_url.label }}</label>
+                                    {{ form.link_url }}
+                                    {% if form.link_url.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.link_url.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">{% trans "URL where users will be redirected when clicking the ad" %}</small>
+                                </div>
+                            </div>
+
+                            <!-- Placement & Status -->
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Placement & Status" %}</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.placement.label }} <span class="text-danger">*</span></label>
+                                    {{ form.placement }}
+                                    {% if form.placement.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.placement.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ form.priority.label }}</label>
+                                        {{ form.priority }}
+                                        {% if form.priority.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.priority.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">{% trans "Higher priority ads shown first" %}</small>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">&nbsp;</label>
+                                        <div class="form-check">
+                                            {{ form.is_active }}
+                                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                                {{ form.is_active.label }}
+                                            </label>
+                                        </div>
+                                        {% if form.is_active.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">{{ form.image.label }} <span class="text-danger">*</span></label>
+                                    {{ form.image }}
+                                    {% if form.image.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.image.errors }}</div>
+                                    {% endif %}
+                                    {% if form.instance.image %}
+                                    <div class="mt-2">
+                                        <img src="{{ form.instance.image.url }}" alt="Current ad image" class="img-thumbnail" style="max-width: 100%; max-height: 300px;">
+                                        <p class="text-sm text-muted">{% trans "Current image" %}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Schedule -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-sm mb-3">{% trans "Schedule" %}</h6>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ form.start_date.label }}</label>
+                                        {{ form.start_date }}
+                                        {% if form.start_date.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">{% trans "When the ad should start showing" %}</small>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ form.end_date.label }}</label>
+                                        {{ form.end_date }}
+                                        {% if form.end_date.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">{% trans "When the ad should stop showing" %}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'shop:admin_ads' %}" class="btn btn-secondary">
+                                <i class="material-icons">cancel</i>
+                                {% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="material-icons">save</i>
+                                {% if form.instance.pk %}{% trans "Update Advertisement" %}{% else %}{% trans "Create Advertisement" %}{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+// Add date picker functionality if needed
+document.addEventListener('DOMContentLoaded', function() {
+    // Set input type to date for date fields
+    const startDateInput = document.querySelector('input[name="start_date"]');
+    const endDateInput = document.querySelector('input[name="end_date"]');
+
+    if (startDateInput && startDateInput.type !== 'date') {
+        startDateInput.type = 'date';
+    }
+    if (endDateInput && endDateInput.type !== 'date') {
+        endDateInput.type = 'date';
+    }
+});
+</script>
+{% endblock %}

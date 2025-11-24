@@ -21,7 +21,7 @@ class RoleBasedRedirectBackend(ModelBackend):
         2. Freelancer → Freelancer dashboard
         3. Company → Company dashboard
         4. Customer → User profile
-        5. Admin/Superuser → Django admin
+        5. Admin/Superuser → Custom Admin Dashboard
         6. Default → Home page
         """
         if getattr(user, "is_vendor_type", False):
@@ -37,7 +37,7 @@ class RoleBasedRedirectBackend(ModelBackend):
             return reverse("shop:profile")
 
         if user.is_superuser or getattr(user, "is_admin_type", False):
-            return "/admin/"
+            return reverse("shop:admin_dashboard")
 
         # Fallback to home page
         return reverse("shop:home")

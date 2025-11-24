@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Manage Orders" %} - {% trans "Admin" %}{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:admin_dashboard' %}"><span class="material-icons">admin_panel_settings</span> {% trans "Admin Dashboard" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Manage Orders" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="dashboard-header mb-4 d-flex justify-content-between align-items-center" data-aos="fade-up">
+            <div>
+                <h1 class="section-title mb-0">
+                    <span class="material-icons">shopping_bag</span>
+                    {% trans "Manage Orders" %}
+                </h1>
+                <p class="text-muted mb-0">{{ total_count }} {% trans "total orders" %}</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4" data-aos="fade-up">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" name="search" class="form-control" placeholder="{% trans 'Search order ID, customer...' %}" value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="status" class="form-select">
+                            <option value="">{% trans "All Status" %}</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>{% trans "Pending" %}</option>
+                            <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>{% trans "Processing" %}</option>
+                            <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>{% trans "Shipped" %}</option>
+                            <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>{% trans "Delivered" %}</option>
+                            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>{% trans "Cancelled" %}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="payment_status" class="form-select">
+                            <option value="">{% trans "All Payment Status" %}</option>
+                            <option value="pending" {% if payment_filter == 'pending' %}selected{% endif %}>{% trans "Pending" %}</option>
+                            <option value="completed" {% if payment_filter == 'completed' %}selected{% endif %}>{% trans "Completed" %}</option>
+                            <option value="failed" {% if payment_filter == 'failed' %}selected{% endif %}>{% trans "Failed" %}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="date_from" class="form-control" placeholder="{% trans 'From' %}" value="{{ date_from }}">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">search</span> {% trans "Filter" %}
+                        </button>
+                        <a href="{% url 'shop:admin_orders' %}" class="btn btn-outline-secondary">
+                            <span class="material-icons">clear</span> {% trans "Clear" %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="card" data-aos="fade-up">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Order ID" %}</th>
+                                <th>{% trans "Customer" %}</th>
+                                <th>{% trans "Date" %}</th>
+                                <th>{% trans "Items" %}</th>
+                                <th>{% trans "Total" %}</th>
+                                <th>{% trans "Payment" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td><strong>#{{ order.order_number }}</strong></td>
+                                <td>
+                                    {{ order.user.email }}<br>
+                                    <small class="text-muted">{{ order.user.username }}</small>
+                                </td>
+                                <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>{{ order.orderitem_set.count }} {% trans "items" %}</td>
+                                <td><strong>{{ order.grand_total }} EGP</strong></td>
+                                <td>
+                                    {% if order.payment_status == 'completed' %}
+                                        <span class="badge bg-success">{% trans "Paid" %}</span>
+                                    {% elif order.payment_status == 'pending' %}
+                                        <span class="badge bg-warning">{% trans "Pending" %}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{% trans "Failed" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm" onchange="updateOrderStatus({{ order.id }}, this.value)">
+                                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>{% trans "Pending" %}</option>
+                                        <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>{% trans "Processing" %}</option>
+                                        <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>{% trans "Shipped" %}</option>
+                                        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>{% trans "Delivered" %}</option>
+                                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>{% trans "Cancelled" %}</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <a href="{% url 'shop:order_detail' order.order_number %}" class="btn btn-sm btn-outline-primary" title="{% trans 'View Details' %}">
+                                        <span class="material-icons">visibility</span>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <span class="material-icons" style="font-size: 3rem; color: #ddd;">shopping_bag</span>
+                                    <p class="text-muted mt-2">{% trans "No orders found" %}</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if orders.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_filter %}&payment_status={{ payment_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}">
+                                <span class="material-icons">chevron_left</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in orders.paginator.page_range %}
+                            {% if orders.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_filter %}&payment_status={{ payment_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_filter %}&payment_status={{ payment_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}">
+                                <span class="material-icons">chevron_right</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+function updateOrderStatus(orderId, newStatus) {
+    fetch(`/admin-orders/${orderId}/update-status/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.message || '{% trans "Failed to update order status" %}', 'error');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        showToast('{% trans "An error occurred" %}', 'error');
+        location.reload();
+    });
+}
+</script>
+{% endblock %}

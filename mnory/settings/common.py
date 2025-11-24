@@ -98,22 +98,19 @@ TEMPLATES = [
 ]
 WSGI_APPLICATION = "mnory.wsgi.application"
 ASGI_APPLICATION = "mnory.asgi.application"
-
 # Channels / Redis configuration
-REDIS_URL = os.getenv("REDIS_URL")
+REDIS_URL = os.getenv("REDIS_URL","redis://127.0.0.1:6379/0")
 
 if REDIS_URL:
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [REDIS_URL],
+                "hosts": [REDIS_URL],   # Must be redis://host:port/db
             },
         }
     }
 else:
-    # In-memory layer is fine for local development and tests,
-    # but you should use Redis (set REDIS_URL) in production.
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",

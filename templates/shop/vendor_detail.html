@@ -4,7 +4,7 @@
 {% block title %}{{ vendor.store_name }} - {% trans "Vendor" %}{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/vendor_detail.css' %}">
+{% comment %} Vendor_detail.css is now included in combined.css {% endcomment %}
 {% endblock %}
 
 {% block content %}

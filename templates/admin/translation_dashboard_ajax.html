@@ -10,6 +10,22 @@
     {% blocktrans %}Use this page to access the interface for managing your project translations.{% endblocktrans %}
   </p>
 
+  <style>
+    #translation-status-table,
+    #translation-messages-table {
+      background-color: transparent;
+    }
+    #translation-status-table th,
+    #translation-status-table td,
+    #translation-messages-table th,
+    #translation-messages-table td {
+      background-color: transparent;
+    }
+    #translation-status-table tbody tr.selected {
+      background-color: #e6f2ff;
+    }
+  </style>
+
   <div class="module" id="translation-status-module">
     <h2>{% trans "Translation files" %}</h2>
     <p id="translation-status-message" class="help"></p>

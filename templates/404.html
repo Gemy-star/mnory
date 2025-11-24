@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}404 - {% trans "Page Not Found" %}{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="account-card text-center" data-aos="fade-up">
+                    <div class="account-card-body py-5">
+                        <div class="mb-3">
+                            <span class="material-icons" style="font-size: 4rem; color: var(--mnory-accent);">sentiment_dissatisfied</span>
+                        </div>
+                        <h1 class="mb-2">404</h1>
+                        <h2 class="h4 mb-3">{% trans "Page not found" %}</h2>
+                        <p class="text-muted mb-4">
+                            {% trans "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable." %}
+                        </p>
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <a href="{% url 'shop:home' %}" class="btn btn-primary">
+                                <span class="material-icons me-1">home</span>
+                                {% trans "Go to Homepage" %}
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary" onclick="window.history.back();">
+                                <span class="material-icons me-1">arrow_back</span>
+                                {% trans "Go Back" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
