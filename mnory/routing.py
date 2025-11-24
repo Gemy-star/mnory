@@ -7,4 +7,9 @@ websocket_urlpatterns = [
         r"^ws/orders/(?P<order_number>[^/]+)/$",
         shop_consumers.OrderChatConsumer.as_asgi()
     ),
+    # Direct user-to-user chat (e.g., admin ↔ user)
+    re_path(
+        r"^ws/user-chat/(?P<user_id>\d+)/$",
+        shop_consumers.UserChatConsumer.as_asgi(),
+    ),
 ]

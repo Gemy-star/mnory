@@ -204,8 +204,14 @@
                                 </a>
                             </div>
                             <div class="col-6">
+                                <a href="{% url 'shop:admin_payments' %}" class="quick-link-card">
+                                    <span class="material-icons">payments</span>
+                                    <span>{% trans "Manage Payments" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
                                 <a href="{% url 'shop:admin_users' %}" class="quick-link-card">
-                                    <span class="material-icons">people</span>
+                                    <span class="material-icons">chat</span>
                                     <span>{% trans "Manage Users" %}</span>
                                 </a>
                             </div>
@@ -234,7 +240,7 @@
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="{% url 'admin_settings_dashboard' %}" class="quick-link-card">
+                                <a href="{% url 'shop:admin_site_settings' %}" class="quick-link-card">
                                     <span class="material-icons">tune</span>
                                     <span>{% trans "Site Settings" %}</span>
                                 </a>

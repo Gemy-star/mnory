@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Site Settings" %} - {% trans "Admin" %}{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:admin_dashboard' %}"><span class="material-icons">admin_panel_settings</span> {% trans "Admin Dashboard" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Site Settings" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="dashboard-header mb-4 d-flex justify-content-between align-items-center" data-aos="fade-up">
+            <div>
+                <h1 class="section-title mb-0">
+                    <span class="material-icons">tune</span>
+                    {% trans "Site Settings" %}
+                </h1>
+                <p class="text-muted mb-0">
+                    {% blocktrans %}Manage dynamic configuration values powered by django-constance.{% endblocktrans %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="account-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="account-card-body">
+                <div id="constance-settings-root" class="settings-groups"></div>
+                <div id="constance-settings-messages" class="text-muted small mt-3"></div>
+                <div class="mt-3 d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary" id="constance-save-button">
+                        <span class="material-icons me-1">save</span>
+                        {% trans "Save changes" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+/* Admin Settings layout enhancements */
+.settings-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.settings-group-card .account-card-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.settings-group-card .badge-settings-count {
+    font-size: 0.75rem;
+}
+
+@media (max-width: 767px) {
+    .settings-groups {
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block js %}
+{{ block.super }}
+<script>
+(function() {
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function renderSettings(payload) {
+    var root = document.getElementById('constance-settings-root');
+    var msg = document.getElementById('constance-settings-messages');
+    root.innerHTML = '';
+    msg.textContent = '';
+
+    if (!payload || !payload.fieldsets || !payload.fieldsets.length) {
+      msg.textContent = '{% trans "No settings found." %}';
+      return;
+    }
+
+    payload.fieldsets.forEach(function(fs) {
+      var items = fs.items || [];
+
+      var card = document.createElement('div');
+      card.className = 'account-card mb-4 settings-group-card';
+
+      var header = document.createElement('div');
+      header.className = 'account-card-header d-flex justify-content-between align-items-center';
+
+      var heading = document.createElement('h3');
+      heading.className = 'h5 mb-0';
+      heading.textContent = fs.name;
+      header.appendChild(heading);
+
+      var countBadge = document.createElement('span');
+      countBadge.className = 'badge bg-secondary badge-settings-count';
+      countBadge.textContent = items.length;
+      header.appendChild(countBadge);
+
+      card.appendChild(header);
+
+      var body = document.createElement('div');
+      body.className = 'account-card-body p-0';
+
+      var table = document.createElement('table');
+      table.className = 'table table-sm align-middle mb-0';
+
+      var thead = document.createElement('thead');
+      thead.innerHTML = '<tr>' +
+        '<th style="width: 20%;">{% trans "Key" %}</th>' +
+        '<th style="width: 35%;">{% trans "Value" %}</th>' +
+        '<th style="width: 15%;">{% trans "Default" %}</th>' +
+        '<th style="width: 30%;">{% trans "Description" %}</th>' +
+        '</tr>';
+      table.appendChild(thead);
+
+      var tbody = document.createElement('tbody');
+
+      items.forEach(function(item) {
+        var tr = document.createElement('tr');
+
+        var tdKey = document.createElement('td');
+        tdKey.textContent = item.key;
+        tdKey.className = 'fw-semibold';
+        tr.appendChild(tdKey);
+
+        var tdValue = document.createElement('td');
+        var input;
+        var typeLower = (item.type || '').toLowerCase();
+
+        if (typeLower === 'bool' || typeLower === 'boolean') {
+          input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = Boolean(item.value);
+          input.className = 'form-check-input';
+        } else if (typeLower === 'int' || typeLower === 'float') {
+          input = document.createElement('input');
+          input.type = 'number';
+          input.value = item.value !== null && item.value !== undefined ? item.value : '';
+          input.className = 'form-control form-control-sm';
+        } else {
+          input = document.createElement('input');
+          input.type = 'text';
+          input.value = item.value !== null && item.value !== undefined ? item.value : '';
+          input.className = 'form-control form-control-sm';
+        }
+
+        input.setAttribute('data-constance-key', item.key);
+        input.setAttribute('data-constance-type', item.type);
+
+        tdValue.appendChild(input);
+        tr.appendChild(tdValue);
+
+        var tdDefault = document.createElement('td');
+        tdDefault.textContent = item.default !== null && item.default !== undefined ? item.default : '';
+        tdDefault.className = 'text-muted small';
+        tr.appendChild(tdDefault);
+
+        var tdDesc = document.createElement('td');
+        tdDesc.textContent = item.help_text || '';
+        tdDesc.className = 'text-muted small';
+        tr.appendChild(tdDesc);
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      body.appendChild(table);
+      card.appendChild(body);
+      root.appendChild(card);
+    });
+  }
+
+  function loadSettings() {
+    var msg = document.getElementById('constance-settings-messages');
+    msg.textContent = '{% trans "Loading settings..." %}';
+
+    fetch('/admin/api/settings/')
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        renderSettings(data);
+        msg.textContent = '';
+      })
+      .catch(function(err) {
+        console.error(err);
+        msg.textContent = '{% trans "Failed to load settings." %}';
+      });
+  }
+
+  function handleSave() {
+    var msg = document.getElementById('constance-settings-messages');
+    msg.textContent = '';
+
+    var inputs = document.querySelectorAll('[data-constance-key]');
+    var updates = {};
+
+    inputs.forEach(function(input) {
+      var key = input.getAttribute('data-constance-key');
+      var type = (input.getAttribute('data-constance-type') || '').toLowerCase();
+      var value;
+
+      if (type === 'bool' || type === 'boolean') {
+        value = input.checked;
+      } else if (type === 'int' || type === 'float') {
+        value = input.value;
+      } else {
+        value = input.value;
+      }
+
+      updates[key] = value;
+    });
+
+    fetch('/admin/api/settings/update/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ updates: updates })
+    })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (data.errors && Object.keys(data.errors).length) {
+          msg.textContent = '{% trans "Some settings failed to save." %}';
+          console.error('Settings errors', data.errors);
+        } else {
+          msg.textContent = '{% trans "Settings saved successfully." %}';
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        msg.textContent = '{% trans "Failed to save settings." %}';
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    var saveBtn = document.getElementById('constance-save-button');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', handleSave);
+    }
+  });
+})();
+</script>
+{% endblock %}

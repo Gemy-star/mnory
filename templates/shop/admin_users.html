@@ -123,6 +123,11 @@
                                                 title="{% trans 'Delete' %}">
                                             <span class="material-icons">delete</span>
                                         </button>
+                                        <button type="button" class="btn btn-outline-primary"
+                                                onclick="openUserChat({{ user.id }}, '{{ user.email|escapejs }}')"
+                                                title="{% trans 'Chat' %}">
+                                            <span class="material-icons">chat</span>
+                                        </button>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -176,6 +181,35 @@
     </div>
 </main>
 
+<!-- Admin ↔ User Chat Modal -->
+<div class="modal fade" id="adminUserChatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-end">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <span class="material-icons">chat</span>
+                    <span id="adminUserChatTitle">{% trans "Chat with user" %}</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+            </div>
+            <div class="modal-body">
+                <ul id="adminUserChatMessages" class="list-unstyled small mb-3" style="max-height: 320px; overflow-y: auto;"></ul>
+                <form id="adminUserChatForm" class="input-group">
+                    <input
+                        id="adminUserChatInput"
+                        type="text"
+                        class="form-control"
+                        autocomplete="off"
+                        placeholder="{% trans 'Write a message...' %}">
+                    <button class="btn btn-primary" type="submit">
+                        <span class="material-icons">send</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function toggleUserStatus(userId, isActive) {
     if (!confirm(isActive ? '{% trans "Deactivate this user?" %}' : '{% trans "Activate this user?" %}')) {
@@ -228,5 +262,114 @@ function deleteUser(userId, userEmail) {
         showToast('{% trans "An error occurred" %}', 'error');
     });
 }
+
+// Link the "Support Chat" button to the global chatbot widget
+document.addEventListener('DOMContentLoaded', function () {
+    const supportChatBtn = document.getElementById('adminUsersChatToggle');
+    // Prefer header toggle if present, otherwise fall back to floating chatbot button
+    const headerToggle = document.getElementById('headerChatbotToggle');
+    const floatingToggle = document.getElementById('mnoryChatbotToggle');
+
+    if (supportChatBtn && (headerToggle || floatingToggle)) {
+        supportChatBtn.addEventListener('click', function () {
+            const target = headerToggle || floatingToggle;
+            if (target) {
+                target.click();
+            }
+        });
+    }
+});
+
+let adminUserChatSocket = null;
+let adminUserChatModal = null;
+
+function appendAdminUserChatMessage(message, fromMe) {
+    const list = document.getElementById('adminUserChatMessages');
+    if (!list || !message || !message.body) return;
+
+    const li = document.createElement('li');
+    li.className = 'mb-2 ' + (fromMe ? 'text-end' : 'text-start');
+
+    const meta = document.createElement('div');
+    meta.className = 'fw-semibold';
+    const sender = document.createElement('span');
+    sender.textContent = message.sender || '';
+    const ts = document.createElement('span');
+    ts.className = 'text-muted ms-1';
+    ts.style.fontSize = '0.75rem';
+    if (message.created_at) {
+        try {
+            ts.textContent = ' ' + new Date(message.created_at).toLocaleString();
+        } catch (e) {
+            ts.textContent = '';
+        }
+    }
+    meta.appendChild(sender);
+    meta.appendChild(ts);
+
+    const body = document.createElement('div');
+    body.className = 'mt-1';
+    body.textContent = message.body;
+
+    li.appendChild(meta);
+    li.appendChild(body);
+    list.appendChild(li);
+    list.scrollTop = list.scrollHeight;
+}
+
+function openUserChat(userId, email) {
+    const titleEl = document.getElementById('adminUserChatTitle');
+    if (titleEl) {
+        titleEl.textContent = email;
+    }
+
+    const list = document.getElementById('adminUserChatMessages');
+    if (list) {
+        list.innerHTML = '';
+    }
+
+    if (adminUserChatSocket) {
+        adminUserChatSocket.close();
+        adminUserChatSocket = null;
+    }
+
+    const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${scheme}://${window.location.host}/ws/user-chat/${userId}/`;
+    adminUserChatSocket = new WebSocket(wsUrl);
+
+    adminUserChatSocket.onmessage = function (event) {
+        let data;
+        try {
+            data = JSON.parse(event.data);
+        } catch (e) {
+            return;
+        }
+        if (!data || data.type !== 'chat_message' || !data.message) return;
+        appendAdminUserChatMessage(data.message, !!data.message.is_me);
+    };
+
+    const modalEl = document.getElementById('adminUserChatModal');
+    if (!adminUserChatModal && modalEl && window.bootstrap && window.bootstrap.Modal) {
+        adminUserChatModal = new bootstrap.Modal(modalEl);
+    }
+    if (adminUserChatModal) {
+        adminUserChatModal.show();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('adminUserChatForm');
+    const input = document.getElementById('adminUserChatInput');
+    if (form && input) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const text = (input.value || '').trim();
+            if (!text || !adminUserChatSocket || adminUserChatSocket.readyState !== WebSocket.OPEN) return;
+
+            adminUserChatSocket.send(JSON.stringify({ body: text }));
+            input.value = '';
+        });
+    }
+});
 </script>
 {% endblock %}

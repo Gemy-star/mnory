@@ -5613,6 +5613,57 @@ def admin_orders(request):
 
 
 @login_required
+def admin_payments(request):
+    """Admin view for managing all payments"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "")
+    method_filter = request.GET.get("payment_method", "")
+    status_filter = request.GET.get("status", "")  # success / failed
+    date_from = request.GET.get("date_from", "")
+
+    # Base queryset
+    payments = Payment.objects.select_related("order", "order__user").all()
+
+    # Apply filters
+    if search_query:
+        payments = payments.filter(
+            Q(order__order_number__icontains=search_query)
+            | Q(order__user__email__icontains=search_query)
+            | Q(transaction_id__icontains=search_query)
+        )
+    if method_filter:
+        payments = payments.filter(payment_method=method_filter)
+    if status_filter == "success":
+        payments = payments.filter(is_success=True)
+    elif status_filter == "failed":
+        payments = payments.filter(is_success=False)
+    if date_from:
+        payments = payments.filter(timestamp__gte=date_from)
+
+    payments = payments.order_by("-timestamp")
+
+    # Pagination
+    paginator = Paginator(payments, 20)
+    page = request.GET.get("page")
+    payments = paginator.get_page(page)
+
+    context = {
+        "payments": payments,
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "method_filter": method_filter,
+        "status_filter": status_filter,
+        "date_from": date_from,
+        "payment_methods": Payment.PAYMENT_METHOD_CHOICES,
+    }
+    return render(request, "shop/admin_payments.html", context)
+
+
+@login_required
 @require_http_methods(["POST"])
 def admin_order_update_status(request, order_id):
     """Update order status"""
@@ -5891,7 +5942,8 @@ def admin_coupons(request):
     elif active_filter == "expired":
         coupons = coupons.filter(valid_to__lt=timezone.now())
 
-    coupons = coupons.order_by("-created_at")
+    # Order by most recently starting coupon first
+    coupons = coupons.order_by("-valid_from", "-id")
 
     # Add is_expired property
     for coupon in coupons:
@@ -5992,6 +6044,21 @@ def admin_chatbot(request):
         "active_filter": active_filter,
     }
     return render(request, "shop/admin_chatbot.html", context)
+
+
+@login_required
+def admin_site_settings(request):
+    """Admin view for managing dynamic site settings via django-constance.
+
+    This renders a custom dashboard page (using base.html) and relies on the
+    existing /admin/api/settings/ and /admin/api/settings/update/ endpoints
+    defined in mnory.admin_views for data loading and saving.
+    """
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    return render(request, "shop/admin_settings.html", {"title": _("Site Settings")})
 
 
 @login_required

@@ -157,6 +157,7 @@ urlpatterns = [
         views.admin_order_update_status,
         name="admin_order_update_status",
     ),
+    path("admin-payments/", views.admin_payments, name="admin_payments"),
     path("admin-users/", views.admin_users, name="admin_users"),
     path(
         "admin-users/<int:user_id>/toggle-status/",
@@ -202,6 +203,7 @@ urlpatterns = [
         views.admin_coupon_delete,
         name="admin_coupon_delete",
     ),
+    path("admin-settings/", views.admin_site_settings, name="admin_site_settings"),
     path("admin-chatbot/", views.admin_chatbot, name="admin_chatbot"),
     path(
         "admin-chatbot/create/", views.admin_chatbot_create, name="admin_chatbot_create"
