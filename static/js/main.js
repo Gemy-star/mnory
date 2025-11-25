@@ -25,7 +25,10 @@ function showMainNotification(message, type = 'warning') {
     } else if (typeof window.showNotification === 'function') {
         window.showNotification(message, type);
     } else {
-        alert(message);
+        // Fallback: log to console instead of using a blocking alert
+        if (typeof console !== 'undefined' && typeof console.error === 'function') {
+            console.error(message);
+        }
     }
 }
 

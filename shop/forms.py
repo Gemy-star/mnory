@@ -683,3 +683,119 @@ class CouponForm(forms.ModelForm):
         if code:
             return code.upper()
         return code
+
+
+class CategoryForm(forms.ModelForm):
+
+    class Meta:
+        model = Category
+        fields = [
+            "name",
+            "description",
+            "image",
+            "is_active",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4}
+            ),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class SubCategoryForm(forms.ModelForm):
+
+    class Meta:
+        model = SubCategory
+        fields = [
+            "category",
+            "name",
+            "description",
+            "image",
+            "is_active",
+        ]
+        widgets = {
+            "category": forms.Select(attrs={"class": "form-select"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4}
+            ),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class BrandForm(forms.ModelForm):
+
+    class Meta:
+        model = Brand
+        fields = [
+            "name",
+            "logo",
+            "description",
+            "is_active",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "logo": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4}
+            ),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class FitTypeForm(forms.ModelForm):
+
+    class Meta:
+        model = FitType
+        fields = [
+            "name",
+            "description",
+            "is_active",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4}
+            ),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class ColorForm(forms.ModelForm):
+
+    class Meta:
+        model = Color
+        fields = [
+            "name",
+            "hex_code",
+            "is_active",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "hex_code": forms.TextInput(
+                attrs={"class": "form-control", "type": "color"}
+            ),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class SizeForm(forms.ModelForm):
+
+    class Meta:
+        model = Size
+        fields = [
+            "name",
+            "size_type",
+            "order",
+            "is_active",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "size_type": forms.Select(attrs={"class": "form-select"}),
+            "order": forms.NumberInput(attrs={"class": "form-control"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }

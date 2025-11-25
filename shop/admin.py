@@ -4,6 +4,12 @@ from django.contrib.auth import get_user_model
 from .models import (
     MnoryUser,
     VendorProfile,
+    Category,
+    SubCategory,
+    Brand,
+    FitType,
+    Color,
+    Size,
     Product,
     Order,
     Cart,
@@ -14,10 +20,12 @@ from .models import (
     Coupon,
     Message,
     VendorOrder,
+    VendorShipping,
     Payout,
+    Review,
+    Notification,
     ChatbotQuestion,
-    Color,
-    Size,
+    HomeSlider,
 )
 from .mixins import (
     AdminVendorCustomerOnlyMixin,
@@ -748,3 +756,70 @@ class SizeAdmin(admin.ModelAdmin):
     list_filter = ("size_type", "is_active")
     search_fields = ("name",)
     ordering = ("size_type", "order", "name")
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "is_active", "created_at")
+    search_fields = ("name", "slug")
+    list_filter = ("is_active", "created_at")
+    prepopulated_fields = {"slug": ("name",)}
+
+
+@admin.register(SubCategory)
+class SubCategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "category", "slug", "is_active", "created_at")
+    search_fields = ("name", "slug", "category__name")
+    list_filter = ("category", "is_active", "created_at")
+    prepopulated_fields = {"slug": ("name",)}
+
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "is_active")
+    search_fields = ("name", "slug")
+    list_filter = ("is_active",)
+    prepopulated_fields = {"slug": ("name",)}
+
+
+@admin.register(FitType)
+class FitTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "is_active")
+    search_fields = ("name", "slug")
+    list_filter = ("is_active",)
+    prepopulated_fields = {"slug": ("name",)}
+
+
+@admin.register(HomeSlider)
+class HomeSliderAdmin(admin.ModelAdmin):
+    list_display = ("heading", "order", "is_active")
+    search_fields = ("heading", "subheading")
+    list_filter = ("is_active",)
+    ordering = ("order",)
+
+
+@admin.register(VendorShipping)
+class VendorShippingAdmin(admin.ModelAdmin):
+    list_display = (
+        "vendor",
+        "shipping_rate_cairo",
+        "shipping_rate_outside_cairo",
+        "free_shipping_threshold",
+    )
+    search_fields = ("vendor__store_name", "vendor__user__email")
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ("product", "user", "rating", "is_public", "created_at")
+    search_fields = ("product__name", "user__email", "comment")
+    list_filter = ("is_public", "rating", "created_at")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("user", "notification_type", "title", "is_read", "created_at")
+    search_fields = ("user__email", "title", "message")
+    list_filter = ("notification_type", "is_read", "created_at")
+    readonly_fields = ("created_at",)

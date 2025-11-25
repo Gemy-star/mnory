@@ -134,6 +134,90 @@ urlpatterns = [
     # Admin Dashboard
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     # Admin Management Pages
+    path("admin-categories/", views.admin_categories, name="admin_categories"),
+    path(
+        "admin-categories/add/",
+        views.admin_category_add,
+        name="admin_category_add",
+    ),
+    path(
+        "admin-categories/<int:category_id>/edit/",
+        views.admin_category_edit,
+        name="admin_category_edit",
+    ),
+    path(
+        "admin-categories/<int:category_id>/delete/",
+        views.admin_category_delete,
+        name="admin_category_delete",
+    ),
+    path("admin-subcategories/", views.admin_subcategories, name="admin_subcategories"),
+    path(
+        "admin-subcategories/add/",
+        views.admin_subcategory_add,
+        name="admin_subcategory_add",
+    ),
+    path(
+        "admin-subcategories/<int:subcategory_id>/edit/",
+        views.admin_subcategory_edit,
+        name="admin_subcategory_edit",
+    ),
+    path(
+        "admin-subcategories/<int:subcategory_id>/delete/",
+        views.admin_subcategory_delete,
+        name="admin_subcategory_delete",
+    ),
+    path("admin-brands/", views.admin_brands, name="admin_brands"),
+    path("admin-brands/add/", views.admin_brand_add, name="admin_brand_add"),
+    path(
+        "admin-brands/<int:brand_id>/edit/",
+        views.admin_brand_edit,
+        name="admin_brand_edit",
+    ),
+    path(
+        "admin-brands/<int:brand_id>/delete/",
+        views.admin_brand_delete,
+        name="admin_brand_delete",
+    ),
+    path("admin-fit-types/", views.admin_fit_types, name="admin_fit_types"),
+    path(
+        "admin-fit-types/add/",
+        views.admin_fit_type_add,
+        name="admin_fit_type_add",
+    ),
+    path(
+        "admin-fit-types/<int:fit_type_id>/edit/",
+        views.admin_fit_type_edit,
+        name="admin_fit_type_edit",
+    ),
+    path(
+        "admin-fit-types/<int:fit_type_id>/delete/",
+        views.admin_fit_type_delete,
+        name="admin_fit_type_delete",
+    ),
+    path("admin-colors/", views.admin_colors, name="admin_colors"),
+    path("admin-colors/add/", views.admin_color_add, name="admin_color_add"),
+    path(
+        "admin-colors/<int:color_id>/edit/",
+        views.admin_color_edit,
+        name="admin_color_edit",
+    ),
+    path(
+        "admin-colors/<int:color_id>/delete/",
+        views.admin_color_delete,
+        name="admin_color_delete",
+    ),
+    path("admin-sizes/", views.admin_sizes, name="admin_sizes"),
+    path("admin-sizes/add/", views.admin_size_add, name="admin_size_add"),
+    path(
+        "admin-sizes/<int:size_id>/edit/",
+        views.admin_size_edit,
+        name="admin_size_edit",
+    ),
+    path(
+        "admin-sizes/<int:size_id>/delete/",
+        views.admin_size_delete,
+        name="admin_size_delete",
+    ),
     path("admin-products/", views.admin_products, name="admin_products"),
     path("admin-products/add/", views.admin_product_add, name="admin_product_add"),
     path(

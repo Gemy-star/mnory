@@ -202,8 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.showToast(message, 'error');
             } else if (typeof window.showNotification === 'function') {
                 window.showNotification(message, 'error');
-            } else {
-                alert(message);
             }
         }
         deleteModal.hide();

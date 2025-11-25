@@ -32,6 +32,12 @@ from .forms import (
     ProductImageFormSet,
     ProductVariantFormSet,
     VendorProductForm,
+    CategoryForm,
+    SubCategoryForm,
+    BrandForm,
+    FitTypeForm,
+    ColorForm,
+    SizeForm,
 )
 from .models import (  # noqa
     Category,
@@ -5476,6 +5482,579 @@ def admin_dashboard(request):
 # ============================================================================
 # ADMIN MANAGEMENT VIEWS
 # ============================================================================
+
+@login_required
+def admin_categories(request):
+    """Admin view for managing categories"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    search_query = request.GET.get("search", "")
+
+    categories = Category.objects.all().order_by("name")
+    if search_query:
+        categories = categories.filter(
+            Q(name__icontains=search_query) | Q(slug__icontains=search_query)
+        )
+
+    paginator = Paginator(categories, 20)
+    page = request.GET.get("page")
+    categories = paginator.get_page(page)
+
+    context = {
+        "categories": categories,
+        "total_count": paginator.count,
+        "search_query": search_query,
+    }
+    return render(request, "shop/admin_categories.html", context)
+
+
+@login_required
+def admin_category_add(request):
+    """Add new category"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = CategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Category created successfully"))
+            return redirect("shop:admin_categories")
+    else:
+        form = CategoryForm()
+
+    context = {"form": form, "title": _("Add New Category"), "category": None}
+    return render(request, "shop/admin_category_form.html", context)
+
+
+@login_required
+def admin_category_edit(request, category_id):
+    """Edit existing category"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    category = get_object_or_404(Category, id=category_id)
+
+    if request.method == "POST":
+        form = CategoryForm(request.POST, request.FILES, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Category updated successfully"))
+            return redirect("shop:admin_categories")
+    else:
+        form = CategoryForm(instance=category)
+
+    context = {
+        "form": form,
+        "title": _("Edit Category"),
+        "category": category,
+    }
+    return render(request, "shop/admin_category_form.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_category_delete(request, category_id):
+    """Delete a category (AJAX)"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse(
+            {"success": False, "message": _("Access denied")}, status=403
+        )
+
+    try:
+        category = Category.objects.get(id=category_id)
+        category.delete()
+        return JsonResponse(
+            {"success": True, "message": _("Category deleted successfully")}
+        )
+    except Category.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": _("Category not found")}, status=404
+        )
+
+
+@login_required
+def admin_subcategories(request):
+    """Admin view for managing subcategories"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    search_query = request.GET.get("search", "")
+    category_filter = request.GET.get("category", "")
+
+    subcategories = SubCategory.objects.select_related("category").all().order_by(
+        "category__name", "name"
+    )
+    if search_query:
+        subcategories = subcategories.filter(
+            Q(name__icontains=search_query)
+            | Q(slug__icontains=search_query)
+            | Q(category__name__icontains=search_query)
+        )
+    if category_filter:
+        subcategories = subcategories.filter(category_id=category_filter)
+
+    paginator = Paginator(subcategories, 20)
+    page = request.GET.get("page")
+    subcategories = paginator.get_page(page)
+
+    context = {
+        "subcategories": subcategories,
+        "categories": Category.objects.all().order_by("name"),
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "category_filter": category_filter,
+    }
+    return render(request, "shop/admin_subcategories.html", context)
+
+
+@login_required
+def admin_subcategory_add(request):
+    """Add new subcategory"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = SubCategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Subcategory created successfully"))
+            return redirect("shop:admin_subcategories")
+    else:
+        form = SubCategoryForm()
+
+    context = {"form": form, "title": _("Add New Subcategory"), "subcategory": None}
+    return render(request, "shop/admin_subcategory_form.html", context)
+
+
+@login_required
+def admin_subcategory_edit(request, subcategory_id):
+    """Edit existing subcategory"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    subcategory = get_object_or_404(SubCategory, id=subcategory_id)
+
+    if request.method == "POST":
+        form = SubCategoryForm(request.POST, request.FILES, instance=subcategory)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Subcategory updated successfully"))
+            return redirect("shop:admin_subcategories")
+    else:
+        form = SubCategoryForm(instance=subcategory)
+
+    context = {
+        "form": form,
+        "title": _("Edit Subcategory"),
+        "subcategory": subcategory,
+    }
+    return render(request, "shop/admin_subcategory_form.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_subcategory_delete(request, subcategory_id):
+    """Delete a subcategory (AJAX)"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse(
+            {"success": False, "message": _("Access denied")}, status=403
+        )
+
+    try:
+        subcategory = SubCategory.objects.get(id=subcategory_id)
+        subcategory.delete()
+        return JsonResponse(
+            {"success": True, "message": _("Subcategory deleted successfully")}
+        )
+    except SubCategory.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": _("Subcategory not found")}, status=404
+        )
+
+
+@login_required
+def admin_brands(request):
+    """Admin view for managing brands"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    search_query = request.GET.get("search", "")
+    brands = Brand.objects.all().order_by("name")
+    if search_query:
+        brands = brands.filter(name__icontains=search_query)
+
+    paginator = Paginator(brands, 20)
+    page = request.GET.get("page")
+    brands = paginator.get_page(page)
+
+    context = {
+        "brands": brands,
+        "total_count": paginator.count,
+        "search_query": search_query,
+    }
+    return render(request, "shop/admin_brands.html", context)
+
+
+@login_required
+def admin_brand_add(request):
+    """Add new brand"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = BrandForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Brand created successfully"))
+            return redirect("shop:admin_brands")
+    else:
+        form = BrandForm()
+
+    context = {"form": form, "title": _("Add New Brand"), "brand": None}
+    return render(request, "shop/admin_brand_form.html", context)
+
+
+@login_required
+def admin_brand_edit(request, brand_id):
+    """Edit existing brand"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    brand = get_object_or_404(Brand, id=brand_id)
+
+    if request.method == "POST":
+        form = BrandForm(request.POST, request.FILES, instance=brand)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Brand updated successfully"))
+            return redirect("shop:admin_brands")
+    else:
+        form = BrandForm(instance=brand)
+
+    context = {
+        "form": form,
+        "title": _("Edit Brand"),
+        "brand": brand,
+    }
+    return render(request, "shop/admin_brand_form.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_brand_delete(request, brand_id):
+    """Delete a brand (AJAX)"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse(
+            {"success": False, "message": _("Access denied")}, status=403
+        )
+
+    try:
+        brand = Brand.objects.get(id=brand_id)
+        brand.delete()
+        return JsonResponse(
+            {"success": True, "message": _("Brand deleted successfully")}
+        )
+    except Brand.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": _("Brand not found")}, status=404
+        )
+
+
+@login_required
+def admin_fit_types(request):
+    """Admin view for managing fit types"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    search_query = request.GET.get("search", "")
+    fit_types = FitType.objects.all().order_by("name")
+    if search_query:
+        fit_types = fit_types.filter(
+            Q(name__icontains=search_query)
+            | Q(description__icontains=search_query)
+        )
+
+    paginator = Paginator(fit_types, 20)
+    page = request.GET.get("page")
+    fit_types = paginator.get_page(page)
+
+    context = {
+        "fit_types": fit_types,
+        "total_count": paginator.count,
+        "search_query": search_query,
+    }
+    return render(request, "shop/admin_fittypes.html", context)
+
+
+@login_required
+def admin_fit_type_add(request):
+    """Add new fit type"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = FitTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Fit type created successfully"))
+            return redirect("shop:admin_fit_types")
+    else:
+        form = FitTypeForm()
+
+    context = {"form": form, "title": _("Add New Fit Type"), "fit_type": None}
+    return render(request, "shop/admin_fittype_form.html", context)
+
+
+@login_required
+def admin_fit_type_edit(request, fit_type_id):
+    """Edit existing fit type"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    fit_type = get_object_or_404(FitType, id=fit_type_id)
+
+    if request.method == "POST":
+        form = FitTypeForm(request.POST, instance=fit_type)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Fit type updated successfully"))
+            return redirect("shop:admin_fit_types")
+    else:
+        form = FitTypeForm(instance=fit_type)
+
+    context = {
+        "form": form,
+        "title": _("Edit Fit Type"),
+        "fit_type": fit_type,
+    }
+    return render(request, "shop/admin_fittype_form.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_fit_type_delete(request, fit_type_id):
+    """Delete a fit type (AJAX)"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse(
+            {"success": False, "message": _("Access denied")}, status=403
+        )
+
+    try:
+        fit_type = FitType.objects.get(id=fit_type_id)
+        fit_type.delete()
+        return JsonResponse(
+            {"success": True, "message": _("Fit type deleted successfully")}
+        )
+    except FitType.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": _("Fit type not found")}, status=404
+        )
+
+
+@login_required
+def admin_colors(request):
+    """Admin view for managing colors"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    search_query = request.GET.get("search", "")
+    colors = Color.objects.all().order_by("name")
+    if search_query:
+        colors = colors.filter(
+            Q(name__icontains=search_query)
+            | Q(hex_code__icontains=search_query)
+        )
+
+    paginator = Paginator(colors, 20)
+    page = request.GET.get("page")
+    colors = paginator.get_page(page)
+
+    context = {
+        "colors": colors,
+        "total_count": paginator.count,
+        "search_query": search_query,
+    }
+    return render(request, "shop/admin_colors.html", context)
+
+
+@login_required
+def admin_color_add(request):
+    """Add new color"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = ColorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Color created successfully"))
+            return redirect("shop:admin_colors")
+    else:
+        form = ColorForm()
+
+    context = {"form": form, "title": _("Add New Color"), "color": None}
+    return render(request, "shop/admin_color_form.html", context)
+
+
+@login_required
+def admin_color_edit(request, color_id):
+    """Edit existing color"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    color = get_object_or_404(Color, id=color_id)
+
+    if request.method == "POST":
+        form = ColorForm(request.POST, instance=color)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Color updated successfully"))
+            return redirect("shop:admin_colors")
+    else:
+        form = ColorForm(instance=color)
+
+    context = {
+        "form": form,
+        "title": _("Edit Color"),
+        "color": color,
+    }
+    return render(request, "shop/admin_color_form.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_color_delete(request, color_id):
+    """Delete a color (AJAX)"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse(
+            {"success": False, "message": _("Access denied")}, status=403
+        )
+
+    try:
+        color = Color.objects.get(id=color_id)
+        color.delete()
+        return JsonResponse(
+            {"success": True, "message": _("Color deleted successfully")}
+        )
+    except Color.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": _("Color not found")}, status=404
+        )
+
+
+@login_required
+def admin_sizes(request):
+    """Admin view for managing sizes"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    search_query = request.GET.get("search", "")
+    size_type_filter = request.GET.get("size_type", "")
+
+    sizes = Size.objects.all().order_by("size_type", "order", "name")
+    if search_query:
+        sizes = sizes.filter(name__icontains=search_query)
+    if size_type_filter:
+        sizes = sizes.filter(size_type=size_type_filter)
+
+    paginator = Paginator(sizes, 20)
+    page = request.GET.get("page")
+    sizes = paginator.get_page(page)
+
+    context = {
+        "sizes": sizes,
+        "size_types": Size.SIZE_TYPES,
+        "total_count": paginator.count,
+        "search_query": search_query,
+        "size_type_filter": size_type_filter,
+    }
+    return render(request, "shop/admin_sizes.html", context)
+
+
+@login_required
+def admin_size_add(request):
+    """Add new size"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    if request.method == "POST":
+        form = SizeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Size created successfully"))
+            return redirect("shop:admin_sizes")
+    else:
+        form = SizeForm()
+
+    context = {"form": form, "title": _("Add New Size"), "size": None}
+    return render(request, "shop/admin_size_form.html", context)
+
+
+@login_required
+def admin_size_edit(request, size_id):
+    """Edit existing size"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    size = get_object_or_404(Size, id=size_id)
+
+    if request.method == "POST":
+        form = SizeForm(request.POST, instance=size)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Size updated successfully"))
+            return redirect("shop:admin_sizes")
+    else:
+        form = SizeForm(instance=size)
+
+    context = {
+        "form": form,
+        "title": _("Edit Size"),
+        "size": size,
+    }
+    return render(request, "shop/admin_size_form.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def admin_size_delete(request, size_id):
+    """Delete a size (AJAX)"""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        return JsonResponse(
+            {"success": False, "message": _("Access denied")}, status=403
+        )
+
+    try:
+        size = Size.objects.get(id=size_id)
+        size.delete()
+        return JsonResponse(
+            {"success": True, "message": _("Size deleted successfully")}
+        )
+    except Size.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": _("Size not found")}, status=404
+        )
+
 
 @login_required
 def admin_products(request):

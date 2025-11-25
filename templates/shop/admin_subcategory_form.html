@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ title }} - Mnory Admin{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="material-icons">{% if subcategory %}edit{% else %}add_circle{% endif %}</i>
+                            {{ title }}
+                        </h5>
+                        <a href="{% url 'shop:admin_subcategories' %}" class="btn btn-sm btn-secondary">
+                            <i class="material-icons">arrow_back</i>
+                            {% trans "Back to Subcategories" %}
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ form.non_field_errors }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.category.label }} <span class="text-danger">*</span></label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.name.label }} <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.description.label }}</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.image.label }}</label>
+                                {{ form.image }}
+                                {% if form.image.errors %}
+                                <div class="invalid-feedback d-block">{{ form.image.errors }}</div>
+                                {% endif %}
+                                {% if subcategory and subcategory.image %}
+                                <div class="mt-2">
+                                    <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}" class="img-thumbnail" style="max-width: 100%; max-height: 300px;">
+                                    <p class="text-sm text-muted">{% trans "Current image" %}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        {{ form.is_active.label }}
+                                    </label>
+                                </div>
+                                {% if form.is_active.errors %}
+                                <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <a href="{% url 'shop:admin_subcategories' %}" class="btn btn-secondary">
+                                    <i class="material-icons">cancel</i>
+                                    {% trans "Cancel" %}
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="material-icons">save</i>
+                                    {% if subcategory %}{% trans "Update Subcategory" %}{% else %}{% trans "Create Subcategory" %}{% endif %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

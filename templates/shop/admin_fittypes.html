@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Manage Fit Types" %} - {% trans "Admin" %}{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-4" data-aos="fade-down">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop:admin_dashboard' %}"><span class="material-icons">admin_panel_settings</span> {% trans "Admin Dashboard" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Manage Fit Types" %}</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="dashboard-header mb-4 d-flex justify-content-between align-items-center" data-aos="fade-up">
+            <div>
+                <h1 class="section-title mb-0">
+                    <span class="material-icons">straighten</span>
+                    {% trans "Manage Fit Types" %}
+                </h1>
+                <p class="text-muted mb-0">{{ total_count }} {% trans "total fit types" %}</p>
+            </div>
+            <a href="{% url 'shop:admin_fit_type_add' %}" class="btn btn-primary">
+                <span class="material-icons">add</span> {% trans "Add New Fit Type" %}
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4" data-aos="fade-up">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="{% trans 'Search fit types...' %}" value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">search</span> {% trans "Filter" %}
+                        </button>
+                        <a href="{% url 'shop:admin_fit_types' %}" class="btn btn-outline-secondary">
+                            <span class="material-icons">clear</span> {% trans "Clear" %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Fit Types Table -->
+        <div class="card" data-aos="fade-up">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Name" %}</th>
+                                <th>{% trans "Description" %}</th>
+                                <th>{% trans "Active" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ft in fit_types %}
+                            <tr>
+                                <td>{{ ft.name }}</td>
+                                <td>{{ ft.description|truncatewords:10 }}</td>
+                                <td>
+                                    {% if ft.is_active %}
+                                        <span class="badge bg-success">{% trans "Active" %}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'shop:admin_fit_type_edit' ft.id %}" class="btn btn-outline-warning" title="{% trans 'Edit' %}">
+                                            <span class="material-icons">edit</span>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger"
+                                                onclick="deleteFitType({{ ft.id }}, '{{ ft.name }}')"
+                                                title="{% trans 'Delete' %}">
+                                            <span class="material-icons">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <span class="material-icons" style="font-size: 3rem; color: #ddd;">straighten</span>
+                                    <p class="text-muted mt-2">{% trans "No fit types found" %}</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if fit_types.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if fit_types.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ fit_types.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                <span class="material-icons">chevron_left</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in fit_types.paginator.page_range %}
+                            {% if fit_types.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > fit_types.number|add:'-3' and num < fit_types.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if fit_types.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ fit_types.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                <span class="material-icons">chevron_right</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+function deleteFitType(fitTypeId, fitTypeName) {
+    if (!confirm(`{% trans "Are you sure you want to delete" %} "${fitTypeName}"? {% trans "This action cannot be undone." %}`)) {
+        return;
+    }
+
+    fetch(`/admin-fit-types/${fitTypeId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (window.showToast) {
+                window.showToast(data.message, 'success');
+            }
+            location.reload();
+        } else {
+            const message = data.message || '{% trans "Failed to delete fit type" %}';
+            if (window.showToast) {
+                window.showToast(message, 'error');
+            }
+        }
+    })
+    .catch(error => {
+        if (window.showToast) {
+            window.showToast('{% trans "An error occurred" %}', 'error');
+        }
+    });
+}
+</script>
+{% endblock %}

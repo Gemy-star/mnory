@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ title }} - Mnory Admin{% endblock %}
+
+{% block content %}
+<main class="category-detail-section">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="material-icons">{% if size %}edit{% else %}add_circle{% endif %}</i>
+                            {{ title }}
+                        </h5>
+                        <a href="{% url 'shop:admin_sizes' %}" class="btn btn-sm btn-secondary">
+                            <i class="material-icons">arrow_back</i>
+                            {% trans "Back to Sizes" %}
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ form.non_field_errors }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.name.label }} <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.size_type.label }}</label>
+                                {{ form.size_type }}
+                                {% if form.size_type.errors %}
+                                <div class="invalid-feedback d-block">{{ form.size_type.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.order.label }}</label>
+                                {{ form.order }}
+                                {% if form.order.errors %}
+                                <div class="invalid-feedback d-block">{{ form.order.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        {{ form.is_active.label }}
+                                    </label>
+                                </div>
+                                {% if form.is_active.errors %}
+                                <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <a href="{% url 'shop:admin_sizes' %}" class="btn btn-secondary">
+                                    <i class="material-icons">cancel</i>
+                                    {% trans "Cancel" %}
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="material-icons">save</i>
+                                    {% if size %}{% trans "Update Size" %}{% else %}{% trans "Create Size" %}{% endif %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
