@@ -5479,6 +5479,16 @@ def admin_dashboard(request):
     return render(request, 'shop/admin_dashboard.html', context)
 
 
+@login_required
+def admin_translations(request):
+    """Custom translations management page using AJAX APIs."""
+    if not (request.user.is_superuser or request.user.is_admin_type):
+        messages.error(request, _("Access denied. Admin privileges required."))
+        return redirect("shop:home")
+
+    return render(request, "shop/admin_translations.html")
+
+
 # ============================================================================
 # ADMIN MANAGEMENT VIEWS
 # ============================================================================

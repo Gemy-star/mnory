@@ -133,6 +133,7 @@ urlpatterns = [
     path("account/settings/", views.account_settings, name="account_settings"),
     # Admin Dashboard
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-translations/", views.admin_translations, name="admin_translations"),
     # Admin Management Pages
     path("admin-categories/", views.admin_categories, name="admin_categories"),
     path(
