@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import gettext as _
+from django.utils import timezone
+from .models import VisitorSession
 
 
 class AdminAccessMiddleware(MiddlewareMixin):
@@ -148,3 +150,30 @@ class LoginRedirectMiddleware(MiddlewareMixin):
 
         # Default fallback
         return reverse("shop:home")
+
+
+class VisitorTrackingMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        path = request.path
+        if path.startswith("/static/") or path.startswith("/media/") or path.startswith("/admin/"):
+            return None
+
+        session = request.session
+        if not session.session_key:
+            session.save()
+        session_key = session.session_key
+
+        ip_address = request.META.get("REMOTE_ADDR")
+        user_agent = request.META.get("HTTP_USER_AGENT", "")[:512]
+
+        VisitorSession.objects.update_or_create(
+            session_key=session_key,
+            defaults={
+                "user": request.user if request.user.is_authenticated else None,
+                "ip_address": ip_address,
+                "user_agent": user_agent,
+                "last_activity": timezone.now(),
+            },
+        )
+
+        return None

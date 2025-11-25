@@ -5396,7 +5396,6 @@ def admin_dashboard(request):
         start_date = end_date - timedelta(days=6)
         period_label = _("Last 7 Days")
 
-    # Platform-wide statistics
     total_users = MnoryUser.objects.count()
     total_vendors = MnoryUser.objects.filter(user_type='vendor').count()
     total_customers = MnoryUser.objects.filter(user_type='customer').count()
@@ -5424,7 +5423,6 @@ def admin_dashboard(request):
         total_revenue=DBSum(F('variants__orderitem__quantity') * F('variants__orderitem__price_at_purchase'))
     ).order_by('-total_revenue')[:5]
 
-    # Platform health metrics
     low_stock_count = ProductVariant.objects.filter(stock_quantity__lt=10, stock_quantity__gt=0).count()
     try:
         from shop.models import Review
@@ -5432,6 +5430,19 @@ def admin_dashboard(request):
     except:
         total_reviews = 0
     active_coupons = Coupon.objects.filter(is_active=True, valid_to__gte=timezone.now()).count()
+
+    from .models import VisitorSession
+
+    now = timezone.now()
+    online_cutoff = now - timedelta(minutes=10)
+    visitors_online_now = VisitorSession.objects.filter(last_activity__gte=online_cutoff).count()
+
+    start_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    visitors_today = VisitorSession.objects.filter(created_at__gte=start_today).count()
+    visitors_last_week = VisitorSession.objects.filter(created_at__gte=now - timedelta(days=7)).count()
+    visitors_last_month = VisitorSession.objects.filter(created_at__gte=now - timedelta(days=30)).count()
+    visitors_last_year = VisitorSession.objects.filter(created_at__gte=now - timedelta(days=365)).count()
+    visitors_all_time = VisitorSession.objects.count()
 
     # Chart data - daily revenue for the period
     daily_revenue = orders_period.annotate(
@@ -5474,6 +5485,12 @@ def admin_dashboard(request):
         'top_products': top_products,
         'chart_labels': json.dumps(chart_labels),
         'chart_data': json.dumps(chart_data),
+        'visitors_online_now': visitors_online_now,
+        'visitors_today': visitors_today,
+        'visitors_last_week': visitors_last_week,
+        'visitors_last_month': visitors_last_month,
+        'visitors_last_year': visitors_last_year,
+        'visitors_all_time': visitors_all_time,
     }
 
     return render(request, 'shop/admin_dashboard.html', context)

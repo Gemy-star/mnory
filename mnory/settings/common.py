@@ -70,6 +70,7 @@ MIDDLEWARE = [
     "shop.middleware.AdminAccessMiddleware",
     "shop.middleware.UserTypeContextMiddleware",
     "shop.middleware.LoginRedirectMiddleware",  # Add login redirect middleware
+    "shop.middleware.VisitorTrackingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

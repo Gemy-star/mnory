@@ -1461,6 +1461,29 @@ class ChatbotQuestion(models.Model):
         return (self.question or "")[:100]
 
 
+class VisitorSession(models.Model):
+    session_key = models.CharField(max_length=40, unique=True, db_index=True)
+    user = models.ForeignKey(
+        MnoryUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="visitor_sessions",
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-last_activity"]
+        verbose_name = _("Visitor Session")
+        verbose_name_plural = _("Visitor Sessions")
+
+    def __str__(self):
+        return f"Session {self.session_key}"
+
+
 class Coupon(models.Model):
     """Model for discount coupons."""
 
