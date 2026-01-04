@@ -1,4 +1,5 @@
 from django import forms
+from django_ckeditor_5.widgets import CKEditor5Widget
 from django.contrib.auth.forms import (
     UserCreationForm,
     AuthenticationForm,
@@ -160,12 +161,24 @@ class ShippingAddressForm(forms.ModelForm):
 class PaymentForm(forms.Form):
     PAYMENT_CHOICES = [
         ("cod", _("Cash on Delivery")),
+        ("offline_payment", _("Offline Payment (Instagram/Bank Transfer)")),
     ]
 
     payment_method = forms.ChoiceField(
         choices=PAYMENT_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "form-check-input"}),
         label=_("Select Payment Method"),
+    )
+
+    transaction_photo = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            "class": "form-control",
+            "accept": "image/*",
+            "id": "transaction_photo"
+        }),
+        label=_("Transaction Proof"),
+        help_text=_("Upload screenshot of your payment transaction (required for offline payments)")
     )
 
 
@@ -403,7 +416,10 @@ class VendorProductForm(forms.ModelForm):
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+            "description": CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
+            ),
             "short_description": forms.TextInput(attrs={"class": "form-control"}),
             "category": forms.Select(attrs={"class": "form-select"}),
             "subcategory": forms.Select(attrs={"class": "form-select"}),
@@ -491,12 +507,9 @@ class VendorProfileForm(forms.ModelForm):
             "store_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Store Name"}
             ),
-            "store_description": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Describe your store...",
-                    "rows": 4,
-                }
+            "store_description": CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
             ),
             "logo": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "website": forms.URLInput(
@@ -645,8 +658,14 @@ class AdvertisementForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'title_ar': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'description_ar': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'description': CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
+            ),
+            'description_ar': CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
+            ),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'link_url': forms.URLInput(attrs={'class': 'form-control'}),
             'placement': forms.Select(attrs={'class': 'form-select'}),
@@ -697,8 +716,9 @@ class CategoryForm(forms.ModelForm):
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(
-                attrs={"class": "form-control", "rows": 4}
+            "description": CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
             ),
             "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
@@ -719,8 +739,9 @@ class SubCategoryForm(forms.ModelForm):
         widgets = {
             "category": forms.Select(attrs={"class": "form-select"}),
             "name": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(
-                attrs={"class": "form-control", "rows": 4}
+            "description": CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
             ),
             "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
@@ -740,8 +761,9 @@ class BrandForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "logo": forms.ClearableFileInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(
-                attrs={"class": "form-control", "rows": 4}
+            "description": CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
             ),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
@@ -758,8 +780,9 @@ class FitTypeForm(forms.ModelForm):
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(
-                attrs={"class": "form-control", "rows": 4}
+            "description": CKEditor5Widget(
+                attrs={"class": "django_ckeditor_5"},
+                config_name="default",
             ),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "My Account" %}{% endblock %}
+{% block title %}{% trans "Customer Dashboard" %}{% endblock %}
 
 {% block content %}
 <section class="category-detail-section">
@@ -12,9 +12,99 @@
                 <li class="breadcrumb-item">
                     <a href="{% url 'shop:home' %}"><span class="material-icons">home</span> {% trans "Home" %}</a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page">{% trans "My Account" %}</li>
+                <li class="breadcrumb-item active" aria-current="page">{% trans "Customer Dashboard" %}</li>
             </ol>
         </nav>
+
+        <!-- Dashboard Header -->
+        <div class="dashboard-header mb-4 d-flex justify-content-between align-items-center" data-aos="fade-up">
+            <div>
+                <h1 class="section-title mb-0">
+                    <span class="material-icons">dashboard</span>
+                    {% trans "My Dashboard" %}
+                </h1>
+                <p class="text-muted mb-0">{{ user.email }}</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4" data-aos="fade-up">
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-primary text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity: 0.8;">shopping_cart</span>
+                        <h4 class="mt-2 mb-1">{{ total_orders|default:0 }}</h4>
+                        <p class="mb-0 opacity-75">{% trans "Total Orders" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-warning text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity: 0.8;">pending</span>
+                        <h4 class="mt-2 mb-1">{{ pending_orders|default:0 }}</h4>
+                        <p class="mb-0 opacity-75">{% trans "Pending Orders" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-success text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity-0.8;">favorite</span>
+                        <h4 class="mt-2 mb-1">{{ wishlist_count|default:0 }}</h4>
+                        <p class="mb-0 opacity-75">{% trans "Wishlist Items" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stats-card bg-gradient-info text-white h-100">
+                    <div class="account-card-body text-center">
+                        <span class="material-icons" style="font-size: 2.5rem; opacity: 0.8;">paid</span>
+                        <h4 class="mt-2 mb-1">{{ total_spent|floatformat:2|default:0 }} EGP</h4>
+                        <p class="mb-0 opacity-75">{% trans "Total Spent" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row g-3 mb-4" data-aos="fade-up" data-aos-delay="150">
+            <div class="col-12">
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h3>{% trans "Quick Actions" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:home' %}" class="btn btn-primary w-100 py-3">
+                                    <span class="material-icons">shopping_bag</span>
+                                    <span class="d-block mt-2">{% trans "Continue Shopping" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:order_history' %}" class="btn btn-outline-primary w-100 py-3">
+                                    <span class="material-icons">receipt_long</span>
+                                    <span class="d-block mt-2">{% trans "My Orders" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:wishlist_view' %}" class="btn btn-outline-primary w-100 py-3">
+                                    <span class="material-icons">favorite</span>
+                                    <span class="d-block mt-2">{% trans "My Wishlist" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:address_list' %}" class="btn btn-outline-primary w-100 py-3">
+                                    <span class="material-icons">home_work</span>
+                                    <span class="d-block mt-2">{% trans "My Addresses" %}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="account-layout">
             <!-- Left Sidebar -->

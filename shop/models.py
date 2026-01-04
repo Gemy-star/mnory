@@ -971,6 +971,7 @@ class Payment(models.Model):
         ("paypal", "PayPal"),
         ("bank_transfer", "Bank Transfer"),
         ("cash_on_delivery", "Cash on Delivery"),
+        ("offline_payment", "Offline Payment (Instagram/Bank Transfer)"),
         # Add more as needed
     ]
 
@@ -989,6 +990,14 @@ class Payment(models.Model):
 
     # Store additional payment details (e.g., last 4 digits of card, PayPal email)
     payment_details = models.JSONField(blank=True, null=True)
+
+    # Transaction photo for offline payments
+    transaction_photo = models.ImageField(
+        upload_to='payment_proofs/',
+        blank=True,
+        null=True,
+        help_text="Upload transaction screenshot/proof for offline payments"
+    )
 
     class Meta:
         verbose_name = "Payment"

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Contract" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>{% trans "Edit Contract" %}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>{% trans "Contract:" %}</strong> {{ contract.title }}<br>
+                        <strong>{% trans "Amount:" %}</strong> ${{ contract.amount|floatformat:2 }}
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                {{ form.status.label }}
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.end_date.id_for_label }}" class="form-label">
+                                {{ form.end_date.label }}
+                            </label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                                <div class="text-danger small">{{ form.end_date.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.terms_and_conditions.id_for_label }}" class="form-label">
+                                {{ form.terms_and_conditions.label }}
+                            </label>
+                            {{ form.terms_and_conditions }}
+                            {% if form.terms_and_conditions.errors %}
+                                <div class="text-danger small">{{ form.terms_and_conditions.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'contract_detail' contract.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>{% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{% trans "Update Contract" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

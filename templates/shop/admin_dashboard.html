@@ -133,6 +133,69 @@
             </div>
         </div>
 
+        <!-- Quick Actions -->
+        <div class="row g-3 mb-4" data-aos="fade-up" data-aos-delay="150">
+            <div class="col-12">
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h3>{% trans "Quick Management" %}</h3>
+                    </div>
+                    <div class="account-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:admin_categories' %}" class="btn btn-primary w-100 py-3">
+                                    <span class="material-icons">category</span>
+                                    <span class="d-block mt-2">{% trans "Categories" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:admin_brands' %}" class="btn btn-outline-primary w-100 py-3">
+                                    <span class="material-icons">branding_watermark</span>
+                                    <span class="d-block mt-2">{% trans "Brands" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:admin_colors' %}" class="btn btn-outline-primary w-100 py-3">
+                                    <span class="material-icons">palette</span>
+                                    <span class="d-block mt-2">{% trans "Colors" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'shop:admin_sizes' %}" class="btn btn-outline-primary w-100 py-3">
+                                    <span class="material-icons">straighten</span>
+                                    <span class="d-block mt-2">{% trans "Sizes" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mt-3">
+                                <a href="{% url 'shop:admin_products' %}" class="btn btn-outline-success w-100 py-3">
+                                    <span class="material-icons">inventory</span>
+                                    <span class="d-block mt-2">{% trans "All Products" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mt-3">
+                                <a href="{% url 'shop:order_history' %}" class="btn btn-outline-success w-100 py-3">
+                                    <span class="material-icons">receipt_long</span>
+                                    <span class="d-block mt-2">{% trans "All Orders" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mt-3">
+                                <a href="/admin/" class="btn btn-outline-warning w-100 py-3">
+                                    <span class="material-icons">admin_panel_settings</span>
+                                    <span class="d-block mt-2">{% trans "Django Admin" %}</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mt-3">
+                                <a href="{% url 'shop:admin_translations' %}" class="btn btn-outline-info w-100 py-3">
+                                    <span class="material-icons">translate</span>
+                                    <span class="d-block mt-2">{% trans "Translations" %}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Secondary Stats -->
         <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
             <div class="col-sm-6 col-lg-3">

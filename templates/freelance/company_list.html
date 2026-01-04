@@ -3,13 +3,49 @@
 
 {% block title %}{% trans "Browse Companies" %}{% endblock %}
 
+{% block css %}
+<style>
+    .company-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e0e0e0;
+    }
+    .company-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .page-header-company {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+    }
+    .company-logo {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        background: #fff;
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .verified-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container my-5">
-    <div class="row">
-        <div class="col-12 mb-4">
-            <h1 class="h3">{% trans "Browse Companies" %}</h1>
-            <p class="text-muted">{% trans "Find companies and clients to work with." %}</p>
-        </div>
+    <div class="page-header-company text-center">
+        <h1 class="display-5 fw-bold mb-2">
+            <i class="fas fa-building me-2"></i>{% trans "Explore Companies" %}
+        </h1>
+        <p class="lead">{% trans "Discover leading companies and exciting opportunities" %}</p>
     </div>
 
     <!-- Filters -->
@@ -41,31 +77,60 @@
     <div class="row">
         {% for company in companies %}
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card shadow-sm h-100">
+                <div class="card company-card shadow-sm h-100">
                     <div class="card-body">
-                        <h5 class="card-title mb-1">
-                            <a href="{% url 'company_detail' company.pk %}" class="text-decoration-none">
-                                {{ company.company_name }}
-                            </a>
-                        </h5>
-                        <p class="text-muted small mb-2">
-                            <i class="fas fa-industry me-1"></i> {{ company.industry|default:_("Not specified") }}
-                        </p>
-                        <p class="mb-2">{{ company.description|truncatewords:20 }}</p>
+                        <div class="d-flex align-items-start mb-3">
+                            {% if company.logo %}
+                                <img src="{{ company.logo.url }}" class="company-logo me-3" alt="{{ company.company_name }}">
+                            {% else %}
+                                <div class="company-logo me-3 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-building fa-2x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">
+                                    <a href="{% url 'company_detail' company.pk %}" class="text-decoration-none text-dark">
+                                        {{ company.company_name }}
+                                    </a>
+                                    {% if company.is_verified %}
+                                        <span class="verified-badge ms-1">
+                                            <i class="fas fa-check-circle"></i> {% trans "Verified" %}
+                                        </span>
+                                    {% endif %}
+                                </h5>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-industry me-1"></i> {{ company.industry|default:_("Not specified") }}
+                                </p>
+                            </div>
+                        </div>
 
-                        <dl class="row small mb-0">
-                            <dt class="col-6">{% trans "Location" %}</dt>
-                            <dd class="col-6">{{ company.location|default:_("N/A") }}</dd>
+                        <p class="card-text text-muted mb-3">{{ company.description|truncatewords:25 }}</p>
 
-                            <dt class="col-6">{% trans "Company Size" %}</dt>
-                            <dd class="col-6">{{ company.get_company_size_display }}</dd>
-
-                            <dt class="col-6">{% trans "Rating" %}</dt>
-                            <dd class="col-6">⭐ {{ company.rating|default:"0" }}</dd>
-                        </dl>
+                        <div class="row g-2 small text-muted mb-3">
+                            <div class="col-6">
+                                <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+                                <strong>{% trans "Location:" %}</strong><br>
+                                {{ company.location|default:_("Remote") }}
+                            </div>
+                            <div class="col-6">
+                                <i class="fas fa-users me-1 text-primary"></i>
+                                <strong>{% trans "Size:" %}</strong><br>
+                                {{ company.get_company_size_display }}
+                            </div>
+                            <div class="col-6">
+                                <i class="fas fa-star me-1 text-warning"></i>
+                                <strong>{% trans "Rating:" %}</strong><br>
+                                {{ company.rating|floatformat:1|default:"0.0" }} / 5.0
+                            </div>
+                            <div class="col-6">
+                                <i class="fas fa-briefcase me-1 text-primary"></i>
+                                <strong>{% trans "Jobs:" %}</strong><br>
+                                {{ company.total_jobs_posted }} {% trans "posted" %}
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-footer text-end bg-light">
-                        <a href="{% url 'company_detail' company.pk %}" class="btn btn-sm btn-outline-primary">
+                    <div class="card-footer bg-light text-end border-0">
+                        <a href="{% url 'company_detail' company.pk %}" class="btn btn-sm btn-primary">
                             <i class="fas fa-eye me-1"></i>{% trans "View Profile" %}
                         </a>
                     </div>

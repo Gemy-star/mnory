@@ -1200,6 +1200,74 @@ body.dark-mode .loader-logo-light {
   animation-delay: 1.125s;
 }
 
+/* E-commerce Icons */
+.loader-ecommerce-icons {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.loader-icon {
+  position: absolute;
+  font-size: 1.2rem;
+  color: var(--mnory-accent);
+  opacity: 0;
+  animation: iconFloat 4s ease-in-out infinite;
+}
+
+.loader-icon-1 {
+  top: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.loader-icon-2 {
+  top: 10%;
+  right: -10%;
+  animation-delay: 0.5s;
+}
+
+.loader-icon-3 {
+  top: 50%;
+  right: -15%;
+  transform: translateY(-50%);
+  animation-delay: 1s;
+}
+
+.loader-icon-4 {
+  bottom: 10%;
+  right: -10%;
+  animation-delay: 1.5s;
+}
+
+.loader-icon-5 {
+  bottom: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 2s;
+}
+
+.loader-icon-6 {
+  bottom: 10%;
+  left: -10%;
+  animation-delay: 2.5s;
+}
+
+.loader-icon-7 {
+  top: 50%;
+  left: -15%;
+  transform: translateY(-50%);
+  animation-delay: 3s;
+}
+
+.loader-icon-8 {
+  top: 10%;
+  left: -10%;
+  animation-delay: 3.5s;
+}
+
 /* Brand Section */
 .loader-brand {
   display: flex;
@@ -1333,6 +1401,29 @@ body.dark-mode .loader-logo-light {
   }
 }
 
+@keyframes iconFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  25% {
+    opacity: 0.8;
+    transform: translateY(-10px) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.1);
+  }
+  75% {
+    opacity: 0.8;
+    transform: translateY(-10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+}
+
 @keyframes progressSlide {
   0% {
     transform: translateX(-100%);
@@ -1372,6 +1463,10 @@ body.dark-mode .loader-logo-light {
     height: 6px;
   }
 
+  .loader-icon {
+    font-size: 1rem;
+  }
+
   .loader-progress {
     width: 160px;
     height: 3px;
@@ -1409,6 +1504,10 @@ body.dark-mode .loader-logo-light {
   .loader-dot {
     width: 5px;
     height: 5px;
+  }
+
+  .loader-icon {
+    font-size: 0.9rem;
   }
 
   .loader-progress {

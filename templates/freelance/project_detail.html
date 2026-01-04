@@ -3,46 +3,213 @@
 
 {% block title %}{{ project.title }}{% endblock %}
 
+{% block css %}
+<style>
+    .project-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 0;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .project-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="2" height="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        opacity: 0.3;
+    }
+    .project-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        margin-top: -80px;
+        position: relative;
+        z-index: 10;
+        background: white;
+    }
+    .project-card:hover {
+        box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+    }
+    .badge-skill {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: inline-block;
+        margin: 0.25rem;
+        transition: transform 0.2s;
+    }
+    .badge-skill:hover {
+        transform: translateY(-2px);
+    }
+    .info-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        background: white;
+    }
+    .info-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        transform: translateY(-3px);
+    }
+    .stat-box {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .stat-box:hover {
+        transform: scale(1.05);
+    }
+    .stat-box .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        margin: 0;
+    }
+    .stat-box .stat-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        color: white;
+    }
+    .client-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .similar-project-item {
+        padding: 1rem;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 0.75rem;
+    }
+    .similar-project-item:hover {
+        background: #f8fafc;
+        border-color: #667eea;
+        transform: translateX(5px);
+    }
+    .status-badge {
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    .detail-item i {
+        color: #667eea;
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container my-4">
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card project-card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h1 class="h3 mb-2">{{ project.title }}</h1>
-                            <div class="d-flex flex-wrap text-muted small">
-                                <span class="me-3">
-                                    <i class="fas fa-user me-1"></i>
-                                    {{ project.client.get_full_name|default:project.client.email }}
-                                </span>
-                                <span class="me-3">
-                                    <i class="fas fa-clock me-1"></i>
-                                    Posted {{ project.created_at|timesince }} ago
-                                </span>
-                                <span class="me-3">
-                                    <i class="fas fa-eye me-1"></i>
-                                    {{ project.views_count }} views
-                                </span>
-                            </div>
-                        </div>
-                        <span class="badge bg-success fs-6">{{ project.get_status_display }}</span>
+<!-- Hero Section -->
+<div class="project-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div style="position: relative; z-index: 1;">
+                    <span class="status-badge bg-success mb-3 d-inline-block">
+                        <i class="fas fa-check-circle me-1"></i>{{ project.get_status_display }}
+                    </span>
+                    <h1 class="display-5 fw-bold mb-3" style="color: white;">{{ project.title }}</h1>
+                    <div class="d-flex flex-wrap gap-3" style="color: rgba(255,255,255,0.95);">
+                        <span>
+                            <i class="fas fa-user me-1"></i>
+                            {{ project.client.get_full_name|default:project.client.email }}
+                        </span>
+                        <span>
+                            <i class="fas fa-clock me-1"></i>
+                            Posted {{ project.created_at|timesince }} ago
+                        </span>
+                        <span>
+                            <i class="fas fa-eye me-1"></i>
+                            {{ project.views_count }} views
+                        </span>
+                        <span>
+                            <i class="fas fa-paper-plane me-1"></i>
+                            {{ project.proposals_count }} proposals
+                        </span>
                     </div>
                 </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <div class="stat-box" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);">
+                    <div class="stat-value" style="color: white;">
+                        {% if project.project_type == 'fixed' %}
+                            ${{ project.budget_min|floatformat:0 }} - ${{ project.budget_max|floatformat:0 }}
+                        {% else %}
+                            ${{ project.hourly_rate_min|floatformat:0 }} - ${{ project.hourly_rate_max|floatformat:0 }}/hr
+                        {% endif %}
+                    </div>
+                    <div class="stat-label" style="color: white;">
+                        {{ project.get_project_type_display }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <div class="card-body">
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="project-card">
+                <div class="card-body p-4 p-lg-5">
                     <!-- Project Description -->
-                    <div class="mb-4">
-                        <h5>{% trans "Project Description" %}</h5>
-                        <div class="project-description">
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 d-flex align-items-center">
+                            <span class="material-icons me-2" style="color: #667eea;">description</span>
+                            {% trans "Project Description" %}
+                        </h3>
+                        <div class="project-description" style="line-height: 1.8; color: #475569;">
                             {{ project.description|linebreaks }}
                         </div>
                     </div>
 
                     <!-- Skills Required -->
-                    <div class="mb-4">
-                        <h5>{% trans "Skills Required" %}</h5>
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 d-flex align-items-center">
+                            <span class="material-icons me-2" style="color: #667eea;">stars</span>
+                            {% trans "Skills Required" %}
+                        </h3>
                         <div>
                             {% for skill in project.skills_required.all %}
                                 <span class="badge-skill">{{ skill.name }}</span>
@@ -50,35 +217,46 @@
                         </div>
                     </div>
 
-                    <!-- Project Details -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h5>{% trans "Project Details" %}</h5>
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <strong>{% trans "Type" %}:</strong> {{ project.get_project_type_display }}
-                                </li>
-                                <li class="mb-2">
-                                    <strong>{% trans "Experience Level" %}:</strong> {{ project.get_experience_level_display }}
-                                </li>
-                                <li class="mb-2">
-                                    <strong>{% trans "Duration" %}:</strong> {{ project.estimated_duration|default:"Not specified" }}
-                                </li>
-                                {% if project.deadline %}
-                                <li class="mb-2">
-                                    <strong>{% trans "Deadline" %}:</strong> {{ project.deadline|date:"F d, Y" }}
-                                </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>{% trans "Budget" %}</h5>
-                            <div class="h4 text-primary">
-                                {% if project.project_type == 'fixed' %}
-                                    ${{ project.budget_min|floatformat:0 }} - ${{ project.budget_max|floatformat:0 }}
-                                {% else %}
-                                    ${{ project.hourly_rate_min|floatformat:0 }} - ${{ project.hourly_rate_max|floatformat:0 }}/hour
-                                {% endif %}
+                    <!-- Project Details Grid -->
+                    <div class="mb-5">
+                        <h3 class="h4 mb-4 d-flex align-items-center">
+                            <span class="material-icons me-2" style="color: #667eea;">info</span>
+                            {% trans "Project Details" %}
+                        </h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="stat-box h-100">
+                                    <i class="fas fa-briefcase fa-2x mb-2" style="color: #667eea;"></i>
+                                    <div class="stat-value" style="font-size: 1.5rem;">{{ project.get_project_type_display }}</div>
+                                    <div class="stat-label">{% trans "Project Type" %}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="stat-box h-100">
+                                    <i class="fas fa-chart-line fa-2x mb-2" style="color: #667eea;"></i>
+                                    <div class="stat-value" style="font-size: 1.5rem;">{{ project.get_experience_level_display }}</div>
+                                    <div class="stat-label">{% trans "Experience Level" %}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="stat-box h-100">
+                                    <i class="fas fa-clock fa-2x mb-2" style="color: #667eea;"></i>
+                                    <div class="stat-value" style="font-size: 1.5rem;">{{ project.estimated_duration|default:"Flexible" }}</div>
+                                    <div class="stat-label">{% trans "Duration" %}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="stat-box h-100">
+                                    <i class="fas fa-calendar-alt fa-2x mb-2" style="color: #667eea;"></i>
+                                    <div class="stat-value" style="font-size: 1.5rem;">
+                                        {% if project.deadline %}
+                                            {{ project.deadline|date:"M d, Y" }}
+                                        {% else %}
+                                            {% trans "No Deadline" %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="stat-label">{% trans "Deadline" %}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -86,17 +264,20 @@
                     <!-- Attachments -->
                     {% if project.attachments %}
                     <div class="mb-4">
-                        <h5>{% trans "Attachments" %}</h5>
+                        <h3 class="h4 mb-3 d-flex align-items-center">
+                            <span class="material-icons me-2" style="color: #667eea;">attach_file</span>
+                            {% trans "Attachments" %}
+                        </h3>
                         <a href="{{ project.attachments.url }}" class="btn btn-outline-secondary" target="_blank">
-                            <i class="fas fa-paperclip me-2"></i>{% trans "Download Attachment" %}
+                            <i class="fas fa-download me-2"></i>{% trans "Download Attachment" %}
                         </a>
                     </div>
                     {% endif %}
 
                     <!-- Action Buttons -->
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-3 flex-wrap mt-4">
                         {% if user.is_authenticated and user.is_freelancer_user and not user_proposal %}
-                            <a href="{% url 'submit_proposal' project.pk %}" class="btn btn-primary">
+                            <a href="{% url 'submit_proposal' project.pk %}" class="btn btn-gradient">
                                 <i class="fas fa-paper-plane me-2"></i>{% trans "Submit Proposal" %}
                             </a>
                         {% elif user_proposal %}
@@ -119,38 +300,63 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 mt-4 mt-lg-0">
             <!-- Client Information -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-user-tie me-2"></i>{% trans "About the Client" %}
+            <div class="info-card mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <span class="material-icons me-2" style="color: #667eea;">person</span>
+                        {% trans "About the Client" %}
                     </h5>
-                </div>
-                <div class="card-body">
                     {% if project.client.company_profile %}
                         {% with client_profile=project.client.company_profile %}
-                            <div class="d-flex align-items-center mb-3">
+                            <div class="text-center mb-4">
                                 {% if client_profile.logo %}
                                     <img src="{{ client_profile.logo.url }}" alt="{{ client_profile.company_name }}"
-                                         class="rounded me-3" width="50" height="50">
+                                         class="client-avatar">
                                 {% else %}
-                                    <i class="fas fa-building fa-2x text-muted me-3"></i>
+                                    <div class="client-avatar d-inline-flex align-items-center justify-content-center"
+                                         style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <i class="fas fa-building fa-2x text-white"></i>
+                                    </div>
                                 {% endif %}
+                                <h6 class="mt-3 mb-1 fw-bold">{{ client_profile.company_name }}</h6>
+                                <p class="text-muted small mb-0">{{ client_profile.industry }}</p>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-star"></i>
                                 <div>
-                                    <h6 class="mb-0">{{ client_profile.company_name }}</h6>
-                                    <small class="text-muted">{{ client_profile.industry }}</small>
+                                    <strong>{{ client_profile.rating|floatformat:1 }}</strong>
+                                    <span class="text-muted small ms-1">{% trans "Rating" %}</span>
                                 </div>
                             </div>
-                            <p class="small">{{ client_profile.description|truncatechars:100 }}</p>
+                            <div class="detail-item">
+                                <i class="fas fa-briefcase"></i>
+                                <div>
+                                    <strong>{{ client_profile.total_jobs_posted }}</strong>
+                                    <span class="text-muted small ms-1">{% trans "Jobs Posted" %}</span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <span>{{ client_profile.location }}</span>
+                                </div>
+                            </div>
                         {% endwith %}
                     {% else %}
-                        <h6>{{ project.client.get_full_name|default:project.client.email }}</h6>
+                        <div class="text-center">
+                            <div class="client-avatar d-inline-flex align-items-center justify-content-center"
+                                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                            <h6 class="mt-3 mb-1 fw-bold">{{ project.client.get_full_name|default:project.client.email }}</h6>
+                        </div>
                     {% endif %}
 
-                    <div class="mt-3">
-                        <a href="{% url 'send_message_to_user' project.client.id %}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-envelope me-1"></i>{% trans "Message Client" %}
+                    <div class="mt-4">
+                        <a href="{% url 'send_message_to_user' project.client.id %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-envelope me-2"></i>{% trans "Message Client" %}
                         </a>
                     </div>
                 </div>
@@ -158,30 +364,32 @@
 
             <!-- Similar Projects -->
             {% if similar_projects %}
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-lightbulb me-2"></i>{% trans "Similar Projects" %}
+            <div class="info-card">
+                <div class="card-body p-4">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <span class="material-icons me-2" style="color: #667eea;">lightbulb</span>
+                        {% trans "Similar Projects" %}
                     </h5>
-                </div>
-                <div class="card-body">
                     {% for similar_project in similar_projects %}
-                        <div class="border-bottom pb-2 mb-2">
-                            <h6 class="mb-1">
+                        <div class="similar-project-item">
+                            <h6 class="mb-2">
                                 <a href="{% url 'project_detail' similar_project.pk %}"
-                                   class="text-decoration-none">
+                                   class="text-decoration-none text-dark">
                                     {{ similar_project.title|truncatechars:50 }}
                                 </a>
                             </h6>
                             <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">
+                                <span class="text-primary fw-bold">
                                     {% if similar_project.project_type == 'fixed' %}
                                         ${{ similar_project.budget_max|floatformat:0 }}
                                     {% else %}
                                         ${{ similar_project.hourly_rate_max|floatformat:0 }}/hr
                                     {% endif %}
+                                </span>
+                                <small class="text-muted">
+                                    <i class="fas fa-paper-plane me-1"></i>
+                                    {{ similar_project.proposals_count }} proposals
                                 </small>
-                                <small class="text-muted">{{ similar_project.proposals_count }} proposals</small>
                             </div>
                         </div>
                     {% endfor %}

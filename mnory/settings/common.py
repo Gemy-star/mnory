@@ -292,6 +292,27 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "SENDGRID_API_KEY": (os.getenv("SENDGRID_API_KEY"), "SendGrid API Key", str),
+    # Payment Settings
+    "INSTAGRAM_QR_CODE": (
+        "",
+        "Instagram QR code image path for offline payments (upload via media)",
+        str,
+    ),
+    "OFFLINE_PAYMENT_INSTRUCTIONS": (
+        "Please transfer the amount to our Instagram account and upload the transaction screenshot.",
+        "Instructions for offline payment",
+        str,
+    ),
+    "BANK_ACCOUNT_NUMBER": (
+        "",
+        "Bank account number for offline payments",
+        str,
+    ),
+    "BANK_NAME": (
+        "",
+        "Bank name for offline payments",
+        str,
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = {
@@ -324,6 +345,12 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "Email & API": (
         "ADMIN_EMAIL",
         "SENDGRID_API_KEY",
+    ),
+    "Payment Settings": (
+        "INSTAGRAM_QR_CODE",
+        "OFFLINE_PAYMENT_INSTRUCTIONS",
+        "BANK_ACCOUNT_NUMBER",
+        "BANK_NAME",
     ),
 }
 

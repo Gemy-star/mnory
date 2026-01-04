@@ -4,6 +4,11 @@
 
 {% block title %}{% if form.instance.pk %}{% trans "Edit Advertisement" %}{% else %}{% trans "Add Advertisement" %}{% endif %} - Mnory Admin{% endblock %}
 
+{% block css %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
 {% block content %}
 <main class="category-detail-section">
     <div class="container py-4">

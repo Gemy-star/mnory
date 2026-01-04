@@ -1,0 +1,84 @@
+{% load i18n %}
+
+<!-- Top Freelancers Partial -->
+<div class="row">
+    {% if top_freelancers %}
+        {% for freelancer in top_freelancers %}
+        <div class="col-md-4 col-lg-4 mb-4">
+            <div class="card freelancer-card h-100 shadow-sm border-0" style="transition: transform 0.2s, box-shadow 0.2s;">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if freelancer.profile_picture %}
+                            <img src="{{ freelancer.profile_picture.url }}"
+                                 class="rounded-circle border border-3 border-primary"
+                                 width="80" height="80"
+                                 style="object-fit: cover;"
+                                 alt="{{ freelancer.user.get_full_name }}">
+                        {% else %}
+                            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border border-3 border-primary"
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fa-2x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        {% if freelancer.is_verified %}
+                            <div class="position-relative" style="margin-top: -15px;">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> {% trans "Verified" %}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <h5 class="card-title mb-1">
+                        <a href="{% url 'freelancer_detail' freelancer.pk %}" class="text-decoration-none text-dark">
+                            {{ freelancer.user.get_full_name|default:freelancer.user.email|truncatechars:30 }}
+                        </a>
+                    </h5>
+                    <p class="text-muted small mb-2">{{ freelancer.title|truncatechars:40 }}</p>
+
+                    <div class="mb-3">
+                        <span class="text-warning">
+                            <i class="fas fa-star"></i>
+                        </span>
+                        <strong>{{ freelancer.rating|floatformat:1|default:"0.0" }}</strong>
+                        <span class="text-muted small">({{ freelancer.total_jobs_completed }} {% trans "jobs" %})</span>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="mb-3">
+                        {% for skill in freelancer.skills.all|slice:":3" %}
+                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">{{ skill.name }}</span>
+                        {% endfor %}
+                        {% if freelancer.skills.count > 3 %}
+                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">+{{ freelancer.skills.count|add:"-3" }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <strong class="text-success h5">${{ freelancer.hourly_rate }}</strong>
+                        <span class="text-muted small">/ {% trans "hour" %}</span>
+                    </div>
+
+                    <a href="{% url 'freelancer_detail' freelancer.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-user-circle me-1"></i>{% trans "View Profile" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <p class="text-muted">{% trans "No freelancers available at the moment" %}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.freelancer-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+</style>

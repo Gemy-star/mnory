@@ -52,5 +52,31 @@ urlpatterns = [
     path('api/notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
     path('api/search/projects/', views.search_projects, name='search_projects'),
     path('api/search/freelancers/', views.search_freelancers, name='search_freelancers'),
+
+    # CRUD URLs for Dashboard
+    # Projects CRUD (Company)
+    path('my-projects/', views.my_projects, name='my_projects'),
+    path('projects/<uuid:pk>/delete/', views.ProjectDeleteView.as_view(), name='project_delete'),
+
+    # Proposals CRUD (Freelancer)
+    path('my-proposals/', views.my_proposals, name='my_proposals'),
+    path('proposals/<int:proposal_id>/edit/', views.edit_proposal, name='edit_proposal'),
+    path('proposals/<int:proposal_id>/delete/', views.delete_proposal, name='delete_proposal'),
+
+    # Contracts CRUD (Both)
+    path('my-contracts/', views.my_contracts, name='my_contracts'),
+    path('contracts/<uuid:contract_id>/edit/', views.edit_contract, name='edit_contract'),
+
+    # Categories CRUD
+    path('categories/', views.CategoryListView.as_view(), name='category_list'),
+    path('categories/create/', views.CategoryCreateView.as_view(), name='category_create'),
+    path('categories/<int:pk>/edit/', views.CategoryUpdateView.as_view(), name='category_edit'),
+    path('categories/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='category_delete'),
+
+    # Skills CRUD
+    path('skills/', views.SkillListView.as_view(), name='skill_list'),
+    path('skills/create/', views.SkillCreateView.as_view(), name='skill_create'),
+    path('skills/<int:pk>/edit/', views.SkillUpdateView.as_view(), name='skill_edit'),
+    path('skills/<int:pk>/delete/', views.SkillDeleteView.as_view(), name='skill_delete'),
 ]
 

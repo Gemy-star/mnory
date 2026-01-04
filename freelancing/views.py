@@ -4,14 +4,17 @@ from django.contrib import messages
 from django.http import JsonResponse, Http404
 from django.db.models import Q, Avg
 from django.core.paginator import Paginator
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
-from freelancing.forms import ProposalForm, MessageForm, ReviewForm, \
-    PaymentForm, FreelancerRegistrationForm, CompanyRegistrationForm
+from freelancing.forms import (
+    ProposalForm, MessageForm, ReviewForm, PaymentForm,
+    FreelancerRegistrationForm, CompanyRegistrationForm, ProjectForm,
+    CategoryForm, SkillForm, ContractUpdateForm
+)
 from freelancing.freelancing_utils import create_notification, update_user_rating, complete_project
 from freelancing.models import FreelancerProfile, Proposal, Contract, Project, Message, CompanyProfile, Category, Skill, \
     Review, Notification
@@ -891,4 +894,289 @@ def create_payment(request, contract_id):
         'contract': contract,
     }
     return render(request, 'freelance/create_payment.html', context)
+
+
+# ============================================
+# CUSTOM CRUD VIEWS FOR DASHBOARD
+# ============================================
+
+# Project CRUD Views (Company Dashboard)
+class ProjectDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Project
+    template_name = 'freelance/project_confirm_delete.html'
+    success_url = reverse_lazy('company_dashboard')
+
+    def test_func(self):
+        project = self.get_object()
+        return self.request.user.is_company_user and self.request.user == project.client
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Project deleted successfully!")
+        return super().delete(request, *args, **kwargs)
+
+
+@login_required
+def my_projects(request):
+    """List all projects for company user"""
+    if not request.user.is_company_user:
+        messages.error(request, "Access denied. Companies only.")
+        return redirect('dashboard')
+
+    projects = Project.objects.filter(client=request.user).order_by('-created_at')
+
+    # Filter by status
+    status_filter = request.GET.get('status')
+    if status_filter:
+        projects = projects.filter(status=status_filter)
+
+    # Pagination
+    paginator = Paginator(projects, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'projects': page_obj,
+        'status_filter': status_filter,
+        'project_statuses': Project.STATUS_CHOICES,
+    }
+    return render(request, 'freelance/my_projects.html', context)
+
+
+# Proposal CRUD Views (Freelancer Dashboard)
+@login_required
+def my_proposals(request):
+    """List all proposals for freelancer user"""
+    if not request.user.is_freelancer_user:
+        messages.error(request, "Access denied. Freelancers only.")
+        return redirect('dashboard')
+
+    proposals = Proposal.objects.filter(freelancer=request.user).order_by('-created_at')
+
+    # Filter by status
+    status_filter = request.GET.get('status')
+    if status_filter:
+        proposals = proposals.filter(status=status_filter)
+
+    # Pagination
+    paginator = Paginator(proposals, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'proposals': page_obj,
+        'status_filter': status_filter,
+        'proposal_statuses': Proposal.STATUS_CHOICES,
+    }
+    return render(request, 'freelance/my_proposals.html', context)
+
+
+@login_required
+def edit_proposal(request, proposal_id):
+    """Edit a proposal (only if still pending)"""
+    proposal = get_object_or_404(Proposal, id=proposal_id, freelancer=request.user)
+
+    if proposal.status != 'pending':
+        messages.error(request, "You can only edit pending proposals.")
+        return redirect('my_proposals')
+
+    if request.method == 'POST':
+        form = ProposalForm(request.POST, request.FILES, instance=proposal)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Proposal updated successfully!")
+            return redirect('proposal_detail', proposal_id=proposal.id)
+    else:
+        form = ProposalForm(instance=proposal)
+
+    context = {
+        'form': form,
+        'proposal': proposal,
+    }
+    return render(request, 'freelance/edit_proposal.html', context)
+
+
+@login_required
+def delete_proposal(request, proposal_id):
+    """Delete/withdraw a proposal"""
+    proposal = get_object_or_404(Proposal, id=proposal_id, freelancer=request.user)
+
+    if proposal.status != 'pending':
+        messages.error(request, "You can only withdraw pending proposals.")
+        return redirect('my_proposals')
+
+    if request.method == 'POST':
+        project = proposal.project
+        proposal.status = 'withdrawn'
+        proposal.save()
+
+        # Update project proposal count
+        project.proposals_count = max(0, project.proposals_count - 1)
+        project.save(update_fields=['proposals_count'])
+
+        messages.success(request, "Proposal withdrawn successfully!")
+        return redirect('my_proposals')
+
+    context = {'proposal': proposal}
+    return render(request, 'freelance/proposal_confirm_delete.html', context)
+
+
+# Contract CRUD Views (Both Dashboards)
+@login_required
+def my_contracts(request):
+    """List all contracts for current user"""
+    if request.user.is_freelancer_user:
+        contracts = Contract.objects.filter(freelancer=request.user)
+    elif request.user.is_company_user:
+        contracts = Contract.objects.filter(client=request.user)
+    else:
+        contracts = Contract.objects.none()
+
+    # Filter by status
+    status_filter = request.GET.get('status')
+    if status_filter:
+        contracts = contracts.filter(status=status_filter)
+
+    contracts = contracts.order_by('-created_at')
+
+    # Pagination
+    paginator = Paginator(contracts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'contracts': page_obj,
+        'status_filter': status_filter,
+        'contract_statuses': Contract.STATUS_CHOICES,
+    }
+    return render(request, 'freelance/my_contracts.html', context)
+
+
+@login_required
+def edit_contract(request, contract_id):
+    """Edit contract details"""
+    contract = get_object_or_404(Contract, id=contract_id)
+
+    # Check permissions
+    if request.user not in [contract.client, contract.freelancer]:
+        messages.error(request, "You don't have permission to edit this contract.")
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = ContractUpdateForm(request.POST, instance=contract)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Contract updated successfully!")
+            return redirect('contract_detail', pk=contract.id)
+    else:
+        form = ContractUpdateForm(instance=contract)
+
+    context = {
+        'form': form,
+        'contract': contract,
+    }
+    return render(request, 'freelance/edit_contract.html', context)
+
+
+# Category CRUD Views (Admin/Management)
+@method_decorator(login_required, name='dispatch')
+class CategoryListView(ListView):
+    model = Category
+    template_name = 'freelance/category_list.html'
+    context_object_name = 'categories'
+    paginate_by = 20
+
+
+@method_decorator(login_required, name='dispatch')
+class CategoryCreateView(CreateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'freelance/category_form.html'
+    success_url = reverse_lazy('category_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Category created successfully!")
+        return super().form_valid(form)
+
+
+@method_decorator(login_required, name='dispatch')
+class CategoryUpdateView(UpdateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'freelance/category_form.html'
+    success_url = reverse_lazy('category_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Category updated successfully!")
+        return super().form_valid(form)
+
+
+@method_decorator(login_required, name='dispatch')
+class CategoryDeleteView(DeleteView):
+    model = Category
+    template_name = 'freelance/category_confirm_delete.html'
+    success_url = reverse_lazy('category_list')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Category deleted successfully!")
+        return super().delete(request, *args, **kwargs)
+
+
+# Skill CRUD Views (Admin/Management)
+@method_decorator(login_required, name='dispatch')
+class SkillListView(ListView):
+    model = Skill
+    template_name = 'freelance/skill_list.html'
+    context_object_name = 'skills'
+    paginate_by = 50
+
+    def get_queryset(self):
+        queryset = Skill.objects.select_related('category').order_by('category__name', 'name')
+
+        # Filter by category
+        category_id = self.request.GET.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        context['selected_category'] = self.request.GET.get('category')
+        return context
+
+
+@method_decorator(login_required, name='dispatch')
+class SkillCreateView(CreateView):
+    model = Skill
+    form_class = SkillForm
+    template_name = 'freelance/skill_form.html'
+    success_url = reverse_lazy('skill_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Skill created successfully!")
+        return super().form_valid(form)
+
+
+@method_decorator(login_required, name='dispatch')
+class SkillUpdateView(UpdateView):
+    model = Skill
+    form_class = SkillForm
+    template_name = 'freelance/skill_form.html'
+    success_url = reverse_lazy('skill_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Skill updated successfully!")
+        return super().form_valid(form)
+
+
+@method_decorator(login_required, name='dispatch')
+class SkillDeleteView(DeleteView):
+    model = Skill
+    template_name = 'freelance/skill_confirm_delete.html'
+    success_url = reverse_lazy('skill_list')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Skill deleted successfully!")
+        return super().delete(request, *args, **kwargs)
 

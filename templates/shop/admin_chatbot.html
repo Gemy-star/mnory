@@ -3,6 +3,11 @@
 
 {% block title %}{% trans "Manage Chatbot" %} - {% trans "Admin" %}{% endblock %}
 
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'django_ckeditor_5/css/styles.css' %}">
+{% endblock %}
+
 {% block content %}
 <main class="category-detail-section">
     <div class="container py-4">
@@ -233,11 +238,23 @@
     </div>
 </div>
 
+<script src="{% static 'django_ckeditor_5/js/ckeditor.js' %}"></script>
 <script>
 let qaModal;
+let qaAnswerEditor = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     qaModal = new bootstrap.Modal(document.getElementById('qaModal'));
+
+    if (window.ClassicEditor && document.getElementById('answer')) {
+        ClassicEditor.create(document.getElementById('answer'))
+            .then(function(editor) {
+                qaAnswerEditor = editor;
+            })
+            .catch(function(error) {
+                console.error(error);
+            });
+    }
 });
 
 function showAddQuestionModal() {
@@ -245,6 +262,9 @@ function showAddQuestionModal() {
     document.getElementById('qaForm').reset();
     document.getElementById('qaId').value = '';
     document.getElementById('is_active').checked = true;
+    if (qaAnswerEditor) {
+        qaAnswerEditor.setData('');
+    }
     qaModal.show();
 }
 
@@ -257,6 +277,9 @@ function editQuestion(qaId) {
             document.getElementById('qaId').value = data.qa.id;
             document.getElementById('question').value = data.qa.question;
             document.getElementById('answer').value = data.qa.answer;
+            if (qaAnswerEditor) {
+                qaAnswerEditor.setData(data.qa.answer || '');
+            }
             document.getElementById('keywords').value = data.qa.keywords || '';
             document.getElementById('is_active').checked = data.qa.is_active;
             qaModal.show();
@@ -271,6 +294,12 @@ function editQuestion(qaId) {
 
 function saveQuestion() {
     const form = document.getElementById('qaForm');
+    if (qaAnswerEditor) {
+        const answerField = document.getElementById('answer');
+        if (answerField) {
+            answerField.value = qaAnswerEditor.getData();
+        }
+    }
     const formData = new FormData(form);
     const data = {
         question: formData.get('question'),

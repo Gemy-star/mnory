@@ -10,7 +10,7 @@
 htmlcov
 staticfiles
 db.sqlite3
-
+media/
 helm/Chart.lock
 helm/charts/*.tgz
 

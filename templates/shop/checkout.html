@@ -22,7 +22,7 @@
             <div class="cart-divider"></div>
         </div>
 
-        <form id="checkout-form" method="post" class="needs-validation" novalidate>
+        <form id="checkout-form" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
             {% csrf_token %}
             <div class="checkout-layout" data-aos="fade-up" data-aos-delay="100">
                 <!-- Left Column: Shipping & Payment -->
@@ -82,7 +82,83 @@
                                 </label>
                                 <p class="payment-description">{% trans "Pay with cash upon delivery." %}</p>
                             </div>
-                            <!-- Add other payment methods here -->
+
+                            <div class="payment-option">
+                                <input type="radio" id="offline_payment" name="payment_method" value="offline_payment" class="form-check-input">
+                                <label for="offline_payment" class="form-check-label">
+                                    <span class="material-icons">account_balance</span>
+                                    {% trans "Offline Payment (Instagram/Bank Transfer)" %}
+                                </label>
+                                <p class="payment-description">{% trans "Transfer via Instagram or bank and upload proof." %}</p>
+                            </div>
+
+                            <!-- Offline Payment Details (Initially Hidden) -->
+                            <div id="offline-payment-details" class="mt-3 p-3 border rounded bg-light" style="display: none;">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>{% trans "Payment Instructions" %}
+                                </h6>
+
+                                {% load constance_tags %}
+                                <div class="alert alert-info">
+                                    {% get_config 'OFFLINE_PAYMENT_INSTRUCTIONS' as instructions %}
+                                    {{ instructions }}
+                                </div>
+
+                                <!-- Instagram QR Code -->
+                                {% get_config 'INSTAGRAM_QR_CODE' as qr_code %}
+                                {% if qr_code %}
+                                <div class="text-center mb-3">
+                                    <h6 class="mb-2">{% trans "Scan QR Code to Pay via Instagram" %}</h6>
+                                    <img src="{{ MEDIA_URL }}{{ qr_code }}" alt="Instagram QR Code" class="img-fluid" style="max-width: 250px;">
+                                    <p class="small text-muted mt-2">
+                                        {% get_config 'INSTAGRAM_URL' as instagram_url %}
+                                        <a href="{{ instagram_url }}" target="_blank" class="text-decoration-none">
+                                            <i class="fab fa-instagram me-1"></i>Visit our Instagram
+                                        </a>
+                                    </p>
+                                </div>
+                                {% endif %}
+
+                                <!-- Bank Details -->
+                                {% get_config 'BANK_NAME' as bank_name %}
+                                {% get_config 'BANK_ACCOUNT_NUMBER' as bank_account %}
+                                {% if bank_name and bank_account %}
+                                <div class="mb-3">
+                                    <h6 class="mb-2">{% trans "Bank Transfer Details" %}</h6>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p class="mb-1"><strong>{% trans "Bank Name:" %}</strong> {{ bank_name }}</p>
+                                            <p class="mb-0"><strong>{% trans "Account Number:" %}</strong> <code>{{ bank_account }}</code></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Transaction Photo Upload -->
+                                <div class="mb-3">
+                                    <label for="transaction_photo" class="form-label fw-bold">
+                                        <i class="fas fa-upload me-2"></i>{% trans "Upload Transaction Screenshot" %} <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="file"
+                                           class="form-control"
+                                           id="transaction_photo"
+                                           name="transaction_photo"
+                                           accept="image/*"
+                                           required>
+                                    <small class="form-text text-muted">
+                                        {% trans "Please upload a clear screenshot of your payment transaction." %}
+                                    </small>
+                                    <div class="invalid-feedback">
+                                        {% trans "Transaction proof is required for offline payments." %}
+                                    </div>
+                                </div>
+
+                                <!-- Preview -->
+                                <div id="photo-preview" class="mt-2" style="display: none;">
+                                    <p class="small mb-1">{% trans "Preview:" %}</p>
+                                    <img id="preview-image" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px;">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -162,6 +238,66 @@ document.addEventListener('DOMContentLoaded', function() {
         once: true,
         offset: 50
     });
+
+    // Handle offline payment details toggle
+    const offlinePaymentRadio = document.getElementById('offline_payment');
+    const codRadio = document.getElementById('cod');
+    const offlineDetails = document.getElementById('offline-payment-details');
+    const transactionPhotoInput = document.getElementById('transaction_photo');
+    const photoPreview = document.getElementById('photo-preview');
+    const previewImage = document.getElementById('preview-image');
+
+    function toggleOfflinePaymentDetails() {
+        if (offlinePaymentRadio && offlinePaymentRadio.checked) {
+            offlineDetails.style.display = 'block';
+            transactionPhotoInput.setAttribute('required', 'required');
+        } else {
+            offlineDetails.style.display = 'none';
+            transactionPhotoInput.removeAttribute('required');
+            transactionPhotoInput.value = '';
+            photoPreview.style.display = 'none';
+        }
+    }
+
+    if (offlinePaymentRadio) {
+        offlinePaymentRadio.addEventListener('change', toggleOfflinePaymentDetails);
+    }
+    if (codRadio) {
+        codRadio.addEventListener('change', toggleOfflinePaymentDetails);
+    }
+
+    // Handle file preview
+    if (transactionPhotoInput) {
+        transactionPhotoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                photoPreview.style.display = 'none';
+            }
+        });
+    }
+
+    // Form validation for offline payment
+    const checkoutForm = document.querySelector('form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            if (offlinePaymentRadio && offlinePaymentRadio.checked) {
+                if (!transactionPhotoInput.files || transactionPhotoInput.files.length === 0) {
+                    e.preventDefault();
+                    transactionPhotoInput.classList.add('is-invalid');
+                    alert('{% trans "Please upload a transaction screenshot for offline payment." %}');
+                    return false;
+                }
+                transactionPhotoInput.classList.remove('is-invalid');
+            }
+        });
+    }
 
     const cityField = document.getElementById('id_city');
     const shippingCostEl = document.getElementById('summary-shipping');

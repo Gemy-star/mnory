@@ -23,8 +23,8 @@ channels = "*"
 daphne = "*"
 channels-redis = "*"
 django-rosetta = "*"
-django-ckeditor-5 = "*"
 django-redis = "*"
+django-ckeditor-5 = "*"
 
 [dev-packages]
 django-silk = "*"

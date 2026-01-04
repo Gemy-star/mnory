@@ -285,6 +285,29 @@ def home(request):
         _serialize_products(all_products_recent, request)
     )
 
+    # Get top freelance jobs, freelancers, and companies
+    from freelancing.models import Project, FreelancerProfile, CompanyProfile
+
+    top_jobs = (
+        Project.objects.filter(status='open')
+        .select_related('client', 'category')
+        .prefetch_related('skills_required')
+        .order_by('-is_featured', '-created_at')[:6]
+    )
+
+    top_freelancers = (
+        FreelancerProfile.objects.filter(user__is_active=True)
+        .select_related('user')
+        .prefetch_related('skills')
+        .order_by('-rating', '-total_jobs_completed')[:6]
+    )
+
+    top_companies = (
+        CompanyProfile.objects.filter(user__is_active=True)
+        .select_related('user')
+        .order_by('-rating', '-total_jobs_posted', '-is_verified')[:6]
+    )
+
     context = {
         "featured_products": featured_products,
         "new_arrivals": new_arrivals,
@@ -297,6 +320,9 @@ def home(request):
         "initial_category_products": all_products_recent,  # For category tabs section
         "initial_category_products_json": initial_category_products_json,
         "currency": request.session.get("currency", "USD"),  # Add currency for template
+        "top_jobs": top_jobs,  # Add top jobs
+        "top_freelancers": top_freelancers,  # Add top freelancers
+        "top_companies": top_companies,  # Add top companies
     }
 
     return render(request, "shop/home.html", context)
@@ -1829,12 +1855,20 @@ def process_order(
 
         # Create payment
         payment_data = payment_form.cleaned_data
+        payment_method = payment_data.get("payment_method")
+
+        # Handle transaction photo for offline payments
+        transaction_photo = None
+        if payment_method == "offline_payment":
+            transaction_photo = request.FILES.get("transaction_photo")
+
         payment = Payment.objects.create(
             order=order,
-            payment_method=payment_data.get("payment_method"),
+            payment_method=payment_method,
             amount=Decimal("0.00"),  # Will update later
             transaction_id=f"TXN-{uuid.uuid4().hex[:10]}",
             is_success=False,
+            transaction_photo=transaction_photo,
         )
 
         # Process cart items
@@ -4365,12 +4399,20 @@ def process_order(
 
         # Create payment
         payment_data = payment_form.cleaned_data
+        payment_method = payment_data.get("payment_method")
+
+        # Handle transaction photo for offline payments
+        transaction_photo = None
+        if payment_method == "offline_payment":
+            transaction_photo = request.FILES.get("transaction_photo")
+
         payment = Payment.objects.create(
             order=order,
-            payment_method=payment_data.get("payment_method"),
+            payment_method=payment_method,
             amount=Decimal("0.00"),  # Will update later
             transaction_id=f"TXN-{uuid.uuid4().hex[:10]}",
             is_success=False,
+            transaction_photo=transaction_photo,
         )
 
         # Process cart items
