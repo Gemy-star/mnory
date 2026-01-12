@@ -5,36 +5,333 @@
 
 {% block css %}
 <style>
-    .company-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-        border: 1px solid #e0e0e0;
+    :root {
+        --company-primary: #4facfe;
+        --company-secondary: #00f2fe;
+        --card-bg: #ffffff;
+        --card-border: rgba(0, 0, 0, 0.08);
+        --text-primary: #1a202c;
+        --text-secondary: #718096;
+        --text-muted: #a0aec0;
+        --verified-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --hover-shadow: rgba(79, 172, 254, 0.3);
     }
-    .company-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+
+    [data-bs-theme="dark"] {
+        --card-bg: #1a202c;
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #f7fafc;
+        --text-secondary: #cbd5e0;
+        --text-muted: #718096;
+        --hover-shadow: rgba(79, 172, 254, 0.5);
     }
+
     .page-header-company {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        background: linear-gradient(135deg, var(--company-primary) 0%, var(--company-secondary) 100%);
         color: white;
-        padding: 3rem 0;
+        padding: 4rem 0;
+        margin-bottom: 2.5rem;
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header-company::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        left: -100px;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header-company h1 {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .filter-form {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         margin-bottom: 2rem;
-        border-radius: 8px;
     }
+
+    .company-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+    }
+
+    .company-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--company-primary), var(--company-secondary));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.5s ease;
+    }
+
+    .company-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 24px 48px var(--hover-shadow);
+        border-color: var(--company-primary);
+    }
+
+    .company-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .company-card .card-body {
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .company-logo-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin-right: 1rem;
+    }
+
     .company-logo {
-        width: 60px;
-        height: 60px;
+        width: 80px;
+        height: 80px;
         object-fit: contain;
-        background: #fff;
-        padding: 8px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 12px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
     }
+
+    [data-bs-theme="dark"] .company-logo {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    }
+
+    .company-card:hover .company-logo {
+        transform: rotate(5deg) scale(1.1);
+        box-shadow: 0 8px 24px rgba(79, 172, 254, 0.3);
+    }
+
+    .company-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        transition: color 0.3s ease;
+    }
+
+    .company-card:hover .company-title {
+        color: var(--company-primary);
+    }
+
     .verified-badge {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--verified-gradient);
         color: white;
-        padding: 2px 8px;
-        border-radius: 12px;
+        padding: 4px 12px;
+        border-radius: 16px;
         font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.85; }
+    }
+
+    .company-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .stat-item {
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%);
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+        transform: translateY(-2px);
+    }
+
+    .stat-item i {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--company-primary), var(--company-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 0.25rem;
+    }
+
+    .btn-view-profile {
+        background: linear-gradient(135deg, var(--company-primary), var(--company-secondary));
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-view-profile::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-view-profile:hover::before {
+        left: 100%;
+    }
+
+    .btn-view-profile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+    }
+
+    .card-footer {
+        background: linear-gradient(to bottom, transparent, rgba(79, 172, 254, 0.05));
+        border-top: 1px solid var(--card-border);
+        padding: 1.25rem 2rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        padding: 0.75rem 1rem;
+        background: var(--card-bg);
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--company-primary);
+        box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1);
+    }
+
+    .btn-search {
+        background: linear-gradient(135deg, var(--company-primary), var(--company-secondary));
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-search:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+    }
+
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 4px;
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+        background: var(--card-bg);
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-link:hover {
+        background: linear-gradient(135deg, var(--company-primary), var(--company-secondary));
+        color: white;
+        transform: translateY(-2px);
+        border-color: var(--company-primary);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--company-primary), var(--company-secondary));
+        border: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(0.95); }
+    }
+
+    @media (max-width: 768px) {
+        .page-header-company {
+            padding: 2.5rem 1rem;
+            border-radius: 16px;
+        }
+
+        .company-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .company-logo-wrapper,
+        .company-logo {
+            width: 60px;
+            height: 60px;
+        }
+
+        .company-stats {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
@@ -49,27 +346,29 @@
     </div>
 
     <!-- Filters -->
-    <form method="get" class="row g-3 mb-4">
-        <div class="col-md-4">
-            <input type="text" name="search" class="form-control"
-                   placeholder="{% trans 'Search companies...' %}" value="{{ request.GET.search }}">
-        </div>
-        <div class="col-md-3">
-            <input type="text" name="industry" class="form-control"
-                   placeholder="{% trans 'Industry' %}" value="{{ request.GET.industry }}">
-        </div>
-        <div class="col-md-3">
-            <select name="company_size" class="form-select">
-                <option value="">{% trans "All Sizes" %}</option>
-                <option value="small" {% if request.GET.company_size == "small" %}selected{% endif %}>{% trans "Small" %}</option>
-                <option value="medium" {% if request.GET.company_size == "medium" %}selected{% endif %}>{% trans "Medium" %}</option>
-                <option value="large" {% if request.GET.company_size == "large" %}selected{% endif %}>{% trans "Large" %}</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="fas fa-search me-1"></i>{% trans "Search" %}
-            </button>
+    <form method="get" class="filter-form">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control"
+                       placeholder="🔍 {% trans 'Search companies...' %}" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="industry" class="form-control"
+                       placeholder="{% trans 'Industry' %}" value="{{ request.GET.industry }}">
+            </div>
+            <div class="col-md-3">
+                <select name="company_size" class="form-select">
+                    <option value="">{% trans "All Sizes" %}</option>
+                    <option value="small" {% if request.GET.company_size == "small" %}selected{% endif %}>{% trans "Small" %}</option>
+                    <option value="medium" {% if request.GET.company_size == "medium" %}selected{% endif %}>{% trans "Medium" %}</option>
+                    <option value="large" {% if request.GET.company_size == "large" %}selected{% endif %}>{% trans "Large" %}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-search w-100">
+                    <i class="fas fa-search me-1"></i>{% trans "Search" %}
+                </button>
+            </div>
         </div>
     </form>
 
@@ -77,60 +376,62 @@
     <div class="row">
         {% for company in companies %}
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card company-card shadow-sm h-100">
+                <div class="card company-card shadow-sm">
                     <div class="card-body">
                         <div class="d-flex align-items-start mb-3">
-                            {% if company.logo %}
-                                <img src="{{ company.logo.url }}" class="company-logo me-3" alt="{{ company.company_name }}">
-                            {% else %}
-                                <div class="company-logo me-3 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-building fa-2x text-muted"></i>
-                                </div>
-                            {% endif %}
+                            <div class="company-logo-wrapper">
+                                {% if company.logo %}
+                                    <img src="{{ company.logo.url }}" class="company-logo" alt="{{ company.company_name }}">
+                                {% else %}
+                                    <div class="company-logo d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-building fa-2x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
                             <div class="flex-grow-1">
-                                <h5 class="card-title mb-1">
-                                    <a href="{% url 'company_detail' company.pk %}" class="text-decoration-none text-dark">
+                                <h5 class="company-title">
+                                    <a href="{% url 'company_detail' company.pk %}" class="text-decoration-none">
                                         {{ company.company_name }}
                                     </a>
-                                    {% if company.is_verified %}
-                                        <span class="verified-badge ms-1">
-                                            <i class="fas fa-check-circle"></i> {% trans "Verified" %}
-                                        </span>
-                                    {% endif %}
                                 </h5>
-                                <p class="text-muted small mb-0">
+                                {% if company.is_verified %}
+                                    <span class="verified-badge">
+                                        <i class="fas fa-check-circle"></i> {% trans "Verified" %}
+                                    </span>
+                                {% endif %}
+                                <p class="text-muted small mb-0 mt-2">
                                     <i class="fas fa-industry me-1"></i> {{ company.industry|default:_("Not specified") }}
                                 </p>
                             </div>
                         </div>
 
-                        <p class="card-text text-muted mb-3">{{ company.description|truncatewords:25 }}</p>
+                        <p class="card-text text-muted mb-3">{{ company.description|truncatewords:20 }}</p>
 
-                        <div class="row g-2 small text-muted mb-3">
-                            <div class="col-6">
-                                <i class="fas fa-map-marker-alt me-1 text-primary"></i>
-                                <strong>{% trans "Location:" %}</strong><br>
-                                {{ company.location|default:_("Remote") }}
+                        <div class="company-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-map-marker-alt d-block"></i>
+                                <div class="stat-label">{% trans "Location" %}</div>
+                                <div class="stat-value">{{ company.location|default:_("Remote")|truncatechars:15 }}</div>
                             </div>
-                            <div class="col-6">
-                                <i class="fas fa-users me-1 text-primary"></i>
-                                <strong>{% trans "Size:" %}</strong><br>
-                                {{ company.get_company_size_display }}
+                            <div class="stat-item">
+                                <i class="fas fa-users d-block"></i>
+                                <div class="stat-label">{% trans "Size" %}</div>
+                                <div class="stat-value">{{ company.get_company_size_display }}</div>
                             </div>
-                            <div class="col-6">
-                                <i class="fas fa-star me-1 text-warning"></i>
-                                <strong>{% trans "Rating:" %}</strong><br>
-                                {{ company.rating|floatformat:1|default:"0.0" }} / 5.0
+                            <div class="stat-item">
+                                <i class="fas fa-star d-block"></i>
+                                <div class="stat-label">{% trans "Rating" %}</div>
+                                <div class="stat-value">{{ company.rating|floatformat:1|default:"0.0" }} / 5.0</div>
                             </div>
-                            <div class="col-6">
-                                <i class="fas fa-briefcase me-1 text-primary"></i>
-                                <strong>{% trans "Jobs:" %}</strong><br>
-                                {{ company.total_jobs_posted }} {% trans "posted" %}
+                            <div class="stat-item">
+                                <i class="fas fa-briefcase d-block"></i>
+                                <div class="stat-label">{% trans "Jobs" %}</div>
+                                <div class="stat-value">{{ company.total_jobs_posted }} {% trans "posted" %}</div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-light text-end border-0">
-                        <a href="{% url 'company_detail' company.pk %}" class="btn btn-sm btn-primary">
+                    <div class="card-footer text-end">
+                        <a href="{% url 'company_detail' company.pk %}" class="btn btn-view-profile">
                             <i class="fas fa-eye me-1"></i>{% trans "View Profile" %}
                         </a>
                     </div>
@@ -138,8 +439,12 @@
             </div>
         {% empty %}
             <div class="col-12">
-                <div class="alert alert-info">
-                    {% trans "No companies found matching your criteria." %}
+                <div class="empty-state">
+                    <i class="fas fa-building"></i>
+                    <h4 class="text-muted mb-3">{% trans "No companies found matching your criteria." %}</h4>
+                    <a href="{% url 'company_list' %}" class="btn btn-search">
+                        <i class="fas fa-building me-2"></i>{% trans "View All Companies" %}
+                    </a>
                 </div>
             </div>
         {% endfor %}

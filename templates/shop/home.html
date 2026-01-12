@@ -3,482 +3,1059 @@
 {% load i18n %}
 
 {% block css %}
-<!-- Home page specific styles -->
+<style>
+    :root {
+        --primary-color: #667eea;
+        --secondary-color: #764ba2;
+        --accent-color: #f5576c;
+        --bg-main: #f8f9fa;
+        --card-bg: #ffffff;
+        --text-dark: #1a1a2e;
+        --text-light: #6c757d;
+        --border-color: #e9ecef;
+    }
+
+    [data-bs-theme="dark"] {
+        --bg-main: #1a1a2e;
+        --card-bg: #16213e;
+        --text-dark: #ffffff;
+        --text-light: #a8b2d1;
+        --border-color: #2c3e50;
+    }
+
+    body {
+        background: var(--bg-main) !important;
+        color: var(--text-dark);
+    }
+
+    #content,
+    .content-wrapper,
+    main,
+    .main-content,
+    .bg-theme {
+        background: var(--bg-main) !important;
+        color: var(--text-dark);
+    }
+
+    section {
+        background: var(--bg-main);
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .row {
+        background: transparent;
+    }
+
+    /* Hero Slider Integration */
+    .hero-slider-section {
+        margin-bottom: 4rem;
+    }
+
+    /* Product Card - Redesigned */
+    .modern-product-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modern-product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+        border-color: var(--primary-color);
+    }
+
+    [data-bs-theme="dark"] .modern-product-card {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-bs-theme="dark"] .modern-product-card:hover {
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    .product-image-container {
+        position: relative;
+        width: 100%;
+        padding-top: 120%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    }
+
+    [data-bs-theme="dark"] .product-image-container {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+
+    .product-image-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .modern-product-card:hover .product-image-container img {
+        transform: scale(1.08);
+    }
+
+    .product-card-body {
+        padding: 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+
+    .product-card-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-top: auto;
+    }
+
+    .product-card-price .old-price {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        text-decoration: line-through;
+        margin-left: 0.5rem;
+    }
+
+    .product-card-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: var(--primary-color);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-card-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        z-index: 10;
+    }
+
+    .product-action-btn {
+        width: 40px;
+        height: 40px;
+        background: var(--card-bg);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-action-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    [data-bs-theme="dark"] .product-action-btn {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Stats Section */
+    .stats-section {
+        padding: 4rem 0;
+        background: var(--bg-main) !important;
+    }
+
+    [data-bs-theme="dark"] .stats-section {
+        background: #1a1a2e !important;
+    }
+
+    [data-bs-theme="dark"] .stats-section {
+        background: #1a1a2e !important;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.4s, box-shadow 0.4s;
+        border: 1px solid var(--border-color);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+    }
+
+    [data-bs-theme="dark"] .stat-card {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-bs-theme="dark"] .stat-card:hover {
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+    }
+
+    [data-bs-theme="dark"] .stat-icon {
+        color: #8b9de8;
+        filter: brightness(1.2);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    [data-bs-theme="dark"] .stat-label {
+        color: #8892a6;
+    }
+
+    /* Product Sections */
+    .product-showcase {
+        padding: 5rem 0;
+        position: relative;
+        background: var(--bg-main) !important;
+    }
+
+    [data-bs-theme="dark"] .product-showcase {
+        background: #1a1a2e !important;
+    }
+
+    [data-bs-theme="dark"] .product-showcase {
+        background: #1a1a2e !important;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        position: relative;
+    }
+
+    .section-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        background: var(--primary-color);
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    [data-bs-theme="dark"] .section-badge {
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+    }
+
+    .section-title {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--text-dark);
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    [data-bs-theme="dark"] .section-subtitle {
+        color: #a8b2d1;
+        opacity: 0.9;
+    }
+
+    /* Swiper Custom Navigation */
+    .swiper-nav-modern {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        width: 50px;
+        height: 50px;
+        background: var(--card-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        color: var(--text-dark);
+    }
+
+    [data-bs-theme="dark"] .swiper-nav-modern {
+        background: #2c3e50;
+        border-color: #34495e;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .swiper-nav-modern:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    [data-bs-theme="dark"] .swiper-nav-modern:hover {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    .swiper-nav-prev {
+        left: -25px;
+    }
+
+    .swiper-nav-next {
+        right: -25px;
+    }
+
+    /* Freelance Section */
+    .freelance-modern {
+        padding: 5rem 0;
+        position: relative;
+        background: var(--bg-main) !important;
+    }
+
+    [data-bs-theme="dark"] .freelance-modern {
+        background: #1a1a2e !important;
+    }
+
+    .freelance-section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .freelance-icon-box {
+        width: 80px;
+        height: 80px;
+        background: var(--primary-color);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    [data-bs-theme="dark"] .freelance-icon-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+        border: 2px solid rgba(139, 157, 232, 0.3);
+    }
+
+    .freelance-title {
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--text-dark);
+    }
+
+    .freelance-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 2.5rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    [data-bs-theme="dark"] .freelance-subtitle {
+        color: #a8b2d1;
+        opacity: 0.9;
+    }
+
+    .btn-freelance {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    [data-bs-theme="dark"] .btn-freelance {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-freelance:hover {
+        background: var(--secondary-color);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    [data-bs-theme="dark"] .btn-freelance:hover {
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.6);
+        filter: brightness(1.1);
+    }
+
+    /* Newsletter Section */
+    .newsletter-modern {
+        padding: 5rem 0;
+        background: var(--card-bg);
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    [data-bs-theme="dark"] .newsletter-modern {
+        background: #16213e;
+        border-top-color: #2c3e50;
+        border-bottom-color: #2c3e50;
+    }
+
+    .newsletter-content {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .newsletter-title {
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+    }
+
+    .newsletter-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 2rem;
+    }
+
+    [data-bs-theme="dark"] .newsletter-subtitle {
+        color: #a8b2d1;
+        opacity: 0.9;
+    }
+
+    .newsletter-form {
+        max-width: 500px;
+        margin: 0 auto;
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .newsletter-input {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        border-radius: 50px;
+        border: 2px solid var(--border-color);
+        font-size: 1rem;
+        background: var(--bg-main);
+        color: var(--text-dark);
+        transition: all 0.3s;
+    }
+
+    .newsletter-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    [data-bs-theme="dark"] .newsletter-input {
+        background: #1a1a2e;
+        border-color: #34495e;
+        color: #ffffff;
+    }
+
+    [data-bs-theme="dark"] .newsletter-input::placeholder {
+        color: #6c7a93;
+    }
+
+    [data-bs-theme="dark"] .newsletter-input:focus {
+        border-color: #8b9de8;
+        background: #0f1419;
+    }
+
+    .newsletter-btn {
+        padding: 1rem 2rem;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    [data-bs-theme="dark"] .newsletter-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .newsletter-btn:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    }
+
+    [data-bs-theme="dark"] .newsletter-btn:hover {
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.6);
+        filter: brightness(1.1);
+    }
+
+    /* Empty States */
+    .text-muted {
+        color: var(--text-light) !important;
+    }
+
+    [data-bs-theme="dark"] .text-muted {
+        color: #6c7a93 !important;
+    }
+
+    .fa-box-open {
+        color: var(--text-light);
+    }
+
+    [data-bs-theme="dark"] .fa-box-open {
+        color: #6c7a93;
+        opacity: 0.7;
+    }
+
+    /* Swiper Pagination Dark Theme */
+    [data-bs-theme="dark"] .swiper-pagination-bullet {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    [data-bs-theme="dark"] .swiper-pagination-bullet-active {
+        background: var(--primary-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+
+        .swiper-nav-modern {
+            display: none;
+        }
+
+        .stats-section {
+            padding: 3rem 0;
+        }
+
+        .product-showcase {
+            padding: 3rem 0;
+        }
+
+        .freelance-modern {
+            padding: 4rem 0;
+        }
+
+        .newsletter-form {
+            flex-direction: column;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <!-- Hero Slider -->
 {% include 'shop/partials/hero_slider.html' %}
 
-<!-- Category Tabs with Products -->
-{% include 'shop/partials/_categories.html' with cat_name="body" categories=categories initial_category_products=initial_category_products currency=currency %}
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="0">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">{% trans "Products" %}</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">{% trans "Happy Customers" %}</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-number">5K+</div>
+                    <div class="stat-label">{% trans "Projects" %}</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-number">4.9</div>
+                    <div class="stat-label">{% trans "Rating" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<!-- Featured Products Section -->
+<!-- Featured Products -->
 {% if config.ENABLE_FEATURED_FLAG %}
-<section class="product-section featured-section">
+<section class="product-showcase showcase-featured">
     <div class="container">
-        <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="50">
-            <h2 class="section-title-tabs">
-                <span class="material-icons">star</span>
-                {% trans "Featured Products" %}
-            </h2>
-            <p class="section-subtitle-tabs">{% trans "Hand-picked premium products just for you" %}</p>
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-badge">✨ {% trans "Hand Picked" %}</span>
+            <h2 class="section-title">{% trans "Featured Products" %}</h2>
+            <p class="section-subtitle">{% trans "Discover our carefully curated collection of premium products" %}</p>
         </div>
 
-    <!-- Products Container (category-style) -->
-    <div class="category-products-container" data-aos="fade-up" data-aos-delay="150">
-            <!-- Loading / Empty states and header are handled here like _categories -->
-            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="150">
-                <div class="products-loading" style="display:none;">
-                    <div class="loading-spinner">
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                    </div>
-                    <p class="loading-text">{% trans "Loading products..." %}</p>
-                </div>
-
-                <div class="category-products-swiper-container" id="featuredProductsSwiper" data-aos="fade-up" data-aos-delay="200">
-                    <div class="swiper featured-swiper container">
-                        <div class="swiper-wrapper">
-                            {% for product in featured_products %}
-                                <div class="swiper-slide">
-                                    {% include "partials/_product.html" with product=product section="featured_products" %}
-                                </div>
-                            {% endfor %}
+        <div class="position-relative" data-aos="fade-up" data-aos-delay="200">
+            <div class="swiper featured-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in featured_products %}
+                        <div class="swiper-slide">
+                            {% include "partials/_product.html" with product=product %}
                         </div>
-                        <div class="swiper-pagination"></div>
-                    </div>
-                </div>
-
-                <div class="products-empty" style="display:none;">
-                    <div class="empty-illustration">
-                        <span class="material-icons empty-icon">star_border</span>
-                        <div class="empty-rings">
-                            <div class="ring ring-1"></div>
-                            <div class="ring ring-2"></div>
-                            <div class="ring ring-3"></div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">{% trans "No featured products available" %}</p>
                         </div>
-                    </div>
-                    <h4 class="empty-title">{% trans "No products found" %}</h4>
-                    <p class="empty-message">{% trans "We couldn't find any featured products at the moment" %}</p>
+                    {% endfor %}
                 </div>
+                <div class="swiper-pagination"></div>
             </div>
-
-            <!-- Navigation -->
-            <div class="swiper-navigation">
-                <button class="swiper-nav-btn swiper-nav-prev featured-prev" aria-label="{% trans 'Previous' %}">
-                    <span class="material-icons">chevron_left</span>
-                </button>
-                <button class="swiper-nav-btn swiper-nav-next featured-next" aria-label="{% trans 'Next' %}">
-                    <span class="material-icons">chevron_right</span>
-                </button>
+            <div class="swiper-nav-modern swiper-nav-prev featured-prev">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="swiper-nav-modern swiper-nav-next featured-next">
+                <i class="fas fa-chevron-right"></i>
             </div>
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- New Arrivals Section -->
+<!-- New Arrivals -->
 {% if config.ENABLE_NEW_ARRIVAL_FLAG %}
-<section class="product-section newarrivals-section">
+<section class="product-showcase showcase-new">
     <div class="container">
-        <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="100">
-            <h2 class="section-title-tabs">
-                <span class="material-icons">new_releases</span>
-                {% trans "New Arrivals" %}
-            </h2>
-            <p class="section-subtitle-tabs">{% trans "Fresh styles and latest trends" %}</p>
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-badge">🆕 {% trans "Just In" %}</span>
+            <h2 class="section-title">{% trans "New Arrivals" %}</h2>
+            <p class="section-subtitle">{% trans "Fresh styles and latest trends for you" %}</p>
         </div>
 
-        <!-- Products Container (category-style) -->
-        <div class="category-products-container" data-aos="fade-up" data-aos-delay="200">
-            <div class="category-products-container aos-init aos-animate" data-aos="fade-up" data-aos-delay="200">
-                <div class="products-loading" style="display:none;">
-                    <div class="loading-spinner">
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                    </div>
-                    <p class="loading-text">{% trans "Loading products..." %}</p>
-                </div>
-
-                <div class="category-products-swiper-container" id="newarrivalsProductsSwiper" data-aos="fade-up" data-aos-delay="220">
-                    <div class="swiper newarrivals-swiper container">
-                        <div class="swiper-wrapper">
-                            {% for product in new_arrivals %}
-                                <div class="swiper-slide">
-                                    {% include "partials/_product.html" with product=product section="new_arrivals" %}
-                                </div>
-                            {% endfor %}
+        <div class="position-relative" data-aos="fade-up" data-aos-delay="200">
+            <div class="swiper newarrivals-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in new_arrivals %}
+                        <div class="swiper-slide">
+                            {% include "partials/_product.html" with product=product %}
                         </div>
-                        <div class="swiper-pagination"></div>
-                    </div>
-                </div>
-
-                <div class="products-empty" style="display:none;">
-                    <div class="empty-illustration">
-                        <span class="material-icons empty-icon">new_releases</span>
-                        <div class="empty-rings">
-                            <div class="ring ring-1"></div>
-                            <div class="ring ring-2"></div>
-                            <div class="ring ring-3"></div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">{% trans "No new arrivals available" %}</p>
                         </div>
-                    </div>
-                    <h4 class="empty-title">{% trans "No products found" %}</h4>
-                    <p class="empty-message">{% trans "We couldn't find any new arrivals at the moment" %}</p>
+                    {% endfor %}
                 </div>
+                <div class="swiper-pagination"></div>
             </div>
-
-            <!-- Navigation -->
-            <div class="swiper-navigation">
-                <button class="swiper-nav-btn swiper-nav-prev newarrivals-prev" aria-label="{% trans 'Previous' %}">
-                    <span class="material-icons">chevron_left</span>
-                </button>
-                <button class="swiper-nav-btn swiper-nav-next newarrivals-next" aria-label="{% trans 'Next' %}">
-                    <span class="material-icons">chevron_right</span>
-                </button>
+            <div class="swiper-nav-modern swiper-nav-prev newarrivals-prev">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="swiper-nav-modern swiper-nav-next newarrivals-next">
+                <i class="fas fa-chevron-right"></i>
             </div>
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- Best Sellers Section -->
+<!-- Best Sellers -->
 {% if config.ENABLE_BEST_SELLER_FLAG %}
-<section class="product-section bestseller-section">
+<section class="product-showcase showcase-bestseller">
     <div class="container">
-        <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="150">
-            <h2 class="section-title-tabs">
-                <span class="material-icons">trending_up</span>
-                {% trans "Best Sellers" %}
-            </h2>
-            <p class="section-subtitle-tabs">{% trans "Most popular products loved by customers" %}</p>
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-badge">🔥 {% trans "Trending" %}</span>
+            <h2 class="section-title">{% trans "Best Sellers" %}</h2>
+            <p class="section-subtitle">{% trans "Most loved products by our customers" %}</p>
         </div>
 
-        <!-- Products Container (category-style) -->
-        <div class="category-products-container" data-aos="fade-up" data-aos-delay="250">
-
-                <div class="products-loading" style="display:none;">
-                    <div class="loading-spinner">
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                    </div>
-                    <p class="loading-text">{% trans "Loading products..." %}</p>
-                </div>
-
-                <div class="category-products-swiper-container" id="bestsellerProductsSwiper" data-aos="fade-up" data-aos-delay="270">
-                    <div class="swiper bestseller-swiper container">
-                        <div class="swiper-wrapper">
-                            {% for product in best_sellers %}
-                                <div class="swiper-slide">
-                                    {% include "partials/_product.html" with product=product section="best_sellers" %}
-                                </div>
-                            {% endfor %}
+        <div class="position-relative" data-aos="fade-up" data-aos-delay="200">
+            <div class="swiper bestseller-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in best_sellers %}
+                        <div class="swiper-slide">
+                            {% include "partials/_product.html" with product=product %}
                         </div>
-                        <div class="swiper-pagination"></div>
-                    </div>
-                </div>
-
-                <div class="products-empty" style="display:none;">
-                    <div class="empty-illustration">
-                        <span class="material-icons empty-icon">trending_up</span>
-                        <div class="empty-rings">
-                            <div class="ring ring-1"></div>
-                            <div class="ring ring-2"></div>
-                            <div class="ring ring-3"></div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">{% trans "No best sellers available" %}</p>
                         </div>
-                    </div>
-                    <h4 class="empty-title">{% trans "No products found" %}</h4>
-                    <p class="empty-message">{% trans "We couldn't find any best sellers at the moment" %}</p>
+                    {% endfor %}
                 </div>
+                <div class="swiper-pagination"></div>
             </div>
-
-            <!-- Navigation -->
-            <div class="swiper-navigation">
-                <button class="swiper-nav-btn swiper-nav-prev bestseller-prev" aria-label="{% trans 'Previous' %}">
-                    <span class="material-icons">chevron_left</span>
-                </button>
-                <button class="swiper-nav-btn swiper-nav-next bestseller-next" aria-label="{% trans 'Next' %}">
-                    <span class="material-icons">chevron_right</span>
-                </button>
+            <div class="swiper-nav-modern swiper-nav-prev bestseller-prev">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="swiper-nav-modern swiper-nav-next bestseller-next">
+                <i class="fas fa-chevron-right"></i>
             </div>
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- On Sale Section -->
+<!-- On Sale -->
 {% if config.ENABLE_SALE_FLAG %}
-<section class="product-section sale-section">
+<section class="product-showcase showcase-sale">
     <div class="container">
-        <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="200">
-            <h2 class="section-title-tabs sale-title">
-                <span class="material-icons sale-icon">local_offer</span>
-                {% trans "On Sale!" %}
-            </h2>
-            <p class="section-subtitle-tabs">{% trans "Don't miss these amazing deals and discounts" %}</p>
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-badge">💰 {% trans "Special Offer" %}</span>
+            <h2 class="section-title">{% trans "On Sale!" %}</h2>
+            <p class="section-subtitle">{% trans "Amazing deals you don't want to miss" %}</p>
         </div>
 
-        <!-- Products Container (category-style) -->
-        <div class="category-products-container" data-aos="fade-up" data-aos-delay="300">
-                <div class="products-loading" style="display:none;">
-                    <div class="loading-spinner">
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                        <div class="spinner-ring"></div>
-                    </div>
-                    <p class="loading-text">{% trans "Loading products..." %}</p>
-                </div>
-
-                <div class="category-products-swiper-container" id="onsaleProductsSwiper" data-aos="fade-up" data-aos-delay="320">
-                    <div class="swiper onsale-swiper container">
-                        <div class="swiper-wrapper">
-                            {% for product in sale_products %}
-                                <div class="swiper-slide">
-                                    {% include "partials/_product.html" with product=product section="sale_products" %}
-                                </div>
-                            {% endfor %}
+        <div class="position-relative" data-aos="fade-up" data-aos-delay="200">
+            <div class="swiper onsale-swiper">
+                <div class="swiper-wrapper">
+                    {% for product in sale_products %}
+                        <div class="swiper-slide">
+                            {% include "partials/_product.html" with product=product %}
                         </div>
-                        <div class="swiper-pagination"></div>
-                    </div>
-                </div>
-
-                <div class="products-empty" style="display:none;">
-                    <div class="empty-illustration">
-                        <span class="material-icons empty-icon">local_offer</span>
-                        <div class="empty-rings">
-                            <div class="ring ring-1"></div>
-                            <div class="ring ring-2"></div>
-                            <div class="ring ring-3"></div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">{% trans "No sale products available" %}</p>
                         </div>
-                    </div>
-                    <h4 class="empty-title">{% trans "No products found" %}</h4>
-                    <p class="empty-message">{% trans "We couldn't find any sale products at the moment" %}</p>
+                    {% endfor %}
                 </div>
+                <div class="swiper-pagination"></div>
             </div>
-
-            <!-- Navigation -->
-            <div class="swiper-navigation">
-                <button class="swiper-nav-btn swiper-nav-prev onsale-prev" aria-label="{% trans 'Previous' %}">
-                    <span class="material-icons">chevron_left</span>
-                </button>
-                <button class="swiper-nav-btn swiper-nav-next onsale-next" aria-label="{% trans 'Next' %}">
-                    <span class="material-icons">chevron_right</span>
-                </button>
+            <div class="swiper-nav-modern swiper-nav-prev onsale-prev">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <div class="swiper-nav-modern swiper-nav-next onsale-next">
+                <i class="fas fa-chevron-right"></i>
             </div>
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- Home Categories -->
-<section class="product-section home-categories-section">
+<!-- Shop Categories -->
+<section class="categories-section" style="padding: 5rem 0; background: var(--bg-main);">
     <div class="container">
-        <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="250">
-            <h2 class="section-title-tabs">
-                <span class="material-icons">category</span>
-                {% trans "Shop Categories" %}
-            </h2>
-            <p class="section-subtitle-tabs">{% trans "Explore our diverse product categories" %}</p>
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-badge">📦 {% trans "Browse" %}</span>
+            <h2 class="section-title">{% trans "Shop by Category" %}</h2>
+            <p class="section-subtitle">{% trans "Find exactly what you're looking for" %}</p>
         </div>
-            {% include 'shop/partials/_home_categories.html' %}
-
+        {% include 'shop/partials/_home_categories.html' %}
     </div>
 </section>
 
-<!-- Freelance Categories -->
-<section class="product-section freelance-categories-section">
+<!-- Freelance Jobs -->
+<section class="freelance-modern">
     <div class="container">
-        <!-- Section Header -->
-        <div class="section-header-tabs" data-aos="fade-up" data-aos-delay="300">
-            <h2 class="section-title-tabs">
-                <span class="material-icons">work</span>
-                {% trans "Freelance Services" %}
-            </h2>
-            <p class="section-subtitle-tabs">{% trans "Professional services by skilled freelancers" %}</p>
-        </div>
-            {% include 'freelance/partials/_home_categories.html' %}
-    </div>
-</section>
-
-<!-- Top Jobs Section -->
-<section class="freelancing-section top-jobs-section" style="padding: 5rem 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; overflow: hidden;">
-    <!-- Animated Background Elements -->
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
-        <div style="position: absolute; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%; top: -100px; left: -50px;"></div>
-        <div style="position: absolute; width: 200px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 50%; bottom: -80px; right: 10%;"></div>
-    </div>
-
-    <div class="container" style="position: relative; z-index: 1;">
-        <!-- Section Header -->
-        <div class="section-header-tabs text-center mb-5" data-aos="fade-down">
-            <div class="d-inline-flex align-items-center justify-content-center mb-3"
-                 style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                <span class="material-icons" style="font-size: 36px; color: white;">work</span>
+        <div class="freelance-section-header">
+            <div class="freelance-icon-box" data-aos="zoom-in">
+                <i class="fas fa-briefcase fa-2x"></i>
             </div>
-            <h2 class="section-title-tabs mb-3" style="color: white; font-size: 2.5rem; font-weight: 700;">
-                {% trans "Featured Jobs" %}
-            </h2>
-            <p class="section-subtitle-tabs" style="color: rgba(255,255,255,0.95); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                {% trans "Discover exciting opportunities from top companies" %}
+            <h2 class="freelance-title" data-aos="fade-up">{% trans "Find Your Dream Job" %}</h2>
+            <p class="freelance-subtitle" data-aos="fade-up" data-aos-delay="100">
+                {% trans "Discover thousands of opportunities from top companies" %}
             </p>
         </div>
 
         {% include 'freelance/partials/_top_jobs.html' with top_jobs=top_jobs %}
 
-        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="400">
-            <a href="{% url 'project_list' %}" class="btn btn-light btn-lg px-5 py-3"
-               style="border-radius: 50px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: all 0.3s;">
-                <i class="fas fa-briefcase me-2"></i>{% trans "Explore All Jobs" %}
+        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="300">
+            <a href="{% url 'project_list' %}" class="btn btn-freelance">
+                {% trans "Explore All Jobs" %}<i class="fas fa-arrow-right ms-2"></i>
             </a>
         </div>
     </div>
 </section>
 
-<!-- Top Freelancers Section -->
-<section class="freelancing-section top-freelancers-section" style="padding: 5rem 0; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); position: relative; overflow: hidden;">
-    <!-- Animated Background Elements -->
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
-        <div style="position: absolute; width: 250px; height: 250px; background: rgba(255,255,255,0.08); border-radius: 50%; top: 10%; right: 5%;"></div>
-        <div style="position: absolute; width: 180px; height: 180px; background: rgba(255,255,255,0.08); border-radius: 50%; bottom: 15%; left: 8%;"></div>
-    </div>
-
-    <div class="container" style="position: relative; z-index: 1;">
-        <!-- Section Header -->
-        <div class="section-header-tabs text-center mb-5" data-aos="fade-down">
-            <div class="d-inline-flex align-items-center justify-content-center mb-3"
-                 style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                <span class="material-icons" style="font-size: 36px; color: white;">people</span>
+<!-- Top Freelancers -->
+<section class="freelance-modern">
+    <div class="container">
+        <div class="freelance-section-header">
+            <div class="freelance-icon-box" data-aos="zoom-in">
+                <i class="fas fa-users fa-2x"></i>
             </div>
-            <h2 class="section-title-tabs mb-3" style="color: white; font-size: 2.5rem; font-weight: 700;">
-                {% trans "Top Freelancers" %}
-            </h2>
-            <p class="section-subtitle-tabs" style="color: rgba(255,255,255,0.95); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                {% trans "Connect with skilled professionals ready to bring your projects to life" %}
+            <h2 class="freelance-title" data-aos="fade-up">{% trans "Hire Top Talent" %}</h2>
+            <p class="freelance-subtitle" data-aos="fade-up" data-aos-delay="100">
+                {% trans "Connect with skilled professionals ready to bring your vision to life" %}
             </p>
         </div>
 
         {% include 'freelance/partials/_top_freelancers.html' with top_freelancers=top_freelancers %}
 
-        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="450">
-            <a href="{% url 'freelancer_list' %}" class="btn btn-light btn-lg px-5 py-3"
-               style="border-radius: 50px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: all 0.3s;">
-                <i class="fas fa-users me-2"></i>{% trans "Browse All Freelancers" %}
+        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="300">
+            <a href="{% url 'freelancer_list' %}" class="btn btn-freelance">
+                {% trans "Browse All Freelancers" %}<i class="fas fa-arrow-right ms-2"></i>
             </a>
         </div>
     </div>
 </section>
 
-<!-- Top Companies Section -->
-<section class="freelancing-section top-companies-section" style="padding: 5rem 0; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); position: relative; overflow: hidden;">
-    <!-- Animated Background Elements -->
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
-        <div style="position: absolute; width: 280px; height: 280px; background: rgba(255,255,255,0.06); border-radius: 50%; top: -80px; left: 10%;"></div>
-        <div style="position: absolute; width: 220px; height: 220px; background: rgba(255,255,255,0.06); border-radius: 50%; bottom: -60px; right: 15%;"></div>
-    </div>
-
-    <div class="container" style="position: relative; z-index: 1;">
-        <!-- Section Header -->
-        <div class="section-header-tabs text-center mb-5" data-aos="fade-down">
-            <div class="d-inline-flex align-items-center justify-content-center mb-3"
-                 style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                <span class="material-icons" style="font-size: 36px; color: white;">domain</span>
+<!-- Top Companies -->
+<section class="freelance-modern">
+    <div class="container">
+        <div class="freelance-section-header">
+            <div class="freelance-icon-box" data-aos="zoom-in">
+                <i class="fas fa-building fa-2x"></i>
             </div>
-            <h2 class="section-title-tabs mb-3" style="color: white; font-size: 2.5rem; font-weight: 700;">
-                {% trans "Top Companies" %}
-            </h2>
-            <p class="section-subtitle-tabs" style="color: rgba(255,255,255,0.95); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-                {% trans "Leading companies hiring talented professionals on our platform" %}
+            <h2 class="freelance-title" data-aos="fade-up">{% trans "Leading Companies" %}</h2>
+            <p class="freelance-subtitle" data-aos="fade-up" data-aos-delay="100">
+                {% trans "Trusted by the best companies hiring on our platform" %}
             </p>
         </div>
 
         {% include 'freelance/partials/_top_companies.html' with top_companies=top_companies %}
 
-        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="500">
-            <a href="{% url 'company_list' %}" class="btn btn-light btn-lg px-5 py-3"
-               style="border-radius: 50px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: all 0.3s;">
-                <i class="fas fa-building me-2"></i>{% trans "Browse All Companies" %}
+        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="300">
+            <a href="{% url 'company_list' %}" class="btn btn-freelance">
+                {% trans "View All Companies" %}<i class="fas fa-arrow-right ms-2"></i>
             </a>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-modern">
+    <div class="container">
+        <div class="newsletter-content" data-aos="fade-up">
+            <h2 class="newsletter-title">{% trans "Stay Updated" %}</h2>
+            <p class="newsletter-subtitle">{% trans "Subscribe to our newsletter for exclusive deals and updates" %}</p>
+            <form class="newsletter-form">
+                <input type="email" class="newsletter-input" placeholder="{% trans 'Enter your email' %}" required>
+                <button type="submit" class="newsletter-btn">
+                    <i class="fas fa-paper-plane me-2"></i>{% trans "Subscribe" %}
+                </button>
+            </form>
         </div>
     </div>
 </section>
 {% endblock %}
 {% block js %}
 <script>
-    function setupSwiper(className, next, prev) {
-        const swiperEl = document.querySelector(`.${className}`);
-        if (swiperEl) {
-            new Swiper(`.${className}`, {
-                // Show 2 slides on narrow screens and 4 on desktop
-                slidesPerView: 2,
-                spaceBetween: 12,
-                breakpoints: {
-                    0:   { slidesPerView: 2, spaceBetween: 12 },
-                    768: { slidesPerView: 4, spaceBetween: 25 }
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100,
+        easing: 'ease-out-cubic'
+    });
+
+    // Initialize all Swiper carousels
+    function initSwiper(selector, nextEl, prevEl) {
+        const swiperContainer = document.querySelector(selector);
+        if (!swiperContainer) return;
+
+        return new Swiper(selector, {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            loop: false,
+            speed: 800,
+            grabCursor: true,
+            breakpoints: {
+                576: {
+                    slidesPerView: 2,
+                    spaceBetween: 20
                 },
-                navigation: {
-                    nextEl: `.${next}`,
-                    prevEl: `.${prev}`
+                768: {
+                    slidesPerView: 3,
+                    spaceBetween: 25
                 },
-                loop: false,
-                speed: 600,
-                watchOverflow: true,
-                // Enhanced options for better UX
-                autoplay: {
-                    delay: 5000,
-                    disableOnInteraction: false,
-                    pauseOnMouseEnter: true
-                },
-                effect: 'slide',
-                touchRatio: 1,
-                touchAngle: 45,
-                simulateTouch: true,
-                allowTouchMove: true,
-                resistance: true,
-                resistanceRatio: 0.85
-            });
-        }
+                992: {
+                    slidesPerView: 4,
+                    spaceBetween: 30
+                }
+            },
+            navigation: {
+                nextEl: nextEl,
+                prevEl: prevEl
+            },
+            pagination: {
+                el: selector + ' .swiper-pagination',
+                clickable: true,
+                dynamicBullets: true
+            },
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            effect: 'slide',
+            touchRatio: 1,
+            touchAngle: 45,
+            resistance: true,
+            resistanceRatio: 0.85
+        });
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize all product swipers with new class names
-        setupSwiper('newarrivals-swiper', 'newarrivals-next', 'newarrivals-prev');
-        setupSwiper('featured-swiper', 'featured-next', 'featured-prev');
-        setupSwiper('bestseller-swiper', 'bestseller-next', 'bestseller-prev');
-        setupSwiper('onsale-swiper', 'onsale-next', 'onsale-prev');
+    // Initialize all product swiper carousels
+    initSwiper('.featured-swiper', '.featured-next', '.featured-prev');
+    initSwiper('.newarrivals-swiper', '.newarrivals-next', '.newarrivals-prev');
+    initSwiper('.bestseller-swiper', '.bestseller-next', '.bestseller-prev');
+    initSwiper('.onsale-swiper', '.onsale-next', '.onsale-prev');
 
-        // Add hover effects for swiper navigation
-        document.querySelectorAll('.swiper-nav-btn').forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px) scale(1)';
-            });
+    // Animated counter for stats
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px'
+    };
 
-            btn.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
+    const animateCounter = (element) => {
+        const target = element.textContent.replace(/[^0-9.]/g, '');
+        const isDecimal = target.includes('.');
+        const targetNum = parseFloat(target);
+        const suffix = element.textContent.replace(target, '');
+        const duration = 2000;
+        const steps = 60;
+        const stepValue = targetNum / steps;
+        const stepDuration = duration / steps;
+        let current = 0;
 
-        // Add special effects for sale section
-        const saleSection = document.querySelector('.sale-section');
-        if (saleSection) {
-            const saleIcon = saleSection.querySelector('.sale-icon');
-            if (saleIcon) {
-                // Add click effect
-                saleIcon.addEventListener('click', function() {
-                    this.style.animation = 'none';
-                    setTimeout(() => {
-                        this.style.animation = 'bounce-sale 2s ease-in-out infinite';
-                    }, 100);
-                });
+        const timer = setInterval(() => {
+            current += stepValue;
+            if (current >= targetNum) {
+                current = targetNum;
+                clearInterval(timer);
             }
-        }
+            element.textContent = isDecimal
+                ? current.toFixed(1) + suffix
+                : Math.floor(current) + suffix;
+        }, stepDuration);
+    };
+
+    const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const statNumber = entry.target.querySelector('.stat-number');
+                if (statNumber && !statNumber.classList.contains('animated')) {
+                    statNumber.classList.add('animated');
+                    animateCounter(statNumber);
+                }
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.stat-card').forEach(card => {
+        statsObserver.observe(card);
     });
+
+    // Newsletter form handling
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = this.querySelector('.newsletter-input');
+            const button = this.querySelector('.newsletter-btn');
+            const originalText = button.innerHTML;
+
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>{% trans "Subscribing..." %}';
+            button.disabled = true;
+
+            // Simulate API call (replace with actual API call)
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check me-2"></i>{% trans "Subscribed!" %}';
+                button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    button.style.background = '';
+                    input.value = '';
+                }, 2000);
+            }, 1500);
+        });
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href !== '#') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+    });
+
+    // Add hover effects for navigation buttons
+    document.querySelectorAll('.swiper-nav-modern').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-50%) scale(1.1)';
+        });
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-50%) scale(1)';
+        });
+    });
+});
 </script>
 {% endblock %}

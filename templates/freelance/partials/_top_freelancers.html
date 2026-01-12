@@ -1,66 +1,311 @@
 {% load i18n %}
 
-<!-- Top Freelancers Partial -->
-<div class="row">
+<!-- Redesigned Freelancers Cards -->
+<style>
+.freelancer-card-modern {
+    background: var(--card-bg, #ffffff);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color, #e9ecef);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    position: relative;
+}
+
+[data-bs-theme="dark"] .freelancer-card-modern {
+    --card-bg: #16213e;
+    --border-color: #2c3e50;
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.freelancer-card-modern:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+}
+
+.freelancer-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 1.5rem 4rem;
+    text-align: center;
+    position: relative;
+}
+
+.freelancer-avatar-box {
+    position: relative;
+    display: inline-block;
+    margin-bottom: -60px;
+}
+
+.freelancer-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid white;
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.freelancer-avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid white;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.verified-badge {
+    position: absolute;
+    bottom: 0;
+    right: -5px;
+    background: #10b981;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.verified-badge i {
+    font-size: 14px;
+}
+
+.freelancer-body {
+    padding: 70px 1.5rem 1.5rem;
+    text-align: center;
+}
+
+.freelancer-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark, #1a1a1a);
+    margin-bottom: 0.25rem;
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s;
+}
+
+[data-bs-theme="dark"] .freelancer-name {
+    color: #ffffff;
+}
+
+.freelancer-name:hover {
+    color: #667eea;
+}
+
+.freelancer-title {
+    font-size: 0.9rem;
+    color: var(--text-light, #6c757d);
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.freelancer-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+[data-bs-theme="dark"] .freelancer-rating {
+    background: rgba(255, 193, 7, 0.2);
+}
+
+.freelancer-rating i {
+    color: #ffc107;
+    font-size: 16px;
+}
+
+.rating-number {
+    font-weight: 700;
+    color: var(--text-dark, #1a1a1a);
+}
+
+[data-bs-theme="dark"] .rating-number {
+    color: #ffffff;
+}
+
+.jobs-completed {
+    font-size: 0.8rem;
+    color: var(--text-light, #6c757d);
+}
+
+.freelancer-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin: 1rem 0;
+    min-height: 32px;
+}
+
+.skill-tag {
+    padding: 6px 12px;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+[data-bs-theme="dark"] .skill-tag {
+    background: rgba(102, 126, 234, 0.2);
+    color: #a8b5ff;
+}
+
+.skill-tag:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.freelancer-rate {
+    padding: 1rem;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+[data-bs-theme="dark"] .freelancer-rate {
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.rate-amount {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #10b981;
+}
+
+.rate-period {
+    font-size: 0.9rem;
+    color: var(--text-light, #6c757d);
+}
+
+.freelancer-cta {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.freelancer-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+[data-bs-theme="dark"] .freelancer-cta:hover {
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+}
+
+.freelancer-cta i {
+    margin-right: 6px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-light, #6c757d);
+    margin-bottom: 1rem;
+}
+
+[data-bs-theme="dark"] .empty-icon {
+    color: #4a5568;
+}
+
+.empty-text {
+    color: var(--text-light, #6c757d);
+    font-size: 1rem;
+}
+</style>
+
+<div class="row g-4">
     {% if top_freelancers %}
         {% for freelancer in top_freelancers %}
-        <div class="col-md-4 col-lg-4 mb-4">
-            <div class="card freelancer-card h-100 shadow-sm border-0" style="transition: transform 0.2s, box-shadow 0.2s;">
-                <div class="card-body text-center">
-                    <div class="mb-3">
+        <div class="col-lg-4 col-md-6">
+            <div class="freelancer-card-modern">
+                <!-- Header with gradient -->
+                <div class="freelancer-header">
+                    <div class="freelancer-avatar-box">
                         {% if freelancer.profile_picture %}
                             <img src="{{ freelancer.profile_picture.url }}"
-                                 class="rounded-circle border border-3 border-primary"
-                                 width="80" height="80"
-                                 style="object-fit: cover;"
-                                 alt="{{ freelancer.user.get_full_name }}">
+                                 alt="{{ freelancer.user.get_full_name }}"
+                                 class="freelancer-avatar">
                         {% else %}
-                            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border border-3 border-primary"
-                                 style="width: 80px; height: 80px;">
-                                <i class="fas fa-user fa-2x text-muted"></i>
+                            <div class="freelancer-avatar-placeholder">
+                                <i class="fas fa-user fa-2x" style="color: white; opacity: 0.7;"></i>
                             </div>
                         {% endif %}
+
                         {% if freelancer.is_verified %}
-                            <div class="position-relative" style="margin-top: -15px;">
-                                <span class="badge bg-success">
-                                    <i class="fas fa-check-circle"></i> {% trans "Verified" %}
-                                </span>
+                            <div class="verified-badge">
+                                <i class="fas fa-check"></i>
                             </div>
                         {% endif %}
                     </div>
+                </div>
 
-                    <h5 class="card-title mb-1">
-                        <a href="{% url 'freelancer_detail' freelancer.pk %}" class="text-decoration-none text-dark">
-                            {{ freelancer.user.get_full_name|default:freelancer.user.email|truncatechars:30 }}
-                        </a>
-                    </h5>
-                    <p class="text-muted small mb-2">{{ freelancer.title|truncatechars:40 }}</p>
+                <!-- Body -->
+                <div class="freelancer-body">
+                    <a href="{% url 'freelancer_detail' freelancer.pk %}" class="freelancer-name">
+                        {{ freelancer.user.get_full_name|default:freelancer.user.email|truncatechars:30 }}
+                    </a>
 
-                    <div class="mb-3">
-                        <span class="text-warning">
-                            <i class="fas fa-star"></i>
-                        </span>
-                        <strong>{{ freelancer.rating|floatformat:1|default:"0.0" }}</strong>
-                        <span class="text-muted small">({{ freelancer.total_jobs_completed }} {% trans "jobs" %})</span>
+                    <p class="freelancer-title">
+                        {{ freelancer.title|default:"Freelancer"|truncatechars:40 }}
+                    </p>
+
+                    <div class="freelancer-rating">
+                        <i class="fas fa-star"></i>
+                        <span class="rating-number">{{ freelancer.rating|floatformat:1|default:"5.0" }}</span>
+                        <span class="jobs-completed">({{ freelancer.total_jobs_completed }} {% trans "jobs" %})</span>
                     </div>
 
-                    <!-- Skills -->
-                    <div class="mb-3">
+                    <div class="freelancer-skills">
                         {% for skill in freelancer.skills.all|slice:":3" %}
-                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">{{ skill.name }}</span>
+                            <span class="skill-tag">{{ skill.name }}</span>
                         {% endfor %}
                         {% if freelancer.skills.count > 3 %}
-                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">+{{ freelancer.skills.count|add:"-3" }}</span>
+                            <span class="skill-tag">+{{ freelancer.skills.count|add:"-3" }}</span>
                         {% endif %}
                     </div>
 
-                    <div class="mb-3">
-                        <strong class="text-success h5">${{ freelancer.hourly_rate }}</strong>
-                        <span class="text-muted small">/ {% trans "hour" %}</span>
+                    <div class="freelancer-rate">
+                        <span class="rate-amount">${{ freelancer.hourly_rate }}</span>
+                        <span class="rate-period">/ {% trans "hour" %}</span>
                     </div>
 
-                    <a href="{% url 'freelancer_detail' freelancer.pk %}" class="btn btn-sm btn-outline-primary w-100">
-                        <i class="fas fa-user-circle me-1"></i>{% trans "View Profile" %}
+                    <a href="{% url 'freelancer_detail' freelancer.pk %}" class="freelancer-cta">
+                        <i class="fas fa-user-circle"></i>{% trans "View Profile" %}
                     </a>
                 </div>
             </div>
@@ -68,17 +313,10 @@
         {% endfor %}
     {% else %}
         <div class="col-12">
-            <div class="text-center py-5">
-                <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                <p class="text-muted">{% trans "No freelancers available at the moment" %}</p>
+            <div class="empty-state">
+                <i class="fas fa-users empty-icon"></i>
+                <p class="empty-text">{% trans "No freelancers available at the moment" %}</p>
             </div>
         </div>
     {% endif %}
 </div>
-
-<style>
-.freelancer-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-}
-</style>

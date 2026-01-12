@@ -1,72 +1,315 @@
 {% load i18n %}
 
-<!-- Top Companies Partial -->
-<div class="row">
+<!-- Redesigned Companies Cards -->
+<style>
+.company-card-modern {
+    background: var(--card-bg, #ffffff);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color, #e9ecef);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    position: relative;
+}
+
+[data-bs-theme="dark"] .company-card-modern {
+    --card-bg: #16213e;
+    --border-color: #2c3e50;
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.company-card-modern:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+}
+
+.company-header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    padding: 2rem 1.5rem 4rem;
+    text-align: center;
+    position: relative;
+}
+
+.company-logo-box {
+    position: relative;
+    display: inline-block;
+    margin-bottom: -60px;
+}
+
+.company-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    border: 4px solid white;
+    object-fit: contain;
+    background: white;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.company-logo-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    border: 4px solid white;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.verified-badge-company {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #667eea;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.verified-badge-company i {
+    font-size: 14px;
+}
+
+.company-body {
+    padding: 70px 1.5rem 1.5rem;
+    text-align: center;
+}
+
+.company-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark, #1a1a1a);
+    margin-bottom: 0.25rem;
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s;
+    line-height: 1.3;
+}
+
+[data-bs-theme="dark"] .company-name {
+    color: #ffffff;
+}
+
+.company-name:hover {
+    color: #4facfe;
+}
+
+.company-industry {
+    font-size: 0.9rem;
+    color: var(--text-light, #6c757d);
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.company-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1rem;
+    background: rgba(79, 172, 254, 0.1);
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+[data-bs-theme="dark"] .company-rating {
+    background: rgba(79, 172, 254, 0.2);
+}
+
+.company-rating i {
+    color: #ffc107;
+    font-size: 16px;
+}
+
+.company-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.stat-box {
+    padding: 0.75rem;
+    background: rgba(79, 172, 254, 0.05);
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+[data-bs-theme="dark"] .stat-box {
+    background: rgba(79, 172, 254, 0.15);
+}
+
+.stat-box:hover {
+    background: rgba(79, 172, 254, 0.15);
+    transform: translateY(-2px);
+}
+
+[data-bs-theme="dark"] .stat-box:hover {
+    background: rgba(79, 172, 254, 0.25);
+}
+
+.stat-icon {
+    font-size: 1.25rem;
+    color: #4facfe;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-dark, #1a1a1a);
+    display: block;
+}
+
+[data-bs-theme="dark"] .stat-value {
+    color: #ffffff;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-light, #6c757d);
+}
+
+.company-info-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin: 1rem 0;
+    min-height: 32px;
+}
+
+.info-tag {
+    padding: 6px 12px;
+    background: rgba(79, 172, 254, 0.1);
+    color: #4facfe;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+[data-bs-theme="dark"] .info-tag {
+    background: rgba(79, 172, 254, 0.2);
+    color: #7fc8ff;
+}
+
+.info-tag i {
+    font-size: 12px;
+}
+
+.company-cta {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.company-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+    color: white;
+}
+
+[data-bs-theme="dark"] .company-cta:hover {
+    box-shadow: 0 8px 20px rgba(79, 172, 254, 0.6);
+}
+
+.company-cta i {
+    margin-right: 6px;
+}
+</style>
+
+<div class="row g-4">
     {% if top_companies %}
         {% for company in top_companies %}
-        <div class="col-md-4 col-lg-4 mb-4">
-            <div class="card company-card h-100 shadow-sm border-0" style="transition: transform 0.2s, box-shadow 0.2s;">
-                <div class="card-body text-center">
-                    <div class="mb-3">
+        <div class="col-lg-4 col-md-6">
+            <div class="company-card-modern">
+                <!-- Header with gradient -->
+                <div class="company-header">
+                    <div class="company-logo-box">
                         {% if company.logo %}
                             <img src="{{ company.logo.url }}"
-                                 class="rounded border border-2 border-light"
-                                 width="80" height="80"
-                                 style="object-fit: contain; background: #f8f9fa; padding: 8px;"
-                                 alt="{{ company.company_name }}">
+                                 alt="{{ company.company_name }}"
+                                 class="company-logo">
                         {% else %}
-                            <div class="rounded bg-light d-inline-flex align-items-center justify-content-center border border-2 border-light"
-                                 style="width: 80px; height: 80px;">
-                                <i class="fas fa-building fa-2x text-muted"></i>
+                            <div class="company-logo-placeholder">
+                                <i class="fas fa-building fa-2x" style="color: #4facfe;"></i>
                             </div>
                         {% endif %}
+
                         {% if company.is_verified %}
-                            <div class="position-relative" style="margin-top: -15px;">
-                                <span class="badge bg-primary">
-                                    <i class="fas fa-check-circle"></i> {% trans "Verified" %}
-                                </span>
+                            <div class="verified-badge-company">
+                                <i class="fas fa-check"></i>
                             </div>
                         {% endif %}
                     </div>
+                </div>
 
-                    <h5 class="card-title mb-1">
-                        <a href="{% url 'company_detail' company.pk %}" class="text-decoration-none text-dark">
-                            {{ company.company_name|truncatechars:30 }}
-                        </a>
-                    </h5>
-                    <p class="text-muted small mb-2">{{ company.industry|truncatechars:40 }}</p>
+                <!-- Body -->
+                <div class="company-body">
+                    <a href="{% url 'company_detail' company.pk %}" class="company-name">
+                        {{ company.company_name|truncatechars:35 }}
+                    </a>
 
-                    <div class="mb-3">
-                        <span class="text-warning">
-                            <i class="fas fa-star"></i>
-                        </span>
-                        <strong>{{ company.rating|floatformat:1|default:"0.0" }}</strong>
-                        <span class="text-muted small">({{ company.total_jobs_posted }} {% trans "jobs posted" %})</span>
+                    <p class="company-industry">
+                        {{ company.industry|default:"Technology"|truncatechars:40 }}
+                    </p>
+
+                    <div class="company-rating">
+                        <i class="fas fa-star"></i>
+                        <span class="rating-number">{{ company.rating|floatformat:1|default:"4.5" }}</span>
+                        <span class="jobs-completed">({{ company.total_jobs_posted }} {% trans "jobs" %})</span>
                     </div>
 
-                    <!-- Company Info -->
-                    <div class="mb-3">
-                        {% if company.location %}
-                            <span class="badge bg-light text-dark border me-1" style="font-size: 0.75rem;">
-                                <i class="fas fa-map-marker-alt"></i> {{ company.location|truncatechars:20 }}
-                            </span>
-                        {% endif %}
-                        {% if company.company_size %}
-                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">
-                                <i class="fas fa-users"></i> {{ company.get_company_size_display }}
-                            </span>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="text-muted small">
-                            <i class="fas fa-briefcase me-1"></i>
-                            <strong class="text-dark">{{ company.total_jobs_posted }}</strong> {% trans "Active Jobs" %}
+                    <div class="company-stats">
+                        <div class="stat-box">
+                            <i class="fas fa-briefcase stat-icon"></i>
+                            <span class="stat-value">{{ company.total_jobs_posted|default:0 }}</span>
+                            <span class="stat-label">{% trans "Active Jobs" %}</span>
+                        </div>
+                        <div class="stat-box">
+                            <i class="fas fa-users stat-icon"></i>
+                            <span class="stat-value">{{ company.get_company_size_display|default:"50+"|truncatechars:10 }}</span>
+                            <span class="stat-label">{% trans "Employees" %}</span>
                         </div>
                     </div>
 
-                    <a href="{% url 'company_detail' company.pk %}" class="btn btn-sm btn-outline-primary w-100">
-                        <i class="fas fa-building me-1"></i>{% trans "View Company" %}
+                    <div class="company-info-tags">
+                        {% if company.location %}
+                            <span class="info-tag">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ company.location|truncatechars:15 }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'company_detail' company.pk %}" class="company-cta">
+                        <i class="fas fa-building"></i>{% trans "View Company" %}
                     </a>
                 </div>
             </div>
@@ -74,17 +317,10 @@
         {% endfor %}
     {% else %}
         <div class="col-12">
-            <div class="text-center py-5">
-                <i class="fas fa-building fa-3x text-muted mb-3"></i>
-                <p class="text-muted">{% trans "No companies available at the moment" %}</p>
+            <div class="empty-state">
+                <i class="fas fa-building empty-icon"></i>
+                <p class="empty-text">{% trans "No companies available at the moment" %}</p>
             </div>
         </div>
     {% endif %}
 </div>
-
-<style>
-.company-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
-}
-</style>

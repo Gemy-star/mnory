@@ -1,0 +1,684 @@
+{% load i18n %}
+{% load static %}
+{% load mathfilters %}
+{% load dict_filters %}
+
+<!-- Modern Product Card Template -->
+<style>
+/* Product Card Modern Styles */
+.product-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: rgba(102, 126, 234, 0.2);
+}
+
+.product-image-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.product-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.product-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.5s ease;
+}
+
+.product-img.hover-img {
+    opacity: 0;
+}
+
+.product-card:hover .product-img.hover-img {
+    opacity: 1;
+}
+
+.product-card:hover .product-img.main-img {
+    transform: scale(1.05);
+}
+
+/* Product Badges - Modern Design */
+.product-badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.product-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: badgeSlideIn 0.4s ease;
+}
+
+@keyframes badgeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sale-badge {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: #ffffff;
+}
+
+.bestseller-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+}
+
+.new-badge {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #ffffff;
+}
+
+.outofstock-badge {
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+}
+
+/* Stock Indicator */
+.stock-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(255, 59, 48, 0.9);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+.stock-indicator .material-icons {
+    font-size: 14px;
+}
+
+/* Quick Action Buttons */
+.product-quick-actions {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 15;
+}
+
+.product-card:hover .product-quick-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: #ffffff;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+    background: #667eea;
+    color: #ffffff;
+}
+
+.action-btn.wishlist-btn.active,
+.action-btn.wishlist-btn.in-wishlist {
+    background: #ff6b6b;
+    color: #ffffff;
+}
+
+.action-btn.cart-btn.active {
+    background: #51cf66;
+    color: #ffffff;
+}
+
+.action-btn .material-icons {
+    font-size: 20px;
+}
+
+/* Product Content */
+.product-content {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.product-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.product-title-link {
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-title-link:hover {
+    color: #667eea;
+}
+
+/* Colors and Sizes Preview */
+.product-colors-preview,
+.product-sizes-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.colors-label,
+.sizes-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.colors-label .material-icons,
+.sizes-label .material-icons {
+    font-size: 16px;
+}
+
+.color-swatches {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.color-dot:hover {
+    transform: scale(1.2);
+}
+
+.more-colors,
+.more-sizes {
+    font-size: 0.7rem;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.size-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.size-tag {
+    padding: 2px 8px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Rating */
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    font-size: 16px;
+    color: #ddd;
+}
+
+.star.filled {
+    color: #ffc107;
+}
+
+.rating-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.rating-count {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Price */
+.product-price-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.price-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.current-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.current-price.sale {
+    color: #fa709a;
+}
+
+.currency {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.old-price {
+    font-size: 1rem;
+    color: #adb5bd;
+    text-decoration: line-through;
+}
+
+.discount-badge {
+    padding: 4px 8px;
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Availability */
+.availability-status {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
+.status.in-stock {
+    color: #51cf66;
+}
+
+.status.out-of-stock {
+    color: #ff6b6b;
+}
+
+.status .material-icons {
+    font-size: 16px;
+}
+
+/* Vendor Info */
+.vendor-info-compact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.vendor-info-compact .material-icons {
+    font-size: 16px;
+}
+
+.vendor-name {
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.vendor-name:hover {
+    color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .product-quick-actions {
+        opacity: 1;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .action-btn .material-icons {
+        font-size: 18px;
+    }
+}
+</style>
+
+<div class="product-card fixed-card-height"
+    data-product-id="{{ product.pk }}"
+    data-product-variant-id="{% if product.variants.first %}{{ product.variants.first.pk }}{% endif %}">
+    {% with main_image=product.get_main_image hover_image=product.get_hover_image %}
+    <div class="product-image-wrapper">
+        <!-- Product Badges -->
+        <div class="product-badges">
+            {% if not product.is_in_stock %}
+                <div class="product-badge outofstock-badge">
+                    <span class="material-icons" aria-hidden="true">cancel</span>
+                    <span>{% trans "Out" %}</span>
+                </div>
+            {% else %}
+                {% if product.is_on_sale %}
+                    <div class="product-badge sale-badge">
+                        <i class="fas fa-tag"></i>
+                        <span>{% trans "Sale" %}</span>
+                        {% if product.get_discount_percentage %}
+                            <small>-{{ product.get_discount_percentage }}%</small>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if product.is_best_seller %}
+                    <div class="product-badge bestseller-badge">
+                        <i class="fas fa-crown"></i>
+                        <span>{% trans "Best" %}</span>
+                    </div>
+                {% endif %}
+
+                {% if product.is_new_arrival %}
+                    <div class="product-badge new-badge">
+                        <i class="fas fa-sparkles"></i>
+                        <span>{% trans "New" %}</span>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Stock Indicator -->
+        {% if product.is_in_stock %}
+            {% if product.stock_quantity %}
+                {% if product.stock_quantity <= 5 %}
+                <div class="stock-indicator low-stock">
+                    <span class="material-icons">inventory_2</span>
+                    <span>{% trans "Only" %} {{ product.stock_quantity }} {% trans "left" %}</span>
+                </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+
+        <a href="{{ product.get_absolute_url }}" class="product-link">
+            {% if main_image %}
+                <img src="{{ main_image.image_resized.url }}"
+                     alt="{{ product.name }}"
+                     loading="lazy"
+                     class="product-img main-img">
+                <img src="{% if hover_image %}{{ hover_image.image_resized.url }}{% else %}{{ main_image.image_resized.url }}{% endif %}"
+                     alt="{{ product.name }} - {% trans 'Alternate view' %}"
+                     loading="lazy"
+                     class="product-img hover-img">
+            {% else %}
+                <img src="https://placehold.co/400x400/e0e0e0/555555?text=No+Image"
+                     alt="{% trans 'Placeholder' %}"
+                     loading="lazy"
+                     class="product-img main-img">
+            {% endif %}
+        </a>
+
+        <!-- Quick Action Buttons -->
+        <div class="product-quick-actions">
+            <button type="button"
+                class="action-btn wishlist-btn {% if product.id|stringformat:"s" in request.session.wishlist %}active in-wishlist{% endif %}"
+                data-action="wishlist-toggle"
+                data-product-id="{{ product.id }}"
+                title="{% if product.id|stringformat:'s' in request.session.wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
+                aria-label="{% if product.id|stringformat:'s' in request.session.wishlist %}{% trans 'Remove from Wishlist' %}{% else %}{% trans 'Add to Wishlist' %}{% endif %}"
+                aria-pressed="{% if product.id|stringformat:'s' in request.session.wishlist %}true{% else %}false{% endif %}">
+                <span class="material-icons">{% if product.id|stringformat:"s" in request.session.wishlist %}favorite{% else %}favorite_border{% endif %}</span>
+            </button>
+
+            <button type="button" class="action-btn cart-btn {% if product.is_in_cart %}active{% endif %}"
+                    data-action="{% if product.is_in_cart %}cart-remove{% else %}cart-add{% endif %}"
+                    data-product-id="{{ product.id }}"
+                    data-item-id="{{ product.cart_item_id|default:'' }}"
+                    title="{% if product.is_in_cart %}{% trans 'Remove from Cart' %}{% else %}{% trans 'Add to Cart' %}{% endif %}"
+                    aria-label="{% if product.is_in_cart %}{% trans 'Remove from Cart' %}{% else %}{% trans 'Add to Cart' %}{% endif %}">
+                <span class="cart-add-icon" style="display: {% if product.is_in_cart %}none{% else %}inline-block{% endif %};">
+                    <span class="material-icons" aria-hidden="true">add_shopping_cart</span>
+                </span>
+                <span class="cart-remove-icon" style="display: {% if product.is_in_cart %}inline-block{% else %}none{% endif %};">
+                    <span class="material-icons" aria-hidden="true">remove_shopping_cart</span>
+                </span>
+            </button>
+
+            <a href="{{ product.get_absolute_url }}"
+               class="action-btn view-btn"
+               title="{% trans 'Quick View' %}"
+               aria-label="{% trans 'Quick View' %}">
+               <span class="material-icons">visibility</span>
+            </a>
+
+            <button type="button"
+                    class="action-btn compare-btn"
+                    data-action="compare-toggle"
+                    title="{% trans 'Compare' %}"
+                    aria-label="{% trans 'Compare' %}">
+                <span class="material-icons">compare_arrows</span>
+            </button>
+        </div>
+    </div>
+    {% endwith %}
+
+    <!-- Product Content -->
+    <div class="product-content">
+        <!-- Product Title -->
+        <h3 class="product-title">
+            <a href="{{ product.get_absolute_url }}" class="product-title-link">
+                {{ product.name }}
+            </a>
+        </h3>
+
+        <!-- Product Rating -->
+        {% if product.average_rating %}
+        <div class="product-rating">
+            <div class="stars">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= product.average_rating %}
+                        <span class="material-icons star filled">star</span>
+                    {% else %}
+                        <span class="material-icons star">star_border</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <span class="rating-text">{{ product.average_rating|floatformat:1 }}</span>
+            <span class="rating-count">({{ product.review_count|default:"0" }})</span>
+        </div>
+        {% endif %}
+
+        <!-- Available Colors -->
+        {% with colors=product.get_available_colors %}
+        {% if colors %}
+        <div class="product-colors-preview">
+            <span class="colors-label">
+                <span class="material-icons">palette</span>
+                {% trans "Colors" %}:
+            </span>
+            <div class="color-swatches">
+                {% for color in colors|slice:":5" %}
+                <span class="color-dot"
+                      style="background-color: {{ color.hex_code }};"
+                      title="{{ color.name }}"></span>
+                {% endfor %}
+                {% if colors|length > 5 %}
+                <span class="more-colors">+{{ colors|length|add:"-5" }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Available Sizes -->
+        {% with sizes=product.get_available_sizes %}
+        {% if sizes %}
+        <div class="product-sizes-preview">
+            <span class="sizes-label">
+                <span class="material-icons">straighten</span>
+                {% trans "Sizes" %}:
+            </span>
+            <div class="size-tags">
+                {% for size in sizes|slice:":4" %}
+                <span class="size-tag">{{ size.name }}</span>
+                {% endfor %}
+                {% if sizes|length > 4 %}
+                <span class="more-sizes">+{{ sizes|length|add:"-4" }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Price Section -->
+        <div class="product-price-wrapper">
+            {% if product.is_on_sale %}
+                <div class="price-group">
+                    <span class="current-price sale">
+                        {% if currency == 'EGP' %}
+                            {{ product.price_egp|floatformat:2 }} <span class="currency">EGP</span>
+                        {% else %}
+                            ${{ product.price_usd|floatformat:2 }}
+                        {% endif %}
+                    </span>
+                    <span class="old-price">
+                        {% if currency == 'EGP' %}
+                            {{ product.price_egp_no_sale|floatformat:2 }}
+                        {% else %}
+                            ${{ product.price_usd_no_sale|floatformat:2 }}
+                        {% endif %}
+                    </span>
+                </div>
+                <span class="discount-badge">
+                    -{{ product.get_discount_percentage }}%
+                </span>
+            {% else %}
+                <span class="current-price">
+                    {% if currency == 'EGP' %}
+                        {{ product.price_egp_no_sale|floatformat:2 }} <span class="currency">EGP</span>
+                    {% else %}
+                        ${{ product.price_usd_no_sale|floatformat:2 }}
+                    {% endif %}
+                </span>
+            {% endif %}
+        </div>
+
+        <!-- Availability Status -->
+        <div class="availability-status">
+            {% if product.is_in_stock %}
+                <span class="status in-stock">
+                    <span class="material-icons">check_circle</span>
+                    {% trans "In Stock" %}
+                </span>
+            {% else %}
+                <span class="status out-of-stock">
+                    <span class="material-icons">cancel</span>
+                    {% trans "Out of Stock" %}
+                </span>
+            {% endif %}
+        </div>
+
+        <!-- Vendor Info -->
+        <div class="vendor-info-compact">
+            <span class="material-icons">store</span>
+            {% if product.vendor and product.vendor.store_name %}
+                <a href="{{ product.vendor.get_absolute_url }}" class="vendor-name" title="{{ product.vendor.store_name }}">{{ product.vendor.store_name|truncatewords:3 }}</a>
+            {% else %}
+                <span class="vendor-name text-muted">{% trans "Not specified" %}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="local-toast-container"></div>
+</div>
