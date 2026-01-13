@@ -6,49 +6,55 @@
 {% block css %}
 <style>
     :root {
-        --freelance-primary: #f093fb;
-        --freelance-secondary: #f5576c;
+        --freelance-primary: #667eea;
+        --freelance-secondary: #764ba2;
         --card-bg: #ffffff;
-        --card-border: rgba(0, 0, 0, 0.08);
-        --text-primary: #1a202c;
-        --text-secondary: #718096;
+        --card-border: #e9ecef;
+        --text-primary: #1a1a2e;
+        --text-secondary: #6c757d;
         --text-muted: #a0aec0;
-        --skill-bg: #fff5f8;
-        --skill-color: #f5576c;
-        --hover-shadow: rgba(240, 147, 251, 0.35);
+        --skill-bg: #f0f4ff;
+        --skill-color: #667eea;
+        --hover-shadow: rgba(102, 126, 234, 0.25);
         --rating-color: #fbbf24;
     }
 
-    [data-bs-theme="dark"] {
-        --card-bg: #1a202c;
-        --card-border: rgba(255, 255, 255, 0.1);
-        --text-primary: #f7fafc;
-        --text-secondary: #cbd5e0;
-        --text-muted: #718096;
-        --skill-bg: rgba(240, 147, 251, 0.1);
-        --skill-color: #f9a8d4;
-        --hover-shadow: rgba(240, 147, 251, 0.5);
+    body {
+        background: #f8f9fa !important;
     }
 
     .page-header-freelance {
-        background: linear-gradient(135deg, var(--freelance-primary) 0%, var(--freelance-secondary) 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 4rem 0;
-        margin-bottom: 2.5rem;
+        padding: 5rem 0;
+        margin-bottom: 3rem;
         border-radius: 20px;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
     }
 
     .page-header-freelance::before {
         content: '';
         position: absolute;
-        width: 600px;
-        height: 600px;
-        top: -300px;
-        right: -200px;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        width: 700px;
+        height: 700px;
+        top: -350px;
+        right: -250px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
         animation: pulse-wave 8s ease-in-out infinite;
+    }
+
+    .page-header-freelance::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 80px;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 Q25 0 50 10 T100 20' fill='rgba(255,255,255,0.08)'/%3E%3C/svg%3E");
+        background-size: 100px 20px;
+        opacity: 0.4;
     }
 
     @keyframes pulse-wave {
@@ -64,22 +70,29 @@
     }
 
     .filter-section {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        padding: 1.5rem;
+        background: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 20px;
+        padding: 2rem;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .filter-section:hover {
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
     }
 
     .freelancer-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
+        background: #ffffff;
+        border: 1px solid #e9ecef;
         border-radius: 20px;
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         height: 100%;
         position: relative;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     }
 
     .freelancer-card::after {
@@ -89,7 +102,7 @@
         left: -2px;
         right: -2px;
         bottom: -2px;
-        background: linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary));
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 20px;
         opacity: 0;
         z-index: -1;
@@ -98,7 +111,7 @@
 
     .freelancer-card:hover {
         transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 24px 48px var(--hover-shadow);
+        box-shadow: 0 24px 48px rgba(102, 126, 234, 0.25);
     }
 
     .freelancer-card:hover::after {
@@ -120,17 +133,12 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transition: all 0.4s ease;
         background: linear-gradient(white, white) padding-box,
-                    linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary)) border-box;
-    }
-
-    [data-bs-theme="dark"] .profile-avatar {
-        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
-                    linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary)) border-box;
+                    linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
     }
 
     .freelancer-card:hover .profile-avatar {
         transform: scale(1.1) rotate(5deg);
-        box-shadow: 0 8px 24px rgba(240, 147, 251, 0.4);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
     }
 
     .freelancer-name {
@@ -142,7 +150,7 @@
     }
 
     .freelancer-card:hover .freelancer-name {
-        background: linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary));
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -185,7 +193,7 @@
     .rate-display {
         font-size: 1.5rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary));
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -197,15 +205,15 @@
     }
 
     .stats-section {
-        background: linear-gradient(135deg, rgba(240, 147, 251, 0.05) 0%, rgba(245, 87, 108, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
         border-radius: 12px;
         padding: 1rem;
-        border: 1px solid var(--card-border);
+        border: 1px solid #e9ecef;
         margin-top: auto;
     }
 
     .btn-view-freelancer {
-        background: linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary));
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -236,25 +244,25 @@
 
     .btn-view-freelancer:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(240, 147, 251, 0.4);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
     }
 
     .form-control, .form-select {
         border-radius: 12px;
-        border: 1px solid var(--card-border);
+        border: 1px solid #e9ecef;
         padding: 0.75rem 1rem;
-        background: var(--card-bg);
-        color: var(--text-primary);
+        background: #ffffff;
+        color: #1a1a2e;
         transition: all 0.3s ease;
     }
 
     .form-control:focus, .form-select:focus {
-        border-color: var(--freelance-primary);
-        box-shadow: 0 0 0 4px rgba(240, 147, 251, 0.1);
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
     }
 
     .btn-filter {
-        background: linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary));
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -265,27 +273,27 @@
 
     .btn-filter:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(240, 147, 251, 0.4);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
     }
 
     .pagination .page-link {
         border-radius: 10px;
         margin: 0 4px;
-        border: 1px solid var(--card-border);
-        color: var(--text-primary);
-        background: var(--card-bg);
+        border: 1px solid #e9ecef;
+        color: #1a1a2e;
+        background: #ffffff;
         transition: all 0.3s ease;
     }
 
     .pagination .page-link:hover {
-        background: linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary));
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         transform: translateY(-2px);
-        border-color: var(--freelance-primary);
+        border-color: #667eea;
     }
 
     .pagination .page-item.active .page-link {
-        background: linear-gradient(135deg, var(--freelance-primary), var(--freelance-secondary));
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
     }
 

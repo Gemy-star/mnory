@@ -192,16 +192,15 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileDrawerThemeToggle.addEventListener('click', toggleTheme);
     }
 
-    // Unified theme toggle function
+    // Unified theme toggle function - DISABLED (Light theme only)
     function toggleTheme() {
-        const isDark = document.body.classList.contains('dark-mode');
+        // Theme switching disabled - always use light theme
         const htmlElement = document.documentElement;
 
-        if (isDark) {
-            // Switch to light mode
-            document.body.classList.remove('dark-mode');
-            htmlElement.setAttribute('data-theme', 'light');
-            localStorage.setItem('theme', 'light');
+        // Ensure light theme
+        document.body.classList.remove('dark-mode');
+        htmlElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
 
             // Update header theme toggle icons
             const headerLightIcon = document.querySelector('.theme-icon-light');
@@ -224,38 +223,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update drawer theme text (desktop only)
             if (drawerThemeToggle) {
                 const themeText = drawerThemeToggle.querySelector('.drawer-theme-text');
-                if (themeText) themeText.textContent = document.documentElement.lang === 'ar' ? 'الوضع الداكن' : 'Dark Mode';
-            }
-        } else {
-            // Switch to dark mode
-            document.body.classList.add('dark-mode');
-            htmlElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-
-            // Update header theme toggle icons
-            const headerLightIcon = document.querySelector('.theme-icon-light');
-            const headerDarkIcon = document.querySelector('.theme-icon-dark');
-            if (headerLightIcon) headerLightIcon.style.display = 'none';
-            if (headerDarkIcon) headerDarkIcon.style.display = 'block';
-
-            // Update mobile drawer theme toggle icons
-            const mobileLightIcon = document.querySelector('.mobile-theme-icon-light');
-            const mobileDarkIcon = document.querySelector('.mobile-theme-icon-dark');
-            if (mobileLightIcon) mobileLightIcon.style.display = 'none';
-            if (mobileDarkIcon) mobileDarkIcon.style.display = 'block';
-
-            // Update drawer theme toggle icons (desktop)
-            const drawerMoonIcon = document.querySelector('.drawer-theme-icon-moon');
-            const drawerSunIcon = document.querySelector('.drawer-theme-icon-sun');
-            if (drawerMoonIcon) drawerMoonIcon.style.display = 'none';
-            if (drawerSunIcon) drawerSunIcon.style.display = 'block';
-
-            // Update drawer theme text (desktop only)
-            if (drawerThemeToggle) {
-                const themeText = drawerThemeToggle.querySelector('.drawer-theme-text');
                 if (themeText) themeText.textContent = document.documentElement.lang === 'ar' ? 'الوضع الفاتح' : 'Light Mode';
             }
-        }
     }
 
     // Cart & Wishlist functionality is now handled by cart-wishlist.js module
@@ -417,63 +386,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Logo stays the same (logo.png) in both themes - no switching needed
     }
 
-    // Dark Mode Initialization
+    // Theme Initialization (Light Mode Only)
     function initDarkMode() {
-        // Check for saved theme preference or default to dark mode
-        const savedTheme = localStorage.getItem('mnory-theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        // Default to dark mode if no preference is saved
-        const shouldUseDark = savedTheme === 'dark' || (!savedTheme);
+        // Force light theme always
+        localStorage.setItem('mnory-theme', 'light');
 
-        // Apply initial theme
-        if (shouldUseDark) {
-            document.body.classList.add('dark-mode');
-            updateThemeIcon(true);
-        } else {
-            document.body.classList.remove('dark-mode');
-            updateThemeIcon(false);
-        }
+        // Apply light theme
+        document.body.classList.remove('dark-mode');
+        document.documentElement.setAttribute('data-theme', 'light');
+        updateThemeIcon(false);
 
-        // Add event listeners to all theme toggle buttons
+        // Theme toggle buttons disabled (light theme only)
         const themeToggles = document.querySelectorAll('.theme-toggle-btn, #themeToggle, #themeToggleMobile');
-
         themeToggles.forEach(toggle => {
             if (toggle) {
-                toggle.addEventListener('click', () => {
-                    // Add smooth transition class
-                    document.body.classList.add('theme-transition-active');
-
-                    const isDark = document.body.classList.toggle('dark-mode');
-                    localStorage.setItem('mnory-theme', isDark ? 'dark' : 'light');
-                    updateThemeIcon(isDark);
-
-                    // Remove transition class after animation completes
-                    setTimeout(() => {
-                        document.body.classList.remove('theme-transition-active');
-                    }, 400);
-
-                    // Dispatch custom event for other components to listen
-                    window.dispatchEvent(new CustomEvent('themeChanged', {
-                        detail: { isDark: isDark }
-                    }));
-
-                    // Add visual feedback to the button
-                    toggle.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        toggle.style.transform = '';
-                    }, 150);
-                });
+                // Disable theme toggle - light theme only
+                toggle.style.display = 'none';
             }
         });
 
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('mnory-theme')) {
-                const isDark = e.matches;
-                document.body.classList.toggle('dark-mode', isDark);
-                updateThemeIcon(isDark);
-            }
-        });
+        // System theme changes ignored - always use light theme
     }
 
     // ========================================
@@ -890,10 +822,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Mobile Drawer Theme Toggle
+    // Mobile Drawer Theme Toggle (DISABLED - Light theme only)
     function initMobileDrawerTheme() {
         const mobileThemeToggle = document.getElementById('mobileDrawerThemeToggle');
 
+        if (mobileThemeToggle) {
+            // Hide theme toggle button
+            mobileThemeToggle.style.display = 'none';
+        }
+        /* Original code disabled:
         if (mobileThemeToggle) {
             mobileThemeToggle.addEventListener('click', function() {
                 const body = document.body;
@@ -911,28 +848,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateAllThemeIcons();
             });
         }
+        */
     }
 
-    // Update all theme icons across the page
+    // Update all theme icons across the page (light theme only)
     function updateAllThemeIcons() {
-        const isDarkMode = document.body.classList.contains('dark-mode');
-
-        // Update header theme icons
-        document.querySelectorAll('.theme-icon-light, .theme-icon-dark').forEach(icon => {
-            if (icon.classList.contains('theme-icon-light')) {
-                icon.style.display = isDarkMode ? 'none' : 'block';
-            } else {
-                icon.style.display = isDarkMode ? 'block' : 'none';
-            }
+        // Always show light theme icons
+        document.querySelectorAll('.theme-icon-light').forEach(icon => {
+            icon.style.display = 'block';
+        });
+        document.querySelectorAll('.theme-icon-dark').forEach(icon => {
+            icon.style.display = 'none';
         });
 
         // Update mobile drawer theme icons
-        document.querySelectorAll('.mobile-theme-icon-light, .mobile-theme-icon-dark').forEach(icon => {
-            if (icon.classList.contains('mobile-theme-icon-light')) {
-                icon.style.display = isDarkMode ? 'none' : 'block';
-            } else {
-                icon.style.display = isDarkMode ? 'block' : 'none';
-            }
+        document.querySelectorAll('.mobile-theme-icon-light').forEach(icon => {
+            icon.style.display = 'block';
+        });
+        document.querySelectorAll('.mobile-theme-icon-dark').forEach(icon => {
+            icon.style.display = 'none';
         });
     }
 

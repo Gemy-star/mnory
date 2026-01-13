@@ -3,21 +3,14 @@
 <!-- Redesigned Freelancers Cards -->
 <style>
 .freelancer-card-modern {
-    background: var(--card-bg, #ffffff);
+    background: #ffffff;
     border-radius: 20px;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid var(--border-color, #e9ecef);
+    border: 1px solid #e9ecef;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     height: 100%;
     position: relative;
-}
-
-[data-bs-theme="dark"] .freelancer-card-modern {
-    --card-bg: #16213e;
-    --border-color: #2c3e50;
-    background: var(--card-bg);
-    border-color: var(--border-color);
 }
 
 .freelancer-card-modern:hover {
@@ -88,15 +81,11 @@
 .freelancer-name {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--text-dark, #1a1a1a);
+    color: #1a1a1a;
     margin-bottom: 0.25rem;
     text-decoration: none;
     display: block;
     transition: color 0.3s;
-}
-
-[data-bs-theme="dark"] .freelancer-name {
-    color: #ffffff;
 }
 
 .freelancer-name:hover {
@@ -123,10 +112,6 @@
     margin-bottom: 1rem;
 }
 
-[data-bs-theme="dark"] .freelancer-rating {
-    background: rgba(255, 193, 7, 0.2);
-}
-
 .freelancer-rating i {
     color: #ffc107;
     font-size: 16px;
@@ -134,11 +119,7 @@
 
 .rating-number {
     font-weight: 700;
-    color: var(--text-dark, #1a1a1a);
-}
-
-[data-bs-theme="dark"] .rating-number {
-    color: #ffffff;
+    color: #1a1a1a;
 }
 
 .jobs-completed {
@@ -165,11 +146,6 @@
     transition: all 0.3s;
 }
 
-[data-bs-theme="dark"] .skill-tag {
-    background: rgba(102, 126, 234, 0.2);
-    color: #a8b5ff;
-}
-
 .skill-tag:hover {
     background: #667eea;
     color: white;
@@ -181,10 +157,6 @@
     background: rgba(102, 126, 234, 0.05);
     border-radius: 12px;
     margin-bottom: 1rem;
-}
-
-[data-bs-theme="dark"] .freelancer-rate {
-    background: rgba(102, 126, 234, 0.15);
 }
 
 .rate-amount {
@@ -219,10 +191,6 @@
     color: white;
 }
 
-[data-bs-theme="dark"] .freelancer-cta:hover {
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
-}
-
 .freelancer-cta i {
     margin-right: 6px;
 }
@@ -234,12 +202,8 @@
 
 .empty-icon {
     font-size: 4rem;
-    color: var(--text-light, #6c757d);
+    color: #6c757d;
     margin-bottom: 1rem;
-}
-
-[data-bs-theme="dark"] .empty-icon {
-    color: #4a5568;
 }
 
 .empty-text {

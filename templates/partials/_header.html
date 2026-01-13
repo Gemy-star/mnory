@@ -162,16 +162,6 @@
                     <span class="material-icons">search</span>
                 </button>
 
-                <!-- Theme Toggle -->
-                <button class="icon-btn"
-                        type="button"
-                        id="themeToggle"
-                        title="{% trans 'Toggle Dark Mode' %}"
-                        aria-label="{% trans 'Toggle between light and dark themes' %}">
-                    <span class="material-icons theme-icon-light">light_mode</span>
-                    <span class="material-icons theme-icon-dark" style="display: none;">dark_mode</span>
-                </button>
-
                 {% if current_url_name == 'shop:home' or current_url_name == 'home' or current_url_name == 'shop:product_detail' or current_url_name == 'shop:vendor_detail' or current_url_name == 'shop:vendor_dashboard' or current_url_name == 'freelancer_dashboard' or current_url_name == 'company_dashboard' or current_url_name == 'shop:admin_dashboard' or current_url_name == 'shop:admin_users' %}
                 <!-- Chatbot Header Button (Home, product, vendor & dashboards) -->
                 <button class="icon-btn"
@@ -280,13 +270,8 @@
         </div>
 
         <!-- Mobile Quick Actions Bar (Only visible on mobile) -->
-        <div class="mobile-drawer-actions d-lg-none">
-            <!-- Theme Toggle -->
-            <button class="mobile-action-btn" id="mobileDrawerThemeToggle" title="{% trans 'Toggle Theme' %}">
-                <span class="material-icons mobile-theme-icon-light">light_mode</span>
-                <span class="material-icons mobile-theme-icon-dark" style="display: none;">dark_mode</span>
-                <span class="action-label">{% trans "Theme" %}</span>
-            </button>
+        <div class="mobile-drawer-actions d-lg-none" style="display: none;">
+            <!-- Actions removed -->
         </div>
 
         <!-- Drawer Body -->
@@ -404,20 +389,6 @@
             </nav>
 
             <div class="drawer-divider"></div>
-
-            <!-- Theme Toggle in Drawer (Desktop only, mobile has quick actions) -->
-            <div class="drawer-section d-none d-lg-block">
-                <button class="drawer-menu-item drawer-theme-toggle" id="drawerThemeToggle">
-                    <span class="drawer-icon-circle">
-                        <span class="material-icons drawer-theme-icon-moon">dark_mode</span>
-                        <span class="material-icons drawer-theme-icon-sun" style="display: none;">light_mode</span>
-                    </span>
-                    <span class="drawer-theme-text">{% trans "Dark Mode" %}</span>
-                    <div class="drawer-toggle-switch">
-                        <div class="drawer-toggle-thumb"></div>
-                    </div>
-                </button>
-            </div>
 
             <!-- Logout (if authenticated) -->
             {% if user.is_authenticated %}
