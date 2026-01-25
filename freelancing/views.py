@@ -20,19 +20,17 @@ from freelancing.models import FreelancerProfile, Proposal, Contract, Project, M
     Review, Notification
 from shop.models import MnoryUser as User
 from django.contrib.auth import login
-from shop.user_views import _redirect_by_role
+from shop.user_views import _redirect_by_role # Import the central redirect function
 
 
 # Dashboard Views
 @login_required
 def dashboard(request):
-    """Main dashboard view that redirects based on user type"""
-    if request.user.is_freelancer_user:
-        return redirect('freelancer_dashboard')
-    elif request.user.is_company_user:
-        return redirect('company_dashboard')
-    else:
-        return redirect('general_dashboard')
+    """
+    Central dashboard view that redirects based on user type.
+    This function acts as a dispatcher to the specific dashboard for each role.
+    """
+    return _redirect_by_role(request.user)
 
 
 @login_required
@@ -40,13 +38,13 @@ def freelancer_dashboard(request):
     """Freelancer dashboard with stats and recent activity"""
     if not request.user.is_freelancer_user:
         messages.error(request, "Access denied. Freelancers only.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     try:
         profile = request.user.freelancer_profile
     except FreelancerProfile.DoesNotExist:
         messages.info(request, "Please complete your freelancer profile first.")
-        return redirect('create_freelancer_profile')
+        return redirect('freelancing:create_freelancer_profile')
 
     # Get dashboard stats
     active_contracts = Contract.objects.filter(freelancer=request.user, status='active').count()
@@ -71,13 +69,13 @@ def company_dashboard(request):
     """Company dashboard with stats and recent activity"""
     if not request.user.is_company_user:
         messages.error(request, "Access denied. Companies only.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     try:
         profile = request.user.company_profile
     except CompanyProfile.DoesNotExist:
         messages.info(request, "Please complete your company profile first.")
-        return redirect('create_company_profile')
+        return redirect('freelancing:create_company_profile')
 
     # Get dashboard stats
     active_projects = Project.objects.filter(client=request.user, status__in=['open', 'in_progress']).count()
@@ -199,7 +197,7 @@ class ProjectUpdateView(UpdateView):
         # Only project owner (company user) can edit
         if not request.user.is_company_user or request.user != project.client:
             messages.error(request, "You don't have permission to edit this project.")
-            return redirect('dashboard')
+            return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -207,7 +205,7 @@ class ProjectUpdateView(UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('project_detail', kwargs={'pk': self.object.pk})
+        return reverse('freelancing:project_detail', kwargs={'pk': self.object.pk})
 
 
 @method_decorator(login_required, name='dispatch')
@@ -221,7 +219,7 @@ class ProjectCreateView(CreateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_company_user:
             messages.error(request, "Only companies can post projects.")
-            return redirect('dashboard')
+            return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -231,7 +229,7 @@ class ProjectCreateView(CreateView):
 
     def get_success_url(self):
         messages.success(self.request, "Project posted successfully!")
-        return reverse('project_detail', kwargs={'pk': self.object.pk})
+        return reverse('freelancing:project_detail', kwargs={'pk': self.object.pk})
 
 
 # Proposal Views
@@ -240,7 +238,7 @@ def submit_proposal(request, project_id):
     """Submit a proposal for a project"""
     if not request.user.is_freelancer_user:
         messages.error(request, "Only freelancers can submit proposals.")
-        return redirect('project_detail', pk=project_id)
+        return redirect('freelancing:project_detail', pk=project_id)
 
     project = get_object_or_404(Project, id=project_id, status='open')
 
@@ -248,7 +246,7 @@ def submit_proposal(request, project_id):
     existing_proposal = Proposal.objects.filter(project=project, freelancer=request.user).first()
     if existing_proposal:
         messages.warning(request, "You have already submitted a proposal for this project.")
-        return redirect('project_detail', pk=project_id)
+        return redirect('freelancing:project_detail', pk=project_id)
 
     if request.method == 'POST':
         form = ProposalForm(request.POST, request.FILES)
@@ -272,7 +270,7 @@ def submit_proposal(request, project_id):
             )
 
             messages.success(request, "Your proposal has been submitted successfully!")
-            return redirect('project_detail', pk=project_id)
+            return redirect('freelancing:project_detail', pk=project_id)
     else:
         form = ProposalForm()
 
@@ -306,11 +304,11 @@ def accept_proposal(request, proposal_id):
     # Check permissions
     if request.user != proposal.project.client:
         messages.error(request, "Only the project owner can accept proposals.")
-        return redirect('project_detail', pk=proposal.project.id)
+        return redirect('freelancing:project_detail', pk=proposal.project.id)
 
     if proposal.status != 'pending':
         messages.error(request, "This proposal has already been processed.")
-        return redirect('project_detail', pk=proposal.project.id)
+        return redirect('freelancing:project_detail', pk=proposal.project.id)
 
     if request.method == 'POST':
         # Accept the proposal
@@ -347,7 +345,7 @@ def accept_proposal(request, proposal_id):
         )
 
         messages.success(request, "Proposal accepted and contract created!")
-        return redirect('contract_detail', pk=contract.id)
+        return redirect('freelancing:contract_detail', pk=contract.id)
 
     context = {
         'proposal': proposal,
@@ -604,7 +602,7 @@ def send_message(request, user_id=None, project_id=None, contract_id=None):
 
     if not recipient:
         messages.error(request, "Recipient not specified or permission denied.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     if request.method == 'POST':
         form = MessageForm(request.POST, request.FILES)
@@ -627,7 +625,7 @@ def send_message(request, user_id=None, project_id=None, contract_id=None):
             )
 
             messages.success(request, "Message sent successfully!")
-            return redirect('message_list')
+            return redirect('freelancing:message_list')
     else:
         initial_data = {}
         if project:
@@ -654,13 +652,13 @@ def submit_review(request, contract_id):
     # Check permissions
     if request.user not in [contract.client, contract.freelancer]:
         messages.error(request, "You don't have permission to review this contract.")
-        return redirect('contract_detail', pk=contract_id)
+        return redirect('freelancing:contract_detail', pk=contract_id)
 
     # Check if user already reviewed
     existing_review = Review.objects.filter(contract=contract, reviewer=request.user).first()
     if existing_review:
         messages.warning(request, "You have already reviewed this contract.")
-        return redirect('contract_detail', pk=contract_id)
+        return redirect('freelancing:contract_detail', pk=contract_id)
 
     # Determine who is being reviewed
     reviewee = contract.freelancer if request.user == contract.client else contract.client
@@ -687,7 +685,7 @@ def submit_review(request, contract_id):
             )
 
             messages.success(request, "Review submitted successfully!")
-            return redirect('contract_detail', pk=contract_id)
+            return redirect('freelancing:contract_detail', pk=contract.id)
     else:
         form = ReviewForm()
 
@@ -743,7 +741,7 @@ def edit_freelancer_profile(request):
     """Edit existing freelancer profile"""
     if not request.user.user_type == 'freelancer':
         messages.error(request, "Only freelancer accounts can edit a freelancer profile.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     profile = get_object_or_404(FreelancerProfile, user=request.user)
 
@@ -752,7 +750,7 @@ def edit_freelancer_profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Freelancer profile updated successfully!")
-            return redirect('freelancer_dashboard')
+            return redirect('freelancing:freelancer_dashboard')
     else:
         form = FreelancerRegistrationForm(instance=profile)
 
@@ -767,7 +765,7 @@ def edit_company_profile(request):
     """Edit existing company profile"""
     if not request.user.user_type == 'company':
         messages.error(request, "Only company accounts can edit a company profile.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     profile = get_object_or_404(CompanyProfile, user=request.user)
 
@@ -776,7 +774,7 @@ def edit_company_profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Company profile updated successfully!")
-            return redirect('company_dashboard')
+            return redirect('freelancing:company_dashboard')
     else:
         form = CompanyRegistrationForm(instance=profile)
 
@@ -857,12 +855,12 @@ def complete_contract(request, contract_id):
     # Check permissions
     if request.user not in [contract.client, contract.freelancer]:
         messages.error(request, "You don't have permission to complete this contract.")
-        return redirect('contract_detail', pk=contract_id)
+        return redirect('freelancing:contract_detail', pk=contract_id)
 
     if request.method == 'POST':
         complete_project(contract)
         messages.success(request, "Contract marked as completed!")
-        return redirect('contract_detail', pk=contract_id)
+        return redirect('freelancing:contract_detail', pk=contract_id)
 
     context = {'contract': contract}
     return render(request, 'freelance/complete_contract.html', context)
@@ -875,7 +873,7 @@ def create_payment(request, contract_id):
     # Check permissions (only client can create payments)
     if request.user != contract.client:
         messages.error(request, "Only the client can create payments.")
-        return redirect('contract_detail', pk=contract_id)
+        return redirect('freelancing:contract_detail', pk=contract_id)
 
     if request.method == 'POST':
         form = PaymentForm(request.POST)
@@ -885,7 +883,7 @@ def create_payment(request, contract_id):
             payment.save()
 
             messages.success(request, "Payment milestone created successfully!")
-            return redirect('contract_detail', pk=contract_id)
+            return redirect('freelancing:contract_detail', pk=contract.id)
     else:
         form = PaymentForm()
 
@@ -904,7 +902,7 @@ def create_payment(request, contract_id):
 class ProjectDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Project
     template_name = 'freelance/project_confirm_delete.html'
-    success_url = reverse_lazy('company_dashboard')
+    success_url = reverse_lazy('freelancing:company_dashboard')
 
     def test_func(self):
         project = self.get_object()
@@ -920,7 +918,7 @@ def my_projects(request):
     """List all projects for company user"""
     if not request.user.is_company_user:
         messages.error(request, "Access denied. Companies only.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     projects = Project.objects.filter(client=request.user).order_by('-created_at')
 
@@ -948,7 +946,7 @@ def my_proposals(request):
     """List all proposals for freelancer user"""
     if not request.user.is_freelancer_user:
         messages.error(request, "Access denied. Freelancers only.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     proposals = Proposal.objects.filter(freelancer=request.user).order_by('-created_at')
 
@@ -977,14 +975,14 @@ def edit_proposal(request, proposal_id):
 
     if proposal.status != 'pending':
         messages.error(request, "You can only edit pending proposals.")
-        return redirect('my_proposals')
+        return redirect('freelancing:my_proposals')
 
     if request.method == 'POST':
         form = ProposalForm(request.POST, request.FILES, instance=proposal)
         if form.is_valid():
             form.save()
             messages.success(request, "Proposal updated successfully!")
-            return redirect('proposal_detail', proposal_id=proposal.id)
+            return redirect('freelancing:proposal_detail', proposal_id=proposal.id)
     else:
         form = ProposalForm(instance=proposal)
 
@@ -1002,7 +1000,7 @@ def delete_proposal(request, proposal_id):
 
     if proposal.status != 'pending':
         messages.error(request, "You can only withdraw pending proposals.")
-        return redirect('my_proposals')
+        return redirect('freelancing:my_proposals')
 
     if request.method == 'POST':
         project = proposal.project
@@ -1014,7 +1012,7 @@ def delete_proposal(request, proposal_id):
         project.save(update_fields=['proposals_count'])
 
         messages.success(request, "Proposal withdrawn successfully!")
-        return redirect('my_proposals')
+        return redirect('freelancing:my_proposals')
 
     context = {'proposal': proposal}
     return render(request, 'freelance/proposal_confirm_delete.html', context)
@@ -1059,14 +1057,14 @@ def edit_contract(request, contract_id):
     # Check permissions
     if request.user not in [contract.client, contract.freelancer]:
         messages.error(request, "You don't have permission to edit this contract.")
-        return redirect('dashboard')
+        return redirect('freelancing:dashboard') # Redirect to central dashboard for re-evaluation
 
     if request.method == 'POST':
         form = ContractUpdateForm(request.POST, instance=contract)
         if form.is_valid():
             form.save()
             messages.success(request, "Contract updated successfully!")
-            return redirect('contract_detail', pk=contract.id)
+            return redirect('freelancing:contract_detail', pk=contract.id)
     else:
         form = ContractUpdateForm(instance=contract)
 
@@ -1091,7 +1089,7 @@ class CategoryCreateView(CreateView):
     model = Category
     form_class = CategoryForm
     template_name = 'freelance/category_form.html'
-    success_url = reverse_lazy('category_list')
+    success_url = reverse_lazy('freelancing:category_list')
 
     def form_valid(self, form):
         messages.success(self.request, "Category created successfully!")
@@ -1103,7 +1101,7 @@ class CategoryUpdateView(UpdateView):
     model = Category
     form_class = CategoryForm
     template_name = 'freelance/category_form.html'
-    success_url = reverse_lazy('category_list')
+    success_url = reverse_lazy('freelancing:category_list')
 
     def form_valid(self, form):
         messages.success(self.request, "Category updated successfully!")
@@ -1114,7 +1112,7 @@ class CategoryUpdateView(UpdateView):
 class CategoryDeleteView(DeleteView):
     model = Category
     template_name = 'freelance/category_confirm_delete.html'
-    success_url = reverse_lazy('category_list')
+    success_url = reverse_lazy('freelancing:category_list')
 
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Category deleted successfully!")
@@ -1151,7 +1149,7 @@ class SkillCreateView(CreateView):
     model = Skill
     form_class = SkillForm
     template_name = 'freelance/skill_form.html'
-    success_url = reverse_lazy('skill_list')
+    success_url = reverse_lazy('freelancing:skill_list')
 
     def form_valid(self, form):
         messages.success(self.request, "Skill created successfully!")
@@ -1163,7 +1161,7 @@ class SkillUpdateView(UpdateView):
     model = Skill
     form_class = SkillForm
     template_name = 'freelance/skill_form.html'
-    success_url = reverse_lazy('skill_list')
+    success_url = reverse_lazy('freelancing:skill_list')
 
     def form_valid(self, form):
         messages.success(self.request, "Skill updated successfully!")
@@ -1174,9 +1172,8 @@ class SkillUpdateView(UpdateView):
 class SkillDeleteView(DeleteView):
     model = Skill
     template_name = 'freelance/skill_confirm_delete.html'
-    success_url = reverse_lazy('skill_list')
+    success_url = reverse_lazy('freelancing:skill_list')
 
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Skill deleted successfully!")
         return super().delete(request, *args, **kwargs)
-

@@ -100,10 +100,10 @@ def _redirect_by_role(user):
         return redirect("shop:vendor_dashboard")
     if getattr(user, "is_freelancer_type", False):
         logger.info(f"Redirecting freelancer to freelancer_dashboard")
-        return redirect("freelancer_dashboard")
+        return redirect("freelancing:freelancer_dashboard")
     if getattr(user, "is_company_type", False):
         logger.info(f"Redirecting company to company_dashboard")
-        return redirect("company_dashboard")
+        return redirect("freelancing:company_dashboard")
     if getattr(user, "is_customer_type", False):
         logger.info(f"Redirecting customer to profile")
         return redirect("shop:profile")

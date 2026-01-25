@@ -28,14 +28,14 @@ def buy_now_view(request):
                 if product_id:
                     product = get_object_or_404(Product, id=product_id)
                     return redirect("shop:product_detail", slug=product.slug)
-                return redirect("shop:product_list")  # Fallback
+                return redirect("shop:home")  # Fallback
         except ValueError:
             messages.error(request, _("Invalid quantity provided."))
             # Attempt to redirect back to the product detail page
             if product_id:
                 product = get_object_or_404(Product, id=product_id)
                 return redirect("shop:product_detail", slug=product.slug)
-            return redirect("shop:product_list")  # Fallback
+            return redirect("shop:home")  # Fallback
 
         if not product_id or not color_id or not size_id:
             messages.error(request, _("Please select a product, color, and size."))
@@ -43,7 +43,7 @@ def buy_now_view(request):
             if product_id:
                 product = get_object_or_404(Product, id=product_id)
                 return redirect("shop:product_detail", slug=product.slug)
-            return redirect("shop:product_list")  # Fallback if product_id is missing
+            return redirect("shop:home")  # Fallback if product_id is missing
 
         try:
             variant = get_object_or_404(
@@ -72,10 +72,6 @@ def buy_now_view(request):
 
         # Use a transaction for critical cart operations
         with transaction.atomic():
-            # IMPORTANT: Clear existing cart items for "Buy Now" flow.
-            # This ensures only the 'buy now' item is in the cart for checkout.
-            cart.items.all().delete()
-
             # Add the single item with the selected quantity
             cart_item, created = CartItem.objects.get_or_create(
                 cart=cart,
@@ -85,8 +81,8 @@ def buy_now_view(request):
                 },  # Set the quantity from the POST request
             )
             if not created:
-                # If item already existed (shouldn't if cart was just cleared, but for robustness)
-                cart_item.quantity = quantity
+                # If item already existed, update its quantity
+                cart_item.quantity += quantity
                 cart_item.save()
 
             cart.update_totals()  # Recalculate cart totals after modification
@@ -94,13 +90,13 @@ def buy_now_view(request):
         messages.success(
             request,
             _(
-                f"{quantity} x {variant.product.name} ({variant.color.name}, {variant.size.name}) added to cart for direct purchase."
+                f"{quantity} x {variant.product.name} ({variant.color.name}, {variant.size.name}) added to cart."
             ),
         )
         return redirect("shop:checkout")
     else:
         messages.error(request, _("Invalid request for buy now."))
-        return redirect("shop:product_list")
+        return redirect("shop:home")
 
 
 def set_currency(request):

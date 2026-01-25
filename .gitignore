@@ -17,3 +17,5 @@ helm/charts/*.tgz
 .idea
 .vscode
 pipfile.lock
+pipfile
+

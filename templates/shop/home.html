@@ -954,50 +954,6 @@
 <!-- Hero Slider -->
 {% include 'shop/partials/hero_slider.html' %}
 
-<!-- Stats Section -->
-<section class="stats-section">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="0">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-box"></i>
-                    </div>
-                    <div class="stat-number">10K+</div>
-                    <div class="stat-label">{% trans "Products" %}</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-number">50K+</div>
-                    <div class="stat-label">{% trans "Happy Customers" %}</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="200">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="stat-number">5K+</div>
-                    <div class="stat-label">{% trans "Projects" %}</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="300">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-number">4.9</div>
-                    <div class="stat-label">{% trans "Rating" %}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- Featured Products -->
 {% if config.ENABLE_FEATURED_FLAG %}
 <section class="product-showcase showcase-featured">
@@ -1223,6 +1179,49 @@
             <a href="{% url 'company_list' %}" class="btn btn-freelance">
                 {% trans "View All Companies" %}<i class="fas fa-arrow-right ms-2"></i>
             </a>
+        </div>
+    </div>
+</section>
+
+<section class="stats-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 col-6 aos-init aos-animate" data-aos="fade-up" data-aos-delay="0">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-number animated">10K+</div>
+                    <div class="stat-label">Products</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 aos-init aos-animate" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number animated">50K+</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 aos-init aos-animate" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-number animated">5K+</div>
+                    <div class="stat-label">Projects</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 aos-init aos-animate" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-number animated">4.9</div>
+                    <div class="stat-label">Rating</div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
