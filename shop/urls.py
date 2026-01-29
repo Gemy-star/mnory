@@ -71,9 +71,29 @@ urlpatterns = [
         name="terms",
     ),
     path(
-        "policy/",
-        TemplateView.as_view(template_name="shop/policy.html"),
-        name="policy",
+        "privacy-policy/",
+        TemplateView.as_view(template_name="shop/privacy_policy.html"),
+        name="privacy_policy",
+    ),
+    path(
+        "refund-policy/",
+        TemplateView.as_view(template_name="shop/refund_policy.html"),
+        name="refund_policy",
+    ),
+    path(
+        "contact-us/",
+        TemplateView.as_view(template_name="shop/contact_us.html"),
+        name="contact_us",
+    ),
+    path(
+        "shipping-policy/",
+        TemplateView.as_view(template_name="shop/shipping_policy.html"),
+        name="shipping_policy",
+    ),
+    path(
+        "about-us/",
+        TemplateView.as_view(template_name="shop/about_us.html"),
+        name="about_us",
     ),
     # Cart Views
     path("cart/", views.cart_view, name="cart_view"),
@@ -98,11 +118,6 @@ urlpatterns = [
         views.order_confirmation,
         name="order_confirmation",
     ),
-    # path(
-    #     "order/anonymous_confirmation/<int:order_id>/<uuid:token>/",
-    #     views.order_confirmation_anonymous_view,
-    #     name="order_confirmation_anonymous",
-    # ),
     path("orders/", views.order_history, name="order_history"),
     path("orders/<str:order_number>/", views.order_detail, name="order_detail"),
     # Buy Now

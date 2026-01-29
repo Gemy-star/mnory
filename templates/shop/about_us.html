@@ -1,0 +1,550 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "About Us" %} - Mnory{% endblock %}
+
+{% block css %}
+<style>
+    /* Hero Section */
+    .policy-hero {
+        background: linear-gradient(135deg, #007aff 0%, #000 50%, #1a1a1a 100%);
+        padding: 5rem 0 4rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .policy-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.4;
+    }
+
+    .policy-hero-content {
+        position: relative;
+        z-index: 2;
+        color: #ffffff;
+    }
+
+    .policy-icon-hero {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* About Content */
+    .about-content {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--theme-text-muted);
+    }
+
+    /* Story Cards */
+    .story-card {
+        background: var(--theme-bg-secondary);
+        border-radius: 20px;
+        border: 1px solid var(--theme-border);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .story-card:hover {
+        border-color: rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.1);
+    }
+
+    .story-card h3 {
+        color: var(--theme-text);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+    }
+
+    .story-card h3 .material-icons {
+        font-size: 2rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .story-card p {
+        color: var(--theme-text-muted);
+        margin-bottom: 1rem;
+        line-height: 1.7;
+    }
+
+    .story-card ul {
+        color: var(--theme-text-muted);
+    }
+
+    /* Values Grid */
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+
+    .value-card {
+        background: var(--theme-bg-secondary);
+        border-radius: 16px;
+        border: 1px solid var(--theme-border);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .value-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .value-card .material-icons {
+        font-size: 3.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .value-card h4 {
+        color: var(--theme-text);
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .value-card p {
+        color: var(--theme-text-muted);
+        font-size: 0.95rem;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: rgba(102, 126, 234, 0.08);
+        border: 2px solid rgba(102, 126, 234, 0.15);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        margin: 3rem 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 2.5rem;
+        text-align: center;
+    }
+
+    .stat-item {
+        padding: 1rem;
+    }
+
+    .stat-number {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: block;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        color: var(--theme-text);
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 20px;
+        padding: 3.5rem 2rem;
+        text-align: center;
+        margin: 3rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+
+    .cta-section h3 {
+        color: #ffffff !important;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+    }
+
+    .cta-section p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-cta {
+        background: #ffffff;
+        color: #667eea;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-cta:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        color: #667eea;
+    }
+
+    .btn-cta .material-icons {
+        font-size: 22px;
+    }
+
+    /* Timeline */
+    .timeline {
+        position: relative;
+        padding: 2rem 0;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 2.5rem;
+        margin-bottom: 2rem;
+        align-items: flex-start;
+    }
+
+    .timeline-year {
+        font-size: 2.25rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        min-width: 130px;
+        flex-shrink: 0;
+    }
+
+    .timeline-content {
+        flex: 1;
+        background: var(--theme-bg-secondary);
+        border-radius: 16px;
+        border: 1px solid var(--theme-border);
+        padding: 1.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .timeline-content:hover {
+        border-color: rgba(102, 126, 234, 0.3);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.1);
+    }
+
+    .timeline-content h4 {
+        color: var(--theme-text);
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .timeline-content p {
+        color: var(--theme-text-muted);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 2rem;
+        background: linear-gradient(135deg, #007aff, #667eea);
+        color: #ffffff;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+        color: #ffffff;
+    }
+
+    .btn-back .material-icons {
+        font-size: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-back:hover .material-icons {
+        transform: translateX(-3px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .policy-hero {
+            padding: 4rem 0 3rem;
+        }
+
+        .policy-icon-hero {
+            font-size: 3rem;
+        }
+
+        .timeline-item {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .timeline-year {
+            font-size: 1.75rem;
+            min-width: auto;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+        }
+
+        .values-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="category-detail-section">
+
+<!-- Hero Section -->
+<div class="policy-hero">
+    <div class="container">
+        <div class="policy-hero-content text-center" data-aos="fade-down">
+            <span class="material-icons policy-icon-hero">storefront</span>
+            <h1 class="display-4 fw-bold mb-3">{% trans "About Mnory" %}</h1>
+            <p class="lead">{% trans "Redefining Fashion in Egypt - One Outfit at a Time" %}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Content Section -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Our Story -->
+            <div class="story-card" data-aos="fade-up">
+                <h3>
+                    <span class="material-icons">auto_stories</span>
+                    {% trans "Our Story" %}
+                </h3>
+                <div class="about-content">
+                    <p>{% trans "Founded in 2024, Mnory began with a simple vision: to make high-quality, stylish fashion accessible to everyone in Egypt. What started as a small online boutique has grown into a trusted destination for fashion enthusiasts across the country." %}</p>
+                    <p>{% trans "We believe that fashion is more than just clothing - it's a form of self-expression, confidence, and identity. That's why we're committed to curating collections that celebrate individuality while maintaining affordability and quality." %}</p>
+                    <p class="mb-0">{% trans "Today, Mnory serves thousands of customers nationwide, offering carefully selected pieces that blend contemporary trends with timeless elegance. Our success is built on trust, quality, and an unwavering commitment to customer satisfaction." %}</p>
+                </div>
+            </div>
+
+            <!-- Our Mission -->
+            <div class="story-card" data-aos="fade-up" data-aos-delay="100">
+                <h3>
+                    <span class="material-icons">flag</span>
+                    {% trans "Our Mission" %}
+                </h3>
+                <div class="about-content">
+                    <p class="mb-0">{% trans "To empower individuals through fashion by providing high-quality, trendy, and affordable clothing that makes everyone feel confident and beautiful. We strive to create a seamless shopping experience that combines style, convenience, and exceptional customer service." %}</p>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="stats-section" data-aos="fade-up" data-aos-delay="200">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">10K+</span>
+                        <span class="stat-label">{% trans "Happy Customers" %}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">{% trans "Products" %}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">27</span>
+                        <span class="stat-label">{% trans "Governorates Served" %}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">98%</span>
+                        <span class="stat-label">{% trans "Satisfaction Rate" %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Our Values -->
+            <div class="mb-4" data-aos="fade-up" data-aos-delay="300">
+                <h3 class="text-center mb-4">{% trans "Our Core Values" %}</h3>
+                <div class="values-grid">
+                    <div class="value-card" data-aos="zoom-in" data-aos-delay="400">
+                        <span class="material-icons">verified</span>
+                        <h4>{% trans "Quality First" %}</h4>
+                        <p>{% trans "We never compromise on quality. Every product is carefully inspected to meet our high standards." %}</p>
+                    </div>
+                    <div class="value-card" data-aos="zoom-in" data-aos-delay="450">
+                        <span class="material-icons">favorite</span>
+                        <h4>{% trans "Customer Obsessed" %}</h4>
+                        <p>{% trans "Your satisfaction drives everything we do. We're here to ensure you love every purchase." %}</p>
+                    </div>
+                    <div class="value-card" data-aos="zoom-in" data-aos-delay="500">
+                        <span class="material-icons">eco</span>
+                        <h4>{% trans "Sustainability" %}</h4>
+                        <p>{% trans "We're committed to sustainable practices and ethical sourcing to protect our planet." %}</p>
+                    </div>
+                    <div class="value-card" data-aos="zoom-in" data-aos-delay="550">
+                        <span class="material-icons">trending_up</span>
+                        <h4>{% trans "Innovation" %}</h4>
+                        <p>{% trans "We constantly evolve to bring you the latest trends and best shopping experience." %}</p>
+                    </div>
+                    <div class="value-card" data-aos="zoom-in" data-aos-delay="600">
+                        <span class="material-icons">attach_money</span>
+                        <h4>{% trans "Fair Pricing" %}</h4>
+                        <p>{% trans "Premium quality shouldn't mean premium prices. We believe in accessible fashion." %}</p>
+                    </div>
+                    <div class="value-card" data-aos="zoom-in" data-aos-delay="650">
+                        <span class="material-icons">diversity_3</span>
+                        <h4>{% trans "Inclusivity" %}</h4>
+                        <p>{% trans "Fashion for everyone. We celebrate diversity and cater to all styles and sizes." %}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Our Journey -->
+            <div class="story-card" data-aos="fade-up" data-aos-delay="700">
+                <h3>
+                    <span class="material-icons">timeline</span>
+                    {% trans "Our Journey" %}
+                </h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">2024</div>
+                        <div class="timeline-content">
+                            <h4>{% trans "The Beginning" %}</h4>
+                            <p>{% trans "Mnory was founded with a small collection of handpicked items and big dreams." %}</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2025</div>
+                        <div class="timeline-content">
+                            <h4>{% trans "Rapid Growth" %}</h4>
+                            <p>{% trans "Expanded to serve all Egyptian governorates and reached 10,000+ happy customers." %}</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">{% trans "Future" %}</div>
+                        <div class="timeline-content">
+                            <h4>{% trans "Endless Possibilities" %}</h4>
+                            <p>{% trans "Continuing to innovate, expand our collection, and serve our growing community." %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Why Choose Us -->
+            <div class="story-card" data-aos="fade-up" data-aos-delay="800">
+                <h3>
+                    <span class="material-icons">stars</span>
+                    {% trans "Why Choose Mnory?" %}
+                </h3>
+                <div class="about-content">
+                    <ul class="text-theme-muted">
+                        <li><strong>{% trans "Curated Collections:" %}</strong> {% trans "Every item is carefully selected to ensure quality and style." %}</li>
+                        <li><strong>{% trans "Competitive Prices:" %}</strong> {% trans "Luxury fashion at prices that won't break the bank." %}</li>
+                        <li><strong>{% trans "Fast Delivery:" %}</strong> {% trans "Get your orders delivered quickly across Egypt." %}</li>
+                        <li><strong>{% trans "Easy Returns:" %}</strong> {% trans "14-day hassle-free return policy for your peace of mind." %}</li>
+                        <li><strong>{% trans "Secure Shopping:" %}</strong> {% trans "Your data and payments are always protected." %}</li>
+                        <li><strong>{% trans "24/7 Support:" %}</strong> {% trans "Our customer service team is always ready to help." %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section" data-aos="zoom-in" data-aos-delay="900">
+                <h3>{% trans "Join the Mnory Family" %}</h3>
+                <p>{% trans "Discover your perfect style today and become part of our growing community of fashion lovers." %}</p>
+                <a href="{% url 'shop:home' %}" class="btn-cta">
+                    <span class="material-icons">shopping_bag</span>
+                    {% trans "Start Shopping" %}
+                </a>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="story-card" data-aos="fade-up" data-aos-delay="1000">
+                <h3>
+                    <span class="material-icons">contact_support</span>
+                    {% trans "Get in Touch" %}
+                </h3>
+                <div class="about-content">
+                    <p>{% trans "Have questions or want to learn more about us? We'd love to hear from you!" %}</p>
+                    <p class="mb-2"><strong>{% trans "Email:" %}</strong> <a href="mailto:support@mnory.com">support@mnory.com</a></p>
+                    <p class="mb-2"><strong>{% trans "Phone:" %}</strong> <a href="tel:+201001234567">+20 100 123 4567</a></p>
+                    <p class="mb-0"><strong>{% trans "Address:" %}</strong> {% trans "123 Tahrir Street, Downtown, Cairo, Egypt" %}</p>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="1100">
+                <a href="{% url 'shop:home' %}" class="btn-back">
+                    <span class="material-icons">home</span>
+                    {% trans "Back to Home" %}
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+</section>
+{% endblock content %}

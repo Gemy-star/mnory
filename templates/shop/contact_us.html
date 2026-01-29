@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Contact Us" %} - Mnory{% endblock %}
+
+{% block css %}
+<style>
+    /* Hero Section */
+    .policy-hero {
+        background: linear-gradient(135deg, #007aff 0%, #000 50%, #1a1a1a 100%);
+        padding: 5rem 0 4rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .policy-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.4;
+    }
+
+    .policy-hero-content {
+        position: relative;
+        z-index: 2;
+        color: #ffffff;
+    }
+
+    .policy-icon-hero {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* Contact Info Cards */
+    .contact-info-card {
+        background: var(--theme-bg-secondary);
+        border-radius: 20px;
+        border: 1px solid var(--theme-border);
+        padding: 2.5rem;
+        text-align: center;
+        height: 100%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .contact-info-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+        border-color: rgba(102, 126, 234, 0.4);
+    }
+
+    .contact-info-card .material-icons {
+        font-size: 4rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+
+    .contact-info-card h3 {
+        color: var(--theme-text);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .contact-info-card p {
+        color: var(--theme-text-muted);
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-info-card .contact-value {
+        color: var(--theme-text);
+        font-weight: 600;
+        font-size: 1.15rem;
+    }
+
+    .contact-info-card a {
+        color: #667eea;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .contact-info-card a:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    /* Info Box */
+    .info-box {
+        background: rgba(102, 126, 234, 0.08);
+        border-left: 4px solid #667eea;
+        padding: 2rem;
+        border-radius: 15px;
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .info-box .material-icons {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+
+    .info-box h4 {
+        color: var(--theme-text);
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .info-box p {
+        color: var(--theme-text-muted);
+        margin-bottom: 0;
+    }
+
+    /* Business Hours */
+    .business-hours {
+        background: var(--theme-bg-secondary);
+        border-radius: 20px;
+        border: 1px solid var(--theme-border);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .business-hours h4 {
+        color: var(--theme-text);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+    }
+
+    .business-hours .material-icons {
+        color: #667eea;
+        font-size: 1.5rem;
+    }
+
+    .hours-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.875rem 0;
+        border-bottom: 1px solid var(--theme-border);
+    }
+
+    .hours-row:last-child {
+        border-bottom: none;
+    }
+
+    .hours-day {
+        color: var(--theme-text);
+        font-weight: 500;
+    }
+
+    .hours-time {
+        color: var(--theme-text-muted);
+    }
+
+    /* Social Links */
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .social-link {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--theme-bg-secondary);
+        border: 2px solid var(--theme-border);
+        color: var(--theme-text);
+        font-size: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+    }
+
+    .social-link:hover {
+        transform: translateY(-6px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .social-link.facebook:hover {
+        background: #1877f2;
+        border-color: #1877f2;
+        color: white;
+    }
+
+    .social-link.instagram:hover {
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        border-color: #bc1888;
+        color: white;
+    }
+
+    .social-link.whatsapp:hover {
+        background: #25d366;
+        border-color: #25d366;
+        color: white;
+    }
+
+    /* Buttons */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 2rem;
+        background: linear-gradient(135deg, #007aff, #667eea);
+        color: #ffffff;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+        color: #ffffff;
+    }
+
+    .btn-back .material-icons {
+        font-size: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-back:hover .material-icons {
+        transform: translateX(-3px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .policy-hero {
+            padding: 4rem 0 3rem;
+        }
+
+        .policy-icon-hero {
+            font-size: 3rem;
+        }
+
+        .contact-info-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+        }
+    }
+    }
+
+    .business-hours h4 {
+        color: var(--theme-text);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .business-hours .material-icons {
+        color: var(--primary);
+    }
+
+    .hours-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--theme-border);
+    }
+
+    .hours-row:last-child {
+        border-bottom: none;
+    }
+
+    .hours-day {
+        color: var(--theme-text);
+        font-weight: 500;
+    }
+
+    .hours-time {
+        color: var(--theme-text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="category-detail-section">
+
+<!-- Hero Section -->
+<div class="policy-hero">
+    <div class="container">
+        <div class="policy-hero-content text-center" data-aos="fade-down">
+            <span class="material-icons policy-icon-hero">contact_mail</span>
+            <h1 class="display-4 fw-bold mb-3">{% trans "Contact Us" %}</h1>
+            <p class="lead">{% trans "We'd love to hear from you! Get in touch with us." %}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Content Section -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Info Box -->
+            <div class="info-box" data-aos="fade-up">
+                <span class="material-icons">support_agent</span>
+                <h4>{% trans "Customer Support" %}</h4>
+                <p>{% trans "Our friendly team is always here to help. Reach out to us through any of the channels below." %}</p>
+            </div>
+
+            <!-- Contact Cards -->
+            <div class="row g-4 mb-5">
+                <!-- Phone Card -->
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="contact-info-card">
+                        <span class="material-icons">phone</span>
+                        <h3>{% trans "Phone" %}</h3>
+                        <p>{% trans "Call us for immediate assistance" %}</p>
+                        <p class="contact-value">
+                            <a href="tel:+201001234567">+20 100 123 4567</a>
+                        </p>
+                        <small class="text-muted">{% trans "Available: Sat-Thu, 9AM-8PM" %}</small>
+                    </div>
+                </div>
+
+                <!-- Email Card -->
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="contact-info-card">
+                        <span class="material-icons">email</span>
+                        <h3>{% trans "Email" %}</h3>
+                        <p>{% trans "Send us a message anytime" %}</p>
+                        <p class="contact-value">
+                            <a href="mailto:support@mnory.com">support@mnory.com</a>
+                        </p>
+                        <small class="text-muted">{% trans "Response within 24 hours" %}</small>
+                    </div>
+                </div>
+
+                <!-- Address Card -->
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="contact-info-card">
+                        <span class="material-icons">location_on</span>
+                        <h3>{% trans "Address" %}</h3>
+                        <p>{% trans "Visit our office" %}</p>
+                        <p class="contact-value">
+                            {% trans "123 Tahrir Street" %}<br>
+                            {% trans "Downtown, Cairo" %}<br>
+                            {% trans "Egypt" %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Contact Methods -->
+            <div class="row g-4 mb-5">
+                <!-- WhatsApp -->
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="contact-info-card">
+                        <span class="material-icons">chat</span>
+                        <h3>{% trans "WhatsApp" %}</h3>
+                        <p>{% trans "Chat with us on WhatsApp" %}</p>
+                        <p class="contact-value">
+                            <a href="https://wa.me/201001234567" target="_blank">+20 100 123 4567</a>
+                        </p>
+                        <small class="text-muted">{% trans "Quick responses during business hours" %}</small>
+                    </div>
+                </div>
+
+                <!-- Live Chat -->
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="contact-info-card">
+                        <span class="material-icons">forum</span>
+                        <h3>{% trans "Live Chat" %}</h3>
+                        <p>{% trans "Chat with our support team" %}</p>
+                        <p class="contact-value">
+                            <button class="btn btn-primary btn-sm" id="mnoryChatbotToggle">
+                                {% trans "Start Chat" %}
+                            </button>
+                        </p>
+                        <small class="text-muted">{% trans "Instant support available now" %}</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Hours -->
+            <div class="business-hours" data-aos="fade-up" data-aos-delay="600">
+                <h4>
+                    <span class="material-icons">schedule</span>
+                    {% trans "Business Hours" %}
+                </h4>
+                <div class="hours-row">
+                    <span class="hours-day">{% trans "Saturday - Thursday" %}</span>
+                    <span class="hours-time">9:00 AM - 8:00 PM</span>
+                </div>
+                <div class="hours-row">
+                    <span class="hours-day">{% trans "Friday" %}</span>
+                    <span class="hours-time">{% trans "Closed" %}</span>
+                </div>
+            </div>
+
+            <!-- Social Media Links -->
+            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="700">
+                <h4 class="mb-3">{% trans "Follow Us" %}</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link facebook" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link instagram" aria-label="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://wa.me/201001234567" class="social-link whatsapp" target="_blank" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="800">
+                <a href="{% url 'shop:home' %}" class="btn-back">
+                    <span class="material-icons">home</span>
+                    {% trans "Back to Home" %}
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+</section>
+{% endblock content %}

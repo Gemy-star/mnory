@@ -72,6 +72,31 @@
         <h6 class="text-uppercase fw-bold mb-3">{% trans "Quick links" %}</h6>
         <ul class="list-unstyled">
           <li>
+            <a href="{% url 'shop:about_us' %}" class="text-decoration-none">
+              <i class="fa-solid fa-info-circle me-2"></i>{% trans "About Us" %}
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'shop:contact_us' %}" class="text-decoration-none">
+              <i class="fa-solid fa-envelope me-2"></i>{% trans "Contact Us" %}
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'shop:shipping_policy' %}" class="text-decoration-none">
+              <i class="fa-solid fa-truck-fast me-2"></i>{% trans "Shipping Policy" %}
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'shop:refund_policy' %}" class="text-decoration-none">
+              <i class="fa-solid fa-rotate-left me-2"></i>{% trans "Refund Policy" %}
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'shop:privacy_policy' %}" class="text-decoration-none">
+              <i class="fa-solid fa-shield-halved me-2"></i>{% trans "Privacy Policy" %}
+            </a>
+          </li>
+          <li>
             <a href="{% url 'shop:terms' %}" class="text-decoration-none">
               <i class="fa-solid fa-gavel me-2"></i>{% trans "Terms & Conditions" %}
             </a>

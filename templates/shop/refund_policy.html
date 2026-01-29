@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Terms of Service" %} - Mnory{% endblock %}
+{% block title %}{% trans "Refund Policy" %} - Mnory{% endblock %}
 
 {% block css %}
 <style>
@@ -114,13 +114,21 @@
         margin-right: 0.75rem;
     }
 
-    /* Info Boxes */
-    .info-box {
-        background: rgba(102, 126, 234, 0.08);
-        border-left: 4px solid #667eea;
+    /* Info & Highlight Boxes */
+    .info-box, .highlight-box {
         padding: 1.5rem 2rem;
         border-radius: 12px;
         margin: 2rem 0;
+    }
+
+    .info-box {
+        background: rgba(102, 126, 234, 0.08);
+        border-left: 4px solid #667eea;
+    }
+
+    .highlight-box {
+        background: rgba(16, 185, 129, 0.08);
+        border-left: 4px solid #10b981;
     }
 
     .info-box .material-icons {
@@ -130,13 +138,20 @@
         font-size: 1.5rem;
     }
 
-    .info-box h5 {
+    .highlight-box .material-icons {
+        vertical-align: middle;
+        margin-right: 0.75rem;
+        color: #10b981;
+        font-size: 1.5rem;
+    }
+
+    .info-box h5, .highlight-box h5 {
         color: var(--theme-text);
         font-weight: 600;
         margin-bottom: 0.5rem;
     }
 
-    .info-box p {
+    .info-box p, .highlight-box p {
         color: var(--theme-text-muted);
         margin: 0;
     }
@@ -237,15 +252,15 @@
 {% endblock %}
 
 {% block content %}
-<main class="category-detail-section">
+<section class="category-detail-section">
 
 <!-- Hero Section -->
 <div class="policy-hero">
     <div class="container">
         <div class="policy-hero-content text-center" data-aos="fade-down">
-            <span class="material-icons policy-icon-hero">gavel</span>
-            <h1 class="display-4 fw-bold mb-3">{% trans "Terms of Service" %}</h1>
-            <p class="lead">{% trans "Please read these terms carefully before using our platform." %}</p>
+            <span class="material-icons policy-icon-hero">assignment_return</span>
+            <h1 class="display-4 fw-bold mb-3">{% trans "Refund Policy" %}</h1>
+            <p class="lead">{% trans "Our commitment to your satisfaction and peace of mind." %}</p>
             <p class="mt-3"><small>{% trans "Last Updated: January 2025" %}</small></p>
         </div>
     </div>
@@ -258,25 +273,33 @@
 
             <!-- Introduction -->
             <div class="info-box" data-aos="fade-up">
-                <h5><span class="material-icons">info</span>{% trans "Welcome to Mnory" %}</h5>
-                <p class="mb-0">{% trans "By accessing and using the Mnory platform, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please do not use our services." %}</p>
+                <h5><span class="material-icons">info</span>{% trans "Our Commitment to You" %}</h5>
+                <p class="mb-0">{% trans "At Mnory, your satisfaction is our priority. We want you to love your purchase. If for any reason you're not completely satisfied, we're here to help with our straightforward refund process." %}</p>
+            </div>
+
+            <!-- Highlight Box -->
+            <div class="highlight-box" data-aos="fade-up">
+                <h5><span class="material-icons">verified</span>{% trans "14-Day Money-Back Guarantee" %}</h5>
+                <p class="mb-0">{% trans "We offer a full refund within 14 days of delivery if you're not satisfied with your purchase." %}</p>
             </div>
 
             <!-- Policy Card 1 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="policy-card-header">
-                    <span class="material-icons">verified_user</span>
+                    <span class="material-icons">event_available</span>
                     <div>
                         <span class="policy-number">1</span>
-                        <h3 class="d-inline mb-0">{% trans "Acceptance of Terms" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Refund Eligibility" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "By creating an account or making a purchase on Mnory, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy." %}</p>
+                    <p class="text-theme">{% trans "To be eligible for a return and refund, items must meet the following conditions:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "You must be at least 18 years old to use our services" %}</li>
-                        <li>{% trans "You are responsible for maintaining the security of your account" %}</li>
-                        <li>{% trans "You agree to provide accurate and complete information" %}</li>
+                        <li>{% trans "Item must be returned within 14 days of delivery" %}</li>
+                        <li>{% trans "Product must be unused and in its original condition" %}</li>
+                        <li>{% trans "Original packaging must be intact and undamaged" %}</li>
+                        <li>{% trans "All tags, labels, and accessories must be included" %}</li>
+                        <li>{% trans "Proof of purchase (receipt or order confirmation) is required" %}</li>
                     </ul>
                 </div>
             </div>
@@ -284,18 +307,20 @@
             <!-- Policy Card 2 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="200">
                 <div class="policy-card-header">
-                    <span class="material-icons">shopping_bag</span>
+                    <span class="material-icons">block</span>
                     <div>
                         <span class="policy-number">2</span>
-                        <h3 class="d-inline mb-0">{% trans "Product Information" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Non-Refundable Items" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We strive to provide accurate product descriptions, images, and pricing. However, we do not warrant that product information is complete, reliable, current, or error-free." %}</p>
+                    <p class="text-theme">{% trans "The following items cannot be returned or refunded:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "Product colors may vary slightly from images shown" %}</li>
-                        <li>{% trans "We reserve the right to correct pricing errors" %}</li>
-                        <li>{% trans "Product availability is subject to change without notice" %}</li>
+                        <li>{% trans "Underwear, swimwear, and intimate apparel (for hygiene reasons)" %}</li>
+                        <li>{% trans "Personalized or customized items" %}</li>
+                        <li>{% trans "Sale or clearance items marked as final sale" %}</li>
+                        <li>{% trans "Gift cards and vouchers" %}</li>
+                        <li>{% trans "Items damaged due to misuse or improper care" %}</li>
                     </ul>
                 </div>
             </div>
@@ -303,19 +328,20 @@
             <!-- Policy Card 3 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="300">
                 <div class="policy-card-header">
-                    <span class="material-icons">payment</span>
+                    <span class="material-icons">autorenew</span>
                     <div>
                         <span class="policy-number">3</span>
-                        <h3 class="d-inline mb-0">{% trans "Orders & Payments" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "How to Initiate a Return" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "All orders are subject to acceptance and availability. We reserve the right to refuse or cancel any order for any reason." %}</p>
+                    <p class="text-theme">{% trans "Follow these simple steps to return your item:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "Payment must be received before order processing" %}</li>
-                        <li>{% trans "We accept various payment methods as displayed at checkout" %}</li>
-                        <li>{% trans "Prices are in Egyptian Pounds (EGP) and include VAT where applicable" %}</li>
-                        <li>{% trans "You agree to pay all charges incurred by you or on your behalf" %}</li>
+                        <li><strong>{% trans "Step 1:" %}</strong> {% trans "Contact our customer service at support@mnory.com with your order number" %}</li>
+                        <li><strong>{% trans "Step 2:" %}</strong> {% trans "Provide the reason for return and any relevant photos if the item is defective" %}</li>
+                        <li><strong>{% trans "Step 3:" %}</strong> {% trans "Receive a Return Authorization (RA) number and return instructions" %}</li>
+                        <li><strong>{% trans "Step 4:" %}</strong> {% trans "Pack the item securely in its original packaging" %}</li>
+                        <li><strong>{% trans "Step 5:" %}</strong> {% trans "Ship the item to the address provided with your RA number" %}</li>
                     </ul>
                 </div>
             </div>
@@ -323,19 +349,19 @@
             <!-- Policy Card 4 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="400">
                 <div class="policy-card-header">
-                    <span class="material-icons">account_circle</span>
+                    <span class="material-icons">local_shipping</span>
                     <div>
                         <span class="policy-number">4</span>
-                        <h3 class="d-inline mb-0">{% trans "User Accounts" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Return Shipping Costs" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "When you create an account with us, you are responsible for maintaining the confidentiality of your account and password." %}</p>
+                    <p class="text-theme">{% trans "Shipping cost responsibility depends on the reason for return:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "You are responsible for all activities under your account" %}</li>
-                        <li>{% trans "Notify us immediately of any unauthorized use" %}</li>
-                        <li>{% trans "We reserve the right to suspend or terminate accounts" %}</li>
-                        <li>{% trans "One person or legal entity may not maintain more than one account" %}</li>
+                        <li>{% trans "Defective or incorrect items: We cover return shipping costs" %}</li>
+                        <li>{% trans "Change of mind: Customer is responsible for return shipping costs" %}</li>
+                        <li>{% trans "Original shipping fees are non-refundable (except for defective items)" %}</li>
+                        <li>{% trans "We recommend using trackable shipping for your protection" %}</li>
                     </ul>
                 </div>
             </div>
@@ -343,20 +369,21 @@
             <!-- Policy Card 5 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="500">
                 <div class="policy-card-header">
-                    <span class="material-icons">block</span>
+                    <span class="material-icons">receipt_long</span>
                     <div>
                         <span class="policy-number">5</span>
-                        <h3 class="d-inline mb-0">{% trans "Prohibited Activities" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Refund Processing" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "You agree not to engage in any of the following prohibited activities:" %}</p>
+                    <p class="text-theme">{% trans "Once we receive and inspect your returned item:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "Violating laws or regulations" %}</li>
-                        <li>{% trans "Infringing on intellectual property rights" %}</li>
-                        <li>{% trans "Transmitting harmful code or viruses" %}</li>
-                        <li>{% trans "Attempting to gain unauthorized access to our systems" %}</li>
-                        <li>{% trans "Reselling products without authorization" %}</li>
+                        <li>{% trans "You'll receive an email confirmation of receipt within 2 business days" %}</li>
+                        <li>{% trans "Items are inspected within 2-3 business days" %}</li>
+                        <li>{% trans "Approval or rejection of refund will be communicated via email" %}</li>
+                        <li>{% trans "Approved refunds are processed within 5-7 business days" %}</li>
+                        <li>{% trans "Refund will be issued to your original payment method" %}</li>
+                        <li>{% trans "Bank processing may take additional 3-5 business days" %}</li>
                     </ul>
                 </div>
             </div>
@@ -364,18 +391,20 @@
             <!-- Policy Card 6 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="600">
                 <div class="policy-card-header">
-                    <span class="material-icons">copyright</span>
+                    <span class="material-icons">sync_alt</span>
                     <div>
                         <span class="policy-number">6</span>
-                        <h3 class="d-inline mb-0">{% trans "Intellectual Property" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Exchanges" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "All content on Mnory, including text, graphics, logos, images, and software, is the property of Mnory and is protected by copyright and trademark laws." %}</p>
+                    <p class="text-theme">{% trans "We offer exchanges for size, color, or different products:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "You may not reproduce or distribute our content without permission" %}</li>
-                        <li>{% trans "Product images and descriptions are for display purposes only" %}</li>
-                        <li>{% trans "Mnory name and logo are registered trademarks" %}</li>
+                        <li>{% trans "Contact us to arrange an exchange before returning the item" %}</li>
+                        <li>{% trans "Exchange items must meet the same eligibility criteria as returns" %}</li>
+                        <li>{% trans "We'll ship the replacement item once we receive your return" %}</li>
+                        <li>{% trans "If the new item costs more, you'll pay the difference" %}</li>
+                        <li>{% trans "If the new item costs less, we'll refund the difference" %}</li>
                     </ul>
                 </div>
             </div>
@@ -383,18 +412,20 @@
             <!-- Policy Card 7 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="700">
                 <div class="policy-card-header">
-                    <span class="material-icons">gavel</span>
+                    <span class="material-icons">warning</span>
                     <div>
                         <span class="policy-number">7</span>
-                        <h3 class="d-inline mb-0">{% trans "Limitation of Liability" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Damaged or Defective Items" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "Mnory shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our services." %}</p>
+                    <p class="text-theme">{% trans "If you receive a damaged or defective item:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "We provide our services 'as is' without warranties" %}</li>
-                        <li>{% trans "We are not responsible for third-party content or services" %}</li>
-                        <li>{% trans "Our liability is limited to the purchase price of the product" %}</li>
+                        <li>{% trans "Contact us immediately upon receipt" %}</li>
+                        <li>{% trans "Provide photos of the damage or defect" %}</li>
+                        <li>{% trans "We'll arrange for a replacement or full refund" %}</li>
+                        <li>{% trans "We cover all shipping costs for damaged/defective items" %}</li>
+                        <li>{% trans "No need to wait for return approval - we'll expedite the process" %}</li>
                     </ul>
                 </div>
             </div>
@@ -402,28 +433,30 @@
             <!-- Policy Card 8 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="800">
                 <div class="policy-card-header">
-                    <span class="material-icons">update</span>
+                    <span class="material-icons">card_giftcard</span>
                     <div>
                         <span class="policy-number">8</span>
-                        <h3 class="d-inline mb-0">{% trans "Changes to Terms" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Gifts & Gift Returns" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting to the website." %}</p>
+                    <p class="text-theme">{% trans "Items purchased as gifts can be returned:" %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "Your continued use constitutes acceptance of changes" %}</li>
-                        <li>{% trans "We recommend reviewing these terms periodically" %}</li>
-                        <li>{% trans "Significant changes will be communicated via email" %}</li>
+                        <li>{% trans "Gift recipients can return items without original receipt" %}</li>
+                        <li>{% trans "Store credit will be issued for the current selling price" %}</li>
+                        <li>{% trans "Original purchaser can request refund to original payment method" %}</li>
+                        <li>{% trans "Same 14-day return window applies from delivery date" %}</li>
                     </ul>
                 </div>
             </div>
 
             <!-- Contact Card -->
             <div class="contact-card" data-aos="zoom-in" data-aos-delay="900">
-                <span class="material-icons">contact_mail</span>
-                <h3>{% trans "Questions About These Terms?" %}</h3>
-                <p>{% trans "If you have any questions about these Terms of Service, please contact us at:" %}</p>
-                <p class="mb-0"><strong>Email:</strong> support@mnory.com</p>
+                <span class="material-icons">contact_support</span>
+                <h3>{% trans "Need Help with a Return?" %}</h3>
+                <p>{% trans "Our customer service team is here to assist you with any questions or concerns about returns and refunds." %}</p>
+                <p class="mb-2"><strong>{% trans "Email:" %}</strong> support@mnory.com</p>
+                <p class="mb-0"><strong>{% trans "Phone:" %}</strong> +20 100 123 4567</p>
             </div>
 
             <!-- Back Button -->
@@ -437,5 +470,5 @@
         </div>
     </div>
 </div>
-</main>
+</section>
 {% endblock content %}

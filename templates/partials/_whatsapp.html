@@ -1,21 +1,24 @@
 {% load i18n %}
 
-<button
-   type="button"
-   id="compareFab"
-   class="fab"
-   title="{% trans 'Compare products' %}"
-   aria-label="{% trans 'Compare products' %}"
-   style="display: none; background-color: var(--bs-info);"> {# Added background-color for distinction #}
-  <span class="material-icons" aria-hidden="true">compare_arrows</span>
-  <span id="compareFabCount" class="compare-fab-count" style="position: absolute; top: -5px; right: -5px; background-color: var(--bs-danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75em; display: none;">0</span>
-</button>
-
-<a href="https://wa.me/{{ config.WHATSAPP_NUMBER|cut:'+' }}"
-   id="whatsappBtn"
-   target="_blank"
-   class="fab" {# Added fab class #}
-   style="background-color: #25D366;" {# WhatsApp green #}
-   title="{% trans 'Chat with us on WhatsApp' %}">
-  <i class="fab fa-whatsapp" id="whatsappIcon"></i>
-</a>
+<li>
+    <a href="https://wa.me/{{ config.WHATSAPP_NUMBER|cut:'+' }}"
+       id="whatsappBtn"
+       target="_blank"
+       class="fab-option"
+       style="background-color: #25D366;"
+       title="{% trans 'Chat with us on WhatsApp' %}">
+      <i class="fab fa-whatsapp" id="whatsappIcon"></i>
+    </a>
+</li>
+<li>
+    <button
+       type="button"
+       id="compareFab"
+       class="fab-option"
+       title="{% trans 'Compare products' %}"
+       aria-label="{% trans 'Compare products' %}"
+       style="display: none; background-color: var(--bs-info);">
+      <span class="material-icons" aria-hidden="true">compare_arrows</span>
+      <span id="compareFabCount" class="compare-fab-count" style="position: absolute; top: -5px; right: -5px; background-color: var(--bs-danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75em; display: none;">0</span>
+    </button>
+</li>

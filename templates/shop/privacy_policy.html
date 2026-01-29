@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Terms of Service" %} - Mnory{% endblock %}
+{% block title %}{% trans "Privacy Policy" %} - Mnory{% endblock %}
 
 {% block css %}
 <style>
@@ -237,15 +237,15 @@
 {% endblock %}
 
 {% block content %}
-<main class="category-detail-section">
+<section class="category-detail-section">
 
 <!-- Hero Section -->
 <div class="policy-hero">
     <div class="container">
         <div class="policy-hero-content text-center" data-aos="fade-down">
-            <span class="material-icons policy-icon-hero">gavel</span>
-            <h1 class="display-4 fw-bold mb-3">{% trans "Terms of Service" %}</h1>
-            <p class="lead">{% trans "Please read these terms carefully before using our platform." %}</p>
+            <span class="material-icons policy-icon-hero">shield_person</span>
+            <h1 class="display-4 fw-bold mb-3">{% trans "Privacy Policy" %}</h1>
+            <p class="lead">{% trans "Your privacy is our priority. Learn how we protect your data." %}</p>
             <p class="mt-3"><small>{% trans "Last Updated: January 2025" %}</small></p>
         </div>
     </div>
@@ -258,25 +258,26 @@
 
             <!-- Introduction -->
             <div class="info-box" data-aos="fade-up">
-                <h5><span class="material-icons">info</span>{% trans "Welcome to Mnory" %}</h5>
-                <p class="mb-0">{% trans "By accessing and using the Mnory platform, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please do not use our services." %}</p>
+                <h5><span class="material-icons">info</span>{% trans "About This Policy" %}</h5>
+                <p class="mb-0">{% trans "This privacy policy explains how Mnory collects, uses, and protects your personal information when you use our platform." %}</p>
             </div>
 
             <!-- Policy Card 1 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="policy-card-header">
-                    <span class="material-icons">verified_user</span>
+                    <span class="material-icons">fact_check</span>
                     <div>
                         <span class="policy-number">1</span>
-                        <h3 class="d-inline mb-0">{% trans "Acceptance of Terms" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Information We Collect" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "By creating an account or making a purchase on Mnory, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy." %}</p>
+                    <p class="text-theme">{% trans "We collect information you provide during registration, purchases, or customer service interactions, including your name, email, address, and payment details." %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "You must be at least 18 years old to use our services" %}</li>
-                        <li>{% trans "You are responsible for maintaining the security of your account" %}</li>
-                        <li>{% trans "You agree to provide accurate and complete information" %}</li>
+                        <li>{% trans "Personal identification information (name, email, phone)" %}</li>
+                        <li>{% trans "Billing and shipping addresses" %}</li>
+                        <li>{% trans "Payment information (processed securely)" %}</li>
+                        <li>{% trans "Order history and preferences" %}</li>
                     </ul>
                 </div>
             </div>
@@ -284,18 +285,20 @@
             <!-- Policy Card 2 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="200">
                 <div class="policy-card-header">
-                    <span class="material-icons">shopping_bag</span>
+                    <span class="material-icons">insights</span>
                     <div>
                         <span class="policy-number">2</span>
-                        <h3 class="d-inline mb-0">{% trans "Product Information" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "How We Use Information" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We strive to provide accurate product descriptions, images, and pricing. However, we do not warrant that product information is complete, reliable, current, or error-free." %}</p>
+                    <p class="text-theme">{% trans "Your data is used to process orders, improve your shopping experience, send updates, and protect against fraud." %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "Product colors may vary slightly from images shown" %}</li>
-                        <li>{% trans "We reserve the right to correct pricing errors" %}</li>
-                        <li>{% trans "Product availability is subject to change without notice" %}</li>
+                        <li>{% trans "Process and fulfill your orders" %}</li>
+                        <li>{% trans "Communicate about your purchases and account" %}</li>
+                        <li>{% trans "Personalize your shopping experience" %}</li>
+                        <li>{% trans "Improve our services and platform" %}</li>
+                        <li>{% trans "Prevent fraud and enhance security" %}</li>
                     </ul>
                 </div>
             </div>
@@ -303,19 +306,19 @@
             <!-- Policy Card 3 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="300">
                 <div class="policy-card-header">
-                    <span class="material-icons">payment</span>
+                    <span class="material-icons">security</span>
                     <div>
                         <span class="policy-number">3</span>
-                        <h3 class="d-inline mb-0">{% trans "Orders & Payments" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Data Security" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "All orders are subject to acceptance and availability. We reserve the right to refuse or cancel any order for any reason." %}</p>
+                    <p class="text-theme">{% trans "We implement appropriate technical and organizational measures to protect your personal data." %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "Payment must be received before order processing" %}</li>
-                        <li>{% trans "We accept various payment methods as displayed at checkout" %}</li>
-                        <li>{% trans "Prices are in Egyptian Pounds (EGP) and include VAT where applicable" %}</li>
-                        <li>{% trans "You agree to pay all charges incurred by you or on your behalf" %}</li>
+                        <li>{% trans "SSL encryption for all data transmission" %}</li>
+                        <li>{% trans "Secure payment processing systems" %}</li>
+                        <li>{% trans "Regular security audits and updates" %}</li>
+                        <li>{% trans "Restricted access to personal data" %}</li>
                     </ul>
                 </div>
             </div>
@@ -323,19 +326,19 @@
             <!-- Policy Card 4 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="400">
                 <div class="policy-card-header">
-                    <span class="material-icons">account_circle</span>
+                    <span class="material-icons">groups</span>
                     <div>
                         <span class="policy-number">4</span>
-                        <h3 class="d-inline mb-0">{% trans "User Accounts" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Third-Party Sharing" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "When you create an account with us, you are responsible for maintaining the confidentiality of your account and password." %}</p>
+                    <p class="text-theme">{% trans "We do not sell or rent your personal data. Some data may be shared with payment processors or shipping partners as necessary to complete your order." %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "You are responsible for all activities under your account" %}</li>
-                        <li>{% trans "Notify us immediately of any unauthorized use" %}</li>
-                        <li>{% trans "We reserve the right to suspend or terminate accounts" %}</li>
-                        <li>{% trans "One person or legal entity may not maintain more than one account" %}</li>
+                        <li>{% trans "Payment processors for secure transactions" %}</li>
+                        <li>{% trans "Shipping partners for order delivery" %}</li>
+                        <li>{% trans "Service providers who assist our operations" %}</li>
+                        <li>{% trans "Legal authorities when required by law" %}</li>
                     </ul>
                 </div>
             </div>
@@ -343,20 +346,20 @@
             <!-- Policy Card 5 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="500">
                 <div class="policy-card-header">
-                    <span class="material-icons">block</span>
+                    <span class="material-icons">verified_user</span>
                     <div>
                         <span class="policy-number">5</span>
-                        <h3 class="d-inline mb-0">{% trans "Prohibited Activities" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Your Rights" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "You agree not to engage in any of the following prohibited activities:" %}</p>
+                    <p class="text-theme">{% trans "You have the right to access, correct, or delete your personal data. Contact us at privacy@mnory.com for assistance." %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "Violating laws or regulations" %}</li>
-                        <li>{% trans "Infringing on intellectual property rights" %}</li>
-                        <li>{% trans "Transmitting harmful code or viruses" %}</li>
-                        <li>{% trans "Attempting to gain unauthorized access to our systems" %}</li>
-                        <li>{% trans "Reselling products without authorization" %}</li>
+                        <li>{% trans "Access your personal data" %}</li>
+                        <li>{% trans "Correct inaccurate information" %}</li>
+                        <li>{% trans "Request data deletion" %}</li>
+                        <li>{% trans "Opt-out of marketing communications" %}</li>
+                        <li>{% trans "Data portability" %}</li>
                     </ul>
                 </div>
             </div>
@@ -364,70 +367,34 @@
             <!-- Policy Card 6 -->
             <div class="policy-card" data-aos="fade-up" data-aos-delay="600">
                 <div class="policy-card-header">
-                    <span class="material-icons">copyright</span>
+                    <span class="material-icons">cookie</span>
                     <div>
                         <span class="policy-number">6</span>
-                        <h3 class="d-inline mb-0">{% trans "Intellectual Property" %}</h3>
+                        <h3 class="d-inline mb-0">{% trans "Cookies" %}</h3>
                     </div>
                 </div>
                 <div class="policy-card-body">
-                    <p class="text-theme">{% trans "All content on Mnory, including text, graphics, logos, images, and software, is the property of Mnory and is protected by copyright and trademark laws." %}</p>
+                    <p class="text-theme">{% trans "We use cookies to personalize content, analyze traffic, and improve our services. By using the site, you consent to our cookie policy." %}</p>
                     <ul class="text-theme-muted">
-                        <li>{% trans "You may not reproduce or distribute our content without permission" %}</li>
-                        <li>{% trans "Product images and descriptions are for display purposes only" %}</li>
-                        <li>{% trans "Mnory name and logo are registered trademarks" %}</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Policy Card 7 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="700">
-                <div class="policy-card-header">
-                    <span class="material-icons">gavel</span>
-                    <div>
-                        <span class="policy-number">7</span>
-                        <h3 class="d-inline mb-0">{% trans "Limitation of Liability" %}</h3>
-                    </div>
-                </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "Mnory shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our services." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "We provide our services 'as is' without warranties" %}</li>
-                        <li>{% trans "We are not responsible for third-party content or services" %}</li>
-                        <li>{% trans "Our liability is limited to the purchase price of the product" %}</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Policy Card 8 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="800">
-                <div class="policy-card-header">
-                    <span class="material-icons">update</span>
-                    <div>
-                        <span class="policy-number">8</span>
-                        <h3 class="d-inline mb-0">{% trans "Changes to Terms" %}</h3>
-                    </div>
-                </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting to the website." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "Your continued use constitutes acceptance of changes" %}</li>
-                        <li>{% trans "We recommend reviewing these terms periodically" %}</li>
-                        <li>{% trans "Significant changes will be communicated via email" %}</li>
+                        <li>{% trans "Essential cookies for site functionality" %}</li>
+                        <li>{% trans "Analytics cookies to understand usage patterns" %}</li>
+                        <li>{% trans "Preference cookies to remember your settings" %}</li>
+                        <li>{% trans "Marketing cookies for personalized ads" %}</li>
                     </ul>
                 </div>
             </div>
 
             <!-- Contact Card -->
-            <div class="contact-card" data-aos="zoom-in" data-aos-delay="900">
+            <div class="contact-card" data-aos="zoom-in" data-aos-delay="700">
                 <span class="material-icons">contact_mail</span>
-                <h3>{% trans "Questions About These Terms?" %}</h3>
-                <p>{% trans "If you have any questions about these Terms of Service, please contact us at:" %}</p>
-                <p class="mb-0"><strong>Email:</strong> support@mnory.com</p>
+                <h3>{% trans "Privacy Questions?" %}</h3>
+                <p>{% trans "For any questions or concerns about how we handle your data, contact us at:" %}</p>
+                <p class="mb-2"><strong>{% trans "Email:" %}</strong> privacy@mnory.com</p>
+                <p class="mb-0"><strong>{% trans "Phone:" %}</strong> +20 100 123 4567</p>
             </div>
 
             <!-- Back Button -->
-            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="1000">
+            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="800">
                 <a href="{% url 'shop:home' %}" class="btn-back">
                     <span class="material-icons">home</span>
                     {% trans "Back to Home" %}
@@ -437,5 +404,5 @@
         </div>
     </div>
 </div>
-</main>
+</section>
 {% endblock content %}
