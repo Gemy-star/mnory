@@ -93,7 +93,10 @@
       data-remove-from-wishlist-url="{% url 'shop:remove_from_wishlist' %}"
       data-mark-notifications-url="{% url 'shop:mark_notifications_as_read' %}">
 
-    <!-- ... (header, loader, messages, etc.) ... -->
+    <header role="banner" class="site-header">
+        {% include 'partials/_header.html' %}
+    </header>
+
     <main id="main-content" role="main" class="main-content bg-theme" itemscope itemtype="https://schema.org/WebPageElement">
         <div class="content-wrapper">
             {% block content %}
@@ -101,7 +104,6 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer role="contentinfo" class="footer">
         {% include 'partials/_footer.html' %}
     </footer>
