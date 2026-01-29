@@ -1,0 +1,827 @@
+/**
+ * ========================================
+ * ULTRA MODERN FLOATING ACTION BUTTONS
+ * Features: Glassmorphism, 3D Effects, Smooth Animations
+ * ========================================
+ */
+
+/* FAB Menu Container */
+.fab-menu {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+/* Main FAB Button - Modern 3D Design */
+.fab-main {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow:
+        0 10px 40px rgba(102, 126, 234, 0.4),
+        0 5px 20px rgba(118, 75, 162, 0.3),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.15),
+        inset 0 2px 10px rgba(255, 255, 255, 0.2);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1001;
+}
+
+/* Glossy shine effect */
+.fab-main::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        60deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.25) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    transition: all 0.7s ease;
+}
+
+.fab-main:hover::before {
+    left: 100%;
+}
+
+/* Floating animation */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+.fab-main {
+    animation: float 3s ease-in-out infinite;
+}
+
+.fab-main:hover {
+    transform: scale(1.2) translateY(-6px);
+    box-shadow:
+        0 15px 60px rgba(102, 126, 234, 0.55),
+        0 10px 30px rgba(118, 75, 162, 0.45),
+        inset 0 -3px 10px rgba(0, 0, 0, 0.2),
+        inset 0 2px 10px rgba(255, 255, 255, 0.3);
+    animation: none;
+}
+
+.fab-main:active {
+    transform: scale(1.1);
+}
+
+/* Active state with rotation */
+.fab-main.active {
+    transform: rotate(135deg) scale(1.15);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    animation: none;
+}
+
+.fab-main.active:hover {
+    transform: rotate(135deg) scale(1.25);
+}
+
+/* Material Icons styling */
+.fab-main .material-icons {
+    font-size: 34px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+}
+
+.fab-main.active .material-icons {
+    transform: rotate(-135deg);
+}
+
+/* FAB Menu Items Container */
+.fab-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(40px) scale(0.7);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.fab-menu-items.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+/* Individual FAB Action Buttons - Glassmorphism Style */
+.fab-action,
+.fab-option {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.25),
+        0 3px 10px rgba(0, 0, 0, 0.18),
+        inset 0 1px 3px rgba(255, 255, 255, 0.25),
+        inset 0 -2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    transform: scale(0) rotate(-120deg);
+    transform-origin: center;
+    overflow: hidden;
+}
+
+/* Glossy overlay for buttons */
+.fab-action::before,
+.fab-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.fab-action:hover::before,
+.fab-option:hover::before {
+    left: 100%;
+}
+
+/* Ripple effect on click */
+.fab-action::after,
+.fab-option::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.6s ease-out;
+    border-radius: 50%;
+}
+
+.fab-action:active::after,
+.fab-option:active::after {
+    transform: scale(2.5);
+}
+
+.fab-menu-items.active .fab-action,
+.fab-menu-items.active .fab-option {
+    transform: scale(1) rotate(0deg);
+}
+
+/* Staggered elegant entrance animation */
+.fab-menu-items.active .fab-action:nth-child(1),
+.fab-menu-items.active .fab-option:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.fab-menu-items.active .fab-action:nth-child(2),
+.fab-menu-items.active .fab-option:nth-child(2) {
+    transition-delay: 0.18s;
+}
+
+.fab-menu-items.active .fab-action:nth-child(3),
+.fab-menu-items.active .fab-option:nth-child(3) {
+    transition-delay: 0.26s;
+}
+
+.fab-menu-items.active .fab-action:nth-child(4),
+.fab-menu-items.active .fab-option:nth-child(4) {
+    transition-delay: 0.34s;
+}
+
+/* Hover state with 3D effect */
+.fab-action:hover,
+.fab-option:hover {
+    transform: scale(1.25) translateX(-15px);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.35),
+        0 6px 15px rgba(0, 0, 0, 0.25),
+        inset 0 1px 4px rgba(255, 255, 255, 0.35),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.fab-action:active,
+.fab-option:active {
+    transform: scale(1.15) translateX(-15px);
+}
+
+/* ========================================
+ * BUTTON SPECIFIC COLORS WITH GRADIENTS
+ * ========================================
+ */
+
+/* WhatsApp - Modern Green Gradient */
+#whatsappBtn {
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 50%, #0a6e5c 100%);
+}
+
+#whatsappBtn:hover {
+    background: linear-gradient(135deg, #128c7e 0%, #0a6e5c 50%, #25d366 100%);
+    box-shadow:
+        0 15px 50px rgba(37, 211, 102, 0.6),
+        0 8px 20px rgba(18, 140, 126, 0.45),
+        inset 0 1px 4px rgba(255, 255, 255, 0.35);
+}
+
+/* Compare - Modern Cyan Gradient */
+#compareBtn,
+#compareFab {
+    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 50%, #006699 100%);
+    position: relative;
+}
+
+#compareBtn:hover,
+#compareFab:hover {
+    background: linear-gradient(135deg, #0099cc 0%, #006699 50%, #00d4ff 100%);
+    box-shadow:
+        0 15px 50px rgba(0, 212, 255, 0.6),
+        0 8px 20px rgba(0, 153, 204, 0.45),
+        inset 0 1px 4px rgba(255, 255, 255, 0.35);
+}
+
+/* Compare Count Badge */
+.compare-fab-count {
+    position: absolute !important;
+    top: -6px !important;
+    right: -6px !important;
+    background: linear-gradient(135deg, #ff4757, #dc3545) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    padding: 4px 8px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    min-width: 22px !important;
+    height: 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.5) !important;
+    border: 2px solid #ffffff !important;
+    animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Chatbot - Modern Purple Gradient */
+#mnoryChatbotToggle,
+#fabChatbot {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+}
+
+#mnoryChatbotToggle:hover,
+#fabChatbot:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #667eea 100%);
+    box-shadow:
+        0 15px 50px rgba(102, 126, 234, 0.6),
+        0 8px 20px rgba(118, 75, 162, 0.45),
+        inset 0 1px 4px rgba(255, 255, 255, 0.35);
+}
+
+/* OTP - Modern Orange Gradient */
+#fabOTP {
+    background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 50%, #ff4500 100%);
+}
+
+#fabOTP:hover {
+    background: linear-gradient(135deg, #ff6a00 0%, #ff4500 50%, #ff9a56 100%);
+    box-shadow:
+        0 15px 50px rgba(255, 154, 86, 0.6),
+        0 8px 20px rgba(255, 106, 0, 0.45),
+        inset 0 1px 4px rgba(255, 255, 255, 0.35);
+}
+
+/* Back to Top - Modern Dark Gradient */
+#backToTop,
+#fabBackToTop {
+    background: linear-gradient(135deg, #8e9eab 0%, #5f6f81 50%, #3d4852 100%);
+    display: none;
+}
+
+#backToTop:hover,
+#fabBackToTop:hover {
+    background: linear-gradient(135deg, #5f6f81 0%, #3d4852 50%, #8e9eab 100%);
+    box-shadow:
+        0 15px 50px rgba(95, 111, 129, 0.6),
+        0 8px 20px rgba(61, 72, 82, 0.45),
+        inset 0 1px 4px rgba(255, 255, 255, 0.35);
+}
+
+/* ========================================
+ * MODERN GLASSMORPHISM TOOLTIPS
+ * ========================================
+ */
+
+.fab-action[data-tooltip]::before,
+.fab-action[title]::before,
+.fab-option[title]::before {
+    content: attr(data-tooltip) attr(title);
+    position: absolute;
+    right: calc(100% + 18px);
+    top: 50%;
+    transform: translateY(-50%) translateX(15px);
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    color: #ffffff;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.fab-action[data-tooltip]::after,
+.fab-action[title]::after,
+.fab-option[title]::after {
+    content: '';
+    position: absolute;
+    right: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+    border-left: 9px solid rgba(0, 0, 0, 0.9);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(2px 0 4px rgba(0, 0, 0, 0.2));
+}
+
+.fab-action:hover[data-tooltip]::before,
+.fab-action:hover[title]::before,
+.fab-option:hover[title]::before {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+.fab-action:hover[data-tooltip]::after,
+.fab-action:hover[title]::after,
+.fab-option:hover[title]::after {
+    opacity: 1;
+}
+
+/* Material Icons in FAB Actions */
+.fab-action .material-icons,
+.fab-option .material-icons,
+.fab-action i,
+.fab-option i {
+    font-size: 28px;
+    user-select: none;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* ========================================
+ * CHATBOT WIDGET - ULTRA MODERN DESIGN
+ * ========================================
+ */
+
+.chatbot-widget {
+    position: fixed;
+    bottom: 120px;
+    right: 32px;
+    width: 440px;
+    max-width: calc(100vw - 64px);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 28px;
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.25),
+        0 15px 40px rgba(0, 0, 0, 0.18),
+        inset 0 1px 3px rgba(255, 255, 255, 0.6);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(40px) scale(0.85);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    overflow: hidden;
+}
+
+.chatbot-widget.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.chatbot-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    padding: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+    position: relative;
+}
+
+.chatbot-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+    pointer-events: none;
+}
+
+.chatbot-header h3 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    color: #ffffff !important;
+    z-index: 1;
+}
+
+.chatbot-close {
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 40px;
+    height: 40px;
+    z-index: 1;
+}
+
+.chatbot-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg) scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chatbot-close .material-icons {
+    font-size: 22px;
+}
+
+.chatbot-body {
+    padding: 26px;
+    max-height: 480px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.95));
+}
+
+/* Custom elegant scrollbar */
+.chatbot-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chatbot-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 10px;
+}
+
+.chatbot-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+}
+
+.chatbot-message {
+    padding: 16px 20px;
+    border-radius: 20px;
+    max-width: 85%;
+    animation: messageEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+@keyframes messageEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(25px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.chatbot-message-user {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    align-self: flex-end;
+    margin-left: auto;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.25);
+}
+
+.chatbot-message-bot {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    color: #333333;
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.chatbot-message p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 500;
+}
+
+.chatbot-footer {
+    padding: 22px 26px 26px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.chatbot-input {
+    flex: 1;
+    padding: 16px 22px;
+    border: 2px solid rgba(0, 0, 0, 0.12);
+    border-radius: 28px;
+    font-size: 15px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    color: #333;
+}
+
+.chatbot-input::placeholder {
+    color: #999;
+}
+
+.chatbot-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 5px rgba(102, 126, 234, 0.12);
+    background: #ffffff;
+    transform: translateY(-2px);
+}
+
+.chatbot-send {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+}
+
+.chatbot-send:hover {
+    transform: scale(1.2) rotate(15deg);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+.chatbot-send:active {
+    transform: scale(1.1) rotate(15deg);
+}
+
+.chatbot-send .material-icons {
+    font-size: 24px;
+}
+
+/* ========================================
+ * RESPONSIVE DESIGN
+ * ========================================
+ */
+
+@media (max-width: 768px) {
+    .fab-menu {
+        bottom: 24px;
+        right: 24px;
+    }
+
+    .fab-main {
+        width: 62px;
+        height: 62px;
+    }
+
+    .fab-main .material-icons {
+        font-size: 30px;
+    }
+
+    .fab-action,
+    .fab-option {
+        width: 54px;
+        height: 54px;
+    }
+
+    .fab-action .material-icons,
+    .fab-option .material-icons {
+        font-size: 24px;
+    }
+
+    .chatbot-widget {
+        width: calc(100vw - 48px);
+        max-width: 400px;
+        right: 24px;
+        bottom: 105px;
+        border-radius: 24px;
+    }
+
+    .fab-action[data-tooltip]::before,
+    .fab-action[title]::before,
+    .fab-option[title]::before {
+        font-size: 13px;
+        padding: 10px 14px;
+    }
+
+    .fab-menu-items {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fab-menu {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .fab-main {
+        width: 58px;
+        height: 58px;
+    }
+
+    .fab-main .material-icons {
+        font-size: 28px;
+    }
+
+    .fab-action,
+    .fab-option {
+        width: 50px;
+        height: 50px;
+    }
+
+    .chatbot-widget {
+        width: calc(100vw - 40px);
+        right: 20px;
+        bottom: 95px;
+        max-height: calc(100vh - 130px);
+        border-radius: 22px;
+    }
+
+    .chatbot-body {
+        max-height: calc(100vh - 320px);
+        padding: 22px;
+    }
+
+    .chatbot-header {
+        padding: 22px;
+    }
+
+    .chatbot-header h3 {
+        font-size: 19px;
+    }
+
+    .chatbot-footer {
+        padding: 18px 22px 22px;
+    }
+}
+
+/* Hide tooltips on touch devices */
+@media (hover: none) {
+    .fab-action[data-tooltip]::before,
+    .fab-action[data-tooltip]::after,
+    .fab-action[title]::before,
+    .fab-action[title]::after,
+    .fab-option[title]::before,
+    .fab-option[title]::after {
+        display: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .chatbot-widget {
+        background: rgba(30, 30, 30, 0.98);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .chatbot-body {
+        background: linear-gradient(to bottom, rgba(30, 30, 30, 0.95), rgba(25, 25, 35, 0.95));
+    }
+
+    .chatbot-message-bot {
+        background: rgba(50, 50, 60, 0.9);
+        color: #e0e0e0;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .chatbot-input {
+        background: rgba(50, 50, 60, 0.8);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+    }
+
+    .chatbot-input::placeholder {
+        color: #999;
+    }
+
+    .chatbot-input:focus {
+        background: rgba(50, 50, 60, 0.95);
+        border-color: #667eea;
+    }
+
+    .chatbot-footer {
+        background: rgba(30, 30, 30, 0.95);
+        border-top-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .chatbot-body::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* Dark mode class support */
+body.dark-mode .chatbot-widget {
+    background: rgba(30, 30, 30, 0.98);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .chatbot-body {
+    background: linear-gradient(to bottom, rgba(30, 30, 30, 0.95), rgba(25, 25, 35, 0.95));
+}
+
+body.dark-mode .chatbot-message-bot {
+    background: rgba(50, 50, 60, 0.9);
+    color: #e0e0e0;
+}
+
+body.dark-mode .chatbot-input {
+    background: rgba(50, 50, 60, 0.8);
+    color: #ffffff;
+}
+
+body.dark-mode .chatbot-footer {
+    background: rgba(30, 30, 30, 0.95);
+}

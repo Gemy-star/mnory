@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/combined.css' %}">
+    <link rel="stylesheet" href="{% static 'css/floating-actions.css' %}">
     {% block css %}{% endblock css %}
     <style>
         .fab-menu {
@@ -40,9 +41,8 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        .fab-menu .fab-main:hover {
-            background-color: var(--bs-primary-dark);
-            transform: rotate(90deg);
+        .fab-menu.active .fab-main {
+            transform: rotate(45deg);
         }
         .fab-menu .fab-options {
             position: absolute;
@@ -59,7 +59,7 @@
             transform: translateY(10px);
             transition: all 0.3s ease;
         }
-        .fab-menu:hover .fab-options {
+        .fab-menu.active .fab-options {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
@@ -141,6 +141,7 @@
     </script>
     <script src="{% static 'js/cart-wishlist.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/floating-actions.js' %}"></script>
     <!-- ... (chatbot logic) ... -->
     {% block js %}{% endblock js %}
 </body>
