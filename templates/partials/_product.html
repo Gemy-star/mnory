@@ -339,6 +339,7 @@
         <!-- Action Buttons -->
         <div class="product-actions">
             <button class="action-btn-modern wishlist-btn {% if product.id|stringformat:'s' in request.session.wishlist %}active{% endif %}"
+                    data-action="wishlist-toggle"
                     data-product-id="{{ product.id }}"
                     title="{% trans 'Add to Wishlist' %}">
                 <i class="fas fa-heart"></i>
@@ -350,6 +351,7 @@
                 <i class="fas fa-exchange-alt"></i>
             </button>
             <button class="action-btn-modern cart-btn"
+                    data-action="cart-add"
                     data-product-id="{{ product.id }}"
                     title="{% trans 'Add to Cart' %}">
                 <i class="fas fa-shopping-cart"></i>

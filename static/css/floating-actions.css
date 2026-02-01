@@ -321,15 +321,16 @@
 
 @media (max-width: 768px) {
     .fab-menu {
-        bottom: 24px;
-        right: 20px;
+        bottom: 80px; /* Moved higher to avoid mobile navigation */
+        bottom: calc(80px + env(safe-area-inset-bottom)); /* Safe area for notched devices */
+        right: 16px;
         gap: 10px;
     }
 
     .fab-option {
-        width: 54px;
-        height: 54px;
-        border-radius: 15px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
     }
 
     .fab-option .material-icons,
@@ -347,9 +348,9 @@
 
     /* WhatsApp button responsive - force square style */
     #whatsappBtn {
-        width: 54px !important;
-        height: 54px !important;
-        border-radius: 15px !important;
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 14px !important;
     }
 
     #whatsappBtn .fab {
@@ -363,12 +364,13 @@
 
     /* Compare button mobile */
     #compareFab {
-        bottom: 90px !important;
-        left: 20px !important;
+        bottom: 20px !important;
+        bottom: calc(20px + env(safe-area-inset-bottom)) !important; /* Safe area support */
+        left: 16px !important;
         right: auto !important;
-        width: 54px !important;
-        height: 54px !important;
-        border-radius: 15px !important;
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 14px !important;
     }
 
     #compareFabCount,
@@ -384,15 +386,16 @@
 
 @media (max-width: 480px) {
     .fab-menu {
-        bottom: 20px;
-        right: 16px;
+        bottom: 70px; /* Higher to avoid mobile navigation and keyboard */
+        bottom: calc(70px + env(safe-area-inset-bottom)); /* Safe area for notched devices */
+        right: 12px;
         gap: 8px;
     }
 
     .fab-option {
-        width: 50px;
-        height: 50px;
-        border-radius: 14px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
     }
 
     .fab-option .material-icons,
@@ -410,9 +413,9 @@
 
     /* WhatsApp button responsive - force square style on small screens */
     #whatsappBtn {
-        width: 50px !important;
-        height: 50px !important;
-        border-radius: 14px !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
     }
 
     #whatsappBtn .fab {
@@ -421,12 +424,13 @@
 
     /* Compare button small mobile */
     #compareFab {
-        bottom: 85px !important;
-        left: 16px !important;
+        bottom: 16px !important;
+        bottom: calc(16px + env(safe-area-inset-bottom)) !important; /* Safe area support */
+        left: 12px !important;
         right: auto !important;
-        width: 50px !important;
-        height: 50px !important;
-        border-radius: 14px !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
     }
 
     /* Compare Count Badge - smaller on mobile */
