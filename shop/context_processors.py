@@ -10,6 +10,22 @@ def categories_processor(request):
     return {"all_categories": categories}
 
 
+def currency_processor(request):
+    """
+    Provides the user's selected currency to all templates.
+    Defaults to USD if not set.
+    """
+    currency = request.session.get("currency", "USD")
+    # Debug logging
+    import logging
+
+    logger = logging.getLogger(__name__)
+    logger.info(
+        f"Currency processor: session_key={request.session.session_key}, currency={currency}"
+    )
+    return {"currency": currency}
+
+
 def notifications_context(request):
     """
     Provides notification-related context to all templates.

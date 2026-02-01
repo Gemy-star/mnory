@@ -158,6 +158,17 @@
     border-color: #667eea;
 }
 
+/* Compare button specific styling */
+.action-btn-modern.compare-btn.in-compare {
+    background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+    color: white;
+    border-color: #007AFF;
+}
+
+.action-btn-modern.compare-btn:hover {
+    background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+}
+
 .action-btn-modern i {
     font-size: 18px;
 }
@@ -286,7 +297,13 @@
 }
 </style>
 
-<div class="product-card-modern" data-product-id="{{ product.pk }}">
+<div class="product-card-modern"
+     data-product-id="{{ product.pk }}"
+     data-category="{{ product.category.name|default:'' }}"
+     data-brand="{{ product.brand|default:'' }}"
+     data-description="{{ product.short_description|default:product.description|default:''|striptags|truncatewords:20 }}"
+     data-stock="{{ product.stock_quantity|default:'0' }}"
+     data-tags="{% for tag in product.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
     <!-- Image Section -->
     <div class="product-image-box">
         <!-- Badges -->
@@ -325,6 +342,12 @@
                     data-product-id="{{ product.id }}"
                     title="{% trans 'Add to Wishlist' %}">
                 <i class="fas fa-heart"></i>
+            </button>
+            <button class="action-btn-modern compare-btn"
+                    data-action="compare-toggle"
+                    data-product-id="{{ product.id }}"
+                    title="{% trans 'Add to Compare' %}">
+                <i class="fas fa-exchange-alt"></i>
             </button>
             <button class="action-btn-modern cart-btn"
                     data-product-id="{{ product.id }}"

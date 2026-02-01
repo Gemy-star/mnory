@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Header Scroll Behavior
     function initHeaderScrollBehavior() {
-        const navbar = document.getElementById('mainNavbar');
+        const navbar = document.getElementById('mainHeader');
         const promoBanner = document.getElementById('promoBanner');
         const body = document.body;
 
@@ -892,27 +892,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const labels = compareTable ? {
             name: compareTable.dataset.labelName || 'Name',
             price: compareTable.dataset.labelPrice || 'Price',
+            category: compareTable.dataset.labelCategory || 'Category',
+            brand: compareTable.dataset.labelBrand || 'Brand',
             vendor: compareTable.dataset.labelVendor || 'Vendor',
             rating: compareTable.dataset.labelRating || 'Rating',
+            description: compareTable.dataset.labelDescription || 'Description',
             colors: compareTable.dataset.labelColors || 'Colors',
             sizes: compareTable.dataset.labelSizes || 'Sizes',
-            availability: compareTable.dataset.labelAvailability || 'Availability'
+            stock: compareTable.dataset.labelStock || 'Stock',
+            availability: compareTable.dataset.labelAvailability || 'Availability',
+            tags: compareTable.dataset.labelTags || 'Tags'
         } : {
             name: 'Name',
             price: 'Price',
+            category: 'Category',
+            brand: 'Brand',
             vendor: 'Vendor',
             rating: 'Rating',
+            description: 'Description',
             colors: 'Colors',
             sizes: 'Sizes',
-            availability: 'Availability'
+            stock: 'Stock',
+            availability: 'Availability',
+            tags: 'Tags'
         };
 
         function collectProductData(card) {
             const id = card.dataset.productId || '';
-            const nameEl = card.querySelector('.product-title-link, .product-name a, .product-name');
+
+            // Try multiple selectors for product name (modern cards use different structure)
+            const nameEl = card.querySelector('.product-title-link, .product-name a, .product-name, .product-info-modern h3 a');
             const name = nameEl ? nameEl.textContent.trim() : '';
 
-            const priceEl = card.querySelector('.product-price-wrapper .current-price') ||
+            // Try multiple selectors for price (modern cards use .price-current)
+            const priceEl = card.querySelector('.price-current, .product-price-wrapper .current-price') ||
                 card.querySelector('.price-area .sale-price') ||
                 card.querySelector('.price-area .regular-price');
             const price = priceEl ? priceEl.textContent.trim() : '';
@@ -920,8 +933,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const vendorEl = card.querySelector('.vendor-name');
             const vendor = vendorEl ? vendorEl.textContent.trim() : '';
 
-            const ratingTextEl = card.querySelector('.rating-text');
-            const ratingCountEl = card.querySelector('.rating-count');
+            // Modern cards use different rating structure
+            const ratingTextEl = card.querySelector('.rating-value, .rating-text');
+            const ratingCountEl = card.querySelector('.rating-count-text, .rating-count');
             const rating = ratingTextEl ? ratingTextEl.textContent.trim() : '';
             const ratingCount = ratingCountEl ? ratingCountEl.textContent.trim() : '';
 
@@ -937,25 +951,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 .filter(Boolean)
                 .join(', ');
 
-            const statusEl = card.querySelector('.availability-status .status');
+            const statusEl = card.querySelector('.availability-status .status, .stock-status');
             const status = statusEl ? statusEl.textContent.trim() : '';
 
-            const imgEl = card.querySelector('.product-img.main-img, .product-img');
+            // Modern cards use different image structure
+            const imgEl = card.querySelector('.product-image-box img, .product-img.main-img, .product-img');
             const image = imgEl ? imgEl.getAttribute('src') : '';
 
-            const linkEl = card.querySelector('.product-link, .product-title-link');
+            // Modern cards link structure
+            const linkEl = card.querySelector('a[href*="/product/"], .product-link, .product-title-link');
             const url = linkEl ? linkEl.getAttribute('href') : '#';
+
+            // Extract additional data from data attributes
+            const category = card.dataset.category || '';
+            const brand = card.dataset.brand || '';
+            const description = card.dataset.description || '';
+            const stock = card.dataset.stock || '';
+            const tags = card.dataset.tags || '';
 
             return {
                 id,
                 name,
                 price,
+                category,
+                brand,
                 vendor,
                 rating,
                 ratingCount,
+                description,
                 colors,
                 sizes,
+                stock,
                 status,
+                tags,
                 image,
                 url
             };
@@ -978,6 +1006,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 emptyState.style.display = 'block';
                 if (compareFab) {
                     compareFab.style.display = 'none';
+                    compareFab.classList.remove('show');
                 }
                 if (compareFabCount) {
                     compareFabCount.style.display = 'none';
@@ -989,6 +1018,7 @@ document.addEventListener('DOMContentLoaded', function() {
             emptyState.style.display = 'none';
             if (compareFab) {
                 compareFab.style.display = 'flex';
+                compareFab.classList.add('show');
             }
             if (compareFabCount) {
                 compareFabCount.style.display = 'flex';
@@ -1009,11 +1039,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const rows = [
                 { key: 'price', label: labels.price, icon: 'sell' },
+                { key: 'category', label: labels.category, icon: 'category' },
+                { key: 'brand', label: labels.brand, icon: 'label' },
                 { key: 'vendor', label: labels.vendor, icon: 'store' },
                 { key: 'rating', label: labels.rating, icon: 'star' },
+                { key: 'description', label: labels.description, icon: 'description' },
                 { key: 'colors', label: labels.colors, icon: 'palette' },
                 { key: 'sizes', label: labels.sizes, icon: 'straighten' },
-                { key: 'status', label: labels.availability, icon: 'inventory_2' }
+                { key: 'stock', label: labels.stock, icon: 'inventory' },
+                { key: 'status', label: labels.availability, icon: 'inventory_2' },
+                { key: 'tags', label: labels.tags, icon: 'local_offer' }
             ];
 
             rows.forEach(row => {
@@ -1033,11 +1068,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     let value = item[row.key] || '';
 
                     if (row.key === 'rating' && item.rating) {
-                        const countText = item.ratingCount ? ' ' + item.ratingCount : '';
-                        value = item.rating + countText;
-                    }
-
-                    if (row.key === 'status') {
+                        const countText = item.ratingCount ? ' (' + item.ratingCount + ')' : '';
+                        td.innerHTML = '<span class="text-warning">★</span> ' + item.rating + countText;
+                    } else if (row.key === 'status') {
                         const rawStatus = value || '';
                         let statusText = rawStatus
                             .replace('check_circle', '')
@@ -1060,6 +1093,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             iconName +
                             '</span>' +
                             '<span class="ms-1">' + statusText + '</span>';
+                    } else if (row.key === 'description') {
+                        // Show description with smaller text and truncation
+                        const descText = value || '-';
+                        td.innerHTML = '<small class="text-muted">' + descText + '</small>';
+                        td.style.fontSize = '0.85em';
+                        td.style.lineHeight = '1.4';
+                    } else if (row.key === 'stock') {
+                        // Show stock quantity with formatting
+                        const stockValue = value || '0';
+                        const stockNum = parseInt(stockValue);
+                        const stockClass = stockNum > 10 ? 'text-success' : stockNum > 0 ? 'text-warning' : 'text-danger';
+                        td.innerHTML = '<span class="' + stockClass + '">' + stockValue + ' units</span>';
                     } else {
                         td.textContent = value || '-';
                     }
@@ -1080,8 +1125,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (compareFab) {
             compareFab.addEventListener('click', function(e) {
                 e.preventDefault();
-                openCompareModal();
-            });
+                e.stopPropagation();
+                if (compareItems.length > 0) {
+                    openCompareModal();
+                }
+                return false;
+            }, true);
         }
 
         function updateButtonState(card, active) {
@@ -1148,10 +1197,70 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('click', function(e) {
             const btn = e.target.closest('.compare-btn, [data-action="compare-toggle"]');
             if (!btn) return;
-            const card = btn.closest('.product-card');
-            if (!card) return;
+
             e.preventDefault();
             e.stopPropagation();
+
+            // Try to find product card (for grid/list views)
+            let card = btn.closest('.product-card, .product-card-modern');
+
+            // If not in a card (e.g., product detail page), create a virtual card data object
+            if (!card) {
+                const productId = btn.dataset.productId;
+                if (productId) {
+                    // Get product data from the page
+                    const productData = {
+                        id: productId,
+                        name: document.querySelector('.product-title, h1')?.textContent.trim() || '',
+                        price: document.querySelector('.product-price, .price-current')?.textContent.trim() || '',
+                        category: document.querySelector('.product-category, .breadcrumb-item.active')?.textContent.trim() || '',
+                        brand: document.querySelector('.product-brand, [data-brand]')?.textContent.trim() || '',
+                        vendor: document.querySelector('.vendor-name, .product-vendor')?.textContent.trim() || '',
+                        rating: document.querySelector('.rating-value, .product-rating .rating')?.textContent.trim() || '',
+                        ratingCount: document.querySelector('.rating-count, .review-count')?.textContent.trim() || '',
+                        description: document.querySelector('.product-description, .short-description')?.textContent.trim().substring(0, 150) || '',
+                        colors: Array.from(document.querySelectorAll('.color-option, .color-dot')).map(el => el.getAttribute('title') || el.textContent.trim()).filter(Boolean).join(', '),
+                        sizes: Array.from(document.querySelectorAll('.size-option, .size-tag')).map(el => el.textContent.trim()).filter(Boolean).join(', '),
+                        stock: document.querySelector('.stock-quantity, [data-stock]')?.textContent.trim() || '',
+                        status: document.querySelector('.stock-status, .availability-status')?.textContent.trim() || '',
+                        tags: Array.from(document.querySelectorAll('.product-tag, .tag-item')).map(el => el.textContent.trim()).filter(Boolean).join(', '),
+                        image: document.querySelector('.product-main-swiper img, .product-image-box img')?.src || '',
+                        url: window.location.href
+                    };
+
+                    // Check if already in compare
+                    const existingIndex = compareItems.findIndex(item => String(item.id) === String(productId));
+
+                    if (existingIndex !== -1) {
+                        // Remove from compare
+                        compareItems.splice(existingIndex, 1);
+                        btn.classList.remove('in-compare');
+                        btn.setAttribute('aria-pressed', 'false');
+                        if (typeof showMainNotification === 'function') {
+                            showMainNotification('Product removed from compare list', 'info');
+                        }
+                    } else {
+                        // Add to compare
+                        if (compareItems.length >= maxItems) {
+                            if (typeof showMainNotification === 'function') {
+                                showMainNotification(`You can compare up to ${maxItems} products.`, 'warning');
+                            }
+                            return;
+                        }
+                        compareItems.push(productData);
+                        btn.classList.add('in-compare');
+                        btn.setAttribute('aria-pressed', 'true');
+                        if (typeof showMainNotification === 'function') {
+                            showMainNotification('Product added to compare list', 'success');
+                        }
+                    }
+
+                    renderCompareModal();
+                }
+                return;
+            }
+
+            // Handle product card
             toggleCompare(card);
         });
 
@@ -1604,9 +1713,94 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
 
     // Currency selection function
-    window.setCurrency = function(currency) {
-        // Set currency in session via GET request (redirect)
-        window.location.href = `/set-currency/?currency=${currency}`;
+    window.setCurrency = function(currency, event) {
+        // Prevent default button behavior
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        // Get language code from URL
+        let langPrefix = 'en';
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        if (pathParts.length > 0 && (pathParts[0] === 'en' || pathParts[0] === 'ar')) {
+            langPrefix = pathParts[0];
+        }
+
+        console.log('Switching currency to:', currency, 'with lang:', langPrefix);
+
+        // Show loading state
+        let dropdownItem = null;
+        let originalText = '';
+        if (event && event.target) {
+            dropdownItem = event.target.closest('button');
+            if (dropdownItem) {
+                originalText = dropdownItem.innerHTML;
+                dropdownItem.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Switching...';
+                dropdownItem.disabled = true;
+            }
+        }
+
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        // Make AJAX request
+        fetch(`/${langPrefix}/set-currency/?currency=${currency}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            credentials: 'same-origin',
+            body: `currency=${currency}`
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log('Currency changed successfully:', data.currency);
+                // Longer delay to ensure session cookie is fully set in browser
+                setTimeout(() => {
+                    // Use href instead of reload to force full navigation
+                    // Add timestamp to bypass cache
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('_t', Date.now());
+                    window.location.href = currentUrl.toString();
+                }, 1000);
+            } else {
+                throw new Error(data.error || 'Failed to change currency');
+            }
+        })
+        .catch(error => {
+            console.error('Error changing currency:', error);
+            // Restore button state
+            if (dropdownItem) {
+                dropdownItem.innerHTML = originalText;
+                dropdownItem.disabled = false;
+            }
+            // Fallback to redirect
+            window.location.href = `/${langPrefix}/set-currency/?currency=${currency}`;
+        });
     };
 
     // Call initialization functions

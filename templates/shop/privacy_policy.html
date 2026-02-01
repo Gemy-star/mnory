@@ -6,12 +6,18 @@
 
 {% block css %}
 <style>
+    /* Remove default padding from main content */
+    .content-wrapper {
+        padding: 0 !important;
+    }
+
     /* Hero Section */
     .policy-hero {
         background: linear-gradient(135deg, #007aff 0%, #000 50%, #1a1a1a 100%);
-        padding: 5rem 0 4rem;
+        padding: 6rem 0 4rem;
         position: relative;
         overflow: hidden;
+        margin-top: 0;
     }
 
     .policy-hero::before {
@@ -32,54 +38,69 @@
     }
 
     .policy-icon-hero {
-        font-size: 4rem;
-        margin-bottom: 1rem;
+        font-size: 4.5rem;
+        margin-bottom: 1.5rem;
         animation: float 3s ease-in-out infinite;
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
     }
 
     @keyframes float {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
+        50% { transform: translateY(-12px); }
+    }
+
+    /* Content Section */
+    .policy-content {
+        background: var(--theme-bg);
+        padding: 4rem 0;
     }
 
     /* Policy Cards */
     .policy-card {
         background: var(--theme-bg-secondary);
-        border-radius: 16px;
+        border-radius: 20px;
         border: 1px solid var(--theme-border);
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .policy-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
-        border-color: rgba(102, 126, 234, 0.3);
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(102, 126, 234, 0.2);
+        border-color: rgba(102, 126, 234, 0.4);
     }
 
     .policy-card-header {
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: #ffffff;
-        padding: 1.5rem 2rem;
+        padding: 2rem 2.5rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
     .policy-card-header .material-icons {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
     }
 
     .policy-card-header h3 {
         color: #ffffff !important;
         margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
     }
 
     .policy-card-body {
-        padding: 2rem;
+        padding: 2.5rem;
         color: var(--theme-text);
+    }
+
+    .policy-card-body p {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
     }
 
     .policy-card-body ul {
@@ -88,9 +109,11 @@
     }
 
     .policy-card-body li {
-        padding-left: 1.5rem;
+        padding-left: 2rem;
         position: relative;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        line-height: 1.6;
     }
 
     .policy-card-body li::before {
@@ -99,18 +122,19 @@
         left: 0;
         color: #667eea;
         font-weight: bold;
+        font-size: 1.2rem;
     }
 
     .policy-number {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         background: rgba(255, 255, 255, 0.25);
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         margin-right: 0.75rem;
     }
 
@@ -118,92 +142,103 @@
     .info-box {
         background: rgba(102, 126, 234, 0.08);
         border-left: 4px solid #667eea;
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin: 2rem 0;
+        padding: 2rem 2.5rem;
+        border-radius: 16px;
+        margin: 2.5rem 0;
     }
 
     .info-box .material-icons {
         vertical-align: middle;
-        margin-right: 0.75rem;
+        margin-right: 1rem;
         color: #667eea;
-        font-size: 1.5rem;
+        font-size: 1.8rem;
     }
 
     .info-box h5 {
         color: var(--theme-text);
-        font-weight: 600;
-        margin-bottom: 0.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        font-size: 1.25rem;
     }
 
     .info-box p {
         color: var(--theme-text-muted);
         margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.7;
     }
 
     /* Contact Card */
     .contact-card {
-        background: rgba(102, 126, 234, 0.08);
-        border: 2px solid rgba(102, 126, 234, 0.2);
-        border-radius: 20px;
-        padding: 2.5rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        border-radius: 24px;
+        padding: 3rem;
         text-align: center;
-        margin: 2rem 0;
+        margin: 3rem 0;
         transition: all 0.3s ease;
     }
 
     .contact-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
-        border-color: rgba(102, 126, 234, 0.4);
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(102, 126, 234, 0.2);
+        border-color: rgba(102, 126, 234, 0.5);
     }
 
     .contact-card .material-icons {
-        font-size: 3.5rem;
+        font-size: 4rem;
         color: #667eea;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
     }
 
     .contact-card h3 {
         color: var(--theme-text);
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 1.75rem;
+        font-weight: 700;
     }
 
     .contact-card p {
         color: var(--theme-text-muted);
         margin: 0.5rem 0;
+        font-size: 1.05rem;
+    }
+
+    .contact-card strong {
+        color: var(--theme-text);
     }
 
     /* Buttons */
     .btn-back {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.875rem 2rem;
+        gap: 0.75rem;
+        padding: 1rem 2.5rem;
         background: linear-gradient(135deg, #007aff, #667eea);
         color: #ffffff;
         border: none;
         border-radius: 50px;
-        font-weight: 600;
-        font-size: 1rem;
+        font-weight: 700;
+        font-size: 1.05rem;
         text-decoration: none;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        box-shadow: 0 6px 20px rgba(0, 122, 255, 0.35);
     }
 
     .btn-back:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 122, 255, 0.5);
         color: #ffffff;
     }
 
     .btn-back .material-icons {
-        font-size: 20px;
+        font-size: 22px;
         transition: transform 0.3s ease;
     }
 
     .btn-back:hover .material-icons {
-        transform: translateX(-3px);
+        transform: translateX(-4px);
     }
 
     /* Text Utilities */
@@ -218,191 +253,198 @@
     /* Responsive */
     @media (max-width: 768px) {
         .policy-hero {
-            padding: 4rem 0 3rem;
+            padding: 5rem 0 3rem;
         }
 
         .policy-icon-hero {
-            font-size: 3rem;
+            font-size: 3.5rem;
         }
 
         .policy-card-header {
-            padding: 1.25rem 1.5rem;
+            padding: 1.5rem 1.75rem;
         }
 
         .policy-card-body {
-            padding: 1.5rem;
+            padding: 1.75rem;
+        }
+
+        .info-box {
+            padding: 1.5rem 1.75rem;
+        }
+
+        .contact-card {
+            padding: 2rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="category-detail-section">
-
 <!-- Hero Section -->
 <div class="policy-hero">
     <div class="container">
         <div class="policy-hero-content text-center" data-aos="fade-down">
             <span class="material-icons policy-icon-hero">shield_person</span>
-            <h1 class="display-4 fw-bold mb-3">{% trans "Privacy Policy" %}</h1>
-            <p class="lead">{% trans "Your privacy is our priority. Learn how we protect your data." %}</p>
-            <p class="mt-3"><small>{% trans "Last Updated: January 2025" %}</small></p>
+            <h1 class="display-3 fw-bold mb-3">{% trans "Privacy Policy" %}</h1>
+            <p class="lead mb-0">{% trans "Your privacy is our priority. Learn how we protect your data." %}</p>
+            <p class="mt-3 opacity-75"><small>{% trans "Last Updated: January 2025" %}</small></p>
         </div>
     </div>
 </div>
 
 <!-- Content Section -->
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
+<div class="policy-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
 
-            <!-- Introduction -->
-            <div class="info-box" data-aos="fade-up">
-                <h5><span class="material-icons">info</span>{% trans "About This Policy" %}</h5>
-                <p class="mb-0">{% trans "This privacy policy explains how Mnory collects, uses, and protects your personal information when you use our platform." %}</p>
-            </div>
+                <!-- Introduction -->
+                <div class="info-box" data-aos="fade-up">
+                    <h5><span class="material-icons">info</span>{% trans "About This Policy" %}</h5>
+                    <p class="mb-0">{% trans "This privacy policy explains how Mnory collects, uses, and protects your personal information when you use our platform." %}</p>
+                </div>
 
-            <!-- Policy Card 1 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="policy-card-header">
-                    <span class="material-icons">fact_check</span>
-                    <div>
-                        <span class="policy-number">1</span>
-                        <h3 class="d-inline mb-0">{% trans "Information We Collect" %}</h3>
+                <!-- Policy Card 1 -->
+                <div class="policy-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="policy-card-header">
+                        <span class="material-icons">fact_check</span>
+                        <div>
+                            <span class="policy-number">1</span>
+                            <h3 class="d-inline mb-0">{% trans "Information We Collect" %}</h3>
+                        </div>
+                    </div>
+                    <div class="policy-card-body">
+                        <p class="text-theme">{% trans "We collect information you provide during registration, purchases, or customer service interactions, including your name, email, address, and payment details." %}</p>
+                        <ul class="text-theme-muted">
+                            <li>{% trans "Personal identification information (name, email, phone)" %}</li>
+                            <li>{% trans "Billing and shipping addresses" %}</li>
+                            <li>{% trans "Payment information (processed securely)" %}</li>
+                            <li>{% trans "Order history and preferences" %}</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We collect information you provide during registration, purchases, or customer service interactions, including your name, email, address, and payment details." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "Personal identification information (name, email, phone)" %}</li>
-                        <li>{% trans "Billing and shipping addresses" %}</li>
-                        <li>{% trans "Payment information (processed securely)" %}</li>
-                        <li>{% trans "Order history and preferences" %}</li>
-                    </ul>
-                </div>
-            </div>
 
-            <!-- Policy Card 2 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="policy-card-header">
-                    <span class="material-icons">insights</span>
-                    <div>
-                        <span class="policy-number">2</span>
-                        <h3 class="d-inline mb-0">{% trans "How We Use Information" %}</h3>
+                <!-- Policy Card 2 -->
+                <div class="policy-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="policy-card-header">
+                        <span class="material-icons">insights</span>
+                        <div>
+                            <span class="policy-number">2</span>
+                            <h3 class="d-inline mb-0">{% trans "How We Use Information" %}</h3>
+                        </div>
+                    </div>
+                    <div class="policy-card-body">
+                        <p class="text-theme">{% trans "Your data is used to process orders, improve your shopping experience, send updates, and protect against fraud." %}</p>
+                        <ul class="text-theme-muted">
+                            <li>{% trans "Process and fulfill your orders" %}</li>
+                            <li>{% trans "Communicate about your purchases and account" %}</li>
+                            <li>{% trans "Personalize your shopping experience" %}</li>
+                            <li>{% trans "Improve our services and platform" %}</li>
+                            <li>{% trans "Prevent fraud and enhance security" %}</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "Your data is used to process orders, improve your shopping experience, send updates, and protect against fraud." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "Process and fulfill your orders" %}</li>
-                        <li>{% trans "Communicate about your purchases and account" %}</li>
-                        <li>{% trans "Personalize your shopping experience" %}</li>
-                        <li>{% trans "Improve our services and platform" %}</li>
-                        <li>{% trans "Prevent fraud and enhance security" %}</li>
-                    </ul>
-                </div>
-            </div>
 
-            <!-- Policy Card 3 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="policy-card-header">
-                    <span class="material-icons">security</span>
-                    <div>
-                        <span class="policy-number">3</span>
-                        <h3 class="d-inline mb-0">{% trans "Data Security" %}</h3>
+                <!-- Policy Card 3 -->
+                <div class="policy-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="policy-card-header">
+                        <span class="material-icons">security</span>
+                        <div>
+                            <span class="policy-number">3</span>
+                            <h3 class="d-inline mb-0">{% trans "Data Security" %}</h3>
+                        </div>
+                    </div>
+                    <div class="policy-card-body">
+                        <p class="text-theme">{% trans "We implement appropriate technical and organizational measures to protect your personal data." %}</p>
+                        <ul class="text-theme-muted">
+                            <li>{% trans "SSL encryption for all data transmission" %}</li>
+                            <li>{% trans "Secure payment processing systems" %}</li>
+                            <li>{% trans "Regular security audits and updates" %}</li>
+                            <li>{% trans "Restricted access to personal data" %}</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We implement appropriate technical and organizational measures to protect your personal data." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "SSL encryption for all data transmission" %}</li>
-                        <li>{% trans "Secure payment processing systems" %}</li>
-                        <li>{% trans "Regular security audits and updates" %}</li>
-                        <li>{% trans "Restricted access to personal data" %}</li>
-                    </ul>
-                </div>
-            </div>
 
-            <!-- Policy Card 4 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="policy-card-header">
-                    <span class="material-icons">groups</span>
-                    <div>
-                        <span class="policy-number">4</span>
-                        <h3 class="d-inline mb-0">{% trans "Third-Party Sharing" %}</h3>
+                <!-- Policy Card 4 -->
+                <div class="policy-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="policy-card-header">
+                        <span class="material-icons">groups</span>
+                        <div>
+                            <span class="policy-number">4</span>
+                            <h3 class="d-inline mb-0">{% trans "Third-Party Sharing" %}</h3>
+                        </div>
+                    </div>
+                    <div class="policy-card-body">
+                        <p class="text-theme">{% trans "We do not sell or rent your personal data. Some data may be shared with payment processors or shipping partners as necessary to complete your order." %}</p>
+                        <ul class="text-theme-muted">
+                            <li>{% trans "Payment processors for secure transactions" %}</li>
+                            <li>{% trans "Shipping partners for order delivery" %}</li>
+                            <li>{% trans "Service providers who assist our operations" %}</li>
+                            <li>{% trans "Legal authorities when required by law" %}</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We do not sell or rent your personal data. Some data may be shared with payment processors or shipping partners as necessary to complete your order." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "Payment processors for secure transactions" %}</li>
-                        <li>{% trans "Shipping partners for order delivery" %}</li>
-                        <li>{% trans "Service providers who assist our operations" %}</li>
-                        <li>{% trans "Legal authorities when required by law" %}</li>
-                    </ul>
-                </div>
-            </div>
 
-            <!-- Policy Card 5 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="500">
-                <div class="policy-card-header">
-                    <span class="material-icons">verified_user</span>
-                    <div>
-                        <span class="policy-number">5</span>
-                        <h3 class="d-inline mb-0">{% trans "Your Rights" %}</h3>
+                <!-- Policy Card 5 -->
+                <div class="policy-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="policy-card-header">
+                        <span class="material-icons">verified_user</span>
+                        <div>
+                            <span class="policy-number">5</span>
+                            <h3 class="d-inline mb-0">{% trans "Your Rights" %}</h3>
+                        </div>
+                    </div>
+                    <div class="policy-card-body">
+                        <p class="text-theme">{% trans "You have the right to access, correct, or delete your personal data. Contact us at privacy@mnory.com for assistance." %}</p>
+                        <ul class="text-theme-muted">
+                            <li>{% trans "Access your personal data" %}</li>
+                            <li>{% trans "Correct inaccurate information" %}</li>
+                            <li>{% trans "Request data deletion" %}</li>
+                            <li>{% trans "Opt-out of marketing communications" %}</li>
+                            <li>{% trans "Data portability" %}</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "You have the right to access, correct, or delete your personal data. Contact us at privacy@mnory.com for assistance." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "Access your personal data" %}</li>
-                        <li>{% trans "Correct inaccurate information" %}</li>
-                        <li>{% trans "Request data deletion" %}</li>
-                        <li>{% trans "Opt-out of marketing communications" %}</li>
-                        <li>{% trans "Data portability" %}</li>
-                    </ul>
-                </div>
-            </div>
 
-            <!-- Policy Card 6 -->
-            <div class="policy-card" data-aos="fade-up" data-aos-delay="600">
-                <div class="policy-card-header">
-                    <span class="material-icons">cookie</span>
-                    <div>
-                        <span class="policy-number">6</span>
-                        <h3 class="d-inline mb-0">{% trans "Cookies" %}</h3>
+                <!-- Policy Card 6 -->
+                <div class="policy-card" data-aos="fade-up" data-aos-delay="600">
+                    <div class="policy-card-header">
+                        <span class="material-icons">cookie</span>
+                        <div>
+                            <span class="policy-number">6</span>
+                            <h3 class="d-inline mb-0">{% trans "Cookies" %}</h3>
+                        </div>
+                    </div>
+                    <div class="policy-card-body">
+                        <p class="text-theme">{% trans "We use cookies to personalize content, analyze traffic, and improve our services. By using the site, you consent to our cookie policy." %}</p>
+                        <ul class="text-theme-muted">
+                            <li>{% trans "Essential cookies for site functionality" %}</li>
+                            <li>{% trans "Analytics cookies to understand usage patterns" %}</li>
+                            <li>{% trans "Preference cookies to remember your settings" %}</li>
+                            <li>{% trans "Marketing cookies for personalized ads" %}</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="policy-card-body">
-                    <p class="text-theme">{% trans "We use cookies to personalize content, analyze traffic, and improve our services. By using the site, you consent to our cookie policy." %}</p>
-                    <ul class="text-theme-muted">
-                        <li>{% trans "Essential cookies for site functionality" %}</li>
-                        <li>{% trans "Analytics cookies to understand usage patterns" %}</li>
-                        <li>{% trans "Preference cookies to remember your settings" %}</li>
-                        <li>{% trans "Marketing cookies for personalized ads" %}</li>
-                    </ul>
+
+                <!-- Contact Card -->
+                <div class="contact-card" data-aos="zoom-in" data-aos-delay="700">
+                    <span class="material-icons">contact_mail</span>
+                    <h3>{% trans "Privacy Questions?" %}</h3>
+                    <p>{% trans "For any questions or concerns about how we handle your data, contact us at:" %}</p>
+                    <p class="mb-2"><strong>{% trans "Email:" %}</strong> privacy@mnory.com</p>
+                    <p class="mb-0"><strong>{% trans "Phone:" %}</strong> +20 100 123 4567</p>
                 </div>
-            </div>
 
-            <!-- Contact Card -->
-            <div class="contact-card" data-aos="zoom-in" data-aos-delay="700">
-                <span class="material-icons">contact_mail</span>
-                <h3>{% trans "Privacy Questions?" %}</h3>
-                <p>{% trans "For any questions or concerns about how we handle your data, contact us at:" %}</p>
-                <p class="mb-2"><strong>{% trans "Email:" %}</strong> privacy@mnory.com</p>
-                <p class="mb-0"><strong>{% trans "Phone:" %}</strong> +20 100 123 4567</p>
-            </div>
+                <!-- Back Button -->
+                <div class="text-center mt-5 mb-4" data-aos="fade-up" data-aos-delay="800">
+                    <a href="{% url 'shop:home' %}" class="btn-back">
+                        <span class="material-icons">home</span>
+                        {% trans "Back to Home" %}
+                    </a>
+                </div>
 
-            <!-- Back Button -->
-            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="800">
-                <a href="{% url 'shop:home' %}" class="btn-back">
-                    <span class="material-icons">home</span>
-                    {% trans "Back to Home" %}
-                </a>
             </div>
-
         </div>
     </div>
 </div>
-</section>
 {% endblock content %}

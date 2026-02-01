@@ -3,6 +3,29 @@
    ============================================ */
 
 /* ========================================
+   CRITICAL: Remove white gap above header
+======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+header,
+.site-header,
+[role="banner"],
+.promo-banner {
+  margin-top: 0 !important;
+  padding-top: 0;
+}
+
+/* ========================================
    Mnory Supplemental Styles - style.css
    Purpose: Theme-aware page styles with dark/light mode support
    ========================================
@@ -648,7 +671,7 @@ body.theme-transition-active * {
 }
 
 #mnoryChatbotToggle {
-  bottom: 100px;
+  bottom: 5px;
 }
 
 .mnory-chatbot-window {
@@ -2139,21 +2162,25 @@ body.dark-mode .payment-icons img {
 /* ========================================
    WHATSAPP WIDGET FROM _whatsapp.html
 ======================================== */
+/* OVERRIDE: Force square modern style for WhatsApp FAB button */
 #whatsappBtn {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #667eea;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  transition: all var(--transition-fast);
-  animation: mnory-slide-up 0.4s ease-out;
-  z-index: 9999;
-  position: fixed;
-  bottom: 30px;
-  left: 20px;
+  width: 56px !important;
+  height: 56px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 3px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  animation: none !important;
+  z-index: 999 !important;
+  position: relative !important;
+  bottom: auto !important;
+  left: auto !important;
   text-decoration: none !important;
   border: none;
   cursor: pointer;
@@ -2168,63 +2195,25 @@ body.dark-mode #whatsappBtn #whatsappIcon {
   color: #fff !important;
 }
 
-#compareFab {
-  position: fixed;
-  bottom: 100px;
-  left: 20px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: none;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: #667eea;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  z-index: 9998;
-  transition: all var(--transition-fast);
-  animation: mnory-slide-up 0.4s ease-out;
-}
+/* Compare button styles moved to floating-actions.css with !important rules */
 
-#compareFab .material-icons {
-  font-size: 24px;
-}
+/* Compare count styles moved to floating-actions.css with !important rules */
 
-#compareFabCount {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #667eea;
-  font-size: 11px;
-  font-weight: 600;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-}
-
-#compareFab:hover {
-  background: var(--mnory-accent-2, #667eea);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
+/* Compare hover styles moved to floating-actions.css with !important rules */
 
 #whatsappIcon {
-  font-size: 28px;
+  font-size: 24px !important;
   color: #fff !important;
   transition: color 0.3s ease;
 }
 
 #whatsappBtn:hover {
-  background: var(--mnory-accent-2, #667eea);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #128C7E 0%, #25D366 100%) !important;
+  transform: translateX(-8px) scale(1.1) !important;
+  box-shadow:
+    0 12px 32px rgba(37, 211, 102, 0.4),
+    0 6px 12px rgba(18, 140, 126, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
 }
 
 #whatsappBtn:hover #whatsappIcon {
@@ -3774,6 +3763,69 @@ body.dark-mode .promo-item .material-icons {
     color: #ffffff !important;
 }
 
+/* Currency dropdown specific styling */
+.currency-dropdown .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 6px !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.currency-dropdown .dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.currency-dropdown .dropdown-toggle::after {
+    margin-left: 0.25rem !important;
+    border-top-color: #ffffff !important;
+}
+
+/* Language dropdown specific styling */
+.language-dropdown .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 6px !important;
+    transition: background-color 0.2s ease, transform 0.2s ease !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+}
+
+.language-dropdown .dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-1px);
+}
+
+.language-dropdown .dropdown-toggle::after {
+    margin-left: 0.25rem !important;
+    border-top-color: #ffffff !important;
+}
+
+.language-dropdown .dropdown-toggle .material-icons {
+    font-size: 20px !important;
+}
+
+.language-dropdown .dropdown-toggle .language-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Language dropdown menu */
+.language-dropdown .dropdown-menu {
+    min-width: 160px !important;
+}
+
+.language-dropdown .dropdown-item {
+    border: none !important;
+    background: transparent !important;
+    text-align: left !important;
+    width: 100% !important;
+    font-weight: 500 !important;
+}
+
 .promo-item:hover i {
     transform: scale(1.15) rotate(5deg);
 }
@@ -3787,6 +3839,15 @@ body.dark-mode .promo-item .material-icons {
     border-radius: 12px;
     padding: 0.5rem;
     animation: dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 200px;
+}
+
+/* Dark mode dropdown styling */
+body.dark-mode .promo-banner .dropdown-menu {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes dropdownSlideIn {
@@ -3805,6 +3866,13 @@ body.dark-mode .promo-item .material-icons {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 8px;
     padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+body.dark-mode .promo-banner .dropdown-item {
+    color: #e0e0e0;
 }
 
 .promo-banner .dropdown-item:hover {
@@ -3813,10 +3881,20 @@ body.dark-mode .promo-item .material-icons {
     transform: translateX(4px);
 }
 
+body.dark-mode .promo-banner .dropdown-item:hover {
+    background: #2a2a2a;
+    color: #ffffff;
+}
+
 .promo-banner .dropdown-item.active {
     background: var(--primary-color);
     color: #ffffff;
     box-shadow: 0 2px 8px rgba(var(--primary-color-rgb, 33, 150, 243), 0.3);
+}
+
+body.dark-mode .promo-banner .dropdown-item.active {
+    background: var(--primary-color);
+    color: #ffffff;
 }
 
 /* Header - Gradient background in both light and dark mode */
@@ -4162,6 +4240,11 @@ body.dark-mode .btn-icon-action {
 
 .menu-drawer.active {
     pointer-events: all;
+}
+
+/* Prevent body scroll when drawer is open */
+body.drawer-open {
+    overflow: hidden !important;
 }
 
 .menu-drawer-overlay {
@@ -19245,7 +19328,7 @@ body.dark-mode .product-share-section {
 
 /* Category Detail Section (Breadcrumb only) */
 .category-detail-section {
-    padding: 1.5rem 0 0;
+    padding: 0 !important;
     background: #ffffff;
 }
 
@@ -19707,7 +19790,7 @@ body.dark-mode .filters-sidebar {
 
 @media (max-width: 768px) {
     .category-detail-section {
-        padding: 1.5rem 0 3rem;
+        padding: 0 !important;
     }
 
     .category-header {
@@ -35180,7 +35263,7 @@ body.dark-mode .product-share-section {
 
 /* Category Detail Section (Breadcrumb only) */
 .category-detail-section {
-    padding: 1.5rem 0 0;
+    padding: 0 !important;
     background: #ffffff;
 }
 
@@ -35642,7 +35725,7 @@ body.dark-mode .filters-sidebar {
 
 @media (max-width: 768px) {
     .category-detail-section {
-        padding: 1.5rem 0 3rem;
+        padding: 0 !important;
     }
 
     .category-header {

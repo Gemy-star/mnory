@@ -915,31 +915,78 @@ def get_cart_and_wishlist_counts(request):
     Returns JSON with counts of items in cart and wishlist.
     Supports logged-in users and anonymous users (session).
     """
-    if request.user.is_authenticated:
-        cart = Cart.objects.filter(user=request.user).first()
-        cart_count = cart.total_items if cart else 0
-    else:
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.save()
-            session_key = request.session.session_key
-        cart = Cart.objects.filter(session_key=session_key).first()
-        cart_count = cart.total_items if cart else 0
+    try:
+        cart_count = 0
+        wishlist_count = 0
 
-    if request.user.is_authenticated:
-        wishlist = Wishlist.objects.filter(user=request.user).first()
-        wishlist_count = wishlist.items.count() if wishlist else 0
-    else:
-        wishlist_session = request.session.get("wishlist", [])
-        wishlist_count = len(wishlist_session)
+        # Get cart count
+        try:
+            if request.user.is_authenticated:
+                cart = Cart.objects.filter(user=request.user).first()
+                if cart:
+                    # Try to get total_items, fallback to counting items
+                    try:
+                        cart_count = cart.total_items
+                    except (AttributeError, TypeError):
+                        cart_count = cart.items.count() if hasattr(cart, 'items') else 0
+            else:
+                session_key = request.session.session_key
+                if not session_key:
+                    try:
+                        request.session.save()
+                        session_key = request.session.session_key
+                    except Exception:
+                        # If session save fails, return 0 counts
+                        pass
 
-    return JsonResponse(
-        {
-            "success": True,
-            "cart_count": cart_count,
-            "wishlist_count": wishlist_count,
-        }
-    )
+                if session_key:
+                    cart = Cart.objects.filter(session_key=session_key).first()
+                    if cart:
+                        try:
+                            cart_count = cart.total_items
+                        except (AttributeError, TypeError):
+                            cart_count = cart.items.count() if hasattr(cart, 'items') else 0
+        except Exception as cart_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Error getting cart count: {str(cart_error)}")
+            cart_count = 0
+
+        # Get wishlist count
+        try:
+            if request.user.is_authenticated:
+                wishlist = Wishlist.objects.filter(user=request.user).first()
+                wishlist_count = wishlist.items.count() if wishlist else 0
+            else:
+                wishlist_session = request.session.get("wishlist", [])
+                wishlist_count = len(wishlist_session) if isinstance(wishlist_session, list) else 0
+        except Exception as wishlist_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Error getting wishlist count: {str(wishlist_error)}")
+            wishlist_count = 0
+
+        return JsonResponse(
+            {
+                "success": True,
+                "cart_count": cart_count,
+                "wishlist_count": wishlist_count,
+            }
+        )
+    except Exception as e:
+        # Log the error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_cart_and_wishlist_counts: {str(e)}", exc_info=True)
+
+        # Return success with 0 counts instead of error to prevent frontend errors
+        return JsonResponse(
+            {
+                "success": True,
+                "cart_count": 0,
+                "wishlist_count": 0,
+            }
+        )
 
 
 def get_shipping_cost(request):
@@ -3321,40 +3368,6 @@ def get_product_variants(request, product_id):
         )
 
     return JsonResponse({"variants": results})
-
-
-@require_GET
-def get_cart_and_wishlist_counts(request):
-    """
-    Returns JSON with counts of items in cart and wishlist.
-    Supports logged-in users and anonymous users (session).
-    """
-    if request.user.is_authenticated:
-        cart = Cart.objects.filter(user=request.user).first()
-        cart_count = cart.total_items if cart else 0
-    else:
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.save()
-            session_key = request.session.session_key
-        cart = Cart.objects.filter(session_key=session_key).first()
-        cart_count = cart.total_items if cart else 0
-
-    if request.user.is_authenticated:
-        wishlist = Wishlist.objects.filter(user=request.user).first()
-        wishlist_count = wishlist.items.count() if wishlist else 0
-    else:
-        wishlist_session = request.session.get("wishlist", [])
-        wishlist_count = len(wishlist_session)
-
-    return JsonResponse(
-        {
-            "success": True,
-            "cart_count": cart_count,
-            "wishlist_count": wishlist_count,
-        }
-    )
-
 
 # --- Wishlist Views ---
 def wishlist_view(request):

@@ -6,10 +6,14 @@
         <!-- Language Dropdown -->
         <div class="promo-item">
             <div class="dropdown language-dropdown">
-                <a style="text-decoration: none; cursor: pointer;" class="dropdown-toggle" type="button"
+                <a class="dropdown-toggle" type="button"
                    id="languageDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
                    <span class="material-icons">language</span>
-                   <span class="d-none d-md-inline">{% trans "Language" %}</span>
+                   <span class="d-none d-md-inline language-label">
+                       {% for lang_code, lang_name in LANGUAGES %}
+                           {% if LANGUAGE_CODE == lang_code %}{{ lang_name }}{% endif %}
+                       {% endfor %}
+                   </span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown-promo">
                     {% for lang_code, lang_name in LANGUAGES %}
@@ -35,23 +39,19 @@
                    id="currencyDropdown-promo" data-bs-toggle="dropdown" aria-expanded="false">
                    <span class="material-icons">payments</span>
                    <span class="d-none d-md-inline">
-                       {% if request.session.currency %}
-                           {{ request.session.currency }}
-                       {% else %}
-                           USD
-                       {% endif %}
+                       {{ currency|default:"USD" }}
                    </span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="currencyDropdown-promo">
                     <li>
-                        <button type="button" class="dropdown-item {% if request.session.currency == 'USD' or not request.session.currency %}active{% endif %}"
-                                onclick="setCurrency('USD')">
+                        <button type="button" class="dropdown-item {% if currency == 'USD' or not currency %}active{% endif %}"
+                                onclick="setCurrency('USD', event)">
                             USD - US Dollar
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item {% if request.session.currency == 'EGP' %}active{% endif %}"
-                                onclick="setCurrency('EGP')">
+                        <button type="button" class="dropdown-item {% if currency == 'EGP' %}active{% endif %}"
+                                onclick="setCurrency('EGP', event)">
                             EGP - Egyptian Pound
                         </button>
                     </li>

@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_http_methods
 from .models import (
     ProductVariant,
     CartItem,
@@ -99,18 +100,72 @@ def buy_now_view(request):
         return redirect("shop:home")
 
 
+@require_http_methods(["GET", "POST"])
 def set_currency(request):
     """
     A view to set the user's preferred currency in the session.
-    It expects a 'currency' parameter in the GET request.
+    Supports both GET (redirect) and POST (AJAX) requests.
     """
-    if request.method == "GET" and "currency" in request.GET:
-        currency = request.GET["currency"]
+    from django.http import JsonResponse
+    import logging
 
-        # Validate that the currency is one of our supported options
-        supported_currencies = ["EGP", "USD"]
-        if currency in supported_currencies:
-            request.session["currency"] = currency
+    logger = logging.getLogger(__name__)
 
-    # Redirect the user back to the page they were on
-    return redirect(request.META.get("HTTP_REFERER", "/"))
+    # Get currency from GET or POST
+    currency = request.GET.get("currency") or request.POST.get("currency", "USD")
+
+    # Validate currency
+    supported_currencies = ["EGP", "USD"]
+    if currency not in supported_currencies:
+        logger.warning(f"Invalid currency attempted: {currency}")
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {"success": False, "error": "Invalid currency"}, status=400
+            )
+        currency = "USD"  # Fallback to USD
+
+    try:
+        # Ensure session exists
+        if not request.session.session_key:
+            request.session.create()
+
+        # Set currency in session
+        request.session["currency"] = currency
+        request.session.modified = True
+
+        # Force save to ensure it persists
+        request.session.save()
+
+        # Clear cache for this session to force fresh read
+        from django.core.cache import cache
+
+        cache_key = f"django.contrib.sessions.cache{request.session.session_key}"
+        cache.delete(cache_key)
+
+        # Verify it was saved
+        saved_currency = request.session.get("currency")
+        logger.info(
+            f"Currency set to {currency} in session {request.session.session_key}, verified: {saved_currency}"
+        )
+
+        # Check if AJAX request
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "success": True,
+                    "currency": currency,
+                    "message": f"Currency changed to {currency}",
+                }
+            )
+        else:
+            # Redirect for non-AJAX requests
+            referer = request.META.get("HTTP_REFERER", "/")
+            return redirect(referer)
+
+    except Exception as e:
+        logger.error(f"Error setting currency: {str(e)}", exc_info=True)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+        else:
+            referer = request.META.get("HTTP_REFERER", "/")
+            return redirect(referer)

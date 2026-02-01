@@ -3,6 +3,21 @@
 
 {% block title %}{{ product.name }} - {% trans "Mnory" %}{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">
+<style>
+    .glightbox-clean .gslide-image img {
+        cursor: zoom-in;
+    }
+    .product-main-swiper img {
+        cursor: pointer;
+    }
+    .glightbox-container {
+        z-index: 9999 !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <main class="product-detail-page">
     <div class="container py-4 py-lg-5">
@@ -19,11 +34,16 @@
             <!-- Product Gallery -->
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="product-gallery">
-                    <div class="swiper product-main-swiper rounded border">
+                    <div class="swiper product-main-swiper rounded border position-relative">
                         <div class="swiper-wrapper">
                             {% for image in product_images %}
                             <div class="swiper-slide">
-                                <img src="{{ image.image_resized.url }}" alt="{{ product.name }} image {{ forloop.counter }}" class="w-100 h-100 object-fit-contain">
+                                <a href="{{ image.image.url }}" class="glightbox position-relative d-block" data-gallery="product-gallery" data-glightbox="title: {{ product.name }}; description: Image {{ forloop.counter }}">
+                                    <img src="{{ image.image_resized.url }}" alt="{{ product.name }} image {{ forloop.counter }}" class="w-100 h-100 object-fit-contain">
+                                    <div class="zoom-overlay position-absolute top-50 start-50 translate-middle">
+                                        <i class="fas fa-search-plus fa-2x text-white"></i>
+                                    </div>
+                                </a>
                             </div>
                             {% empty %}
                             <div class="swiper-slide">
@@ -95,25 +115,38 @@
                         </div>
                     </div>
 
-                    <div class="d-grid gap-2 mb-4">
-                        <button class="btn btn-primary btn-lg" id="add-to-cart-btn" {% if not product.is_in_stock %}disabled{% endif %}>
-                            <i class="fas fa-shopping-cart me-2"></i> {% trans "Add to Cart" %}
+                    <!-- Action Buttons -->
+                    <div class="product-actions-wrapper mb-4">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <button class="btn btn-primary btn-lg w-100 product-action-btn" id="add-to-cart-btn" {% if not product.is_in_stock %}disabled{% endif %}>
+                                    <i class="fas fa-shopping-cart me-2"></i>
+                                    <span>{% trans "Add to Cart" %}</span>
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <form id="buy-now-form" action="{% url 'shop:buy_now' %}" method="post" class="h-100">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <input type="hidden" name="color_id" id="buy-now-color-id">
+                                    <input type="hidden" name="size_id" id="buy-now-size-id">
+                                    <input type="hidden" name="quantity" id="buy-now-quantity-input" value="1">
+                                    <button type="submit" class="btn btn-success btn-lg w-100 product-action-btn" {% if not product.is_in_stock %}disabled{% endif %}>
+                                        <i class="fas fa-bolt me-2"></i>
+                                        <span>{% trans "Buy Now" %}</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-danger btn-lg w-100 product-action-btn wishlist-btn" id="add-to-wishlist-btn" data-product-id="{{ product.id }}">
+                            <i class="far fa-heart me-2"></i>
+                            <span id="wishlist-text">{% if is_in_wishlist %}{% trans "Remove from Wishlist" %}{% else %}{% trans "Add to Wishlist" %}{% endif %}</span>
                         </button>
-                        <form id="buy-now-form" action="{% url 'shop:buy_now' %}" method="post" class="d-grid">
-                            {% csrf_token %}
-                            <input type="hidden" name="product_id" value="{{ product.id }}">
-                            <input type="hidden" name="color_id" id="buy-now-color-id">
-                            <input type="hidden" name="size_id" id="buy-now-size-id">
-                            <input type="hidden" name="quantity" id="buy-now-quantity-input" value="1">
-                            <button type="submit" class="btn btn-success btn-lg" {% if not product.is_in_stock %}disabled{% endif %}>
-                                <i class="fas fa-bolt me-2"></i> {% trans "Buy Now" %}
-                            </button>
-                        </form>
+                        <button class="btn btn-outline-info btn-lg w-100 product-action-btn compare-btn" data-action="compare-toggle" data-product-id="{{ product.id }}">
+                            <i class="fas fa-exchange-alt me-2"></i>
+                            <span>{% trans "Add to Compare" %}</span>
+                        </button>
                     </div>
-
-                    <button class="btn btn-outline-danger d-flex align-items-center" id="add-to-wishlist-btn" data-product-id="{{ product.id }}">
-                        <i class="far fa-heart me-2"></i> <span id="wishlist-text">{% if is_in_wishlist %}{% trans "Remove from Wishlist" %}{% else %}{% trans "Add to Wishlist" %}{% endif %}</span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -159,8 +192,7 @@
                     </div>
                     {% endfor %}
                 </div>
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
             </div>
         </section>
     </div>
@@ -168,8 +200,19 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialize GLightbox
+    const lightbox = GLightbox({
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: false,
+        zoomable: true,
+        draggable: true,
+        closeButton: true,
+        closeOnOutsideClick: true,
+    });
     var thumbsSwiper = new Swiper('.product-thumbs-swiper', {
         spaceBetween: 10,
         slidesPerView: 4,
@@ -191,9 +234,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var relatedSwiper = new Swiper('.related-products-swiper', {
         spaceBetween: 20,
         slidesPerView: 2,
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+            dynamicBullets: true,
+        },
+        autoplay: {
+            delay: 3500,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
         },
         breakpoints: {
             768: {

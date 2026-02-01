@@ -19,73 +19,16 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/combined.css' %}">
     <link rel="stylesheet" href="{% static 'css/floating-actions.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chatbot-widget.css' %}">
+    <link rel="stylesheet" href="{% static 'css/compare-modal.css' %}">
     {% block css %}{% endblock css %}
-    <style>
-        .fab-menu {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-        .fab-menu .fab-main {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--bs-primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .fab-menu.active .fab-main {
-            transform: rotate(45deg);
-        }
-        .fab-menu .fab-options {
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-        .fab-menu.active .fab-options {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        .fab-menu .fab-option {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-        .fab-menu .fab-option:hover {
-            transform: scale(1.1);
-        }
-    </style>
 </head>
 <body data-animations="true"
       class="loading"
       itemscope
       itemtype="https://schema.org/WebPage"
       data-current-url-name="{{ current_url_name }}"
+      data-language-code="{{ LANGUAGE_CODE }}"
       data-cart-count-url="{% url 'shop:get_cart_and_wishlist_counts' %}"
       data-add-to-cart-url="{% url 'shop:add_to_cart' %}"
       data-remove-from-cart-url="{% url 'shop:remove_from_cart' %}"
@@ -108,23 +51,125 @@
         {% include 'partials/_footer.html' %}
     </footer>
 
-    <div class="fab-menu">
-        <button class="fab-main">
-            <span class="material-icons">add</span>
-        </button>
+    <!-- Floating Action Buttons -->
+    <div class="fab-menu" role="navigation" aria-label="{% trans 'Quick actions' %}">
         <ul class="fab-options">
+            <!-- WhatsApp & Compare -->
             {% include 'partials/_whatsapp.html' %}
+
+            <!-- Chatbot -->
             <li>
-                <button id="mnoryChatbotToggle" type="button" class="fab-option" style="background-color: var(--bs-info);" aria-label="{% trans 'Chat support' %}">
+                <button id="mnoryChatbotToggle"
+                        type="button"
+                        class="fab-option"
+                        title="{% trans 'Chat with us' %}"
+                        aria-label="{% trans 'Chat support' %}">
                     <span class="material-icons">chat</span>
                 </button>
             </li>
+
+            <!-- Back to Top -->
             <li>
-                <button id="backToTop" class="fab-option" style="background-color: var(--bs-secondary);" aria-label="{% trans 'Back to top' %}">
-                    <i class="fas fa-chevron-up"></i>
+                <button id="backToTop"
+                        class="fab-option"
+                        title="{% trans 'Back to top' %}"
+                        aria-label="{% trans 'Back to top' %}">
+                    <span class="material-icons">arrow_upward</span>
                 </button>
             </li>
         </ul>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget">
+        <div class="chatbot-header">
+            <div class="chatbot-title">
+                <span class="material-icons">smart_toy</span>
+                <span>{% trans 'Chat with Mnory' %}</span>
+            </div>
+            <button class="chatbot-close" aria-label="{% trans 'Close chat' %}">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chatbot-message bot-message">
+                <div class="message-avatar">
+                    <span class="material-icons">smart_toy</span>
+                </div>
+                <div class="message-content">
+                    <p>{% trans 'Hello! How can I help you today?' %}</p>
+                    <div class="message-time">{% trans 'Now' %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-input-wrapper">
+            <input type="text"
+                   id="chatbotInput"
+                   class="chatbot-input"
+                   placeholder="{% trans 'Type your question...' %}"
+                   autocomplete="off">
+            <button id="chatbotSend" class="chatbot-send-btn" aria-label="{% trans 'Send message' %}">
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+        <div class="chatbot-typing" id="chatbotTyping" style="display: none;">
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Products Modal -->
+    <div class="modal fade" id="compareModal" tabindex="-1" aria-labelledby="compareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="compareModalLabel">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        {% trans "Compare Products" %}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="compare-table-wrapper" id="compareTableWrapper">
+                        <table class="table table-bordered compare-table"
+                               data-label-name="{% trans 'Product Name' %}"
+                               data-label-price="{% trans 'Price' %}"
+                               data-label-category="{% trans 'Category' %}"
+                               data-label-brand="{% trans 'Brand' %}"
+                               data-label-vendor="{% trans 'Vendor' %}"
+                               data-label-rating="{% trans 'Rating' %}"
+                               data-label-description="{% trans 'Description' %}"
+                               data-label-colors="{% trans 'Colors' %}"
+                               data-label-sizes="{% trans 'Sizes' %}"
+                               data-label-stock="{% trans 'Stock' %}"
+                               data-label-availability="{% trans 'Availability' %}"
+                               data-label-tags="{% trans 'Tags' %}">
+                            <thead>
+                                <tr id="compareHeaderRow"></tr>
+                            </thead>
+                            <tbody id="compareBodyRows"></tbody>
+                        </table>
+                    </div>
+                    <div class="text-center py-5" id="compareEmptyState" style="display: none;">
+                        <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">{% trans "No products to compare" %}</h5>
+                        <p class="text-muted">{% trans "Add products to comparison to see them here" %}</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="compareClearBtn">
+                        <i class="fas fa-trash me-1"></i>
+                        {% trans "Clear All" %}
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {% trans "Close" %}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ... (modals and scripts) ... -->

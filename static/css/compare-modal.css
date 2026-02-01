@@ -1,0 +1,313 @@
+/* Compare Products Modal Styles */
+
+/* Modal styling */
+#compareModal .modal-dialog {
+    max-width: 95%;
+}
+
+#compareModal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+}
+
+#compareModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+#compareModal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Compare table styling */
+.compare-table-wrapper {
+    overflow-x: auto;
+    margin: -1rem;
+    padding: 1rem;
+}
+
+.compare-table {
+    width: 100%;
+    margin-bottom: 0;
+    background: white;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.compare-table thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+    padding: 1rem;
+    border-bottom: 2px solid #dee2e6;
+    vertical-align: top;
+    min-width: 200px;
+}
+
+.compare-table thead th:first-child {
+    background: transparent;
+    border-bottom: 2px solid #dee2e6;
+    min-width: 150px;
+    font-weight: 700;
+}
+
+.compare-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.compare-table tbody th {
+    background: white;
+    font-weight: 600;
+    text-align: left;
+    padding: 1rem;
+    border-right: 2px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.compare-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+/* Product image in table */
+.compare-product-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+/* Product name */
+.compare-product-name {
+    font-weight: 600;
+    color: #333;
+    display: block;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.compare-product-name:hover {
+    color: #667eea;
+}
+
+/* Price styling */
+.compare-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #28a745;
+}
+
+.compare-price-original {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+/* Rating stars */
+.compare-rating {
+    color: #ffc107;
+}
+
+/* Colors display */
+.compare-colors {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.compare-color-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    display: inline-block;
+}
+
+/* Sizes display */
+.compare-sizes {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.compare-size-badge {
+    padding: 0.25rem 0.5rem;
+    background: #e9ecef;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+/* Availability badge */
+.compare-availability {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.compare-availability.in-stock {
+    background: #d4edda;
+    color: #155724;
+}
+
+.compare-availability.out-of-stock {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Remove button */
+.compare-remove-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #dc3545;
+    font-size: 1rem;
+}
+
+.compare-remove-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Empty state */
+#compareEmptyState {
+    padding: 3rem 1rem;
+}
+
+#compareEmptyState i {
+    opacity: 0.3;
+}
+
+/* Action buttons */
+.compare-action-btns {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.compare-action-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.compare-action-btn.view-product {
+    background: #007bff;
+    color: white;
+}
+
+.compare-action-btn.view-product:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+.compare-action-btn.add-to-cart {
+    background: #28a745;
+    color: white;
+}
+
+.compare-action-btn.add-to-cart:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    #compareModal .modal-dialog {
+        max-width: 98%;
+        margin: 0.5rem;
+    }
+
+    .compare-table thead th,
+    .compare-table tbody td {
+        min-width: 150px;
+        padding: 0.75rem;
+    }
+
+    .compare-product-img {
+        height: 120px;
+    }
+
+    .compare-price {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #compareModal .modal-title {
+        font-size: 1rem;
+    }
+
+    .compare-table thead th,
+    .compare-table tbody td {
+        min-width: 120px;
+        padding: 0.5rem;
+    }
+
+    .compare-product-img {
+        height: 100px;
+    }
+
+    .compare-product-name {
+        font-size: 0.875rem;
+    }
+
+    .compare-price {
+        font-size: 1rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .compare-table {
+        background: #1a1a1a;
+        color: #e0e0e0;
+    }
+
+    .compare-table thead th {
+        background: #2a2a2a;
+        border-color: #444;
+    }
+
+    .compare-table tbody tr:nth-child(even) {
+        background-color: #252525;
+    }
+
+    .compare-table tbody th {
+        background: #1a1a1a;
+        border-color: #444;
+    }
+
+    .compare-product-name {
+        color: #e0e0e0;
+    }
+
+    .compare-size-badge {
+        background: #333;
+        color: #e0e0e0;
+    }
+}

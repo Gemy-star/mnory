@@ -120,12 +120,10 @@ CKEDITOR_5_CONFIGS = {
                 "tableRow",
                 "mergeTableCells",
                 "tableProperties",
-                "tableCellProperties"
+                "tableCellProperties",
             ]
         },
-        "mediaEmbed": {
-            "previewsInData": True
-        },
+        "mediaEmbed": {"previewsInData": True},
     }
 }
 
@@ -144,6 +142,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "shop.context_processors.categories_processor",
+                "shop.context_processors.currency_processor",
                 "shop.context_processors.notifications_context",
                 "constance.context_processors.config",
             ],
@@ -153,14 +152,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "mnory.wsgi.application"
 ASGI_APPLICATION = "mnory.asgi.application"
 # Channels / Redis configuration
-REDIS_URL = os.getenv("REDIS_URL","redis://127.0.0.1:6379/0")
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
 
 if REDIS_URL:
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [REDIS_URL],   # Must be redis://host:port/db
+                "hosts": [REDIS_URL],  # Must be redis://host:port/db
             },
         }
     }
@@ -179,6 +178,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+        "OPTIONS": {
+            "timeout": 20,  # 20 seconds timeout for database locks
+            "init_command": "PRAGMA journal_mode=WAL;",  # Enable Write-Ahead Logging for better concurrency
+        },
     }
 }
 
@@ -378,6 +381,9 @@ SECURE_ADMIN_LOGIN = True  # Require HTTPS for admin login in production
 # Session Configuration
 SESSION_COOKIE_AGE = 3600 * 8  # 8 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True  # Ensure session is saved on every request
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 
 ADMIN_USER_TYPES = ["admin"]
 VENDOR_USER_TYPES = ["vendor"]

@@ -154,6 +154,9 @@ class LoginRedirectMiddleware(MiddlewareMixin):
 
 class VisitorTrackingMiddleware(MiddlewareMixin):
     def process_request(self, request):
+        import time
+        from django.db import OperationalError
+
         path = request.path
         if path.startswith("/static/") or path.startswith("/media/") or path.startswith("/admin/"):
             return None
@@ -166,14 +169,32 @@ class VisitorTrackingMiddleware(MiddlewareMixin):
         ip_address = request.META.get("REMOTE_ADDR")
         user_agent = request.META.get("HTTP_USER_AGENT", "")[:512]
 
-        VisitorSession.objects.update_or_create(
-            session_key=session_key,
-            defaults={
-                "user": request.user if request.user.is_authenticated else None,
-                "ip_address": ip_address,
-                "user_agent": user_agent,
-                "last_activity": timezone.now(),
-            },
-        )
+        # Retry logic for database locks
+        max_retries = 3
+        retry_delay = 0.1  # Start with 100ms
+
+        for attempt in range(max_retries):
+            try:
+                VisitorSession.objects.update_or_create(
+                    session_key=session_key,
+                    defaults={
+                        "user": request.user if request.user.is_authenticated else None,
+                        "ip_address": ip_address,
+                        "user_agent": user_agent,
+                        "last_activity": timezone.now(),
+                    },
+                )
+                break  # Success, exit retry loop
+            except OperationalError as e:
+                if "database is locked" in str(e) and attempt < max_retries - 1:
+                    # Wait with exponential backoff before retrying
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Double the delay for next retry
+                else:
+                    # Last attempt failed or different error, log and continue
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Failed to update visitor session: {str(e)}")
+                    break
 
         return None

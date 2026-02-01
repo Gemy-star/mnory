@@ -320,7 +320,7 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
     // ========================================
     // UPDATE COUNTS (FIXED)
     // ========================================
-    function updateAllCounts() {
+    function updateAllCounts(retryCount = 0) {
         // FIXED: Get the current language prefix from the URL, default to 'en' not 'ar'
         const langPrefix = getLangPrefix();
         const url = `/${langPrefix}/api/get-counts/`;
@@ -348,7 +348,11 @@ if (typeof window.cartWishlistInitialized !== 'undefined') {
         })
         .catch(e => {
             console.error('Count update error for', url, ':', e);
-            // Don't show notification for count updates as they're automatic
+            // Retry on initial page load (max 2 retries with delay)
+            if (retryCount < 2) {
+                console.log(`Retrying count update (attempt ${retryCount + 1}/2)...`);
+                setTimeout(() => updateAllCounts(retryCount + 1), 1000);
+            }
         });
     }
 

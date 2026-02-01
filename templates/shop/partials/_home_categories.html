@@ -7,28 +7,33 @@
         <!-- Categories Grid -->
         <div class="categories-grid" data-aos="fade-up" data-aos-delay="200">
             {% for cat in categories %}
-            <div class="category-card" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:200 }}">
+            <div class="category-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:200 }}">
                 <a href="{% url 'shop:category_detail' slug=cat.slug %}" class="category-link">
-                    <div class="category-icon-wrapper">
-                        {% if cat.image %}
-                            <div class="category-image">
-                                <img src="{{ cat.image.url }}" alt="{{ cat.name }}" loading="lazy">
+                    {% if cat.image %}
+                        <div class="category-visual" style="background-image: url('{{ cat.image.url }}');">
+                            <div class="category-visual-overlay"></div>
+                            <div class="category-badge">
+                                <span class="material-icons">inventory_2</span>
+                                <span class="badge-count">{{ cat.products.count|default:"0" }}</span>
                             </div>
-                        {% else %}
-                            <div class="category-icon">
+                        </div>
+                    {% else %}
+                        <div class="category-visual no-image">
+                            <div class="category-visual-overlay"></div>
+                            <div class="category-icon-large">
                                 <span class="material-icons">category</span>
                             </div>
-                        {% endif %}
-                        <div class="category-overlay">
-                            <span class="material-icons">arrow_forward</span>
+                            <div class="category-badge">
+                                <span class="material-icons">inventory_2</span>
+                                <span class="badge-count">{{ cat.products.count|default:"0" }}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="category-content">
-                        <h3 class="category-name">{{ cat.name }}</h3>
-                        <p class="category-description">{% trans "Explore our" %} {{ cat.name|lower }} {% trans "collection" %}</p>
-                        <div class="category-stats">
-                            <span class="material-icons">inventory_2</span>
-                            <span class="stats-text">{{ cat.products.count|default:"0" }} {% trans "Products" %}</span>
+                    {% endif %}
+                    <div class="category-info">
+                        <h3 class="category-title">{{ cat.name }}</h3>
+                        <div class="category-cta">
+                            <span class="cta-text">{% trans "Shop Now" %}</span>
+                            <span class="material-icons">arrow_forward</span>
                         </div>
                     </div>
                 </a>
@@ -36,22 +41,23 @@
             {% endfor %}
 
             <!-- All Categories Card -->
-            <div class="category-card all-categories" data-aos="zoom-in" data-aos-delay="{{ categories|length|add:300 }}">
+            <div class="category-card all-categories-card" data-aos="fade-up" data-aos-delay="{{ categories|length|add:300 }}">
                 <a href="{% url 'shop:category_detail' slug='all' %}" class="category-link">
-                    <div class="category-icon-wrapper">
-                        <div class="category-icon">
+                    <div class="category-visual no-image all-cat">
+                        <div class="category-visual-overlay"></div>
+                        <div class="category-icon-large">
                             <span class="material-icons">apps</span>
                         </div>
-                        <div class="category-overlay">
+                        <div class="category-badge explore-badge">
                             <span class="material-icons">explore</span>
+                            <span class="badge-count">{% trans "All" %}</span>
                         </div>
                     </div>
-                    <div class="category-content">
-                        <h3 class="category-name">{% trans "All Categories" %}</h3>
-                        <p class="category-description">{% trans "Browse all our products" %}</p>
-                        <div class="category-stats">
+                    <div class="category-info">
+                        <h3 class="category-title">{% trans "All Categories" %}</h3>
+                        <div class="category-cta">
+                            <span class="cta-text">{% trans "Explore All" %}</span>
                             <span class="material-icons">explore</span>
-                            <span class="stats-text">{% trans "Discover All" %}</span>
                         </div>
                     </div>
                 </a>
